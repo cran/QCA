@@ -1,0 +1,3 @@
+- implement another algorithm for high number of conditions (>10)
+- implement fuzzy-sets (inclusion) algorithms
+- create/adapt a Graphical User Interface similar to TOSMANA and/or fsQCA
