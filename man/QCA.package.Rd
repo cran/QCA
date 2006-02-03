@@ -1,0 +1,49 @@
+\name{QCA-package}
+
+\alias{QCA-package}
+
+\alias{QCA}
+
+\docType{package}
+
+\title{
+Qualitative Comparative Analysis for crisp sets
+}
+
+\description{
+This library implements the comparative methodology as described in Ragin (1987) and Ragin (2000).
+The analysis is the bridge between the qualitative and quantitative worlds, making use of the
+qualitative procedures in a systematic, algorithmic way (therefore increasing the "confidence"
+in the results, as understood by quantitative researchers).
+At this first release, only the ''exact'' Quine-McCluskey algorithm for crisp sets is implemented.
+However it is widely known that, for large number of conditions (over 10), the algorithm is
+memory hungry therefore very slow. The next versions will have more functions to address this
+problem, as well as functions for fuzzy-set QCA.
+}
+
+\details{
+    \tabular{ll}{
+    Package: \tab QCA\cr
+    Type: \tab Package\cr
+    Version: \tab 0.1\cr
+    Date: \tab 2006-01-26\cr
+    License: \tab GPL version 2 or newer\cr
+    }
+}
+
+\author{
+\tabular{ll}{
+Author: \tab Adrian Dusa <adi@roda.ro>\cr
+Maintainer: \tab Adrian Dusa <adi@roda.ro>
+}}
+
+\references{
+Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative and 
+quantitative strategies}, Berkeley:University of California Press
+
+Ragin, Charles C. 2000 \emph{Fuzzy-set social science}, Chicago:The University of Chicago Press}
+}
+
+\keyword{manip}
+\keyword{cluster}
+
