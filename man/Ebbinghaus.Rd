@@ -23,20 +23,26 @@ the first period (1950-75) and for 16 countries over the second, ''crisis'' peri
 \format{
 The dataset contains the following columns:
 \tabular{ll}{
-DYNA \tab whether \cr
-ACCESS \tab access to media \cr
-INFLU \tab influential allies \cr
-ELITE \tab divided elites \cr
-SOCIAL \tab social networks \cr
-OUT \tab the outcome variable
+OUT \tab union decline (outcome variable) \cr
+GHENT \tab country with ''Ghent-system'' (union led unemployment insurance)\cr
+WORKACCESS \tab workplace access for unions \cr
+NEOCORP \tab neo-corporatist institutionalization of unions \cr
+CLOSHOP \tab ''closed-shop'' tradition \cr
+SOCDEM \tab government participation of Social-Democratic / Socialist party \cr
+INDUS \tab share of industry in dependent unemployment \cr
+PUBLIC \tab share of public sector development employment \cr
+UNEMPL \tab average unemployment rate \cr
+INFLA \tab average inflation rate
 }
 }
 
 \source{\url{http://www.compasss.org}}
 
 \references{
-Osa, Maryjane and Corduneanu-Huci, Cristina 2003 \emph{Running Uphill: Political Opportunity
-in Non-democracies}, Comparative Sociology 2(4), pp. 605-629(25)
+Ebbinghaus, Bernhard and Visser, Jelle 2000 \emph{Trade Unions in Western Europe since
+1945}. In Flora, P. and Rothenbacher, Kraus F. (eds.) The Societies of Europe Series,
+London: Macmillan Reference / Palgrave, March 2000 / New York: Grove's Dictionaries / Palgrave,
+July 2000 [xxii, 808 pp. and CD-ROM]
 }
 
 \keyword{datasets}

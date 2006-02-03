@@ -19,9 +19,7 @@ create.string(mydata, use.letters=TRUE)
 }
 
 \value{
-A list, with:
-  \item{comp1:}{a vector of strings, with length equal to the number of rows in \bold{mydata}}
-  \item{comp2:}{the separator used to collapse the condition names("" or "*")}
+A vector of strings, with length equal to the number of rows in \bold{mydata}
 }
 
 \author{
@@ -30,12 +28,16 @@ Romanian Social Data Archive, University of Bucharest\cr
 adi@roda.ro
 }
 
+\seealso{'create.table'}
+
 \examples{
 test.dataset <- data.frame(First=c(1,1), Second=c(0,1), Third=c(0,0))
-create.string(test.dataset)[[1]] # "Abc" "ABc"
+create.string(test.dataset) # "Abc" "ABc"
 
 # using the column names instead of letters
-create.string(test.dataset, use.letters=FALSE)[[1]] #  "FIRST*second*third" "FIRST*SECOND*third"
+create.string(test.dataset, use.letters=FALSE)
+
+
 }
 
 \keyword{misc}

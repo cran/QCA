@@ -11,7 +11,7 @@ The \bold{Rokkan} data frame has 16 rows and 5 columns.
 
 Abridged from Ragin (1987):\cr
 The data was used by Rokkan (1970) in his work on nation building in Western Europe.
-Rokkan used a "configurational" approach that bears many similarities to the Boolean
+Rokkan used a ''configurational'' approach that bears many similarities to the Boolean
 approach presented in this work. His main substantive interest was the growth of mass
 democracy and the emergence of different cleavage structures in Western European
 polities. One outcome that interested him was the division of some working-class
@@ -25,12 +25,13 @@ mobilization (and cleavage structures in general) in Western Europe
 
 \format{
 The dataset contains the following columns:
-\tabular{ll}{
-C - \tab National church (vs. state allied to Roman Catholic church) \cr
-R - \tab Significant Roman Catholic population and Roman Catholic participation in mass education \cr
-L - \tab State protection of landed interests \cr
-E - \tab Early state \cr
-S - \tab Major split in working-class movement provoked by Russian Revolution (outcome variable) (yes/no)
+\tabular{ccl}{
+C \tab - \tab National church (vs. state allied to Roman Catholic church) \cr
+R \tab - \tab Significant Roman Catholic population and Roman Catholic participation in mass education \cr
+L \tab - \tab State protection of landed interests \cr
+E \tab - \tab Early state \cr
+S \tab - \tab Major split in working-class movement provoked by Russian Revolution (outcome variable) \cr
+  \tab   \tab (yes/no)
 }
 }
 

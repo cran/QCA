@@ -36,6 +36,8 @@ mymatrix <- matrix(sample(0:1, 20, replace=TRUE), nrow=5)
 colnames(mymatrix) <- c("First", "Second", "Third", "Fourth")
 rownames(mymatrix) <- c("One", "Two", "Three", "Four", "Five")
 print(pretty.table(mymatrix))
+
+
 }
 
 \keyword{misc}

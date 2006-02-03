@@ -13,14 +13,17 @@ which condition (or combination of conditions) need to be met to trigger the out
 }
 
 \usage{
-qmcc(mydata, expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
+qmcc(mydata, outcome = "", incl.rem = FALSE,
+     expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
      incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
-     incl.rem = FALSE, quiet = FALSE, details = FALSE, complete = FALSE,
-     use.letters = TRUE, show.lines = FALSE, chart = FALSE, tt = FALSE, outcome = "")
+     quiet = FALSE, details = FALSE, complete = FALSE, chart = FALSE,
+     use.letters = TRUE, show.lines = FALSE, tt = FALSE)
 }
 
 \arguments{
-  \item{mydata}{the dataset used for minimization}
+  \item{mydata}{the dataset used for minimization (dataframe or matrix)}
+  \item{outcome}{the name of the outcome variable from the dataset}
+  \item{incl.rem}{include the remainders in the minimization procedure}
   \item{expl.1}{explain the outcomes equal to 1}
   \item{expl.0}{explain the outcomes equal to 0}
   \item{expl.ctr}{explain the contradictions}
@@ -29,15 +32,13 @@ qmcc(mydata, expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
   \item{incl.0}{include the outcomes equal to 0 in the minimization procedure}
   \item{incl.ctr}{include the contradictions in the minimization procedure}
   \item{incl.mo}{include the missing outcome in the minimization procedure (not implemented yet)}
-  \item{incl.rem}{include the remainders in the minimization procedure}
   \item{quiet}{prints the solution without any other information}
   \item{details}{prints some relevant details (set to FALSE if quiet is TRUE}
   \item{complete}{prints every detail from every step of the procedure}
+  \item{chart}{print the prime implicants chart}
   \item{use.letters}{should letters be used instead of column names}
   \item{show.lines}{show the lines corresponding to every minimized prime implicant}
-  \item{chart}{print the prime implicants chart}
   \item{tt}{specifies whether the input data is already a truth table}
-  \item{outcome}{the name of the outcome variable from the dataset}
 }
 
 \references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative
@@ -52,11 +53,11 @@ adi@roda.ro
 \note{The function finds a solution very quickly for a small number of conditions.
 For eight conditions, it finds a solution in maximium 22 seconds, for nine conditions
 in maximum 15 minutes. For 10 or more conditions, it needs A LOT of memory and it takes
-a very long time to find a solution. Different other algorithms need to be implemented
+a very long time to find a solution. Different other algorithms will be implemented
 for these cases
 }
 
-\seealso{'daisy', 'lp'}
+\seealso{'truth.table', 'daisy', 'lp'}
 
 \examples{
 data(Osa)
@@ -79,6 +80,8 @@ qmcc(Osa, outcome="OUT", expl.1=TRUE, incl.rem=TRUE, incl.ctr=TRUE, show.lines=T
 
 # now explaining the absence of the outcome
 qmcc(Osa, outcome="OUT", expl.0=TRUE, incl.rem=TRUE, incl.ctr=TRUE, show.lines=TRUE)
+
+
 }
 
 \keyword{misc}

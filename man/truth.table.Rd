@@ -16,7 +16,8 @@ outcome will be a contradiction ("C")\cr
 }
 
 \usage{
-truth.table(mydata, outcome = "", inside = FALSE, complete = FALSE, show.lines = FALSE)
+truth.table(mydata, outcome = "", inside = FALSE, complete = FALSE,
+            show.lines = FALSE)
 }
 
 \arguments{
@@ -37,7 +38,7 @@ Romanian Social Data Archive, University of Bucharest\cr
 adi@roda.ro
 }
 
-\seealso{'print', 'cat'}
+\seealso{'qmcc', 'print', 'cat'}
 
 \examples{
 data(Osa)
