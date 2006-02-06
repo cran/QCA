@@ -1,5 +1,6 @@
 "create.string" <-
 function(mydata, use.letters=TRUE) {
+    if (is.null(colnames(mydata))) colnames(mydata) <- LETTERS[1:ncol(mydata)]
     alreadyletters <- sum(nchar(colnames(mydata))) == ncol(mydata)
     changed <- FALSE
     if (use.letters & !alreadyletters & ncol(mydata) < 27) {
@@ -20,9 +21,6 @@ function(mydata, use.letters=TRUE) {
     for (i in 1:nrow(mydata)) {
         input[i] <- paste(mydata[i, ], collapse = collapsemethod)
     }
-    return.list <- as.list(rep(NA, 2))
-    return.list[[1]] <- input
-    return.list[[2]] <- collapsemethod
-    return.list
+    input
 }
 

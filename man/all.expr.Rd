@@ -35,6 +35,8 @@ adi@roda.ro
 \examples{
 column.names <- c("First", "Second", "Third")
 all.expr(column.names)
+
+
 }
 
 \keyword{misc}

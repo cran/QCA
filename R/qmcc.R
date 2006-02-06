@@ -1,10 +1,17 @@
 "qmcc" <-
-function(mydata, expl.1=FALSE, expl.0=FALSE, expl.ctr=FALSE, expl.mo=FALSE,
-                         incl.1=FALSE, incl.0=FALSE, incl.ctr=FALSE, incl.mo=FALSE, incl.rem=FALSE,
-                 quiet=FALSE, details=FALSE, complete=FALSE, use.letters=TRUE, show.lines=FALSE,
-                 chart=FALSE, tt=FALSE, outcome="") {
+function(mydata, outcome="", incl.rem=FALSE,
+         expl.1=FALSE, expl.0=FALSE, expl.ctr=FALSE, expl.mo=FALSE,
+         incl.1=FALSE, incl.0=FALSE, incl.ctr=FALSE, incl.mo=FALSE,
+         quiet=FALSE, details=FALSE, complete=FALSE, chart=FALSE,
+         use.letters=TRUE, show.lines=FALSE, tt=FALSE) {
 
-      # check if all cases have been included in analysis
+     # check if the data has column names
+    if (is.null(colnames(mydata))) {
+        cat("\n")
+        stop("Please specify the column names for your data.\n\n", call. = FALSE)
+    }
+    
+     # check if all cases have been included in analysis
     if ((expl.0 | incl.0) & (expl.1 | incl.1) & (expl.ctr | incl.ctr) & incl.rem) {
         cat("\n")
         stop("You have included all cases in the analysis!\n\n", call. = FALSE)
@@ -339,7 +346,7 @@ function(mydata, expl.1=FALSE, expl.0=FALSE, expl.ctr=FALSE, expl.mo=FALSE,
      # print the lines from the initial data, which correspond to the minimized prime implicants
     if (show.lines) {
          # for start, mydata.rows will be a string with all _existing_ combinations (e.g. "AbcDe")
-        mydata.rows <- create.string(mydata[, -which(colnames(mydata) == outcome)], use.letters)[[1]]
+        mydata.rows <- create.string(mydata[, -which(colnames(mydata) == outcome)], use.letters)
         mtrx <- create.chart(all.primeimps, mydata.rows)
          # replace mydata.rows with a vector of all rownames (case IDs) from the initial data
         mydata.rows <- rownames(mydata)

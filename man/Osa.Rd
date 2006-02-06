@@ -4,7 +4,7 @@
 
 \alias{Osa}
 
-\title{Running Uphill: Political Opportunity in Non-democracies}
+\title{Political Opportunity in Non-democracies}
 
 \description{
 The \bold{Osa} data frame has 24 rows and 6 columns.
@@ -20,12 +20,23 @@ divided elites, changes in repression, media access, influential allies, and soc
 \format{
 The dataset contains the following columns:
 \tabular{ll}{
-DYNA \tab whether \cr
-ACCESS \tab access to media \cr
-INFLU \tab influential allies \cr
-ELITE \tab divided elites \cr
-SOCIAL \tab social networks \cr
-OUT \tab the outcome variable
+DYNA \tab Dynamics of repression, coded 1 for evidence of increase in long-term and/or short-term \cr
+     \tab state repression, 0 for evidence of decrease \cr
+ACCESS \tab Media access - coded 1 if the public information flow concerning a particular event \cr
+       \tab of popular mobilization is controlled by the political authorities (via censorship \cr
+       \tab or ban on foreign media), 0 if there was evidence of sustained relaxation of state \cr
+       \tab censorship or substantive presence of foreign and/or underground media \cr
+INFLU \tab Influential allies - coded 1 for presence of domestic or foreign politically \cr
+      \tab influential groups supporting popular mobilization; 0 for absence of such \cr
+      \tab organizational support \cr
+ELITE \tab Division of elites, coded 1 - evidence of competing factions within the ruling elites; \cr
+      \tab 0 - relatively unified ruling group \cr
+SOCIAL \tab Social networks - coded 1if mobilization resulted from the activity of interconnected \cr
+       \tab groups, 0 if organizational and/or individual ties were severely destroyed or impeded \cr
+       \tab to emerge by the state \cr
+OUT \tab Social mobilization, coded 1 for major episodes of sustained collective action \cr
+    \tab opposing state policies by participants drawn from nonelite or repressed segments \cr
+    \tab of society in non-democratic regimes, 0 - non-mobilization
 }
 }
 

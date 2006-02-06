@@ -1,3 +1,6 @@
 - implement another algorithm for high number of conditions (>10)
+- implement option to handle missing outcome
+- implement option for simplifying assumptions
+- implement multi-value algorithms
 - implement fuzzy-sets (inclusion) algorithms
 - create/adapt a Graphical User Interface similar to TOSMANA and/or fsQCA

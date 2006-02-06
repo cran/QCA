@@ -36,6 +36,8 @@ adi@roda.ro
 
 \examples{
 create.chart(c("A", "b", "C"), c("ABC", "aBc", "Abc", "aBC"))
+
+
 }
 
 \keyword{misc}

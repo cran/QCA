@@ -7,7 +7,7 @@
 \docType{package}
 
 \title{
-Qualitative Comparative Analysis for crisp sets
+Qualitative Comparative Analysis
 }
 
 \description{
@@ -19,14 +19,16 @@ At this first release, only the ''exact'' Quine-McCluskey algorithm for crisp se
 However it is widely known that, for large number of conditions (over 10), the algorithm is
 memory hungry therefore very slow. The next versions will have more functions to address this
 problem, as well as functions for fuzzy-set QCA.
+The package doesn't currently handle missing values in the data, therefore it is not yet
+possible to perform simplifying assumptions
 }
 
 \details{
     \tabular{ll}{
     Package: \tab QCA\cr
     Type: \tab Package\cr
-    Version: \tab 0.1\cr
-    Date: \tab 2006-01-26\cr
+    Version: \tab 0.1-1\cr
+    Date: \tab 2006-02-03\cr
     License: \tab GPL version 2 or newer\cr
     }
 }
@@ -44,6 +46,5 @@ quantitative strategies}, Berkeley:University of California Press
 Ragin, Charles C. 2000 \emph{Fuzzy-set social science}, Chicago:The University of Chicago Press}
 }
 
-\keyword{manip}
 \keyword{cluster}
 
