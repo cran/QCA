@@ -1,4 +1,4 @@
-"createString" <-
+`createString` <-
 function(mydata, use.letters=TRUE) {
     if (is.null(colnames(mydata))) {colnames(mydata) <- LETTERS[1:ncol(mydata)]}
     alreadyletters <- sum(nchar(colnames(mydata))) == ncol(mydata)

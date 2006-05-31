@@ -1,4 +1,4 @@
-"prettyString" <-
+`prettyString` <-
 function(string.vector, string.width=60, repeat.space=5, separator=",") { 
     if (length(string.vector) > 1) {
         string <- string.vector[1]

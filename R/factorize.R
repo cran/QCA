@@ -1,5 +1,7 @@
-factorize <- function(my.string, use.letters=TRUE, 
-                      sort.by.literals=FALSE, sort.by.number=FALSE) {
+`factorize` <- 
+function(my.string, use.letters=TRUE, 
+         sort.by.literals=FALSE, sort.by.number=FALSE) {
+             
     trimst <- function(string) gsub("^[[:space:]]+|[[:space:]]+$", "", string)
     my.string <- trimst(unlist(strsplit(my.string, "\\+")))
     if (length(my.string) == 1) return(my.string)
@@ -10,7 +12,9 @@ factorize <- function(my.string, use.letters=TRUE,
      # check if use.letters should be TRUE
     if (!use.letters & !any(unlist(sapply(my.string, strsplit, "")) == "*")) {
         cat("\n")
-        stop("Cannot find the separator character between conditions.\n       Are you sure conditions' names are not simple letters?\n\n", call. = FALSE)
+        stop("Cannot find the separator character between conditions.\n",
+             "      Are you sure conditions' names are not simple letters?\n\n",
+             call. = FALSE)
         }
     
     # create a list with all prime implicants splitted by literals
@@ -45,7 +49,7 @@ factorize <- function(my.string, use.letters=TRUE,
         }))
     names(match.list) <- lapply(match.list, paste, collapse=collapsemethod)
     
-    # see wich comparisons didn't yield similar literals
+     # see wich comparisons didn't yield similar literals
     null.branches <- unlist(lapply(match.list, function(x) all(is.na(x))))
      # erase those branches from the list
     match.list <- match.list[!null.branches]

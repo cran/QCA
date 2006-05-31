@@ -1,4 +1,4 @@
-"prettyTable" <-
+`prettyTable` <-
 function(mytable) {
     mytable <- as.matrix(mytable)
     

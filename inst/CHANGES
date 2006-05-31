@@ -1,3 +1,8 @@
+Version 0.2-6
+    o QCA doesn't depend on package "cluster" anymore as qmcc() is now based on dist()
+      from the standard stats package, instead of daisy()
+    
+
 Version 0.2-5
 
     o Minor documentation fixes

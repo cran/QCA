@@ -1,4 +1,4 @@
-"truthTable" <-
+`truthTable` <-
 function(mydata, outcome = "", conditions = c(""), inside = FALSE,
          complete = FALSE, show.cases = FALSE) {
     
@@ -15,7 +15,7 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
         colnames(mydata)[ncol(mydata)] <- outcm.name
         }
     
-     # the "old" way, which back then it was 10 times faster than the former code
+     # the "old" way, which at the time it was 10 times faster than the former code
      # tt <- as.matrix(expand.grid(rep(list(c(0,1)), no.of.conditions))[, no.of.conditions:1])
     
      # the new way, which is 5.5 times faster than expand.grid :))
