@@ -34,8 +34,8 @@ adi@roda.ro
 
 \examples{
 set.seed(1234)
-long.string <- paste("This would be a very long string, composed from the following words:", 
-                     paste(sample(c("one", "two", "three"), 60, replace=TRUE), collapse=" "))
+long.string <- paste("This is a very long string, composed from the following words:", 
+                 paste(sample(c("one","two","three"), 60, replace=TRUE), collapse=" "))
 
 long.string
 

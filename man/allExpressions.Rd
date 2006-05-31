@@ -13,7 +13,7 @@ conditions (say over 12) as the computer will quickly run out of resources.
 }
 
 \usage{
-allExpressions(no.conditions, inside=FALSE, arrange=FALSE)
+allExpressions(no.conditions, inside=TRUE, arrange=FALSE)
 }
 
 \arguments{
@@ -38,10 +38,10 @@ adi@roda.ro
 
 \examples{
 # for 3 conditions
-allExpressions(3)
+allExpressions(3, inside=FALSE)
 
-# the same matrix, only this time arranged better
-allExpressions(3, arrange=TRUE)
+# the same matrix, this time arranged better
+allExpressions(3, inside=FALSE, arrange=TRUE)
 }
 
 \keyword{misc}

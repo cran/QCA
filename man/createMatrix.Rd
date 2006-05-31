@@ -5,17 +5,17 @@
 \title{Create a base matrix for the truth table}
 
 \description{
-The truth table consists from all combinations of presence/absence of conditions (coded binary 1/0),
-and this function should be among the fastests to create a matrix with such combinations, using 
-ideas inspired from expand.grid
+The truth table consists from all combinations of presence/absence of conditions (coded binary 1/0).
+There are \eqn{2^k} such combinations and this function should be among the fastests to create this
+matrix, using ideas inspired from expand.grid
 }
 
 \usage{
-createMatrix(no.conditions)
+createMatrix(cond)
 }
 
 \arguments{
-  \item{no.conditions}{the number of conditions from the dataset}
+  \item{cond}{the number of conditions from the dataset}
 }
 
 \references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative 
