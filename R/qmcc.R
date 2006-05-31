@@ -2,8 +2,8 @@
 function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
          incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
-         quiet = FALSE, details = FALSE, chart = FALSE,
-         use.letters = TRUE, show.cases = FALSE, tt = FALSE) {
+         quiet = FALSE, details = FALSE, chart = FALSE, use.letters = TRUE,
+         show.cases = FALSE, tt = FALSE) {
 
      # check if the data has column names
     if (is.null(colnames(mydata))) {

@@ -6,7 +6,7 @@
 
 \description{
 R prints the content of a matrix with the values alligned to the right. This function computes
-the number of spaces needed to reach the middle of the column (minus one for an odd number of
+the number of spaces needed to reach the middle of the column (minus one for odd number of
 characters) and adds a certain number of spaces to each value from the table in order to alling
 these values to the middle.
 }
