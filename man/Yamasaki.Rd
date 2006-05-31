@@ -32,12 +32,12 @@ the general implications of this methodological problem
 \format{
     The dataset contains the following columns:
     \tabular{ll}{
+    POSTMAT \tab the level of postmodern values in a society takes the value ''1'' in the Dutch \cr
+            \tab and Finnish cases, and ''0'' in the others \cr
     NONGHENT \tab the absence of a Ghent system is coded ''1'' and ''0'' when the Ghent system\cr
              \tab exists in the country \cr
     MOVEMENT \tab in the presence of a social movement advocating Basic Income, the variable \cr
              \tab will be coded ''1'' \cr
-    POSTMAT \tab the level of postmodern values in a society takes the value ''1'' in the Dutch \cr
-            \tab and Finnish cases, and ''0'' in the others \cr
     UNITARY \tab based on the Lijphart index (1.0 to 5.0, from unitary to federal and \cr
             \tab decentralised states), the variable is coded ''0'' for cases in the three \cr
             \tab following categories: semi-federal states (3.0), federal and centralized \cr

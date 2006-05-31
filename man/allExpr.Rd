@@ -1,6 +1,6 @@
-\name{all.expr}
+\name{allExpr}
 
-\alias{all.expr}
+\alias{allExpr}
 
 \title{Create a matrix with all possible combinations of conditions}
 
@@ -11,12 +11,12 @@ for all expressions.
 }
 
 \usage{
-all.expr(column.names, inside=FALSE)
+allExpr(column.names, inside=FALSE)
 }
 
 \arguments{
   \item{column.names}{a vector of strings, the column names of the dataset}
-  \item{inside}{if not inside the qmcc function, print the result matrix without NAs}
+  \item{inside}{if TRUE, returns the raw result matrix; if FALSE, print the result matrix without NAs}
 }
 
 \value{
@@ -34,7 +34,7 @@ adi@roda.ro
 
 \examples{
 column.names <- c("First", "Second", "Third")
-all.expr(column.names)
+allExpr(column.names)
 
 
 }

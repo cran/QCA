@@ -1,4 +1,4 @@
-"pretty.string" <-
+"prettyString" <-
 function(string.vector, string.width=60, repeat.space=5, separator=",") { 
     if (length(string.vector) > 1) {
         string <- string.vector[1]
@@ -9,13 +9,15 @@ function(string.vector, string.width=60, repeat.space=5, separator=",") {
                                 paste(rep(" ", repeat.space), collapse=""), 
                                 string.vector[j], sep="")
                 startpoint <- j
-            } else {
+                }
+            else {
                 string <- paste(string, string.vector[j], sep=separator)
+                }
             }
-        }
         string
-    } else {
+        }
+    else {
         string.vector
+        }
     }
-}
 

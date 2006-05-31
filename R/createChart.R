@@ -1,4 +1,4 @@
-"create.chart" <-
+"createChart" <-
 function(rows, columns) {
     mtrx <- matrix(logical(length(rows)*length(columns)), nrow = length(rows))
     colnames(mtrx) <- columns

@@ -1,6 +1,6 @@
-\name{create.chart}
+\name{createChart}
 
-\alias{create.chart}
+\alias{createChart}
 
 \title{Create the prime implicants chart}
 
@@ -12,7 +12,7 @@ prime implicants.
 }
 
 \usage{
-create.chart(rows, columns)
+createChart(rows, columns)
 }
 
 \arguments{
@@ -35,7 +35,7 @@ adi@roda.ro
 }
 
 \examples{
-create.chart(c("A", "b", "C"), c("ABC", "aBc", "Abc", "aBC"))
+createChart(c("A", "b", "C"), c("ABC", "aBc", "Abc", "aBC"))
 
 
 }
