@@ -5,8 +5,9 @@
 \title{Create a base matrix for the truth table}
 
 \description{
-The truth table consists from all combinations of presence/absence of conditions, and this (AFAIK)
-is the fastest way to create a matrix with these combinations, using ideas inspired from expand.grid
+The truth table consists from all combinations of presence/absence of conditions (coded binary 1/0),
+and this function should be among the fastests to create a matrix with such combinations, using 
+ideas inspired from expand.grid
 }
 
 \usage{

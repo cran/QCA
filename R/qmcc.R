@@ -142,19 +142,20 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          # print the truthtable on the screen, if not quiet
         if (!quiet & repetition == 1) print(prettyTable(print.tt))
         
+        
          # check if the condition names are not already letters
         alreadyletters <- sum(nchar(colnames(ttmydata))) == ncol(ttmydata)
-        ifelse(alreadyletters, collapsemethod <- "", collapsemethod <- "*")
+        ifelse(alreadyletters, co11apse <- "", co11apse <- "*")
         changed <- FALSE
         
          # if not already letters and user specifies using letters for conditions, change it
         if (use.letters & !alreadyletters) {
             colnames(ttmydata) <- LETTERS[1:ncol(ttmydata)]
             changed <- TRUE
-            collapsemethod = ""
+            co11apse = ""
             }
         
-        input <- copyinput <- ttmydata
+        input <- copyinput <- apply(ttmydata, 2, as.character)
         
         minimized <- iteration <- 1
         
@@ -166,29 +167,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             }
         else if (details & repetitions == 1) {
             cat("\nStep 1. Finding prime implicants for the explained values:", "\n\n")
-            }
-        
-         ## function to sort a vector of strings according to their length
-        sortVector <- function(x) {
-            strings <- NULL
-            lengths <- sort(unique(nchar(x)))
-            for (i in 1:length(lengths)) {
-                strings <- c(strings, sort(x[which(nchar(x) == lengths[i])]))
-                }
-            strings
-            }
-        
-        
-         ## when the matrix cannot be further minimized, this function writes the prime implicants
-         ## as the name of the conditions (columns), collapsed together in a single string
-        writePrimeimp <- function(idx) {
-            primeimp <- NULL
-            conditions <- colnames(input)
-            for (i in which(idx != "x")) {
-                condition <- ifelse(idx[i] == 1, toupper(conditions[i]), tolower(conditions[i]))
-                primeimp <- paste(c(primeimp, condition), collapse=collapsemethod)
-                }
-            primeimp
             }
         
         while (sum(minimized) > 0) {
@@ -233,8 +211,8 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             else {
                 colnames(input) <- colnames(copyinput)
                  # if no further minimization is possible, prepare the prime implicants vector
-                primeimp <- sortVector(apply(unique(input), 1, writePrimeimp))
-                copyinput <- as.vector(apply(copyinput, 1, writePrimeimp))
+                primeimp <- sortVector(apply(unique(input), 1, writePrimeimp, co11apse=co11apse))
+                copyinput <- as.vector(apply(copyinput, 1, writePrimeimp, co11apse=co11apse))
                 if (repetitions == 2 & repetition == 1) {
                     primeimp.incl <- primeimp
                     if (details) {cat ("\n")}
@@ -245,80 +223,14 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
      # create the prime implicants chart
     mtrx <- mtrx2 <- createChart(primeimp, copyinput)
-    
-    if (nrow(mtrx) > 1 & ncol(mtrx) > 1) {
-         ## solution provided by Gabor Grothendieck
-         ## the function lp (from package lpSolve) finds one (guaranteed minimum) solution
-         # k will be the minimum number of prime implicants necessary to cover all columns
-        k <- sum(lp("min", rep(1, nrow(mtrx)), t(mtrx), ">=", 1)$solution)
-         # create a matrix with all possible combinations of k prime implicants
-        combos <- as.matrix(combn(nrow(mtrx), k))
-         # sol.matrix will be a subset of the mtrx matrix with all minimum solutions
-        sol.matrix <- combos[, apply(combos, 2, function(idx) {
-                                                    if (is.matrix(mtrx[idx, ])) {
-                                                        all(colSums(mtrx[idx, ]))
-                                                        }
-                                                    else {
-                                                        all(mtrx[idx, ])
-                                                        }
-                                                    })]
-        }
-    else {
-        sol.matrix <- 1:nrow(mtrx)
-        }
+    sol.matrix <- solveChart(mtrx)
     
     if (repetitions == 2 & repetition == 2) {
          # do the same thing if the user included other values for minimization
         mtrx.incl <- createChart(primeimp.incl, copyinput)
-        if (nrow(mtrx.incl) > 1 & ncol(mtrx.incl) > 1) {
-            k <- sum(lp("min", rep(1, nrow(mtrx.incl)), t(mtrx.incl), ">=", 1)$solution)
-            combos <- as.matrix(combn(nrow(mtrx.incl), k))
-            sol.matrix.incl <- combos[, apply(combos, 2, function(idx) {
-                                                            if (is.matrix(mtrx.incl[idx, ])) {
-                                                                all(colSums(mtrx.incl[idx, ]))
-                                                                }
-                                                            else {
-                                                                all(mtrx.incl[idx, ])
-                                                                }
-                                                            })]
-            }
-        else {
-            sol.matrix.incl <- 1:nrow(mtrx.incl)
-            }
+        sol.matrix.incl <- solveChart(mtrx.incl)
         }
     
-     # function to create a list which will contain the solution(s) and the essential prime implicants
-    writeSolution <- function(sol.matrix, mtrx) {
-        solution <- output <- NULL
-        if (is.matrix(sol.matrix)) {
-            row.matrix <- matrix(FALSE, nrow=nrow(mtrx), ncol=ncol(sol.matrix))
-            for (i in 1:ncol(sol.matrix)) {
-                row.matrix[sol.matrix[ , i], i] <- TRUE
-                }
-            ess.prime.imp <- logical(nrow(mtrx))
-            ess.prime.imp[rowSums(row.matrix) == ncol(row.matrix)] <- TRUE
-            if (sum(ess.prime.imp) > 0) {
-                for (i in 1:ncol(sol.matrix)) {
-                    solution.ess <- sort(rownames(mtrx)[ess.prime.imp])
-                    not.essential <- sol.matrix[ , i][!sol.matrix[ , i] %in% which(ess.prime.imp)]
-                    solution[[i]] <- c(solution.ess, sort(rownames(mtrx)[not.essential]))
-                    }
-                }
-            else {
-                for (i in 1:nrow(sol.matrix)) {
-                    solution[[i]] <- rownames(mtrx)[sol.matrix[ , i]]
-                    }
-                }
-            output[[1]] <- solution
-            output[[2]] <- ess.prime.imp
-            }
-        else {
-            solution <- rownames(mtrx)[sol.matrix]
-            output[[1]] <- solution
-            output[[2]] <- FALSE
-            }
-        output
-        }
     
     solution <- writeSolution(sol.matrix, mtrx)[[1]]
     ess.prime.imp <- primeimp[writeSolution(sol.matrix, mtrx)[[2]]]
@@ -348,7 +260,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     if (chart) {
         cat("\n")
-        mtrx2 <- mtrx <- createChart(primeimp, copyinput)
          # if not quiet, print the prime implicants chart
         if (!quiet) {
             rownames(mtrx2) <- paste(rownames(mtrx2), "")

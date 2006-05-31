@@ -11,7 +11,7 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
         stop("The outcome's name is not correct.\n\n", call. = FALSE)
         }
     
-     # subset the data with the conditions specified
+      # subset the data with the conditions specified
      if (length(conditions) > 1) {
         if (outcome %in% conditions) {
             cat("\n")
@@ -41,21 +41,16 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
         colnames(mydata)[ncol(mydata)] <- outcm.name
         }
     
+     # the "old" way, which at the time it was 10 times faster than the initial code
+     # tt <- as.matrix(expand.grid(rep(list(c(0,1)), no.conditions))[, no.conditions:1])
     
-    
-    # the "old" way, which at the time it was 10 times faster than the initial code
-    # tt <- as.matrix(expand.grid(rep(list(c(0,1)), no.conditions))[, no.conditions:1])
-    
-    # the new way, which is 5.5 times faster than expand.grid :))
+     # the new way, which is 5.5 times faster than expand.grid :))
     tt <- createMatrix(no.conditions)
     
     
     tt <- cbind(tt, NA)
     colnames(tt) <- colnames(mydata)
-    
-        
-    
-    
+    #tt <- as.data.frame(tt)
     
      # the three lines below transform the binary lines from mydata
      # into corresponding row numbers from the truth table
@@ -63,12 +58,15 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
     for (i in 2:no.conditions) {line.tt <- 2*line.tt + mydata[, i]}
     line.tt <- line.tt + 1
     
+    
     for (i in 1:2) {tt <- cbind(tt, 0)}
     colnames(tt)[(ncol(tt) - 1):ncol(tt)] <- c("freq0", "freq1")
     
-    column.tt <- sapply(1:length(line.tt), function(x) ncol(mydata) + mydata[x, outcome] + 1)
+    column.tt <- sapply(seq(length(line.tt)), function(x) ncol(mydata) + mydata[x, outcome] + 1)
     
-    for (i in 1:length(line.tt)) {
+    tt <- as.data.frame(tt)
+    
+    for (i in seq(length(line.tt))) {
         tt[line.tt[i], column.tt[i]] <- tt[line.tt[i], column.tt[i]] + 1
         }
     tt[, outcome][as.numeric(tt[, "freq1"]) > 0 & as.numeric(tt[, "freq0"]) == 0] <- 1
@@ -81,13 +79,22 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
         tt <- cbind(tt, NA)
         colnames(tt)[ncol(tt)] <- "cases"
         tt.lines <- sort(unique(line.tt))
-        for (i in tt.lines) {
-            tt[i, "cases"] <- paste(rownames(mydata)[which(line.tt == i)], collapse=",")
-            if (nchar(tt[i, "cases"]) < 5) {
-                tt[i, "cases"] <- formatC(tt[i, "cases"], wid= -5)
-                }
+        tt[tt.lines, "cases"] <- sapply(tt.lines, function(x) paste(rownames(mydata)[which(line.tt == x)], collapse=","))
+        
+        if (inside) {
+            max.length <- max(nchar(tt[ ,"cases"]))
+            less.lines <- tt.lines[nchar(tt[tt.lines, "cases"]) < max.length]
+            tt[less.lines, "cases"] <- sapply(tt[less.lines, "cases"], function(x) {
+                paste(x, paste(rep(" ", max.length - nchar(x)), collapse=""), sep="")
+                })
+            colnames(tt)[ncol(tt)] <- paste("cases", paste(rep(" ", max.length - 5), collapse=""), sep="")
             }
-        tt[, "cases"][is.na(tt[, "cases"])] <- ""
+        else {
+            less.lines <- tt.lines[nchar(tt[tt.lines, "cases"]) < 5]
+            tt[less.lines, "cases"] <- sapply(tt[less.lines, "cases"], function(x) formatC(x, wid=-5))
+            }
+        
+        tt[, ncol(tt)][is.na(tt[, ncol(tt)])] <- ""
         }
     
     rownames(tt) <- paste(1:nrow(tt), " ")

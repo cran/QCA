@@ -34,10 +34,12 @@ Romanian Social Data Archive, University of Bucharest\cr
 adi@roda.ro
 }
 
+\seealso{'prettyTable'}
+
 \examples{
-createChart(c("A", "b", "C"), c("ABC", "aBc", "Abc", "aBC"))
+chart <- createChart(c("A", "B", "c"), c("ABC", "Abc", "AbC", "aBc"))
 
-
+prettyTable(chart)
 }
 
 \keyword{misc}
