@@ -1,6 +1,6 @@
-\name{pretty.string}
+\name{prettyString}
 
-\alias{pretty.string}
+\alias{prettyString}
 
 \title{Separate a very long vector of strings on several rows}
 
@@ -13,7 +13,8 @@
 }
 
 \usage{
-pretty.string(string.vector, string.width=60, repeat.space=5, separator=",")
+prettyString(string.vector, string.width=60, repeat.space=5,
+              separator=",")
 }
 
 \arguments{
@@ -41,10 +42,10 @@ long.string
 string.vector <- unlist(strsplit(long.string, " "))
 
 # a row length of 70, no space at the beginning
-cat(pretty.string(string.vector, 70, 0, " "), "\n")
+cat(prettyString(string.vector, 70, 0, " "), "\n")
 
 # a row length of 50, inserting 7 spaces before each row
-cat("      ", pretty.string(string.vector, 50, 7, " "), "\n")
+cat("      ", prettyString(string.vector, 50, 7, " "), "\n")
 
 
 }

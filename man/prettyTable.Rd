@@ -1,6 +1,6 @@
-\name{pretty.table}
+\name{prettyTable}
 
-\alias{pretty.table}
+\alias{prettyTable}
 
 \title{Print a nicely formatted matrix or truth table}
 
@@ -12,7 +12,7 @@ these values to the middle.
 }
 
 \usage{
-pretty.table(mytable)
+prettyTable(mytable)
 }
 
 \arguments{
@@ -35,7 +35,7 @@ adi@roda.ro
 mymatrix <- matrix(sample(0:1, 20, replace=TRUE), nrow=5)
 colnames(mymatrix) <- c("First", "Second", "Third", "Fourth")
 rownames(mymatrix) <- c("One", "Two", "Three", "Four", "Five")
-print(pretty.table(mymatrix))
+print(prettyTable(mymatrix))
 
 
 }

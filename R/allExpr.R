@@ -1,4 +1,4 @@
-"all.expr" <-
+"allExpr" <-
 function(column.names, inside=FALSE) {
     ncolumns <- length(column.names)
     return.matrix <- matrix(NA, nrow = (3^ncolumns - 1), ncol = ncolumns)
@@ -19,6 +19,7 @@ function(column.names, inside=FALSE) {
         return.matrix
     } else {
         return.matrix[is.na(return.matrix)] <- ""
-        print(pretty.table(return.matrix))
+        print(prettyTable(return.matrix))
     }
 }
+

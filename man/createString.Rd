@@ -1,6 +1,6 @@
-\name{create.string}
+\name{createString}
 
-\alias{create.string}
+\alias{createString}
 
 \title{Create a vector of strings containing combinations of presence/absence of conditions}
 
@@ -10,7 +10,7 @@ column names.
 }
 
 \usage{
-create.string(mydata, use.letters=TRUE)
+createString(mydata, use.letters=TRUE)
 }
 
 \arguments{
@@ -32,10 +32,10 @@ adi@roda.ro
 
 \examples{
 test.dataset <- data.frame(First=c(1,1), Second=c(0,1), Third=c(0,0))
-create.string(test.dataset) # "Abc" "ABc"
+createString(test.dataset) # "Abc" "ABc"
 
 # using the column names instead of letters
-create.string(test.dataset, use.letters=FALSE)
+createString(test.dataset, use.letters=FALSE)
 
 
 }
