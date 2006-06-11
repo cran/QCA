@@ -16,15 +16,15 @@ which condition (or combination of conditions) is necessary and/or sufficient to
 qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
      expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
      incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
-     quiet = FALSE, details = FALSE, chart = FALSE,
-     use.letters = TRUE, show.cases = FALSE, tt = FALSE)
+     quiet = FALSE, details = FALSE, chart = FALSE, use.letters = TRUE,
+     show.cases = FALSE, tt = FALSE)
 }
 
 \arguments{
   \item{mydata}{the dataset used for minimization (dataframe or matrix)}
   \item{outcome}{the name of the outcome variable from the dataset}
-  \item{conditions}{the name of the conditions from the dataset (if not specified, 
-  all variables but the outcome are considered conditions)}
+  \item{conditions}{a string vector containing the conditions' names from the dataset
+  (if not specified, all variables but the outcome are included)}
   \item{incl.rem}{include the remainders in the minimization procedure}
   \item{expl.1}{explain the outcomes equal to 1}
   \item{expl.0}{explain the outcomes equal to 0}
