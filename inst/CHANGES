@@ -1,5 +1,10 @@
+Version 0.2-1
+
+    o Added the function "createMatrix" which creates the matrix for the truth table
+
+
+
 Version 0.2-0
 
-    o Added a function to factorize a solution
-   
-   
+    o Added the function "factorize" which finds all common factors of literals in a QCA solution
+

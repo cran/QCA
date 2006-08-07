@@ -2,10 +2,10 @@
 
 \alias{factorize}
 
-\title{Factorize a QCA solution using common literals}
+\title{Factorize a QCA solution}
 
 \description{
-Factorizes the outcome of a solution found by the Quine-McCluskey algorithm
+This function finds all combinations of common factors of literals in a QCA solution
 }
 
 \usage{

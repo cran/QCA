@@ -3,5 +3,3 @@
 - implement option for simplifying assumptions
 - implement multi-value algorithms
 - implement fuzzy-sets (inclusion) algorithms
-- create/adapt a Graphical User Interface similar to TOSMANA and/or fsQCA
-  (there is a promising package called QCAGUI, which needs more menus)
