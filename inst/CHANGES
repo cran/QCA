@@ -1,10 +1,17 @@
+Version 0.2-2
+
+    o Completely redesigned function allExpr (now allExpressions)
+    o Finally set up the internal functions (don't laugh, I'm learning :)
+      qmcc now looks less cluttered
+    o new user level function solveChart (pulled out of the main qmcc)
+
+
 Version 0.2-1
 
-    o Added the function "createMatrix" which creates the matrix for the truth table
-
+    o Added function createMatrix which creates the base matrix for the truth table
 
 
 Version 0.2-0
 
-    o Added the function "factorize" which finds all common factors of literals in a QCA solution
+    o Added function factorize which finds all common factors of literals in a QCA solution
 

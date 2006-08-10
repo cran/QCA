@@ -15,7 +15,7 @@ This library implements the comparative methodology as described in Ragin (1987)
 The analysis is the bridge between the qualitative and quantitative worlds, making use of the
 qualitative procedures in a systematic, algorithmic way (therefore increasing the "confidence"
 in the results, as understood by quantitative researchers).
-At this first release, only the ''exact'' Quine-McCluskey algorithm for crisp sets is implemented.
+For the moment, only the ''exact'' Quine-McCluskey algorithm for crisp sets is implemented.
 However it is widely known that, for large number of conditions (over 10), the algorithm is
 memory hungry therefore very slow. The next versions will have more functions to address this
 problem, as well as functions for fuzzy-set QCA.

@@ -1,5 +1,6 @@
+- if needed, add a namespace
 - implement another algorithm for high number of conditions (>10)
+- implement multi-value algorithms (see Berkeley's Espresso or Petr Fiser's BOOM and FC-Min) 
 - implement option to handle missing outcome
 - implement option for simplifying assumptions
-- implement multi-value algorithms
 - implement fuzzy-sets (inclusion) algorithms
