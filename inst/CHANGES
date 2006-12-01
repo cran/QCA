@@ -1,17 +1,29 @@
+Version 0.2-5
+
+    o Minor documentation fixes
+    o Almost completely rewriten prettyTable() and minor changes to truthTable()
+    o QCA doesn't depend on package "combinat" anymore, as function combn() is now
+      part of the "utils" package (loaded by default)
+    o New function sortMatrix() in the internal functions
+    o Argument verifications are now part of internal functions
+    o New function readTosmana() for reading Tosmana's XML data files
+    
+
 Version 0.2-2
 
-    o Completely redesigned function allExpr (now allExpressions)
+    o Completely redesigned function allExpr() - now allExpressions()
+      (way faster than the former)
     o Finally set up the internal functions (don't laugh, I'm learning :)
       qmcc now looks less cluttered
-    o new user level function solveChart (pulled out of the main qmcc)
-
+    o New user level function solveChart() - pulled out of the main qmcc()
+    
 
 Version 0.2-1
 
-    o Added function createMatrix which creates the base matrix for the truth table
-
+    o Added function createMatrix() which creates the base matrix for the truth table
+    
 
 Version 0.2-0
 
-    o Added function factorize which finds all common factors of literals in a QCA solution
-
+    o Added function factorize() which finds all common factors of literals in a QCA solution
+    

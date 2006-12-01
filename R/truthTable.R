@@ -2,35 +2,9 @@
 function(mydata, outcome = "", conditions = c(""), inside = FALSE,
          complete = FALSE, show.cases = FALSE) {
     
-    if (nchar(outcome) == 0) {
-        cat("\n")
-        stop("You haven't specified the outcome variable.\n\n", call. = FALSE)
-        }
-    else if (! outcome %in% colnames(mydata)) {
-        cat("\n")
-        stop("The outcome's name is not correct.\n\n", call. = FALSE)
-        }
+    verify.truthTable(mydata, outcome, conditions, inside, complete, show.cases)
     
-      # subset the data with the conditions specified
-     if (length(conditions) > 1) {
-        if (outcome %in% conditions) {
-            cat("\n")
-            stop('Variable "', outcome, '" cannot be both outcome _and_ condition!\n\n', call. = FALSE)
-             }
-        if (!all(conditions %in% names(mydata))) {
-            cat("\n")
-            stop("The conditions' names are not correct.\n\n", call. = FALSE)
-            }
-        else {
-            mydata <- mydata[, c(conditions, outcome)]
-            }
-        }
-     else if (nchar(conditions) > 0) {
-                cat("\n")
-                stop("Cannot create a truth table with only one condition.\n\n", call. = FALSE)
-        }
-    
-    no.conditions <- ncol(mydata) - 1
+    no.of.conditions <- ncol(mydata) - 1
     
      # if the outcome variable is not the last one, it will be placed the last
     if (which(colnames(mydata) %in% outcome) != ncol(mydata)) {
@@ -41,21 +15,20 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
         colnames(mydata)[ncol(mydata)] <- outcm.name
         }
     
-     # the "old" way, which at the time it was 10 times faster than the initial code
-     # tt <- as.matrix(expand.grid(rep(list(c(0,1)), no.conditions))[, no.conditions:1])
+     # the "old" way, which back then it was 10 times faster than the former code
+     # tt <- as.matrix(expand.grid(rep(list(c(0,1)), no.of.conditions))[, no.of.conditions:1])
     
      # the new way, which is 5.5 times faster than expand.grid :))
-    tt <- createMatrix(no.conditions)
+    tt <- createMatrix(no.of.conditions)
     
     
     tt <- cbind(tt, NA)
     colnames(tt) <- colnames(mydata)
-    #tt <- as.data.frame(tt)
     
      # the three lines below transform the binary lines from mydata
      # into corresponding row numbers from the truth table
     line.tt <- mydata[, 1]
-    for (i in 2:no.conditions) {line.tt <- 2*line.tt + mydata[, i]}
+    for (i in 2:no.of.conditions) {line.tt <- 2*line.tt + mydata[, i]}
     line.tt <- line.tt + 1
     
     
@@ -76,28 +49,16 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
     tt[, "freq0"][tt[, "freq0"] == 0] <- tt[, "freq1"][tt[, "freq1"] == 0] <- "-"
     
     if (show.cases) {
-        tt <- cbind(tt, NA)
-        colnames(tt)[ncol(tt)] <- "cases"
         tt.lines <- sort(unique(line.tt))
-        tt[tt.lines, "cases"] <- sapply(tt.lines, function(x) paste(rownames(mydata)[which(line.tt == x)], collapse=","))
+        tt <- cbind(tt, NA)
+        tt[tt.lines, ncol(tt)] <- sapply(tt.lines, function(x) paste(rownames(mydata)[which(line.tt == x)], collapse=","))
         
-        if (inside) {
-            max.length <- max(nchar(tt[ ,"cases"]))
-            less.lines <- tt.lines[nchar(tt[tt.lines, "cases"]) < max.length]
-            tt[less.lines, "cases"] <- sapply(tt[less.lines, "cases"], function(x) {
-                paste(x, paste(rep(" ", max.length - nchar(x)), collapse=""), sep="")
-                })
-            colnames(tt)[ncol(tt)] <- paste("cases", paste(rep(" ", max.length - 5), collapse=""), sep="")
-            }
-        else {
-            less.lines <- tt.lines[nchar(tt[tt.lines, "cases"]) < 5]
-            tt[less.lines, "cases"] <- sapply(tt[less.lines, "cases"], function(x) formatC(x, wid=-5))
-            }
-        
+        tt[tt.lines, ncol(tt)] <- format(tt[tt.lines, ncol(tt)], justify="left")
+        colnames(tt)[ncol(tt)] <- format("cases", width=max(nchar(tt[, ncol(tt)])), justify="left")
         tt[, ncol(tt)][is.na(tt[, ncol(tt)])] <- ""
         }
     
-    rownames(tt) <- paste(1:nrow(tt), " ")
+    rownames(tt) <- paste(format(1:nrow(tt)), " ")
     
     if (inside) {
         tt
@@ -106,12 +67,12 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
         if (!complete) {
             if (any(tt[, outcome] == "?")) {tt <- tt[-which(tt[, outcome] == "?"), ]}
             }
-        var.names <- colnames(tt)[1:(no.conditions + 1)]
-        colnames(tt)[1:no.conditions] <- LETTERS[1:no.conditions]
-        colnames(tt)[no.conditions + 1] <- "OUT"
+        var.names <- colnames(tt)[1:(no.of.conditions + 1)]
+        colnames(tt)[1:no.of.conditions] <- LETTERS[1:no.of.conditions]
+        colnames(tt)[no.of.conditions + 1] <- "OUT"
         cat("\n", sep="")
-        for (i in 1:no.conditions) {cat("    ", paste(LETTERS[i], ": ", sep=""), var.names[i], "\n", sep="")}
-        cat("  ", "OUT: ", var.names[no.conditions + 1], "\n", sep="")
+        for (i in 1:no.of.conditions) {cat("    ", paste(LETTERS[i], ": ", sep=""), var.names[i], "\n", sep="")}
+        cat("  ", "OUT: ", var.names[no.of.conditions + 1], "\n", sep="")
         cat("freq0: frequency of outcome equal to 0\nfreq1: frequency of outcome equal to 1\n", sep="")
         if (show.cases) cat("cases: case names\n", sep="")
         cat("\n", sep="")

@@ -5,7 +5,7 @@
 \title{Reduce the redundant prime implicants}
 
 \description{
-While the minimization procedure find a certain number of prime implicants but not all of them
+While the minimization procedure finds a certain number of prime implicants, not all of them
 are necessary as some are already covered by others (therefore redundant). This function further
 reduces the number of prime implicants for a minimum solution.
 }
