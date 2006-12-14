@@ -1,4 +1,4 @@
-"qmcc" <-
+`qmcc` <-
 function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
          incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
@@ -126,7 +126,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
              # all pairs of rows from the input dataset; if two vectors differ by only one value,
              # the distance between them is set to 1.
              # Solution suggested by Martin Maechler
-            distance <- daisy(as.data.frame(input))*ncol(input)
+            distance <- dist(input, method="manhattan")
             distance <- as.matrix(distance)
             distance[!upper.tri(distance)] <- NA
             to.be.compared <- as.matrix(which(distance == 1, arr.ind=TRUE))
@@ -141,7 +141,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
                  # the result matrix will contain all rows from the input matrix that have been minimized...
                 result <- sapply(1:nrow(to.be.compared), function(idx) input[to.be.compared[idx, 1], ])
                  # thus each row in the result matrix has only one difference, which is replaced by "x"
-                result[!logical.result] <- "x"
+                result[!logical.result] <- -1
                  # mark which prime implicant was minimized
                 minimized[compare.minimized] <- TRUE
                 }
