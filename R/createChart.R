@@ -1,18 +1,17 @@
-`createChart` <-
-function(rows, columns) {
-    mtrx <- matrix(logical(length(rows)*length(columns)), nrow = length(rows))
-    colnames(mtrx) <- columns
-    rownames(mtrx) <- rows
+createChart <- 
+function (input, initial, rows, cols) {
+	
+	input2 <- matrix(logical(length(input)), dim(input))
+	input2[input > 0] <- TRUE
+	
+	result <- t(sapply(1:nrow(input), function(x) {
+		apply(initial, 1, function(y) {
+			all(input[x, input2[x,]] == y[input2[x,]])
+			})
+		}))[nrow(input):1,]
     
-    for (i in 1:nrow(mtrx)) {
-        for (j in 1:ncol(mtrx)) {
-            rows.s <- unlist(strsplit(rows[i], ""))
-            input <- unlist(strsplit(columns[j], ""))
-            if (sum(rows.s %in% input) == length(rows.s)) {
-                mtrx[i,j] <- TRUE
-            }
-        }
-    }
-    mtrx
-    }
+    rownames(result) <- rows
+    colnames(result) <- cols
+    return(result)
+}
 

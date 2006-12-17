@@ -7,8 +7,8 @@
 function(idx, co11apse) {
     primeimp <- NULL
     conditions <- names(idx)
-    for (i in which(idx >= 0)) {
-        condition <- ifelse(idx[i] == 1, toupper(conditions[i]), tolower(conditions[i]))
+    for (i in which(idx > 0)) {
+        condition <- ifelse(idx[i] == 2, toupper(conditions[i]), tolower(conditions[i]))
         primeimp <- paste(c(primeimp, condition), collapse=co11apse)
         }
     primeimp

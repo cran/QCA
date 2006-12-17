@@ -16,7 +16,7 @@ The analysis is the bridge between the qualitative and quantitative worlds, maki
 qualitative procedures in a systematic, algorithmic way (therefore increasing the "confidence"
 in the results, as understood by quantitative researchers).
 For the moment, only the ''exact'' Quine-McCluskey algorithm for crisp sets is implemented.
-However it is widely known that, for large number of conditions (over 10), the algorithm is
+However it is widely known that, for large number of conditions (over 12), the algorithm is
 memory hungry therefore very slow. The next versions will have more functions to address this
 problem, as well as functions for fuzzy-set QCA.
 The package doesn't currently handle missing values in the data, therefore it is not yet
@@ -28,8 +28,8 @@ As of version 0.1-3 there is also a graphical user interface in the package QCAG
     \tabular{ll}{
     Package: \tab QCA\cr
     Type: \tab Package\cr
-    Version: \tab 0.2-6\cr
-    Date: \tab 2006-12-13\cr
+    Version: \tab 0.3\cr
+    Date: \tab 2007-01-22\cr
     License: \tab GPL version 2 or newer\cr
     }
 }

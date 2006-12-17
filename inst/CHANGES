@@ -1,3 +1,13 @@
+Version 0.3
+    o Added function getRow() which returnes the combination of levels for
+      a specific row number
+    o Fixed a minor bug overseen by the changes in version 0.2-6
+    o Function createMatrix() now accepts multiple values (not just 0 and 1)
+    o qmcc() is now 20 times faster and it can reasonably work with up to 11 conditions
+    o completely redesigned function createChart(), which is now internal
+    o old function createChart() is now called demoChart()
+    
+
 Version 0.2-6
     o QCA doesn't depend on package "cluster" anymore as qmcc() is now based on dist()
       from the standard stats package, instead of daisy()
@@ -18,8 +28,7 @@ Version 0.2-2
 
     o Completely redesigned function allExpr() - now allExpressions()
       (way faster than the former)
-    o Finally set up the internal functions (don't laugh, I'm learning :)
-      qmcc now looks less cluttered
+    o Set up the internal functions; qmcc now looks less cluttered
     o New user level function solveChart() - pulled out of the main qmcc()
     
 

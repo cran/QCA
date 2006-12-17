@@ -4,3 +4,4 @@
 - implement option to handle missing outcome
 - implement option for simplifying assumptions
 - implement fuzzy-sets (inclusion) algorithms
+- search for another algorithm to solve the prime implicants chart; this is the current bottleneck
