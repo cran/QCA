@@ -35,7 +35,7 @@ adi@roda.ro
 
 \examples{
 # the chart we're trying to further reduce
-chart <- createChart(c("A", "B", "c"), c("ABC", "Abc", "AbC", "aBc"))
+chart <- demoChart(c("A", "B", "c"), c("ABC", "Abc", "AbC", "aBc"))
 prettyTable(chart)
 
 solveChart(chart)

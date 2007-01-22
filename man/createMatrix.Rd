@@ -11,11 +11,11 @@ matrix, using ideas inspired from expand.grid
 }
 
 \usage{
-createMatrix(cond)
+createMatrix(levels.no)
 }
 
 \arguments{
-  \item{cond}{the number of conditions from the dataset}
+  \item{levels.no}{a vector containing the number of levels for each variable in the dataset}
 }
 
 \references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative 
@@ -30,10 +30,13 @@ adi@roda.ro
 \seealso{'truthTable'}
 
 \examples{
-# create a matrix based on 3 conditions
-createMatrix(3)
+# create a binary matrix based on 3 conditions
+createMatrix(rep(2, 3))
 
-# the matrix has 2^3 = 8 rows
+# create a matrix based on 3 conditions where the second has three levels
+createMatrix(c(2, 3, 2))
+
+# the matrix has 2*3*2 = 12 rows
 }
 
 \keyword{misc}

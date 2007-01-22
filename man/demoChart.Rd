@@ -1,6 +1,6 @@
-\name{createChart}
+\name{demoChart}
 
-\alias{createChart}
+\alias{demoChart}
 
 \title{Create the prime implicants chart}
 
@@ -9,10 +9,12 @@ This function creates a chart having the prime implicants on the rows and the ob
 of conditions on the columns. It is useful to determine visually which prime implicant (if any)
 is essential. The chart is subsequently processed algorithmically to further reduce the reduntant
 prime implicants.
+This function is for demonstration purposes only. The internal function createChart() is much faster
+but its arguments are more complex.
 }
 
 \usage{
-createChart(rows, columns)
+demoChart(rows, columns)
 }
 
 \arguments{
@@ -37,7 +39,7 @@ adi@roda.ro
 \seealso{'prettyTable'}
 
 \examples{
-chart <- createChart(c("A", "B", "c"), c("ABC", "Abc", "AbC", "aBc"))
+chart <- demoChart(c("A", "B", "c"), c("ABC", "Abc", "AbC", "aBc"))
 
 prettyTable(chart)
 }

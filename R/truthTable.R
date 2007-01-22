@@ -15,21 +15,23 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
         colnames(mydata)[ncol(mydata)] <- outcm.name
         }
     
+    noflevels <- apply(mydata[, 1:no.of.conditions], 2, max) + 1
+    
      # the "old" way, which at the time it was 10 times faster than the former code
      # tt <- as.matrix(expand.grid(rep(list(c(0,1)), no.of.conditions))[, no.of.conditions:1])
     
      # the new way, which is 5.5 times faster than expand.grid :))
-    tt <- createMatrix(no.of.conditions)
-    
+    tt <- createMatrix(noflevels)
     
     tt <- cbind(tt, NA)
     colnames(tt) <- colnames(mydata)
     
-     # the three lines below transform the binary lines from mydata
+    
+     # the code below transform the lines from mydata
      # into corresponding row numbers from the truth table
-    line.tt <- mydata[, 1]
-    for (i in 2:no.of.conditions) {line.tt <- 2*line.tt + mydata[, i]}
-    line.tt <- line.tt + 1
+    #mbase <- 2^((no.of.conditions - 1):0)
+    mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
+    line.tt <- colSums(apply(mydata[, 1:no.of.conditions], 1, function(x) x*mbase)) + 1
     
     
     for (i in 1:2) {tt <- cbind(tt, 0)}
