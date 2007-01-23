@@ -1,10 +1,13 @@
-"solveChart" <-
+`solveChart` <-
 function(chart) {
     if (!is.logical(chart)) {
         cat("\n")
-        stop("Please use a TRUE/FALSE matrix. See createChart's output.", call. = FALSE)
+        stop("Please use a TRUE/FALSE matrix. See demoChart's output.", call. = FALSE)
         }
-    if (nrow(chart) > 1 & ncol(chart) > 1) {
+    
+    chart <- rowDominance(chart)
+    
+    if (all(dim(chart) > 1)) {
          ## solution provided by Gabor Grothendieck
          ## the function lp (from package lpSolve) finds one (guaranteed minimum) solution
          # k will be the minimum number of prime implicants necessary to cover all columns
@@ -26,3 +29,4 @@ function(chart) {
         }
     return(sol.matrix)
     }
+

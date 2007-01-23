@@ -7,6 +7,7 @@
 \alias{verify.qmcc}
 \alias{verify.truthTable}
 \alias{createChart}
+\alias{rowDominance}
 
 
 \title{Internal Functions}
