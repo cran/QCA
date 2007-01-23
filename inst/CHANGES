@@ -1,3 +1,7 @@
+Version 0.3-1
+    o New function rowDominance() to ease the solving of large prime implicants charts
+    
+
 Version 0.3
     o Added function getRow() which returnes the combination of levels for
       a specific row number

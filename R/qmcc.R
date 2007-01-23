@@ -174,25 +174,26 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             }
         }
     
-    
      # create the prime implicants chart
     mtrx <- createChart(input, copyinput, primeimp, initial)
-    sol.matrix <- solveChart(mtrx)
+    mtrxDom <- rowDominance(mtrx)
+    sol.matrix <- solveChart(mtrxDom)
     
     if (repetitions == 2 & repetition == 2) {
          # do the same thing if the user included other values for minimization
         mtrx.incl <- createChart(input.incl, copyinput, primeimp.incl, initial)
+        mtrxDom.incl <- rowDominance(mtrx.incl)
         sol.matrix.incl <- solveChart(mtrx.incl)
         }
     
     
-    solution <- writeSolution(sol.matrix, mtrx)[[1]]
-    ess.prime.imp <- primeimp[writeSolution(sol.matrix, mtrx)[[2]]]
+    solution <- writeSolution(sol.matrix, rowDominance(mtrx))[[1]]
+    ess.prime.imp <- rownames(mtrxDom)[writeSolution(sol.matrix, mtrxDom)[[2]]]
     
     if (repetitions == 2) {
          # compare the two solutions and retain the one with the smallest number of conditions (literals)
-        solution.incl <- writeSolution(sol.matrix.incl, mtrx.incl)[[1]]
-        ess.prime.imp.incl <- primeimp.incl[writeSolution(sol.matrix.incl, mtrx.incl)[[2]]]
+        solution.incl <- writeSolution(sol.matrix.incl, rowDominance(mtrx.incl))[[1]]
+        ess.prime.imp.incl <- rownames(mtrxDom.incl)[writeSolution(sol.matrix.incl, mtrxDom.incl)[[2]]]
         ncond <- unique(toupper(unlist(strsplit(solution[[1]], ""))))
         ncond.incl <- unique(toupper(unlist(strsplit(solution.incl[[1]], ""))))
         if (length(ncond.incl) < length(ncond)) {
@@ -256,12 +257,14 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     if (show.cases) {
          # for start, mydata.rows will be a string with all _existing_ combinations (e.g. "AbcDe")
         mydata.rows <- createString(mydata[, -which(colnames(mydata) == outcome)], use.letters)
+        
+        mtrx <- demoChart(all.primeimps, mydata.rows)
+        
          # replace mydata.rows with a vector of all rownames (case IDs) from the initial data
         mydata.rows <- rownames(mydata)
         
          # check which is the largest number of characters in the prime implicant names
         max.length <- max(nchar(all.primeimps))
-        
         for (i in 1:length(all.primeimps)) {
             rows.explained <- mydata.rows[mtrx[i, ]]
             lines.explained <- paste(rows.explained, collapse="; ")
