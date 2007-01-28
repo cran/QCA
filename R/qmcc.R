@@ -3,14 +3,13 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
          incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
          quiet = FALSE, details = FALSE, chart = FALSE, use.letters = TRUE,
-         show.cases = FALSE, tt = FALSE) {
+         show.cases = FALSE) {
     
     verify.qmcc(mydata, outcome, conditions, incl.rem, expl.1, expl.0, expl.ctr,
                 expl.mo, incl.1, incl.0, incl.ctr, incl.mo, quiet, details,
                 chart, use.letters, show.cases, tt)
     
-    if (quiet) {complete <- details <- show.cases <- chart <- FALSE}
-    if (details) {chart <- TRUE}
+    if (quiet) {details <- show.cases <- chart <- FALSE}
     
      # if the outcome variable is not the last one, it will be placed the last
     if (which(colnames(mydata) %in% outcome) != ncol(mydata)) {
@@ -23,6 +22,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
 
      # coerce the input data to a matrix
     mydata <- as.matrix(mydata)
+    
     
      # checking for complete data (without missings)
     rows.with.missings <- which(is.na(rowSums(mydata)))
@@ -47,66 +47,78 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     if (!quiet) {cat("\n")}
     
+    tt <- truthTable(mydata, outcome=outcome, show.cases=TRUE, inside=TRUE)
+    
+    line.tt <- tt$indexes
+    
+     # Compute the multiple bases.
+    mbase <- c(rev(cumprod(rev(tt$noflevels + 1))), 1)[-1]
+    
+    binarymatrix <- createMatrix(tt$noflevels) + 1
+    totlines <- rowSums(sapply(1:length(tt$noflevels), function(x) {
+        binarymatrix[, x]*mbase[x]
+        })) + 1
+    
+    rm(binarymatrix)
+    
+     # this line is about 10 times slower than the above code, because it works on rows
+    #totlines <- colSums(apply(createMatrix(tt$noflevels) + 1, 1, function(x) x*mbase)) + 1
+    
     for (repetition in 1:repetitions) {
         
          # create the vector of outcome values to subset for minimization
         if (repetitions == 2 & repetition == 1) {
-            explain.values <- c(expl.1, expl.0, expl.ctr, incl.1, incl.0, incl.ctr, incl.rem)
-            explain <- unique(c(1, 0, "C", 1, 0, "C", "?")[explain.values])
+            explain <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr) | c(incl.1, incl.0, incl.ctr)]
             }
         else {
             explain <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr)]
             }
         
-         # if not already thuthtable, create it based on input data
-         if (!tt) {
-             ttmydata <- print.tt <- truthTable(mydata, outcome=outcome, inside=TRUE, show.cases=TRUE)
-             }
-         else {
-             ttmydata <- print.tt <- as.data.frame(matrix(as.character(mydata), ncol=ncol(mydata)))
-             }
+        explain <- tt$tt[[outcome]] %in% explain
+        linenums <- totlines[line.tt[explain]]
+        if (incl.rem & repetition == 1) linenums <- sort(c(linenums, totlines[-line.tt]))
         
-         # select the rows from print.tt table which have a 0, 1 or a contradiction in the outcome
-        print.tt <- print.tt[!print.tt[, outcome] %in% "?", ]
         
-         # select only the conditions and the rows with the values to be explained
-        ttmydata <- ttmydata[ttmydata[[outcome]] %in% explain, 1:(ncol(mydata) - 1)]
-        
-        if (is.null(nrow(ttmydata)) | nrow(ttmydata) == 0) {
+        if (all(is.na(linenums))) {
             cat("\n")
             stop("Nothing to explain. Please check the truth table.\n\n", call. = FALSE)
             }
-        else if (nrow(ttmydata) == 1) {
+        else if (length(linenums) == 1) {
             cat("\n")
             stop("Nothing to reduce. There is only one combination to be explained.\n\n",
                  call. = FALSE)
             }
-        else if (nrow(ttmydata) == 2^ncol(ttmydata)) {
+        else if (length(linenums) == prod(tt$noflevels)) {
             cat("\n")
             stop(paste("All combinations have been included into analysis. The solution is 1.\n",
                        "Please check the truth table.", "\n\n", sep=""), call. = FALSE)
             }
         
          # print the truthtable on the screen, if not quiet
-        if (!quiet & repetition == 1) print(prettyTable(print.tt))
+        if (!quiet & repetition == 1) {
+            rownames(tt$tt) <- paste(format(1:nrow(tt$tt)), " ")
+            print(prettyTable(tt$tt))
+            }
+        
+        
+         # increment the input matrix by 1 (so that 0 will represent a minimized literal)
+        biginput <- createMatrix(tt$noflevels + 1)
+        colnames(biginput) <- colnames(tt$tt[1:(ncol(mydata) - 1)])
         
         
          # check if the condition names are not already letters
-        alreadyletters <- sum(nchar(colnames(ttmydata))) == ncol(ttmydata)
+        alreadyletters <- sum(nchar(colnames(mydata))) == ncol(mydata)
         ifelse(alreadyletters, co11apse <- "", co11apse <- "*")
         changed <- FALSE
         
          # if not already letters and user specifies using letters for conditions, change it
         if (use.letters & !alreadyletters) {
-            colnames(ttmydata) <- LETTERS[1:ncol(ttmydata)]
+            colnames(biginput) <- LETTERS[1:ncol(biginput)]
             changed <- TRUE
             co11apse = ""
             }
         
-         # increment the input matrix by 1 (so that 0 will represent a minimized literal)
-        input <- copyinput <- as.matrix(ttmydata) + 1
-        
-        minimized <- iteration <- 1
+        input <- copyinput <- biginput[linenums, ]
         
         if (details & repetitions == 2 & repetition == 1) {
             cat("\nStep 1. Finding prime implicants for explained and included values:", "\n\n")
@@ -118,56 +130,55 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             cat("\nStep 1. Finding prime implicants for the explained values:", "\n\n")
             }
         
-         # Compute the multiple bases (beginning of the multi-value algorithm)
-        mbase <- c(rev(cumprod(rep(3, ncol(input)))), 1)[-1]
         
-        while (sum(minimized) > 0) {
-            
+        iteration <- minimized <- 1
+        
+        while (any(minimized)) {
             
             if (details) {cat ("  Iteration ", iteration,
-                              "\n       Number of prime implicants: ", nrow(input), " (",
-                              formatC(choose(nrow(input), 2), big.mark=",", big.interval=3, format="fg"), 
-                              " possible paired comparisons)\n", sep="")}
+                "\n       Number of (unique) prime implicants:",
+                 formatC(nrow(input), big.mark=",", big.interval=3, format="fg"),
+                 "\n")} #, " (",
+                              #formatC(choose(nrow(input), 2), big.mark=",", big.interval=3, format="fg"), 
+                              #" possible paired comparisons)\n", sep="")}
             
-             # to check which prime implicant was minimized (or not, because is initialized with FALSE)
-            minimized <- logical(nrow(input))
-            linenums <- colSums(apply(input, 1, function(x) x*mbase)) + 1
-            bb <- !as.logical(input - 1)
-            sol <- rep(NA, length(bb))
-            sol[bb] <- (rep(linenums, ncol(input)) + rep(mbase, each=nrow(input)))[bb]
-            solmat <- cbind(rep(linenums, ncol(input)), sol)[sol %in% linenums, ]
-            to.be.compared <- matrix(match(solmat, linenums), ncol=2)
+            minimized <- logical(length(linenums))
+            reduced <- c()
             
-            if (details) {cat("       Number of paired comparisons which differ by only one literal: ", 
-                              nrow(to.be.compared), "\n", sep="")}
             
-            if (nrow(to.be.compared) > 0) {
-                 # create a matrix with the results from comparing all pairs of rows
-                logical.result <- apply(to.be.compared, 1, function(idx) input[idx[1], ] == input[idx[2], ])
-                compare.minimized <- unique(as.vector(to.be.compared))
-                
-                 # the result matrix will contain all rows from the input matrix that have been minimized...
-                result <- sapply(1:nrow(to.be.compared), function(idx) input[to.be.compared[idx, 1], ])
-                 # thus each row in the result matrix has only one difference, which is replaced by 0
-                result[!logical.result] <- 0
-                 # mark which prime implicant was minimized
-                minimized[compare.minimized] <- TRUE
+             # working on columns is faster than working on rows
+             # to preserve memory usage, I avoid creating another two big matrices; instead,
+             # I work on columns using logical indexes from the input matrix
+            for (i in 1:ncol(input)) {
+                trueline <- linenums[!(input[, i] - 1)]
+                addon <- trueline + mbase[i]
+                if (any(addon %in% linenums)) {
+                    minimized[!(input[, i] - 1)] <- minimized[!(input[, i] - 1)] | addon %in% linenums
+                    minimized[linenums %in% addon] <- TRUE
+                    reduced <- c(reduced, 2*linenums[!(input[, i] - 1)][addon %in% linenums] - 
+                                          addon[addon %in% linenums])
+                    }
                 }
+            
+            if (details) {cat("       Number of comparable pairs:", 
+                              formatC(length(reduced), big.mark=",", big.interval=3, format="fg"),
+                              "\n")}
             
             if (any(minimized)) {
                  # create the next input matrix, which will contain all rows from the initial
-                 # input matrix which have not been minimized, plus the rows from the result matrix
-                input <- rbind(input[!minimized, ], unique(t(result)))
+                 # input matrix which have not been minimized, plus the rows from the reduced vector
+                linenums <- sort(unique(c(linenums[!minimized], reduced)))
+                input <- biginput[linenums, ]
                 iteration <- iteration + 1
                 }
             else {
                 colnames(input) <- colnames(copyinput)
                  # if no further minimization is possible, prepare the prime implicants vector
-                primeimp <- sortVector(apply(unique(input), 1, writePrimeimp, co11apse=co11apse))
+                primeimp <- apply(unique(input), 1, writePrimeimp, co11apse=co11apse)
                 initial <- as.vector(apply(copyinput, 1, writePrimeimp, co11apse=co11apse))
                 if (repetitions == 2 & repetition == 1) {
-                    input.incl <- input
-                    primeimp.incl <- primeimp
+                    primeimp.incl <- sortVector(primeimp)
+                    input.incl <- input[match(primeimp.incl, primeimp), ]
                     if (details) {cat ("\n")}
                     }
                 }
@@ -175,7 +186,8 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
     
      # create the prime implicants chart
-    mtrx <- createChart(input, copyinput, primeimp, initial)
+    primeimpsort <- sortVector(primeimp)
+    mtrx <- createChart(input[match(primeimpsort, primeimp), ], copyinput, primeimpsort, initial)
     mtrxDom <- rowDominance(mtrx)
     sol.matrix <- solveChart(mtrxDom)
     
@@ -186,14 +198,15 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         sol.matrix.incl <- solveChart(mtrx.incl)
         }
     
-    
-    solution <- writeSolution(sol.matrix, rowDominance(mtrx))[[1]]
-    ess.prime.imp <- rownames(mtrxDom)[writeSolution(sol.matrix, mtrxDom)[[2]]]
+    solution.list <- writeSolution(sol.matrix, mtrxDom)
+    solution <- solution.list[[1]]
+    ess.prime.imp <- rownames(mtrxDom)[solution.list[[2]]]
     
     if (repetitions == 2) {
          # compare the two solutions and retain the one with the smallest number of conditions (literals)
-        solution.incl <- writeSolution(sol.matrix.incl, rowDominance(mtrx.incl))[[1]]
-        ess.prime.imp.incl <- rownames(mtrxDom.incl)[writeSolution(sol.matrix.incl, mtrxDom.incl)[[2]]]
+        solution.list.incl <- writeSolution(sol.matrix.incl, mtrxDom.incl)
+        solution.incl <- solution.list.incl[[1]]
+        ess.prime.imp.incl <- rownames(mtrxDom.incl)[solution.list.incl[[2]]]
         ncond <- unique(toupper(unlist(strsplit(solution[[1]], ""))))
         ncond.incl <- unique(toupper(unlist(strsplit(solution.incl[[1]], ""))))
         if (length(ncond.incl) < length(ncond)) {
@@ -216,7 +229,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     
     if (chart) {
-        mtrx2 <- mtrx
+        mtrx2 <- mtrx <- mtrx[rowSums(mtrx) > 0, ]
         cat("\n")
          # if not quiet, print the prime implicants chart
         if (!quiet) {
@@ -257,7 +270,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     if (show.cases) {
          # for start, mydata.rows will be a string with all _existing_ combinations (e.g. "AbcDe")
         mydata.rows <- createString(mydata[, -which(colnames(mydata) == outcome)], use.letters)
-        
         mtrx <- demoChart(all.primeimps, mydata.rows)
         
          # replace mydata.rows with a vector of all rownames (case IDs) from the initial data

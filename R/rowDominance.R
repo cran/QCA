@@ -12,15 +12,15 @@ function(mtrx) {
                 to.be.reduced <- sapply(y, function(h) {
                     all(mtrx[k, mtrx[h,]])
                     })
-                reduced[y[to.be.reduced ]] <- TRUE
+                reduced[y[to.be.reduced]] <- TRUE
                 }
             }
         }
     mtrx <- mtrx[!reduced, ]
     if(!is.matrix(mtrx)) {
         mtrx <- t(as.matrix(mtrx))
-        rownames(mtrx) <- rows[!reduced]
         }
+    rownames(mtrx) <- rows[!reduced]
     return(mtrx)
     }
 

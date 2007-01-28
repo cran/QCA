@@ -1,4 +1,4 @@
-createChart <- 
+`createChart` <- 
 function (input, initial, rows, cols) {
 	
 	input2 <- matrix(logical(length(input)), dim(input))
@@ -8,7 +8,7 @@ function (input, initial, rows, cols) {
 		apply(initial, 1, function(y) {
 			all(input[x, input2[x,]] == y[input2[x,]])
 			})
-		}))[nrow(input):1,]
+		}))
     
     rownames(result) <- rows
     colnames(result) <- cols

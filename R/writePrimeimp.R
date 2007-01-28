@@ -3,14 +3,13 @@
  
  ## Attention: the argument is "co11apse", not "collapse" ("11" instead of "ll")
  
-"writePrimeimp" <- 
+`writePrimeimp` <- 
 function(idx, co11apse) {
-    primeimp <- NULL
     conditions <- names(idx)
-    for (i in which(idx > 0)) {
-        condition <- ifelse(idx[i] == 2, toupper(conditions[i]), tolower(conditions[i]))
-        primeimp <- paste(c(primeimp, condition), collapse=co11apse)
-        }
-    primeimp
+    condition <- idx
+    condition[idx == 1] <- tolower(conditions[idx == 1])
+    condition[idx == 2] <- toupper(conditions[idx == 2])
+    primeimp <- paste(condition[idx != 0], collapse=co11apse)
+    return(primeimp)
     }
 

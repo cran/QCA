@@ -11,7 +11,7 @@ function(chart) {
          ## solution provided by Gabor Grothendieck
          ## the function lp (from package lpSolve) finds one (guaranteed minimum) solution
          # k will be the minimum number of prime implicants necessary to cover all columns
-        k <- sum(lp("min", rep(1, nrow(chart)), t(chart), ">=", 1)$solution)
+        k <- ceiling(sum(lp("min", rep(1, nrow(chart)), t(chart), ">=", 1)$solution))
          # create a matrix with all possible combinations of k prime implicants
         combos <- as.matrix(combn(nrow(chart), k))
          # sol.matrix will be a subset of the chart matrix with all minimum solutions
