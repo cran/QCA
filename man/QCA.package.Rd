@@ -28,8 +28,8 @@ As of version 0.1-3 there is also a graphical user interface in the package QCAG
     \tabular{ll}{
     Package: \tab QCA\cr
     Type: \tab Package\cr
-    Version: \tab 0.3-1\cr
-    Date: \tab 2007-01-23\cr
+    Version: \tab 0.3-5\cr
+    Date: \tab 2007-01-28\cr
     License: \tab GPL version 2 or newer\cr
     }
 }

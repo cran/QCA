@@ -9,6 +9,6 @@ function(noflevels, row.no, zerobased=FALSE) {
     if (!zerobased) {row.no <- row.no - 1}
     
     mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
-    sapply(seq(length(noflevels)), function(x) floor(row.no/mbase[x])%%noflevels[x])
+    sapply(seq_len(noflevels), function(x) floor(row.no/mbase[x])%%noflevels[x])
     }
 

@@ -17,7 +17,7 @@ qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
      expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
      incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
      quiet = FALSE, details = FALSE, chart = FALSE, use.letters = TRUE,
-     show.cases = FALSE, tt = FALSE)
+     show.cases = FALSE)
 }
 
 \arguments{
@@ -39,7 +39,6 @@ qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
   \item{chart}{print the prime implicants chart}
   \item{use.letters}{should letters be used instead of column names}
   \item{show.cases}{show the lines corresponding to every minimized prime implicant}
-  \item{tt}{specifies whether the input data is already a truth table}
 }
 
 \references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative
@@ -51,11 +50,11 @@ Romanian Social Data Archive, University of Bucharest\cr
 adi@roda.ro
 }
 
-\note{The function finds a solution very quickly for a small number of conditions.
-For eight conditions, it finds a solution in maximum 22 seconds, for nine conditions
-in maximum 15 minutes. For 10 or more conditions, it needs A LOT of memory and it takes
-a very long time to find a solution. Different other algorithms will be implemented
-for these cases
+\note{The function finds an exact solution very quickly for relatively small number of conditions.
+With a 2 GHz Intel Core2Duo processor and 1 GB of RAM, the algorithm finds a solution for 10
+conditions in a little more than 1 second. For 11 conditions it takes about 4 seconds, for 12
+conditions it takes a bit over 10 seconds and for 13 conditions it takes about 37 seconds.
+For more than 13 conditions more memory is definitely needed and the algorithm will slow down.
 }
 
 \seealso{'truthTable'}

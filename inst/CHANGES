@@ -1,3 +1,9 @@
+Version 0.3-5
+    o Reworked version of qmcc() which does no longer posess the tt argument
+      It is now faster than ever, working reasonably with up to 13 conditions.
+    o Reworked version of truthTable()
+    
+
 Version 0.3-1
     o New function rowDominance() to ease the solving of large prime implicants charts
     
