@@ -16,7 +16,7 @@ which condition (or combination of conditions) is necessary and/or sufficient to
 qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
      expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
      incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
-     quiet = FALSE, details = FALSE, chart = FALSE, use.letters = TRUE,
+     quiet = FALSE, details = TRUE, chart = FALSE, use.letters = TRUE,
      show.cases = FALSE)
 }
 

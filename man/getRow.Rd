@@ -17,7 +17,7 @@ getRow(noflevels, row.no, zerobased=FALSE)
 
 \arguments{
   \item{noflevels}{a vector containing the number of levels from each condition}
-  \item{row.no}{scalar, the desired row number from the truth table}
+  \item{row.no}{a vector, the desired row number(s) from the truth table}
   \item{zerobased}{logical; if TRUE the first row number from the truth table is zero}
 }
 

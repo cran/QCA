@@ -2,10 +2,8 @@
 function(chart) {
     if (!is.logical(chart)) {
         cat("\n")
-        stop("Please use a TRUE/FALSE matrix. See demoChart's output.", call. = FALSE)
+        stop("Use a TRUE/FALSE matrix. See demoChart's output.", call. = FALSE)
         }
-    
-    chart <- rowDominance(chart)
     
     if (all(dim(chart) > 1)) {
          ## solution provided by Gabor Grothendieck
