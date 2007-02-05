@@ -18,7 +18,7 @@ function(sol.matrix, mtrx) {
                 }
             }
         else {
-            for (i in 1:nrow(sol.matrix)) {
+            for (i in 1:ncol(sol.matrix)) {
                 solution[[i]] <- rownames(mtrx)[sol.matrix[ , i]]
                 }
             }

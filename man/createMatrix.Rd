@@ -11,11 +11,11 @@ matrix, using ideas inspired from expand.grid
 }
 
 \usage{
-createMatrix(levels.no)
+createMatrix(noflevels)
 }
 
 \arguments{
-  \item{levels.no}{a vector containing the number of levels for each variable in the dataset}
+  \item{noflevels}{a vector containing the number of levels for each variable in the dataset}
 }
 
 \references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative 

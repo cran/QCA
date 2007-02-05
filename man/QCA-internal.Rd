@@ -8,6 +8,7 @@
 \alias{verify.truthTable}
 \alias{createChart}
 \alias{rowDominance}
+\alias{base3rows}
 
 
 \title{Internal Functions}

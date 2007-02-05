@@ -16,12 +16,7 @@ function(mtrx) {
                 }
             }
         }
-    mtrx <- mtrx[!reduced, ]
-    if(!is.matrix(mtrx)) {
-        mtrx <- t(as.matrix(mtrx))
-        }
-    rownames(mtrx) <- rows[!reduced]
-    return(mtrx)
+    return(reduced)
     }
 
 
