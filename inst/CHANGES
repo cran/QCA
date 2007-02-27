@@ -1,3 +1,12 @@
+Version 0.4-1
+    o Added a namespace for the package
+    o Completely rewritten version of base3rows(), now much faster
+    o Reworked version of createMatrix(), now much faster for the same number of values
+      in each condition
+    o Added option "diffmat" to the main qmcc() function; users can choose to generate
+      the differences matrix or not: speed or low memory consumption.
+    
+
 Version 0.4-0
     o Reworked version of qmcc() with a substantially lower memory consumption;
       it can now work with up to 15 conditions in 1GB of RAM
@@ -53,7 +62,10 @@ Version 0.2-1
 
     o Added function createMatrix() which creates the base matrix for the truth table
     
-
+Reworked version of qmcc() with a substantially lower memory consumption;
+      it can now work with up to 15 conditions in 1GB of RAM
+    o New function base3rows()
+    o Fixed minor bug in writeSolution()
 Version 0.2-0
 
     o Added function factorize() which finds all common factors of literals in a QCA solution

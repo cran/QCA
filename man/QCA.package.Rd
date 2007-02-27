@@ -28,16 +28,16 @@ As of version 0.1-3 there is also a graphical user interface in the package QCAG
     \tabular{ll}{
     Package: \tab QCA\cr
     Type: \tab Package\cr
-    Version: \tab 0.4-0\cr
-    Date: \tab 2007-02-03\cr
+    Version: \tab 0.4-1\cr
+    Date: \tab 2007-02-27\cr
     License: \tab GPL version 2 or newer\cr
     }
 }
 
 \author{
 \tabular{ll}{
-Author: \tab Adrian Dusa <adi@roda.ro>\cr
-Maintainer: \tab Adrian Dusa <adi@roda.ro>
+Author: \tab Adrian Dusa <adi@sas.unibuc.ro>\cr
+Maintainer: \tab Adrian Dusa <adi@sas.unibuc.ro>
 }}
 
 \references{
