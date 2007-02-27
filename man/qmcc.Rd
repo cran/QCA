@@ -17,7 +17,7 @@ qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
      expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
      incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
      quiet = FALSE, details = TRUE, chart = FALSE, use.letters = TRUE,
-     show.cases = FALSE)
+     show.cases = FALSE, diffmat=TRUE)
 }
 
 \arguments{
@@ -39,6 +39,7 @@ qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
   \item{chart}{print the prime implicants chart}
   \item{use.letters}{should letters be used instead of column names}
   \item{show.cases}{show the lines corresponding to every minimized prime implicant}
+  \item{diffmat}{generate the differences matrix}
 }
 
 \references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative

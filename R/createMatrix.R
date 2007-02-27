@@ -1,12 +1,13 @@
 `createMatrix` <- 
 function(noflevels) {
     conds <- length(noflevels)
-    if (all(noflevels == 2)) {
+    pow <- unique(noflevels)
+    if (length(pow) == 1) {
         create <- function(idx) {
-            rep.int(c(rep.int(0, 2^(idx-1)), rep.int(1, 2^(idx-1))),
-                    2^conds/2^idx)
+            rep.int(c(sapply(seq_len(pow)-1, function(x) rep.int(x, pow^(idx-1)))),
+                    pow^conds/pow^idx)
             }
-        sapply(conds:1, create)
+        sapply(rev(seq_len(conds)), create)
         }
     else {
         mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
@@ -16,9 +17,4 @@ function(noflevels) {
             })
         }
     }
-
-
-
-
-        
 

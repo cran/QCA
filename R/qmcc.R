@@ -3,11 +3,11 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
          incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
          quiet = FALSE, details = TRUE, chart = FALSE, use.letters = TRUE,
-         show.cases = FALSE) {
+         show.cases = FALSE, diffmat=TRUE) {
     
     verify.qmcc(mydata, outcome, conditions, incl.rem, expl.1, expl.0, expl.ctr,
                 expl.mo, incl.1, incl.0, incl.ctr, incl.mo, quiet, details,
-                chart, use.letters, show.cases, tt)
+                chart, use.letters, show.cases, diffmatrix)
     
     if (quiet) {details <- show.cases <- chart <- FALSE}
     
@@ -59,15 +59,14 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
      # Compute the multiple bases.
     mbase <- c(rev(cumprod(rev(tt$noflevels + 1))), 1)[-1]
     
-     # Compute all possible 2^k combinations
+     # Compute all possible line numbers - equivalent of the 2^k combinations
     totlines <- base3rows(tt$noflevels)
     
-    
-    if (details & length(tt$noflevels) < 15) {
+    if (details & diffmat) {
         cat("\n\nGenerating the differences matrix...", "\n")
         }
     
-    if (length(tt$noflevels) < 15) {
+    if (diffmat) {
          # Allocate the matrix with all possible differences
         diffmatrix <- sapply(seq(length(tt$noflevels)), function(x) {
             as.vector(outer(seq_len(mbase[x]), seq(mbase[x], 3*mbase[1] - mbase[x] - 1, 3*mbase[x]), "+"))
@@ -105,7 +104,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         linenums <- copylinenums <- totlines[line.tt[explain]]
         if (incl.rem & repetition == 1) linenums <- sort(c(linenums, totlines[-line.tt]))
         
-        
         if (all(is.na(linenums))) {
             cat("\n")
             stop("Nothing to explain. Please check the truth table.\n\n", call. = FALSE)
@@ -142,7 +140,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             result <- matrix(nrow=max.diffs, ncol=2)
             startrow <- 1
             for (i in seq(length(tt$noflevels))) {
-                if (length(tt$noflevels) < 15) {
+                if (diffmat) {
                     match.lines <- linenums[linenums %in% diffmatrix[, i]]
                     }
                 else {
