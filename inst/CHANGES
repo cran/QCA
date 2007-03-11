@@ -1,3 +1,10 @@
+Version 0.4-2
+    o Fixed a bug in qmcc, the data was not correctly subsetted.
+    o Fixed a bug involving the argument "show.cases"
+    o Added argument "use.letters" to function demoChart()
+    o Fixed a minor bug in verify.truthTable()
+    
+
 Version 0.4-1
     o Added a namespace for the package
     o Completely rewritten version of base3rows(), now much faster

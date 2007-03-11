@@ -4,7 +4,7 @@ function (input, copyinput, rows, cols) {
 	input2 <- matrix(logical(length(input)), dim(input))
 	input2[input > 0] <- TRUE
 	
-	result <- t(sapply(1:nrow(input), function(x) {
+	result <- t(sapply(seq(nrow(input)), function(x) {
 		apply(copyinput, 1, function(y) {
 			all(input[x, input2[x,]] == y[input2[x,]])
 			})
