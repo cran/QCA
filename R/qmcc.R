@@ -9,20 +9,15 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
                 expl.mo, incl.1, incl.0, incl.ctr, incl.mo, quiet, details,
                 chart, use.letters, show.cases, diffmatrix)
     
+    if (all(conditions == c(""))) {
+        conditions <- names(mydata)[-which(names(mydata)==outcome)]
+        }
+    mydata <- mydata[, c(conditions, outcome)]
+    
     if (quiet) {details <- show.cases <- chart <- FALSE}
     
-     # if the outcome variable is not the last one, it will be placed the last
-    if (which(colnames(mydata) %in% outcome) != ncol(mydata)) {
-        outcm.name <- colnames(mydata)[which(colnames(mydata) == outcome)]
-        outcm   <- mydata[,  which(colnames(mydata) == outcome)]
-        mydata  <- mydata[, -which(colnames(mydata) == outcome)]
-        mydata <- cbind(mydata, outcm)
-        colnames(mydata)[ncol(mydata)] <- outcm.name
-        }
-
      # coerce the input data to a matrix
     mydata <- as.matrix(mydata)
-    
     
      # checking for complete data (without missings)
     rows.with.missings <- which(is.na(rowSums(mydata)))
@@ -40,12 +35,18 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
              not.valid[1, 1], ' from variable "', colnames(mydata)[not.valid[1, 2]], '"\n\n', call. = FALSE, sep="")
         }
     
+     # check if the user checked both something like "expl.1" AND "incl.1"
+    if (expl.1 & incl.1) {
+        cat("\nWarning: the presence of the outcome cannot be both explained\n\n")
+        incl.1 <- FALSE
+        }
+    
      # if the user included some other values for minimization, there will be two
      # minimizations and the one with the smallest number of literals will be reported
     any.inclusions <- any(c(incl.0, incl.1, incl.ctr, incl.rem))
     repetitions <- ifelse(any.inclusions, 2, 1)
     
-    tt <- truthTable(mydata, outcome=outcome, show.cases=TRUE, inside=TRUE)
+    tt <- truthTable(mydata, outcome, conditions, show.cases=TRUE, inside=TRUE)
     
      # print the truthtable on the screen, if not quiet
     if (!quiet) {
@@ -335,7 +336,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     if (show.cases) {
          # for start, mydata.rows will be a string with all _existing_ combinations (e.g. "AbcDe")
         mydata.rows <- createString(mydata[, -which(colnames(mydata) == outcome)], use.letters)
-        mtrx <- demoChart(all.primeimps, mydata.rows)
+        mtrx <- demoChart(all.primeimps, mydata.rows, use.letters)
         
          # replace mydata.rows with a vector of all rownames (case IDs) from the initial data
         mydata.rows <- rownames(mydata)

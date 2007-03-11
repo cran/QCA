@@ -14,12 +14,13 @@ but its arguments are more complex.
 }
 
 \usage{
-demoChart(rows, columns)
+demoChart(rows, columns, use.letters=TRUE)
 }
 
 \arguments{
-  \item{rows}{a vector of strings, containing the prime implicants}
+  \item{rows}{a vector of strings, containing the prime implicants}                                 
   \item{columns}{a vector of strings, containing all combinations of conditions from the original data}
+  \item{use.letters}{are letters used instead of column names}
 }
 
 \value{
@@ -27,7 +28,11 @@ a logical matrix showing which conditions from the (minimized) prime implicants 
 which columns
 }
 
-\references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative and
+\references{
+Quine, W.V. 1952 \emph{The Problem of Simplifying Truth Functions},
+The American Mathematical Monthly, Vol. 59, No. 8. (Oct., 1952), pp. 521-531.
+
+Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative and
 quantitative strategies}, Berkeley: University of California Press}
 
 \author{
@@ -39,9 +44,19 @@ adi@roda.ro
 \seealso{'prettyTable'}
 
 \examples{
-chart <- demoChart(c("A", "B", "c"), c("ABC", "Abc", "AbC", "aBc"))
 
+chart <- demoChart(c("A", "B", "c"), c("ABC", "Abc", "AbC", "aBc"))
 prettyTable(chart)
+
+
+# Quine's example, page 528
+rows <- c("AB", "BC", "Ac", "aC", "abd", "bcd")
+cols <- c("ABCD", "ABCd", "ABcD", "ABcd", "AbcD", "Abcd",
+          "aBCD", "aBCd", "abCD", "abCd", "abcd")
+
+chart <- demoChart(rows, cols)
+prettyTable(chart)
+
 }
 
 \keyword{misc}

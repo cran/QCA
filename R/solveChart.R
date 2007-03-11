@@ -2,7 +2,7 @@
 function(chart) {
     if (!is.logical(chart)) {
         cat("\n")
-        stop("Use a TRUE/FALSE matrix. See demoChart's output.", call. = FALSE)
+        stop("Use a T/F matrix. See demoChart's output.", call. = FALSE)
         }
     
     if (all(dim(chart) > 1)) {
@@ -11,16 +11,9 @@ function(chart) {
          # k will be the minimum number of prime implicants necessary to cover all columns
         k <- ceiling(sum(lp("min", rep(1, nrow(chart)), t(chart), ">=", 1)$solution))
          # create a matrix with all possible combinations of k prime implicants
-        combos <- as.matrix(combn(nrow(chart), k))
+        combos <- combn(nrow(chart), k)
          # sol.matrix will be a subset of the chart matrix with all minimum solutions
-        sol.matrix <- combos[, apply(combos, 2, function(idx) {
-                                                    if (is.matrix(chart[idx, ])) {
-                                                        all(colSums(chart[idx, ]))
-                                                        }
-                                                    else {
-                                                        all(chart[idx, ])
-                                                        }
-                                                    })]
+        sol.matrix <- combos[, apply(combos, 2, function(idx) all(colSums(chart[idx, , drop=FALSE])))]
         }
     else {
         sol.matrix <- 1:nrow(chart)

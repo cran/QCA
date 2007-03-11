@@ -31,9 +31,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             cat("\n")
             stop("The conditions' names are not correct.\n\n", call. = FALSE)
             }
-        else {
-            mydata <- mydata[, c(conditions, outcome)]
-            }
         }
     else if (nchar(conditions) > 0) {
         if (outcome %in% conditions) {
@@ -85,12 +82,9 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
             cat("\n")
             stop('Variable "', outcome, '" cannot be both outcome _and_ condition!\n\n', call. = FALSE)
              }
-        if (!all(conditions %in% names(mydata))) {
+        if (!all(conditions %in% colnames(mydata))) {
             cat("\n")
             stop("The conditions' names are not correct.\n\n", call. = FALSE)
-            }
-        else {
-            mydata <- mydata[, c(conditions, outcome)]
             }
         }
     else if (nchar(conditions) > 0) {
