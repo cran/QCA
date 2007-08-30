@@ -1,6 +1,10 @@
+Version 0.4-3
+    o Fixed a bug in qmcc(), a matrix unintentionally dropped dimensions upon subsetting
+    
+
 Version 0.4-2
-    o Fixed a bug in qmcc, the data was not correctly subsetted.
-    o Fixed a bug involving the argument "show.cases"
+    o Fixed a bug in qmcc(), the data was not correctly subsetted.
+    o Fixed a bug in qmcc(), involving the argument "show.cases"
     o Added argument "use.letters" to function demoChart()
     o Fixed a minor bug in verify.truthTable()
     

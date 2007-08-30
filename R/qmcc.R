@@ -82,15 +82,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
     
     
-    checkMatrix <- function(x) {
-        if (!is.matrix(x)) {
-            return(t(as.matrix(x)))
-            }
-        else {
-            return(x)
-            }
-        }
-    
     for (repetition in 1:repetitions) {
         
          # create the vector of outcome values to subset for minimization
@@ -156,7 +147,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
                 startrow <- startrow + length.match
                 }
             
-            result <- checkMatrix(result[-(startrow:max.diffs), ])
+            result <- result[-(startrow:max.diffs), , drop=FALSE]
             minimized <- linenums %in% result
             
             
@@ -214,20 +205,20 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     mtrx <- createChart(input, copyinput)
     reduced <- rowSums(mtrx) == 0
     if (length(reduced) > 0) {
-        mtrx <- checkMatrix(mtrx[!reduced, ])
-        input <- checkMatrix(input[!reduced, ])
+        mtrx <- mtrx[!reduced, , drop=FALSE]
+        input <- input[!reduced, , drop=FALSE]
         }
     
     primeimp <- apply(input, 1, writePrimeimp, co11apse=co11apse)
     primeimpsort <- sortVector(primeimp)
-    mtrx <- mtrx[match(primeimpsort, primeimp), ]
+    mtrx <- mtrx[match(primeimpsort, primeimp), , drop=FALSE]
     rownames(mtrx) <- primeimpsort
     colnames(mtrx) <- initial
     
     reduced <- rowDominance(mtrx)
     
     if (length(reduced) > 0) {
-        mtrxDom <- checkMatrix(mtrx[!reduced, ])
+        mtrxDom <- mtrx[!reduced, , drop=FALSE]
         rownames(mtrxDom) <- primeimpsort[!reduced]
         }
     else {
@@ -241,19 +232,19 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         mtrx.incl <- createChart(input.incl, copyinput)
         reduced <- rowSums(mtrx.incl) == 0
         if (length(reduced) > 0) {
-            mtrx.incl <- checkMatrix(mtrx.incl[!reduced, ])
-            input.incl <- checkMatrix(input.incl[!reduced, ])
+            mtrx.incl <- mtrx.incl[!reduced, , drop=FALSE]
+            input.incl <- input.incl[!reduced, , drop=FALSE]
             }
         
         primeimp.incl <- apply(input.incl, 1, writePrimeimp, co11apse=co11apse)
         primeimpsort <- sortVector(primeimp.incl)
-        mtrx.incl <- mtrx.incl[match(primeimpsort, primeimp.incl), ]
+        mtrx.incl <- mtrx.incl[match(primeimpsort, primeimp.incl), , drop=FALSE]
         rownames(mtrx.incl) <- primeimpsort
         colnames(mtrx.incl) <- initial
         reduced <- rowDominance(mtrx.incl)
         
         if (length(reduced) > 0) {
-            mtrxDom.incl <- checkMatrix(mtrx.incl[!reduced, ])
+            mtrxDom.incl <- mtrx.incl[!reduced, , drop=FALSE]
             rownames(mtrxDom.incl) <- primeimpsort[!reduced]
             }
         else {
