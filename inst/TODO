@@ -1,5 +1,3 @@
-- if needed, add a namespace
-- implement a graph based agent similar to that of Tosmana, for more than 14 conditions
 - implement multi-value algorithms (see Berkeley's Espresso or Petr Fiser's BOOM and FC-Min
   or Lasse Cronqvist's Graph Based Agent) 
 - implement option to handle missing outcome
