@@ -1,3 +1,9 @@
+Version 0.4-5
+    o New function shortqca(),  many times faster than qmcc() and a _very_ low memory
+      consumption; it can work with 16 or even 17 causal conditions. It is only experimental
+      but it looks very promising, especially for multi-valued data.
+    
+
 Version 0.4-3
     o Fixed a bug in qmcc(), a matrix unintentionally dropped dimensions upon subsetting
     
@@ -27,7 +33,7 @@ Version 0.4-0
 
 Version 0.3-5
     o Reworked version of qmcc() which does no longer posess the tt argument
-      It is now faster than ever, working reasonably with up to 13 conditions.
+      It is faster, working reasonably with up to 13 conditions.
     o Reworked version of truthTable()
     
 
@@ -71,13 +77,12 @@ Version 0.2-2
 
 Version 0.2-1
 
-    o Added function createMatrix() which creates the base matrix for the truth table
-    
-Reworked version of qmcc() with a substantially lower memory consumption;
-      it can now work with up to 15 conditions in 1GB of RAM
+    o New function createMatrix() which creates the base matrix for the truth table
     o New function base3rows()
     o Fixed minor bug in writeSolution()
+    
+
 Version 0.2-0
 
-    o Added function factorize() which finds all common factors of literals in a QCA solution
+    o New function factorize() which finds all common factors of literals in a QCA solution
     

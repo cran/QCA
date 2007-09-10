@@ -8,6 +8,7 @@
 \alias{verify.truthTable}
 \alias{createChart}
 \alias{rowDominance}
+\alias{rowDominanceShort}
 \alias{base3rows}
 
 
@@ -19,6 +20,7 @@
   the main \code{qmcc} function, except \code{sortMatrix} which is used by \code{allExpressions}.
   The verification and error messages have been moved to the internal functions
   \code{verify.qmcc} and \code{verify.truthTable}.
+  \code{rowDominanceShort} is a temporary function which accomodates the \code{shortqca}.
 }
 
 \keyword{internal}

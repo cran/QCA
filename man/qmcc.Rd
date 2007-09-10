@@ -56,12 +56,12 @@ With a 2 GHz Intel Core2Duo processor and 1 GB of RAM, the algorithm finds a sol
 conditions in a less than 1 second. For 11 conditions it takes about 2.5 seconds, for 12
 conditions it takes 9 seconds, for 13 conditions it takes about 37 seconds and for 14 conditions
 it takes about 130 seconds (a little over 2 minutes).
-For more than 14 conditions more memory is definitely needed; using not to create the
+For more than 14 conditions more memory is definitely needed; choosing not to create the
 differences matrix (which requires a lot of RAM), the analysis can squeeze a result for 15
 conditions at the expense of 10 minutes of computing time.
 }
 
-\seealso{'truthTable'}
+\seealso{'truthTable', 'shortqca'}
 
 \examples{
 data(Osa)
