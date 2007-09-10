@@ -61,7 +61,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     mbase <- c(rev(cumprod(rev(tt$noflevels + 1))), 1)[-1]
     
      # Compute all possible line numbers - equivalent of the 2^k combinations
-    totlines <- base3rows(tt$noflevels)
+    totlines <- base3rows(length(tt$noflevels))
     
     if (details & diffmat) {
         cat("\n\nGenerating the differences matrix...", "\n")
@@ -214,7 +214,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     mtrx <- mtrx[match(primeimpsort, primeimp), , drop=FALSE]
     rownames(mtrx) <- primeimpsort
     colnames(mtrx) <- initial
-    
     reduced <- rowDominance(mtrx)
     
     if (length(reduced) > 0) {
