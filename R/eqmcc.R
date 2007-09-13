@@ -1,4 +1,4 @@
-`shortqca` <-
+`eqmcc` <-
 function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
          incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
@@ -93,23 +93,28 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     ###########################
     
     if (incl.rem) {
-        `cucu` <- function (noflevels, row.no) {
-            mbase <- c(rev(cumprod(rev(noflevels + 1))), 1)[-1]
-            mbasep3 <- getRow(noflevels + 1, row.no)*mbase
-            unique(colSums(t(createMatrix(noflevels)[-1, ])*rev(mbasep3))) + 1
+        findPrimes <- function (row.no) {
+            mbasep3 <- getRow(tt$noflevels + 1, row.no)*mbase
+            unique(colSums(t(createMatrix(tt$noflevels)[-1, ])*rev(mbasep3))) + 1
             }
         
-        primes <- unique(as.vector(sapply(explain, function(x) cucu(tt$noflevels, x))))
-        notprimes <- unique(as.vector(sapply(exclude, function(x) cucu(tt$noflevels, x))))
-        primes <- sort(primes[!primes %in% notprimes])
-        mbase <- cumprod(tt$noflevels + 1)
-        start.pos <- 1
-        while (start.pos < length(primes)) {
-            toadd <- mbase[which(primes[start.pos] <= mbase)[1]]
-            if (primes[start.pos] + toadd > max(primes)) break
-            primes <- primes[!primes %in% seq(primes[start.pos] + toadd, max(primes), toadd)]
-            start.pos <- start.pos + 1
+        primes <- unique(as.vector(sapply(explain, function(x) findPrimes(x))))
+        negprimes <- unique(as.vector(sapply(exclude, function(x) findPrimes(x))))
+        primes <- sort(primes[!primes %in% negprimes])
+        
+        mbase2 <- rev(cumprod(tt$noflevels + 1))
+        line.no <- 1
+        while (line.no < length(primes)) {
+            toadd <- mbase2[which(getRow(tt$noflevels + 1, primes[line.no]) > 0)[1]]
+            if (primes[line.no] + toadd > max(primes)) break
+            falseprimes <- seq(primes[line.no], max(primes), toadd)[-1]
+            primes <- primes[!primes %in% falseprimes]
+            line.no <- line.no + 1
             }
+        
+        primes <- getRow(tt$noflevels + 1, primes)
+        # primes <- primes[!rowSums(primes > 0) > 4, ]
+        inputt <- getRow(tt$noflevels + 1, inputt)
         }
     else {
         minimized <- 1
@@ -135,12 +140,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
     
     
-    if (incl.rem) {
-        primes <- getRow(tt$noflevels + 1, primes)
-        inputt <- getRow(tt$noflevels + 1, inputt)
-        primes <- primes[!rowSums(primes > 0) > 4, ]
-        }
-    
      # check if the condition names are not already letters
     alreadyletters <- sum(nchar(colnames(mydata)[-ncol(mydata)])) == ncol(mydata) - 1
     co11apse <- ifelse(alreadyletters, "", "*")
@@ -161,11 +160,28 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
      # create the prime implicants chart
     mtrx <- createChart(primes, inputt)
     
-    reduced <- rowDominanceShort(mtrx, primes)
-    if (length(reduced) > 0) {
-        mtrx <- mtrx[!reduced, , drop=FALSE]
-        primes <- primes[!reduced, , drop=FALSE]
+    reduced <- rowDominance2(mtrx, primes)
+    
+     # further minimality check 
+     # for example if both "ab" and "abc" exist, "abc" is not minimal
+    sort.vector <- apply(reduced$primes, 1, function(x) sum(x*mbase))
+    primes <- reduced$primes[order(sort.vector), ]
+    mtrx <- reduced$mtrx[order(sort.vector), ]
+    
+    reduced <- logical(nrow(primes))
+    line.no <- 1
+    while(line.no < nrow(primes)) {
+        subset.lines <- (line.no + 1):nrow(primes)
+        to.delete <- apply(primes[subset.lines, , drop=FALSE], 1, function(x) {
+            tocheck <- primes[line.no, ] != 0
+            return(all(primes[line.no, tocheck] == x[tocheck]))
+            })
+        reduced[subset.lines[to.delete]] <- TRUE
+        line.no <- line.no + 1
         }
+    
+    mtrx <- mtrx[!reduced, , drop=FALSE]
+    primes <- primes[!reduced, , drop=FALSE]
     
     primeimp <- apply(primes, 1, writePrimeimp, co11apse=co11apse)
     primeimpsort <- sortVector(primeimp)

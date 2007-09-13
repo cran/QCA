@@ -1,8 +1,8 @@
-\name{shortqca}
+\name{eqmcc}
 
-\alias{shortqca}
+\alias{eqmcc}
 
-\title{Find a minimum, exact solution equal to the Quine-McCluskey algorithm}
+\title{Enhanced Quine-McCluskey algorithm}
 
 \description{
 This function is designed to improve the memory problems that qmcc() currently has.
@@ -11,12 +11,12 @@ function; all tests have been successful, the solutions are exactly the same dow
 last literal.
 This function has almost the same options as qmcc(), minus the "details" and "diffmatrix"
 arguments which are no longer required.
-It is called "shortqca" because it doesn't follow the classic minimization algorithm but
+It is called "eqmcc" because it doesn't follow the classic minimization algorithm but
 a more direct and rapid shortcut.
 }
 
 \usage{
-shortqca(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
+eqmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
      expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
      incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
      quiet = FALSE, chart = FALSE, use.letters = TRUE, show.cases = FALSE)
@@ -47,13 +47,15 @@ and quantitative strategies}, Berkeley: University of California Press}
 
 \author{
 Adrian Dusa\cr
-Romanian Social Data Archive, University of Bucharest\cr
-adi@roda.ro
+Romanian Social Data Archive\cr
+adi@roda.ro\cr
+Faculy of Sociology and Social Work, University of Bucharest\cr
+adi@sas.unibuc.ro
 }
 
 \note{The speed is greatly improved: for 15 causal conditions it takes less than 2 minutes,
 compared to 10 minutes in qmcc(). The memory consumption is tiny by comparison: also for
-15 causal conditions, qmcc() uses about 1.5 GB of RAM, where shortqca() uses about 50 MB.
+15 causal conditions, qmcc() uses about 1.5 GB of RAM, where eqmcc() uses about 50 MB.
 }
 
 \seealso{'truthTable', 'qmcc'}
@@ -62,19 +64,19 @@ compared to 10 minutes in qmcc(). The memory consumption is tiny by comparison: 
 data(Osa)
 
 # explaining only the presence of the outcome
-shortqca(Osa, outcome="OUT", expl.1=TRUE)
+eqmcc(Osa, outcome="OUT", expl.1=TRUE)
 
 # now including the remainers and the contradictions
-shortqca(Osa, outcome="OUT", expl.1=TRUE, incl.rem=TRUE, incl.ctr=TRUE)
+eqmcc(Osa, outcome="OUT", expl.1=TRUE, incl.rem=TRUE, incl.ctr=TRUE)
 
 # the same as above, but we want to see the prime implicants chart
-shortqca(Osa, outcome="OUT", expl.1=TRUE, incl.rem=TRUE, incl.ctr=TRUE, chart=TRUE)
+eqmcc(Osa, outcome="OUT", expl.1=TRUE, incl.rem=TRUE, incl.ctr=TRUE, chart=TRUE)
 
 # printing the lines corresponding to each prime implicant
-shortqca(Osa, outcome="OUT", expl.1=TRUE, incl.rem=TRUE, incl.ctr=TRUE, show.cases=TRUE)
+eqmcc(Osa, outcome="OUT", expl.1=TRUE, incl.rem=TRUE, incl.ctr=TRUE, show.cases=TRUE)
 
 # now explaining the absence of the outcome
-shortqca(Osa, outcome="OUT", expl.0=TRUE, incl.rem=TRUE, incl.ctr=TRUE, show.cases=TRUE)
+eqmcc(Osa, outcome="OUT", expl.0=TRUE, incl.rem=TRUE, incl.ctr=TRUE, show.cases=TRUE)
 
 
 }

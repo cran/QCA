@@ -1,7 +1,12 @@
+Version 0.4-6
+    o Reworked version of rowDominance2()
+    o Function shortqca() is now eqmcc(), faster by a factor of at least 2
+    
+
 Version 0.4-5
-    o New function shortqca(),  many times faster than qmcc() and a _very_ low memory
-      consumption; it can work with 16 or even 17 causal conditions. It is only experimental
-      but it looks very promising, especially for multi-valued data.
+    o New experimental function shortqca(),  many times faster than qmcc() with a _very_ low memory
+      consumption; it can easily work with 16 or 17 causal conditions. It is only
+      experimental but it looks very promising, especially for multi-valued data.
     
 
 Version 0.4-3

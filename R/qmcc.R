@@ -204,7 +204,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
      # create the prime implicants chart
     mtrx <- createChart(input, copyinput)
     reduced <- rowSums(mtrx) == 0
-    if (length(reduced) > 0) {
+    if (any(reduced)) {
         mtrx <- mtrx[!reduced, , drop=FALSE]
         input <- input[!reduced, , drop=FALSE]
         }
@@ -214,9 +214,10 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     mtrx <- mtrx[match(primeimpsort, primeimp), , drop=FALSE]
     rownames(mtrx) <- primeimpsort
     colnames(mtrx) <- initial
+    
     reduced <- rowDominance(mtrx)
     
-    if (length(reduced) > 0) {
+    if (any(reduced)) {
         mtrxDom <- mtrx[!reduced, , drop=FALSE]
         rownames(mtrxDom) <- primeimpsort[!reduced]
         }
@@ -242,7 +243,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         colnames(mtrx.incl) <- initial
         reduced <- rowDominance(mtrx.incl)
         
-        if (length(reduced) > 0) {
+        if (any(reduced)) {
             mtrxDom.incl <- mtrx.incl[!reduced, , drop=FALSE]
             rownames(mtrxDom.incl) <- primeimpsort[!reduced]
             }
