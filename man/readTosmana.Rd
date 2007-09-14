@@ -19,8 +19,10 @@ readTosmana(filename)
 
 \author{
 Adrian Dusa\cr
-Romanian Social Data Archive, University of Bucharest\cr
-adi@roda.ro
+Romanian Social Data Archive\cr
+adi@roda.ro\cr
+Faculy of Sociology and Social Work, University of Bucharest\cr
+adi@sas.unibuc.ro
 }
 
 \note{This function requires the XML package}

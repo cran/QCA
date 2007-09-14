@@ -1,0 +1,23 @@
+`rowDominance2` <-
+function(mtrx, primes) {
+    sums <- rowSums(mtrx)
+    mtrx <- mtrx[order(sums, decreasing=TRUE), ]
+    primes <- primes[order(sums, decreasing=TRUE), ]
+    sums <- sort(sums, decreasing=T)
+    line.no <- 1
+    while(line.no < nrow(mtrx)) {
+        less <- sums < sums[line.no]
+        if (any(less)) {
+            aa <- apply(mtrx[less, , drop=FALSE], 1, function(x) {all(mtrx[line.no, x])})
+            mtrx <- rbind(mtrx[!less, ], mtrx[less,][!aa, , drop=FALSE])
+            primes <- rbind(primes[!less, ], primes[less,][!aa, , drop=FALSE])
+            sums <- rowSums(mtrx)
+            line.no <- line.no + 1
+            }
+        else {
+            break
+            }
+        }
+    return(list(mtrx=mtrx, primes=primes))
+    }
+
