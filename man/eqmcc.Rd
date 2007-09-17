@@ -5,11 +5,10 @@
 \title{Enhanced Quine-McCluskey algorithm}
 
 \description{
-This function is designed to improve the memory problems that qmcc() currently has.
-The version is experimental but it has very high chances to replace the main qmcc()
-function; all tests have been successful, the solutions are exactly the same down to the
-last literal.
-This function has almost the same options as qmcc(), minus the "details" and "diffmatrix"
+This function is designed to improve the speed and memory problems that qmcc() currently hasm
+and it has very high chances to replace the main qmcc() in the future; all tests have been
+successful, the solutions are exactly the same down to the last literal.
+It has about the same options as qmcc(), minus the "details" and "diffmatrix"
 arguments which are no longer required.
 It is called "eqmcc" because it doesn't follow the classic minimization algorithm but
 a more direct and rapid shortcut.
@@ -42,8 +41,12 @@ eqmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
   \item{show.cases}{show the lines corresponding to every minimized prime implicant}
 }
 
-\references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative
-and quantitative strategies}, Berkeley: University of California Press}
+\references{
+Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative
+and quantitative strategies}, Berkeley: University of California Press
+
+Dusa, Adrian 2007 \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/WPShort.htm
+}
 
 \author{
 Adrian Dusa\cr

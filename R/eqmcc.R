@@ -36,14 +36,9 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
      # check if the user checked both something like "expl.1" AND "incl.1"
     if (expl.1 & incl.1) {
-        cat("\nWarning: the presence of the outcome cannot be both explained\n\n")
+        cat("\nWarning: the presence of the outcome cannot be both explained and included\n\n")
         incl.1 <- FALSE
         }
-    
-     # if the user included some other values for minimization, there will be two
-     # minimizations and the one with the smallest number of literals will be reported
-    any.inclusions <- any(c(incl.0, incl.1, incl.ctr, incl.rem))
-    repetitions <- ifelse(any.inclusions, 2, 1)
     
     tt <- truthTable(mydata, outcome, conditions, show.cases=TRUE, inside=TRUE)
     
@@ -54,89 +49,64 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         print(prettyTable(tt$tt))
         }
     
-    line.tt <- tt$indexes
+    expl.incl <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr) | c(incl.1, incl.0, incl.ctr)]
+    explain <- as.matrix(tt$tt[tt$tt[[outcome]] %in% expl.incl, seq(length(tt$noflevels))]) + 1
+    exclude <- as.matrix(tt$tt[!tt$tt[[outcome]] %in% expl.incl, seq(length(tt$noflevels))]) + 1
     
-     # Compute the multiple bases.
-    mbase <- c(rev(cumprod(rev(tt$noflevels + 1))), 1)[-1]
+    expl.args <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr)]
+    inputt <- as.matrix(tt$tt[tt$tt[[outcome]] %in% expl.args, seq(length(tt$noflevels))]) + 1
     
-     # Compute all possible line numbers - equivalent of the 2^k combinations
-    totlines <- base3rows(length(tt$noflevels))
-    
-    explain <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr) | c(incl.1, incl.0, incl.ctr)]
-    explain.indexes <- tt$indexes[tt$tt[[outcome]] %in% explain]
-    explain <- totlines[explain.indexes]
-    remainders <- totlines[-tt$indexes]
-    exclude <- setdiff(totlines, c(explain, remainders))
-    
-    inputt <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr)]
-    explain.indexes <- tt$indexes[tt$tt[[outcome]] %in% inputt]
-    inputt <- totlines[explain.indexes]
-    
-    if (all(is.na(explain))) {
+    if (nrow(explain) == 0) {
         cat("\n")
         stop("Nothing to explain. Please check the truth table.\n\n", call. = FALSE)
         }
-    else if (length(explain) == 1) {
+    else if (nrow(explain) == 1) {
         cat("\n")
         stop("Nothing to reduce. There is only one combination to be explained.\n\n",
              call. = FALSE)
         }
-    else if (length(explain) == prod(tt$noflevels)) {
+    
+    if (nrow(exclude) == 0 & incl.rem) {
         cat("\n")
         stop(paste("All combinations have been included into analysis. The solution is 1.\n",
                    "Please check the truth table.", "\n\n", sep=""), call. = FALSE)
         }
     
     
-    ###########################
-    ###########################
-    ###########################
+    ##############################
+     # Compute the multiple bases.
+    mbase <- c(rev(cumprod(rev(tt$noflevels + 1))), 1)[-1]
     
     if (incl.rem) {
-        findPrimes <- function (row.no) {
-            mbasep3 <- getRow(tt$noflevels + 1, row.no)*mbase
-            unique(colSums(t(createMatrix(tt$noflevels)[-1, ])*rev(mbasep3))) + 1
-            }
-        
-        primes <- unique(as.vector(sapply(explain, function(x) findPrimes(x))))
-        negprimes <- unique(as.vector(sapply(exclude, function(x) findPrimes(x))))
-        primes <- sort(primes[!primes %in% negprimes])
-        
-        mbase2 <- rev(cumprod(tt$noflevels + 1))
+        primes <- sort(setdiff(findPrimes(explain, tt$noflevels, mbase), findPrimes(exclude, tt$noflevels, mbase)))
         line.no <- 1
         while (line.no < length(primes)) {
-            toadd <- mbase2[which(getRow(tt$noflevels + 1, primes[line.no]) > 0)[1]]
-            if (primes[line.no] + toadd > max(primes)) break
-            falseprimes <- seq(primes[line.no], max(primes), toadd)[-1]
-            primes <- primes[!primes %in% falseprimes]
+            primes <- setdiff(primes, findSubsets(primes[line.no], tt$noflevels, mbase, max(primes)))
             line.no <- line.no + 1
             }
-        
         primes <- getRow(tt$noflevels + 1, primes)
-        # primes <- primes[!rowSums(primes > 0) > 4, ]
-        inputt <- getRow(tt$noflevels + 1, inputt)
         }
     else {
         minimized <- 1
-        primes <- inputt <- getRow(tt$noflevels + 1, explain)
         while (any(minimized)) {
-            minimized <- logical(nrow(primes))
-            distance <- dist(primes, method="manhattan")
+            minimized <- logical(nrow(explain))
+            distance <- dist(explain, method="manhattan")
             distance <- as.matrix(distance)
             distance[!upper.tri(distance)] <- NA
             to.be.compared <- as.matrix(which(distance == 1, arr.ind=TRUE))
             
             if (nrow(to.be.compared) > 0) {
-                logical.result <- apply(to.be.compared, 1, function(idx) primes[idx[1], ] == primes[idx[2], ])
+                logical.result <- apply(to.be.compared, 1, function(idx) explain[idx[1], ] == explain[idx[2], ])
                 compare.minimized <- unique(as.vector(to.be.compared))
-                result <- sapply(1:nrow(to.be.compared), function(idx) primes[to.be.compared[idx, 1], ])
+                result <- sapply(1:nrow(to.be.compared), function(idx) explain[to.be.compared[idx, 1], ])
                 result[!logical.result] <- 0
                 minimized[compare.minimized] <- TRUE
                 }
             if (sum(minimized) > 0) {
-                primes <- rbind(primes[!minimized, ], unique(t(result)))
+                explain <- rbind(explain[!minimized, ], unique(t(result)))
                 }
             }
+        primes <- explain
         }
     
     
@@ -159,45 +129,19 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
      # create the prime implicants chart
     mtrx <- createChart(primes, inputt)
-    
     reduced <- rowDominance2(mtrx, primes)
     
-     # further minimality check 
-     # for example if both "ab" and "abc" exist, "abc" is not minimal
-    sort.vector <- apply(reduced$primes, 1, function(x) sum(x*mbase))
-    primes <- reduced$primes[order(sort.vector), ]
-    mtrx <- reduced$mtrx[order(sort.vector), ]
-    
-    reduced <- logical(nrow(primes))
-    line.no <- 1
-    while(line.no < nrow(primes)) {
-        subset.lines <- (line.no + 1):nrow(primes)
-        to.delete <- apply(primes[subset.lines, , drop=FALSE], 1, function(x) {
-            tocheck <- primes[line.no, ] != 0
-            return(all(primes[line.no, tocheck] == x[tocheck]))
-            })
-        reduced[subset.lines[to.delete]] <- TRUE
-        line.no <- line.no + 1
-        }
-    
-    mtrx <- mtrx[!reduced, , drop=FALSE]
-    primes <- primes[!reduced, , drop=FALSE]
-    
-    primeimp <- apply(primes, 1, writePrimeimp, co11apse=co11apse)
+    primeimp <- apply(reduced$primes, 1, writePrimeimp, co11apse=co11apse)
     primeimpsort <- sortVector(primeimp)
-    mtrx <- mtrx[match(primeimpsort, primeimp), , drop=FALSE]
+    mtrx <- reduced$mtrx[match(primeimpsort, primeimp), , drop=FALSE]
     rownames(mtrx) <- primeimpsort
     colnames(mtrx) <- initial
     
-    
     sol.matrix <- solveChart(mtrx)
-    
     
     solution.list <- writeSolution(sol.matrix, mtrx)
     solution <- solution.list[[1]]
     ess.prime.imp <- rownames(mtrx)[solution.list[[2]]]
-    
-    
     
     if (chart) {
         cat("\n")

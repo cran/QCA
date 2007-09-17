@@ -30,8 +30,8 @@ As of version 0.1-3 there is also a graphical user interface in the package QCAG
     \tabular{ll}{
     Package: \tab QCA\cr
     Type: \tab Package\cr
-    Version: \tab 0.4-6\cr
-    Date: \tab 2007-09-13\cr
+    Version: \tab 0.4-8\cr
+    Date: \tab 2007-09-17\cr
     License: \tab GPL version 2 or newer\cr
     }
 }
@@ -46,7 +46,7 @@ Maintainer: \tab Adrian Dusa <dusa.adrian@gmail.com>
 Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative and 
 quantitative strategies}, Berkeley:University of California Press
 
-Ragin, Charles C. 2000 \emph{Fuzzy-set social science}, Chicago:The University of Chicago Press}
+Ragin, Charles C. 2000 \emph{Fuzzy-set social science}, Chicago:The University of Chicago Press
 }
 
 \keyword{cluster}

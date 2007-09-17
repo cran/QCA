@@ -33,7 +33,7 @@ function(mydata, outcome = "", conditions = c(""), inside = FALSE,
     else {
         tt <- unique(mydata[, conditions])
         mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
-        line.tt <- colSums(apply(tt, 1, function(x) x*mbase)) + 1
+        line.tt <- mbase %*% t(tt) + 1
         tt <- tt[order(line.tt), ]               
         rownames(tt) <- line.tt <- line.tt[order(line.tt)]
         }

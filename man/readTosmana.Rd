@@ -27,6 +27,6 @@ adi@sas.unibuc.ro
 
 \note{This function requires the XML package}
 
-}
+
 
 \keyword{misc}
