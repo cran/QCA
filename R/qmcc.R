@@ -37,7 +37,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
      # check if the user checked both something like "expl.1" AND "incl.1"
     if (expl.1 & incl.1) {
-        cat("\nWarning: the presence of the outcome cannot be both explained\n\n")
+        cat("\nWarning: the presence of the outcome cannot be both explained and included\n\n")
         incl.1 <- FALSE
         }
     

@@ -9,8 +9,8 @@ function(mtrx, primes) {
         less <- sums < sums[line.no]
         if (any(less)) {
             aa <- apply(mtrx[less, , drop=FALSE], 1, function(x) {all(mtrx[line.no, x])})
-            mtrx <- rbind(mtrx[!less, ], mtrx[less,][!aa, , drop=FALSE])
-            primes <- rbind(primes[!less, ], primes[less,][!aa, , drop=FALSE])
+            mtrx <- rbind(mtrx[!less, , drop=FALSE], mtrx[less, , drop=FALSE][!aa, , drop=FALSE])
+            primes <- rbind(primes[!less, , drop=FALSE], primes[less, , drop=FALSE][!aa, , drop=FALSE])
             sums <- rowSums(mtrx)
             line.no <- line.no + 1
             }

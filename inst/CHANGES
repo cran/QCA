@@ -1,12 +1,24 @@
+Version 0.4-8
+    o New internal function findPrimes()
+    
+
+Version 0.4-7
+    o Fixed a minor bug in rowDominance2()
+    o Improved, visibly faster function eqmcc()
+    o Minor improvement to the truthTable() function
+    o New internal function findSubsets()
+    
+
 Version 0.4-6
     o Reworked version of rowDominance2()
     o Function shortqca() is now eqmcc(), faster by a factor of at least 2
     
 
 Version 0.4-5
-    o New experimental function shortqca(),  many times faster than qmcc() with a _very_ low memory
-      consumption; it can easily work with 16 or 17 causal conditions. It is only
-      experimental but it looks very promising, especially for multi-valued data.
+    o New experimental function shortqca(),  many times faster than qmcc() for a large of
+      causal conditions (over 11), with a _very_ low memory consumption; it can easily work
+      with 16 or 17 causal conditions. It is only experimental but it looks very promising,
+      especially for multi-valued data.
     
 
 Version 0.4-3
