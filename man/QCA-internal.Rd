@@ -10,8 +10,6 @@
 \alias{rowDominance}
 \alias{rowDominance2}
 \alias{base3rows}
-\alias{findSubsets}
-\alias{findPrimes}
 
 
 \title{Internal Functions}

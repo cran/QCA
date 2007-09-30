@@ -5,8 +5,8 @@
 \title{Get a specific row from a truth table}
 
 \description{
-A truth table is formed by the unique combinations of conditions' levels. For binary
-crisp sets, there are exactly \eqn{2^k} combinations, where k is the number of conditions.
+A truth table is formed by the unique combinations of causal conditions' levels. For binary
+crisp sets, there are exactly \eqn{2^k} combinations, where \eqn{k} is the number of conditions.
 This function accepts multiple levels (not just 0 an 1)  and its purpose is to transform
 the decimal representation of a row number into its corresponding combination of levels.
 }
@@ -16,7 +16,7 @@ getRow(noflevels, row.no, zerobased=FALSE)
 }
 
 \arguments{
-  \item{noflevels}{a vector containing the number of levels from each condition}
+  \item{noflevels}{a vector containing the number of levels for each causal condition}
   \item{row.no}{a vector, the desired row number(s) from the truth table}
   \item{zerobased}{logical; if TRUE the first row number from the truth table is zero}
 }

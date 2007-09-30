@@ -1,7 +1,9 @@
 `findSubsets` <-
-function(row.no, noflevels, mbase, maximum) {
+function(noflevels, row.no, maximum) {
+    if (missing(maximum)) maximum <- prod(noflevels + 1)
     base3row <- getRow(noflevels + 1, row.no)
-    
+    mbase <- c(rev(cumprod(rev(noflevels + 1))), 1)[-1]
+     # see function Reduce() in R-2.6.0, maybe it could directly perform below
     increment <- function(x, y, cond.levels) {
         a <- x
         for (i in 1:cond.levels) {
