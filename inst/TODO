@@ -1,5 +1,4 @@
-- implement multi-value algorithms (see Berkeley's Espresso or Petr Fiser's BOOM and FC-Min
-  or Lasse Cronqvist's Graph Based Agent) 
+- extend the algorithm to multi-valued data
 - implement option to handle missing outcome
 - implement option for simplifying assumptions
 - implement fuzzy-sets (inclusion) algorithms 

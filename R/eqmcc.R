@@ -41,7 +41,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
     
     tt <- truthTable(mydata, outcome, conditions, show.cases=TRUE, inside=TRUE)
-    
+    noflevels <- tt$noflevels
      # print the truthtable on the screen, if not quiet
     if (!quiet) {
         cat("\n")
@@ -50,11 +50,11 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
     
     expl.incl <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr) | c(incl.1, incl.0, incl.ctr)]
-    explain <- as.matrix(tt$tt[tt$tt[[outcome]] %in% expl.incl, seq(length(tt$noflevels))]) + 1
-    exclude <- as.matrix(tt$tt[!tt$tt[[outcome]] %in% expl.incl, seq(length(tt$noflevels))]) + 1
+    explain <- as.matrix(tt$tt[tt$tt[[outcome]] %in% expl.incl, seq(length(noflevels))]) + 1
+    exclude <- as.matrix(tt$tt[!tt$tt[[outcome]] %in% expl.incl, seq(length(noflevels))]) + 1
     
     expl.args <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr)]
-    inputt <- as.matrix(tt$tt[tt$tt[[outcome]] %in% expl.args, seq(length(tt$noflevels))]) + 1
+    inputt <- as.matrix(tt$tt[tt$tt[[outcome]] %in% expl.args, seq(length(noflevels))]) + 1
     
     if (nrow(explain) == 0) {
         cat("\n")
@@ -73,18 +73,14 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
     
     
-    ##############################
-     # Compute the multiple bases.
-    mbase <- c(rev(cumprod(rev(tt$noflevels + 1))), 1)[-1]
-    
     if (incl.rem) {
-        primes <- sort(setdiff(findPrimes(explain, tt$noflevels, mbase), findPrimes(exclude, tt$noflevels, mbase)))
-        line.no <- 1
-        while (line.no < length(primes)) {
-            primes <- setdiff(primes, findSubsets(primes[line.no], tt$noflevels, mbase, max(primes)))
-            line.no <- line.no + 1
+        primes <- sort(setdiff(findPrimes(noflevels, explain), findPrimes(noflevels, exclude)))
+        index <- 1
+        while (index < length(primes)) {
+            primes <- setdiff(primes, findSubsets(noflevels, primes[index], max(primes)))
+            index <- index + 1
             }
-        primes <- getRow(tt$noflevels + 1, primes)
+        primes <- getRow(noflevels + 1, primes)
         }
     else {
         minimized <- 1

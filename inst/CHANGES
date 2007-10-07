@@ -1,3 +1,8 @@
+Version 0.4-9
+    o Functions findPrimes() and findSubsets() are now at user level
+    o Improved version of factorize(), the former didn't detect some combinations
+    
+
 Version 0.4-8
     o New internal function findPrimes()
     

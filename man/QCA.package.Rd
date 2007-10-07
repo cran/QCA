@@ -18,11 +18,11 @@ in the results, as understood by quantitative researchers).
 For the moment, only the ''exact'' Quine-McCluskey algorithm for crisp sets is implemented.
 However it is widely known that, for large number of conditions (over 15), the algorithm is
 memory hungry therefore very slow. 
-Starting with version 0.4-5 the package has a new experimental function called "eqmcc" (from
-"E"nhanced Quine-McCluskey) that finds exact solutions with a substantially lower memory consumption, therefore much
-faster. The next versions will have more functions to address multi-valued and fuzzy-set QCA.
-The package doesn't currently handle missing values in the data, therefore it is not yet
-possible to perform simplifying assumptions.
+Starting with version 0.4-5 the package has a new function called "eqmcc" (from "E"nhanced
+Quine-McCluskey) that finds exact solutions with a substantially lower memory consumption,
+therefore much faster. The next versions will have more functions to address multi-valued
+and fuzzy-set QCA. The package doesn't currently handle missing values in the data, therefore
+it is not yet possible to perform simplifying assumptions.
 As of version 0.1-3 there is also a graphical user interface in the package QCAGUI.
 }
 
@@ -30,8 +30,8 @@ As of version 0.1-3 there is also a graphical user interface in the package QCAG
     \tabular{ll}{
     Package: \tab QCA\cr
     Type: \tab Package\cr
-    Version: \tab 0.4-8\cr
-    Date: \tab 2007-09-17\cr
+    Version: \tab 0.4-9\cr
+    Date: \tab 2007-09-30\cr
     License: \tab GPL version 2 or newer\cr
     }
 }
