@@ -11,7 +11,7 @@ successful, the solutions are exactly the same down to the last literal.
 It has about the same options as qmcc(), minus the "details" and "diffmatrix"
 arguments which are no longer required.
 It is called "eqmcc" because it doesn't follow the classic minimization algorithm but
-a more direct and rapid shortcut.
+a more direct and rapid 'e'nhancement.
 }
 
 \usage{
@@ -22,7 +22,8 @@ eqmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
 }
 
 \arguments{
-  \item{mydata}{the dataset used for minimization (dataframe or matrix)}
+  \item{mydata}{a truth table (an R object with class "truthTable"), or the dataset used
+  for minimization (either as a dataframe or as a matrix)}
   \item{outcome}{the name of the outcome variable from the dataset}
   \item{conditions}{a string vector containing the conditions' names from the dataset
   (if not specified, all variables but the outcome are included)}
@@ -35,7 +36,7 @@ eqmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
   \item{incl.0}{include the outcomes equal to 0 in the minimization procedure}
   \item{incl.ctr}{include the contradictions in the minimization procedure}
   \item{incl.mo}{include the missing outcome in the minimization procedure (not implemented yet)}
-  \item{quiet}{prints the solution without any other information}
+  \item{quiet}{print the solution without any other information}
   \item{chart}{print the prime implicants chart}
   \item{use.letters}{should letters be used instead of column names}
   \item{show.cases}{show the lines corresponding to every minimized prime implicant}
@@ -52,7 +53,7 @@ Dusa, Adrian 2007 \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/WPSh
 Adrian Dusa\cr
 Romanian Social Data Archive\cr
 adi@roda.ro\cr
-Faculy of Sociology and Social Work, University of Bucharest\cr
+Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 

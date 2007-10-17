@@ -42,14 +42,19 @@ qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
   \item{diffmat}{generate the differences matrix}
 }
 
-\references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative
-and quantitative strategies}, Berkeley: University of California Press}
+\references{
+Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative
+and quantitative strategies}, Berkeley: University of California Press
+
+Dusa, Adrian 2007 \emph{A mathematical solution to the boolean minimization problem},
+http://www.compasss.org/WPShort.htm
+}
 
 \author{
 Adrian Dusa\cr
 Romanian Social Data Archive\cr
 adi@roda.ro\cr
-Faculy of Sociology and Social Work, University of Bucharest\cr
+Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 

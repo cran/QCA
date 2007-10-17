@@ -1,15 +1,17 @@
 \name{QCA-internal}
 
-\alias{sortVector}
-\alias{sortMatrix}
-\alias{writePrimeimp}
-\alias{writeSolution}
-\alias{verify.qmcc}
-\alias{verify.truthTable}
+\alias{base3rows}
 \alias{createChart}
+\alias{is.tt}
+\alias{print.tt}
 \alias{rowDominance}
 \alias{rowDominance2}
-\alias{base3rows}
+\alias{sortVector}
+\alias{sortMatrix}
+\alias{verify.qmcc}
+\alias{verify.tt}
+\alias{writePrimeimp}
+\alias{writeSolution}
 
 
 \title{Internal Functions}

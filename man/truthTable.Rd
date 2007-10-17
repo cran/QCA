@@ -16,8 +16,8 @@ outcome will be set to a contradiction ("C")\cr
 }
 
 \usage{
-truthTable(mydata, outcome = "", conditions = c(""), inside = FALSE,
-           complete = FALSE, show.cases = FALSE)
+truthTable(mydata, outcome = "", conditions = c(""), complete = FALSE,
+           show.cases = FALSE, quiet = FALSE)
 }
 
 \arguments{
@@ -25,10 +25,16 @@ truthTable(mydata, outcome = "", conditions = c(""), inside = FALSE,
   \item{outcome}{the name of the outcome variable in the dataset}
   \item{conditions}{the name of the conditions from the dataset (if not specified, all variables
   but the outcome are considered conditions)}
-  \item{inside}{if this function is called inside the "qmcc" function, it doesn't do formatting
-  and deletes the column with the corresponding rownames for each combination of conditions}
+  \item{quiet}{print the truth table on the screen or return it invisibly}
   \item{show.cases}{show the rownames from the original dataset for each combination of conditions}
   \item{complete}{prints the complete truth table, including the missing combinations}
+}
+
+\value{
+An object of class "truthTable", which is essentially a list with three components:
+- tt: the truth table itself\cr
+- indexes: a vector with the base 10 representation of the truth table's lines\cr
+- noflevels: a vector with the number of levels from all input variables\cr
 }
 
 \references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative 
@@ -38,7 +44,7 @@ and quantitative strategies}, Berkeley: University of California Press}
 Adrian Dusa\cr
 Romanian Social Data Archive\cr
 adi@roda.ro\cr
-Faculy of Sociology and Social Work, University of Bucharest\cr
+Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 

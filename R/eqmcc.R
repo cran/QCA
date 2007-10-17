@@ -4,73 +4,71 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
          quiet = FALSE, chart = FALSE, use.letters = TRUE, show.cases = FALSE) {
     
-    verify.qmcc(mydata, outcome, conditions, incl.rem, expl.1, expl.0, expl.ctr,
-                expl.mo, incl.1, incl.0, incl.ctr, incl.mo, quiet,
-                chart, use.letters, show.cases, diffmatrix)
     
-    if (all(conditions == c(""))) {
-        conditions <- names(mydata)[-which(names(mydata)==outcome)]
+    if (!is.tt(mydata)) {
+        verify.qmcc(mydata, outcome, conditions, incl.rem, expl.1, expl.0,
+                    expl.ctr, expl.mo, incl.1, incl.0, incl.ctr, incl.mo,
+                    quiet, chart, use.letters, show.cases)
+        
+        tt <- truthTable(mydata, outcome, conditions, show.cases=TRUE, quiet=TRUE)
+        if (all(conditions == c(""))) {
+            conditions <- names(mydata)[-which(names(mydata)==outcome)]
         }
-    mydata <- mydata[, c(conditions, outcome)]
+        mydata <- mydata[, c(conditions, outcome)]
+    }
+    else {
+        mydata$tt <- mydata$tt[mydata$tt[, outcome] != "?", ]
+        tt <- mydata
+        mydata <- mydata$tt[, seq(length(mydata$noflevels) + 1)]
+        if("cases" %in% gsub("^ *", "", gsub(" *$", "", names(tt$tt)))) {
+            rownames(mydata) <- tt$casenames
+        }
+    }
     
     if (quiet) {show.cases <- chart <- FALSE}
     
-     # coerce the primes data to a matrix
-    mydata <- as.matrix(mydata)
-    
-     # checking for complete data (without missings)
-    rows.with.missings <- which(is.na(rowSums(mydata)))
-    if (length(rows.with.missings) > 0) {
-        cat("\n")
-        stop("The following rows have missing data:\n",
-             paste(rows.with.missings, collapse=", "), "\n\n", sep="")
-        }
-    
-     # check if the data present values other than 0 and 1
-    if (!all(mydata %in% c(0,1))) {
-        not.valid <- which(!(mydata == 0 | mydata == 1), arr.ind = TRUE)
-        cat("\n")
-        stop("The data present values other than 0 or 1.\nSee for example line ",
-             not.valid[1, 1], ' from variable "', colnames(mydata)[not.valid[1, 2]], '"\n\n', call. = FALSE, sep="")
-        }
-    
-     # check if the user checked both something like "expl.1" AND "incl.1"
+    # check if the user checked both something like "expl.1" AND "incl.1"
     if (expl.1 & incl.1) {
         cat("\nWarning: the presence of the outcome cannot be both explained and included\n\n")
         incl.1 <- FALSE
-        }
+    }
     
-    tt <- truthTable(mydata, outcome, conditions, show.cases=TRUE, inside=TRUE)
     noflevels <- tt$noflevels
-     # print the truthtable on the screen, if not quiet
+    
+    # if not quiet, print the truth table on the screen
     if (!quiet) {
-        cat("\n")
-        rownames(tt$tt) <- paste(format(1:nrow(tt$tt)), " ")
-        print(prettyTable(tt$tt))
-        }
+        print.tt(tt, fooqmcc=TRUE)
+    }
     
     expl.incl <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr) | c(incl.1, incl.0, incl.ctr)]
-    explain <- as.matrix(tt$tt[tt$tt[[outcome]] %in% expl.incl, seq(length(noflevels))]) + 1
-    exclude <- as.matrix(tt$tt[!tt$tt[[outcome]] %in% expl.incl, seq(length(noflevels))]) + 1
+    subset.tt <- tt$tt[, outcome] %in% expl.incl
+    explain <- as.matrix(tt$tt[subset.tt, seq(length(noflevels))])
+    explain <- matrix(as.numeric(explain), ncol=length(noflevels)) + 1
+    
+    subset.tt <- !tt$tt[, outcome] %in% expl.incl
+    exclude <- as.matrix(tt$tt[subset.tt, seq(length(noflevels))])
+    exclude <- matrix(as.numeric(exclude), ncol=length(noflevels)) + 1
     
     expl.args <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr)]
-    inputt <- as.matrix(tt$tt[tt$tt[[outcome]] %in% expl.args, seq(length(noflevels))]) + 1
+    subset.tt <- tt$tt[, outcome] %in% expl.args
+    inputt <- as.matrix(tt$tt[subset.tt, seq(length(noflevels))])
+    inputt <- matrix(as.numeric(inputt), ncol=length(noflevels)) + 1
     
     if (nrow(explain) == 0) {
         cat("\n")
         stop("Nothing to explain. Please check the truth table.\n\n", call. = FALSE)
-        }
+    }
     else if (nrow(explain) == 1) {
         cat("\n")
         stop("Nothing to reduce. There is only one combination to be explained.\n\n",
              call. = FALSE)
-        }
+    }
     
     if (nrow(exclude) == 0 & incl.rem) {
         cat("\n")
         stop(paste("All combinations have been included into analysis. The solution is 1.\n",
                    "Please check the truth table.", "\n\n", sep=""), call. = FALSE)
-        }
+    }
     
     
     if (incl.rem) {
@@ -79,9 +77,9 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         while (index < length(primes)) {
             primes <- setdiff(primes, findSubsets(noflevels, primes[index], max(primes)))
             index <- index + 1
-            }
-        primes <- getRow(noflevels + 1, primes)
         }
+        primes <- getRow(noflevels + 1, primes)
+    }
     else {
         minimized <- 1
         while (any(minimized)) {
@@ -97,16 +95,16 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
                 result <- sapply(1:nrow(to.be.compared), function(idx) explain[to.be.compared[idx, 1], ])
                 result[!logical.result] <- 0
                 minimized[compare.minimized] <- TRUE
-                }
+            }
             if (sum(minimized) > 0) {
                 explain <- rbind(explain[!minimized, ], unique(t(result)))
-                }
             }
-        primes <- explain
         }
+        primes <- explain
+    }
     
     
-     # check if the condition names are not already letters
+    # check if the condition names are not already letters
     alreadyletters <- sum(nchar(colnames(mydata)[-ncol(mydata)])) == ncol(mydata) - 1
     co11apse <- ifelse(alreadyletters, "", "*")
     changed <- FALSE
@@ -216,7 +214,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
                     cat(" ", LETTERS[i], "is the presence of", varnames[i], "\n")
                     }
                 else {
-                    cat(" ", letters[i], "is the absence of", varnames[i], "\n")
+                    cat(" ", letters[i], "is the absence  of", varnames[i], "\n")
                     }
                 }
             }

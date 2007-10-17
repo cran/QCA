@@ -1,3 +1,7 @@
+
+- work on class methods
+- write a print.default method for class "truthTable"objects
+
 - extend the algorithm to multi-valued data
 - implement option to handle missing outcome
 - implement option for simplifying assumptions

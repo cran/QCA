@@ -34,7 +34,7 @@ Chicago: The University of Chicago Press}
 Adrian Dusa\cr
 Romanian Social Data Archive\cr
 adi@roda.ro\cr
-Faculy of Sociology and Social Work, University of Bucharest\cr
+Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
