@@ -27,7 +27,8 @@ a vector with the line numbers of all possible prime implicants
 }
 
 \references{
-Dusa, Adrian 2007 \emph{A mathematical approach to the boolean minimization problem}, http://www.compasss.org/WPShort.htm
+Dusa, Adrian 2007 \emph{A mathematical approach to the boolean minimization problem},
+http://www.compasss.org/WPShort.htm
 
 Dusa, Adrian 2007 \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/WPShort.htm
 }
@@ -36,7 +37,7 @@ Dusa, Adrian 2007 \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/WPSh
 Adrian Dusa\cr
 Romanian Social Data Archive\cr
 adi@roda.ro\cr
-Faculy of Sociology and Social Work, University of Bucharest\cr
+Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 

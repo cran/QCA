@@ -1,3 +1,9 @@
+Version 0.5-0
+    o truthTable() now returns an object of class "tt"
+    o new internal functions is.tt() and print.tt()
+    o qmcc() and eqmcc() now accept a truth table as well as raw data
+    
+
 Version 0.4-9
     o Functions findPrimes() and findSubsets() are now at user level
     o Improved version of factorize(), the former didn't detect some combinations
