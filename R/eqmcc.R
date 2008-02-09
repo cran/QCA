@@ -102,7 +102,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         primes <- explain
     }
     
-    
      # check if the condition names are not already letters
     alreadyletters <- sum(nchar(colnames(mydata)[-ncol(mydata)])) == ncol(mydata) - 1
     co11apse <- ifelse(alreadyletters, "", "*")

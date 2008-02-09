@@ -1,55 +1,50 @@
+Version 0.5-2
+    o fixed a major bug in createMatrix() regarding multi-value data
+    o trapped an error when the PI chart is too large, in function solveChart()
+
 Version 0.5-1
     o updated and cleaned most function descriptions
     o functions is.tt() and print.tt() are now user accessible
     o fixed a small bug in rowDominance2(), a matrix unintentionally dropped dimensions
     o fixed a small bug in eqmcc() for complete truth tables
       (thanks to ronggui for pointing that out)
-    
 
 Version 0.5-0
     o truthTable() now returns an object of class "tt"
     o new internal functions is.tt() and print.tt()
     o qmcc() and eqmcc() now accept a truth table as well as raw data
-    
 
 Version 0.4-9
     o Functions findPrimes() and findSubsets() are now at user level
     o Improved version of factorize(), the former didn't detect some combinations
-    
 
 Version 0.4-8
     o New internal function findPrimes()
-    
 
 Version 0.4-7
     o Fixed a minor bug in rowDominance2()
     o Improved, visibly faster function eqmcc()
     o Minor improvement to the truthTable() function
     o New internal function findSubsets()
-    
 
 Version 0.4-6
     o Reworked version of rowDominance2()
     o Function shortqca() is now eqmcc(), faster by a factor of at least 2
-    
 
 Version 0.4-5
     o New experimental function shortqca(),  many times faster than qmcc() for a large of
       causal conditions (over 11), with a _very_ low memory consumption; it can easily work
       with 16 or 17 causal conditions. It is only experimental but it looks very promising,
       especially for multi-valued data.
-    
 
 Version 0.4-3
     o Fixed a bug in qmcc(), a matrix unintentionally dropped dimensions upon subsetting
-    
 
 Version 0.4-2
     o Fixed a bug in qmcc(), the data was not correctly subsetted.
     o Fixed a bug in qmcc(), involving the argument "show.cases"
     o Added argument "use.letters" to function demoChart()
     o Fixed a minor bug in verify.truthTable()
-    
 
 Version 0.4-1
     o Added a namespace for the package
@@ -58,24 +53,20 @@ Version 0.4-1
       in each condition
     o Added option "diffmat" to the main qmcc() function; users can choose to generate
       the differences matrix or not: speed or low memory consumption.
-    
 
 Version 0.4-0
     o Reworked version of qmcc() with a substantially lower memory consumption;
       it can now work with up to 15 conditions in 1GB of RAM
     o New function base3rows()
     o Fixed minor bug in writeSolution()
-    
 
 Version 0.3-5
     o Reworked version of qmcc() which does no longer posess the tt argument
       It is faster, working reasonably with up to 13 conditions.
     o Reworked version of truthTable()
-    
 
 Version 0.3-1
     o New function rowDominance() to ease the solving of large prime implicants charts
-    
 
 Version 0.3-0
     o New function getRow() which returnes the combination of levels for
@@ -85,15 +76,12 @@ Version 0.3-0
     o qmcc() is now 20 times faster and it can reasonably work with up to 11 conditions
     o completely redesigned function createChart(), which is now internal
     o old function createChart() is now called demoChart()
-    
 
 Version 0.2-6
     o QCA doesn't depend on package "cluster" anymore as qmcc() is now based on dist()
       from the standard stats package, instead of daisy()
-    
 
 Version 0.2-5
-
     o Minor documentation fixes
     o Almost completely rewriten prettyTable() and minor changes to truthTable()
     o QCA doesn't depend on package "combinat" anymore, as function combn() is now
@@ -101,24 +89,17 @@ Version 0.2-5
     o New function sortMatrix() in the internal functions
     o Argument verifications are now part of internal functions
     o New function readTosmana() for reading Tosmana's XML data files
-    
 
 Version 0.2-2
-
     o Completely redesigned function allExpr() - now allExpressions()
       (way faster than the former)
     o Set up the internal functions; qmcc now looks less cluttered
     o New user level function solveChart() - pulled out of the main qmcc()
-    
 
 Version 0.2-1
-
     o New function createMatrix() which creates the base matrix for the truth table
     o New function base3rows()
     o Fixed minor bug in writeSolution()
-    
 
 Version 0.2-0
-
     o New function factorize() which finds all common factors of literals in a QCA solution
-    
