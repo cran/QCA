@@ -62,7 +62,7 @@ compared to 10 minutes in qmcc(). The memory consumption is tiny by comparison: 
 15 causal conditions, qmcc() uses about 1.5 GB of RAM, where eqmcc() uses about 50 MB.
 }
 
-\seealso{'truthTable', 'qmcc'}
+\seealso{\code{\link{truthTable}}, \code{\link{qmcc}}}
 
 \examples{
 data(Osa)

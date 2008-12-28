@@ -4,7 +4,7 @@ function(noflevels) {
     pow <- unique(noflevels)
     if (length(pow) == 1) {
         create <- function(idx) {
-            rep.int(c(sapply(seq_len(pow)-1, function(x) rep.int(x, pow^(idx-1)))),
+            rep.int(c(sapply(seq_len(pow) - 1, function(x) rep.int(x, pow^(idx - 1)))),
                     pow^conds/pow^idx)
         }
         sapply(rev(seq_len(conds)), create)

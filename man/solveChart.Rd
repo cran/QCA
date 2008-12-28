@@ -33,7 +33,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
-\seealso{'createChart'}
+\seealso{\code{\link{createChart}}}
 
 \examples{
 # the chart we're trying to further reduce

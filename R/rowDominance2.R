@@ -1,8 +1,8 @@
 `rowDominance2` <-
 function(mtrx, primes) {
     sums <- rowSums(mtrx)
-    mtrx <- mtrx[order(sums, decreasing=TRUE), ]
-    primes <- primes[order(sums, decreasing=TRUE), ]
+    mtrx <- mtrx[order(sums, decreasing=TRUE), , drop=FALSE]
+    primes <- primes[order(sums, decreasing=TRUE), , drop=FALSE]
     sums <- sort(sums, decreasing=T)
     line.no <- 1
     while(line.no < nrow(mtrx)) {

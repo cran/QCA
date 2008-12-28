@@ -68,7 +68,7 @@ differences matrix (which requires a lot of RAM), the analysis can squeeze a res
 conditions at the expense of 10 minutes of computing time.
 }
 
-\seealso{'truthTable', 'shortqca'}
+\seealso{\code{\link{truthTable}}, \code{\link{eqmcc}}}
 
 \examples{
 data(Osa)

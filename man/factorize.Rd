@@ -31,7 +31,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
-\seealso{'qmcc'}
+\seealso{\code{\link{qmcc}}, \code{\link{eqmcc}}}
 
 \examples{
 factorize("AB + AC + CD")

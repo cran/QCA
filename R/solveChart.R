@@ -13,7 +13,7 @@ function(chart) {
          # create a matrix with all possible combinations of k prime implicants
         combos <- combn(nrow(chart), k)
          # sol.matrix will be a subset of the chart matrix with all minimum solutions
-        sol.matrix <- combos[, apply(combos, 2, function(idx) all(colSums(chart[idx, , drop=FALSE])))]
+        sol.matrix <- combos[, apply(combos, 2, function(idx) all(colSums(chart[idx, , drop=FALSE]) > 0))]
         }
     else {
         sol.matrix <- 1:nrow(chart)

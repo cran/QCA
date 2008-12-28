@@ -1,4 +1,5 @@
 
+- drop function prettyString on behalf of the native strwrap
 - work on class methods
 - write a print.default method for class "truthTable"objects
 

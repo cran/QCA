@@ -41,7 +41,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
-\seealso{'getRow', 'findSubsets'}
+\seealso{\code{\link{getRow}}, \code{\link{findSubsets}}}
 
 \examples{
 # all three conditions are binary, having two levels: 0 and 1

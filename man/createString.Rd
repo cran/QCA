@@ -30,7 +30,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
-\seealso{'create.table'}
+\seealso{\code{\link{createChart}}}
 
 \examples{
 test.dataset <- data.frame(First=c(1,1), Second=c(0,1), Third=c(0,0))
