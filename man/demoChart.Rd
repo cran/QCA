@@ -43,7 +43,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
-\seealso{'prettyTable'}
+\seealso{\code{\link{prettyTable}}}
 
 \examples{
 

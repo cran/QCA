@@ -21,8 +21,7 @@ memory hungry therefore very slow.
 Starting with version 0.4-5 the package has a new function called "eqmcc" (from "E"nhanced
 Quine-McCluskey) that finds exact solutions with a substantially lower memory consumption,
 therefore much faster. The next versions will have more functions to address multi-valued
-and fuzzy-set QCA. The package doesn't currently handle missing values in the data, therefore
-it is not yet possible to perform simplifying assumptions.
+and fuzzy-set QCA. The package doesn't currently handle missing values in the data.
 As of version 0.1-3 there is also a graphical user interface in the package QCAGUI.
 }
 
@@ -30,15 +29,15 @@ As of version 0.1-3 there is also a graphical user interface in the package QCAG
     \tabular{ll}{
     Package: \tab QCA\cr
     Type: \tab Package\cr
-    Version: \tab 0.5-0\cr
-    Date: \tab 2007-10-17\cr
+    Version: \tab 0.5-1\cr
+    Date: \tab 2008-12-28\cr
     License: \tab GPL version 2 or newer\cr
     }
 }
 
 \author{
 \tabular{ll}{
-Author: \tab Adrian Dusa <dusa.adrian@gmail.com>\cr
+Author: \tab Adrian Dusa <dusa.adrian@unibuc.ro>\cr
 Maintainer: \tab Adrian Dusa <dusa.adrian@gmail.com>
 }}
 

@@ -5,11 +5,11 @@
 \title{Create a matrix with all possible combinations of conditions}
 
 \description{
-There are \eqn{3^k-1} possible expressions (where k is the number of conditions)
+There are \eqn{3^k - 1} possible expressions (where \eqn{k} is the number of conditions)
 for a crisp-set procedure. Possible values for conditions are 1 (presence), 0 (absence) and NA
 (the condition being a subset of a larger one).
-The matrix grows exponentially so it is not reccomended to run this function for large number of 
-conditions (say over 12) as the computer will quickly run out of resources.
+The matrix grows exponentially so it is not reccomended to run this function for a large number of 
+causal conditions (say over 12) as the computer will quickly run out of resources.
 }
 
 \usage{
@@ -24,7 +24,7 @@ allExpressions(no.conditions, inside=TRUE, arrange=FALSE)
 }
 
 \value{
-a matrix with \eqn{3^k-1} rows
+a matrix with \eqn{3^k - 1} rows
 }
 
 \references{Ragin, Charles C. 2000 \emph{Fuzzy-set social science},

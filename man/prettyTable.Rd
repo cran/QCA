@@ -31,7 +31,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
-\seealso{'print'}
+\seealso{\code{\link[base]{print}}}
 
 \examples{
 mymatrix <- matrix(sample(0:1, 20, replace=TRUE), nrow=5)

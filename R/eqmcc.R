@@ -21,7 +21,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         tt <- mydata
         mydata <- mydata$tt[, seq(length(mydata$noflevels) + 1)]
         if("cases" %in% gsub("^ *", "", gsub(" *$", "", names(tt$tt)))) {
-            rownames(mydata) <- tt$casenames
+            rownames(mydata) <- tt$casenames[tt$casenames != ""]
         }
     }
     
@@ -37,7 +37,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     # if not quiet, print the truth table on the screen
     if (!quiet) {
-        print.tt(tt, fooqmcc=TRUE)
+        print.tt(tt, funqmcc=TRUE)
     }
     
     expl.incl <- c(1, 0, "C")[c(expl.1, expl.0, expl.ctr) | c(incl.1, incl.0, incl.ctr)]
@@ -73,15 +73,14 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     if (incl.rem) {
         primes <- sort(setdiff(findPrimes(noflevels, explain), findPrimes(noflevels, exclude)))
-        index <- 1
-        while (index < length(primes)) {
+        index <- 0
+        while ((index <- index + 1) < length(primes)) {
             primes <- setdiff(primes, findSubsets(noflevels, primes[index], max(primes)))
-            index <- index + 1
         }
         primes <- getRow(noflevels + 1, primes)
     }
     else {
-        minimized <- 1
+        minimized <- TRUE
         while (any(minimized)) {
             minimized <- logical(nrow(explain))
             distance <- dist(explain, method="manhattan")
@@ -104,7 +103,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     }
     
     
-    # check if the condition names are not already letters
+     # check if the condition names are not already letters
     alreadyletters <- sum(nchar(colnames(mydata)[-ncol(mydata)])) == ncol(mydata) - 1
     co11apse <- ifelse(alreadyletters, "", "*")
     changed <- FALSE

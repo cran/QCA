@@ -38,17 +38,15 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     any.inclusions <- any(c(incl.0, incl.1, incl.ctr, incl.rem))
     repetitions <- ifelse(any.inclusions, 2, 1)
     
-    # print the truthtable on the screen, if not quiet
+    # if not quiet, print the truth table on the screen
     if (!quiet) {
-        cat("\n")
-        rownames(tt$tt) <- paste(format(1:nrow(tt$tt)), " ")
-        print(prettyTable(tt$tt))
+        print.tt(tt, funqmcc=TRUE)
     }
     
     line.tt <- tt$indexes
     
     # Compute the multiple bases.
-    mbase <- c(rev(cumprod(rev(tt$noflevels + 1))), 1)[-1]
+    mbase <- rev(c(1, cumprod(rev(tt$noflevels + 1))))[-1]
     
     # Compute all possible line numbers - equivalent of the 2^k combinations
     totlines <- base3rows(length(tt$noflevels))

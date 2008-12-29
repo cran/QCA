@@ -33,7 +33,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
-\seealso{'createMatrix', 'expand.grid'}
+\seealso{\code{\link{createMatrix}}, \code{\link[base]{expand.grid}}}
 
 \examples{
 # all three conditions are binary, having two levels: 0 and 1

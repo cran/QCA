@@ -32,7 +32,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
-\seealso{cat, strsplit}
+\seealso{\code{\link[base]{cat}}, \code{\link[base]{strsplit}}, \code{\link[base]{strwrap}}}
 
 \examples{
 set.seed(1234)

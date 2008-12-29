@@ -40,7 +40,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
-\seealso{'findPrimes'}
+\seealso{\code{\link{findPrimes}}}
 
 \examples{
 # all three conditions are binary, having two levels: 0 and 1

@@ -5,8 +5,8 @@ function(x) {
 
 
 `print.tt` <-
-function(x, fooqmcc=FALSE, ...) {
-    if (!fooqmcc & prod(x$noflevels) > 1024) {
+function(x, funqmcc=FALSE, ...) {
+    if (!funqmcc & prod(x$noflevels) > 1024) {
         cat("\n")
         cat(paste("Warning: The truth table is too large (", prod(x$noflevels), " rows). ",
                    "Printing it on the screen is unmeaningful.\n         ",
@@ -14,7 +14,7 @@ function(x, fooqmcc=FALSE, ...) {
     }
     else {
         nofconditions <- length(x$noflevels)
-        if (fooqmcc) x$tt <- x$tt[x$tt[, nofconditions + 1] != "?", ]
+        if (funqmcc) x$tt <- x$tt[x$tt[, nofconditions + 1] != "?", ]
         names.mydata <- colnames(x$tt)[seq(nofconditions + 1)]
         colnames(x$tt)[seq(nofconditions)] <- LETTERS[seq(nofconditions)]
         colnames(x$tt)[nofconditions + 1] <- "OUT"

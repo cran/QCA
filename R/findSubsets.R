@@ -1,8 +1,8 @@
 `findSubsets` <-
 function(noflevels, row.no, maximum) {
     if (missing(maximum)) maximum <- prod(noflevels + 1)
-    base3row <- getRow(noflevels + 1, row.no)
-    mbase <- c(rev(cumprod(rev(noflevels + 1))), 1)[-1]
+    mbaserow <- getRow(noflevels + 1, row.no)
+    mbase <- rev(c(1, cumprod(rev(noflevels + 1))))[-1]
     
     increment <- function(x, y, cond.levels) {
         a <- x
@@ -19,15 +19,10 @@ function(noflevels, row.no, maximum) {
         return(x)
     }
     
-    indices <- which(base3row == 0)
+    indices <- which(!mbaserow)
     for (k in rev(indices)) {
         row.no <- increment(row.no, mbase[k], noflevels[k])
     }
     return(row.no[-1])
 }
-
-
-
-
-
 

@@ -1,3 +1,11 @@
+Version 0.5-1
+    o updated and cleaned most function descriptions
+    o functions is.tt() and print.tt() are now user accessible
+    o fixed a small bug in rowDominance2(), a matrix unintentionally dropped dimensions
+    o fixed a small bug in eqmcc() for complete truth tables
+      (thanks to ronggui for pointing that out)
+    
+
 Version 0.5-0
     o truthTable() now returns an object of class "tt"
     o new internal functions is.tt() and print.tt()

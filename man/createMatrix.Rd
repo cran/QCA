@@ -29,7 +29,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 adi@sas.unibuc.ro
 }
 
-\seealso{'truthTable'}
+\seealso{\code{\link{truthTable}}}
 
 \examples{
 # create a binary matrix based on 3 conditions
