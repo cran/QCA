@@ -55,7 +55,7 @@ Adrian Dusa\cr
 Romanian Social Data Archive\cr
 adi@roda.ro\cr
 Faculty of Sociology and Social Work, University of Bucharest\cr
-adi@sas.unibuc.ro
+dusa.adrian@unibuc.ro
 }
 
 \note{The function finds an exact solution very quickly for relatively small number of conditions.
