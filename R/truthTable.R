@@ -3,12 +3,11 @@ function(mydata, outcome = "", conditions = c(""), complete = FALSE,
          show.cases = FALSE, quiet = FALSE) {
     
     verify.tt(mydata, outcome, conditions, complete, show.cases)
-    
     if (all(conditions == c(""))) {
         conditions <- names(mydata)[-which(names(mydata) == outcome)]
     }
+        
     mydata <- mydata[, c(conditions, outcome)]
-    
     nofconditions <- length(conditions)
     
     # the data MUST begin with 0 and MUST be incremented by 1 for each level
@@ -36,15 +35,18 @@ function(mydata, outcome = "", conditions = c(""), complete = FALSE,
     
     all.lines <- vector(mode="list")
     
-    for (i in sort(unique(mydata[, outcome]))) {
+    outcome.values <- sort(unique(mydata[, outcome]))
+    
+    for (i in 1:length(outcome.values)) {
         tt <- cbind(tt, "-")
-        colnames(tt)[nofconditions + 2 + i] <- paste("freq", i, sep="")
+        colnames(tt)[nofconditions + 1 + i] <- paste("freq", outcome.values[i], sep="")
         tt[, ncol(tt)] <- as.character(tt[, ncol(tt)])
-        linesubset <- table(line.mydata[mydata[, outcome] == i])
-        tt[match(names(linesubset), line.tt), nofconditions + i + 2] <- linesubset
-        tt[match(names(linesubset), line.tt), outcome] <- i
-        all.lines[[i + 1]] <- names(linesubset)
+        linesubset <- table(line.mydata[mydata[, outcome] == outcome.values[i]])
+        tt[match(names(linesubset), line.tt), nofconditions + 1 + i] <- linesubset
+        tt[match(names(linesubset), line.tt), outcome] <- outcome.values[i]
+        all.lines[[i]] <- names(linesubset)
     }
+    
     res <- table(unlist(all.lines))
     if (any(match(names(res[res > 1]), line.tt))) {
          tt[match(names(res[res > 1]), line.tt), outcome] <- "C"

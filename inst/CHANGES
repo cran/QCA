@@ -1,3 +1,10 @@
+Version 0.5-3
+    o fixed a minor bug in truthTable(), now it correctly arranges the columns
+      corresponding to the outcome values
+    o truthTable() now allows for multi-values, both in the causal conditions and in
+      the outcome
+    o 
+
 Version 0.5-2
     o fixed a major bug in createMatrix() regarding multi-value data
     o trapped an error when the PI chart is too large, in function solveChart()
@@ -16,7 +23,7 @@ Version 0.5-0
 
 Version 0.4-9
     o Functions findPrimes() and findSubsets() are now at user level
-    o Improved version of factorize(), the former didn't detect some combinations
+    o Improved version of factorize(), the former did not detect some combinations
 
 Version 0.4-8
     o New internal function findPrimes()
@@ -78,13 +85,13 @@ Version 0.3-0
     o old function createChart() is now called demoChart()
 
 Version 0.2-6
-    o QCA doesn't depend on package "cluster" anymore as qmcc() is now based on dist()
+    o QCA does not depend on package "cluster" anymore as qmcc() is now based on dist()
       from the standard stats package, instead of daisy()
 
 Version 0.2-5
     o Minor documentation fixes
     o Almost completely rewriten prettyTable() and minor changes to truthTable()
-    o QCA doesn't depend on package "combinat" anymore, as function combn() is now
+    o QCA does not depend on package "combinat" anymore, as function combn() is now
       part of the "utils" package (loaded by default)
     o New function sortMatrix() in the internal functions
     o Argument verifications are now part of internal functions
