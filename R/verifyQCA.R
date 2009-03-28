@@ -110,13 +110,5 @@ function(mydata, outcome = "", conditions = c(""), complete = FALSE, show.cases 
         cat("\n")
         stop("Missing data found; this is not (yet) supported.\n\n", call. = FALSE)
     }
-    
-    # check if the data present values other than 0 and 1
-    if (!all(as.matrix(mydata) %in% c(0, 1))) {
-        not.valid <- which(!(mydata == 0 | mydata == 1), arr.ind = TRUE)
-        cat("\n")
-        stop("The data present values other than 0 or 1.\nSee for example line ",
-             not.valid[1, 1], ' from variable "', colnames(mydata)[not.valid[1, 2]], '"\n\n', call. = FALSE, sep="")
-    }
 }
 
