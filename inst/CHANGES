@@ -1,9 +1,13 @@
+Version 0.5-4
+    o eliminated the error message if there is only one causal combination to
+      explain, it seems this is more informative than a logically equivalent
+      error message (thanks to Burt Monroe for pointing that)
+
 Version 0.5-3
     o fixed a minor bug in truthTable(), now it correctly arranges the columns
       corresponding to the outcome values
     o truthTable() now allows for multi-values, both in the causal conditions and in
       the outcome
-    o 
 
 Version 0.5-2
     o fixed a major bug in createMatrix() regarding multi-value data

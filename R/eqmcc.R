@@ -58,11 +58,11 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         cat("\n")
         stop("Nothing to explain. Please check the truth table.\n\n", call. = FALSE)
     }
-    else if (nrow(explain) == 1) {
-        cat("\n")
-        stop("Nothing to reduce. There is only one combination to be explained.\n\n",
-             call. = FALSE)
-    }
+    #else if (nrow(explain) == 1) {
+    #    cat("\n")
+    #    stop("Nothing to reduce. There is only one combination to be explained.\n\n",
+    #         call. = FALSE)
+    #}
     
     if (nrow(exclude) == 0 & incl.rem) {
         cat("\n")
@@ -104,26 +104,26 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
      # check if the condition names are not already letters
     alreadyletters <- sum(nchar(colnames(mydata)[-ncol(mydata)])) == ncol(mydata) - 1
-    co11apse <- ifelse(alreadyletters, "", "*")
+    collapse <- ifelse(alreadyletters, "", "*")
     changed <- FALSE
     
      # if not already letters and user specifies using letters for conditions, change it
     if (use.letters & !alreadyletters) {
         colnames(primes) <- colnames(inputt) <- LETTERS[1:ncol(primes)]
         changed <- TRUE
-        co11apse = ""
+        collapse = ""
         }
     else {
         colnames(primes) <- colnames(inputt) <- colnames(mydata[, seq(ncol(mydata) - 1)])
         }
     
-    initial <- apply(inputt, 1, writePrimeimp, co11apse=co11apse)
+    initial <- apply(inputt, 1, writePrimeimp, collapse=collapse)
     
      # create the prime implicants chart
     mtrx <- createChart(primes, inputt)
     reduced <- rowDominance2(mtrx, primes)
     
-    primeimp <- apply(reduced$primes, 1, writePrimeimp, co11apse=co11apse)
+    primeimp <- apply(reduced$primes, 1, writePrimeimp, collapse=collapse)
     primeimpsort <- sortVector(primeimp)
     mtrx <- reduced$mtrx[match(primeimpsort, primeimp), , drop=FALSE]
     rownames(mtrx) <- primeimpsort
