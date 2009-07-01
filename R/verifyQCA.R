@@ -39,7 +39,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
         else {
             cat("\n")
-            stop("Cannot find a solution with only one condition.\n\n", call. = FALSE)
+            stop("Cannot find a solution with only one causal condition.\n\n", call. = FALSE)
         }
     }
     

@@ -88,11 +88,11 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             cat("\n")
             stop("Nothing to explain. Please check the truth table.\n\n", call. = FALSE)
         }
-        else if (length(linenums) == 1) {
-            cat("\n")
-            stop("Nothing to reduce. There is only one combination to be explained.\n\n",
-                 call. = FALSE)
-        }
+        #else if (length(linenums) == 1) {
+        #    cat("\n")
+        #    stop("Nothing to reduce. There is only one combination to be explained.\n\n",
+        #         call. = FALSE)
+        #}
         else if (length(linenums) == prod(tt$noflevels)) {
             cat("\n")
             stop(paste("All combinations have been included into analysis. The solution is 1.\n",
@@ -105,7 +105,8 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
         
         
-        iteration <- minimized <- 1
+        iteration <- 1
+        minimized <- TRUE
         
         while (any(minimized)) {
             if (details) {
@@ -167,7 +168,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     # check if the condition names are not already letters
     alreadyletters <- sum(nchar(colnames(mydata)[-ncol(mydata)])) == ncol(mydata) - 1
-    co11apse <- ifelse(alreadyletters, "", "*")
+    collapse <- ifelse(alreadyletters, "", "*")
     changed <- FALSE
     
     # if not already letters and user specifies using letters for conditions, change it
@@ -177,7 +178,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             colnames(input.incl) <- LETTERS[1:ncol(input)]
         }
         changed <- TRUE
-        co11apse = ""
+        collapse = ""
     }
     else {
         colnames(input) <- colnames(copyinput) <- colnames(mydata[, seq(ncol(mydata) - 1)])
@@ -186,7 +187,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
     }
     
-    initial <- apply(copyinput, 1, writePrimeimp, co11apse=co11apse)
+    initial <- apply(copyinput, 1, writePrimeimp, collapse=collapse)
     
     
     # create the prime implicants chart
@@ -197,7 +198,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         input <- input[!reduced, , drop=FALSE]
     }
     
-    primeimp <- apply(input, 1, writePrimeimp, co11apse=co11apse)
+    primeimp <- apply(input, 1, writePrimeimp, collapse=collapse)
     primeimpsort <- sortVector(primeimp)
     mtrx <- mtrx[match(primeimpsort, primeimp), , drop=FALSE]
     rownames(mtrx) <- primeimpsort
@@ -224,7 +225,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             input.incl <- input.incl[!reduced, , drop=FALSE]
         }
         
-        primeimp.incl <- apply(input.incl, 1, writePrimeimp, co11apse=co11apse)
+        primeimp.incl <- apply(input.incl, 1, writePrimeimp, collapse=collapse)
         primeimpsort <- sortVector(primeimp.incl)
         mtrx.incl <- mtrx.incl[match(primeimpsort, primeimp.incl), , drop=FALSE]
         rownames(mtrx.incl) <- primeimpsort
