@@ -1,26 +1,32 @@
 `createString` <-
-function(mydata, use.letters=TRUE) {
-    if (is.null(colnames(mydata))) {colnames(mydata) <- LETTERS[1:ncol(mydata)]}
-    alreadyletters <- sum(nchar(colnames(mydata))) == ncol(mydata)
+function(mydata, use.letters=TRUE, uplow=TRUE) {
+    mydata <- changemydata <- as.matrix(mydata)
+    conditions <- colnames(mydata)
+    if (is.null(conditions)) {conditions <- LETTERS[1:ncol(mydata)]}
+    alreadyletters <- sum(nchar(conditions)) == ncol(mydata)
     changed <- FALSE
     if (use.letters & !alreadyletters & ncol(mydata) < 27) {
-        varnames <- colnames(mydata)
-        colnames(mydata) <- LETTERS[1:ncol(mydata)]
+        conditions <- LETTERS[1:ncol(mydata)]
         changed <- TRUE
         }
     
-    for (i in 1:ncol(mydata)) { 
-        mydata[, i][mydata[, i] == 1] <- toupper(colnames(mydata)[i])
-        mydata[, i][mydata[, i] == 0] <- tolower(colnames(mydata)[i])
+    if (uplow) {
+        changemydata[mydata == 0] <- tolower(rep(conditions, each=nrow(mydata))[mydata == 0])
+        changemydata[mydata == 1] <- toupper(rep(conditions, each=nrow(mydata))[mydata == 1])
+    } else {
+        for (i in sort(unique(as.vector(mydata)))) {
+            changemydata[mydata == i] <- paste(rep(conditions, each=nrow(mydata))[mydata == i], "(", i, ")", sep="")
         }
+    }
     
     input <- rep(NA, nrow(mydata))
     
-    ifelse(alreadyletters | changed, collapsemethod <- "", collapsemethod <- "*")
+    if(!all(mydata %in% c(0, 1))) uplow <- FALSE
+    collapse <- ifelse((alreadyletters | changed) & uplow, "", "*")
     
     for (i in 1:nrow(mydata)) {
-        input[i] <- paste(mydata[i, ], collapse = collapsemethod)
-        }
-    input
+        input[i] <- paste(changemydata[i, ], collapse = collapse)
     }
+    return(input)
+}
 

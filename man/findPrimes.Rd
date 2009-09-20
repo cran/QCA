@@ -28,9 +28,9 @@ a vector with the line numbers of all possible prime implicants
 
 \references{
 Dusa, Adrian 2007 \emph{A mathematical approach to the boolean minimization problem},
-http://www.compasss.org/WPShort.htm
+http://www.compasss.org/files/WPfiles/Dusa2007.pdf
 
-Dusa, Adrian 2007 \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/WPShort.htm
+Dusa, Adrian 2007 \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
 }
 
 \author{

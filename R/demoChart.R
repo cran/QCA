@@ -1,10 +1,9 @@
 `demoChart` <-
-function(rows, columns, use.letters=TRUE) {
-    splitmethod <- ifelse(use.letters, "", "\\*")
+function(rows, columns, splitmethod="") {
     mtrx <- t(sapply(rows, function(x) {
         y <- unlist(strsplit(x, splitmethod))
         sapply(columns, function(idcol) {
-            all(sapply(y, function(z) regexpr(z, idcol) > 0))
+            all(sapply(y, function(z) z %in% unlist(strsplit(idcol, splitmethod))))
             })
         }))
     colnames(mtrx) <- columns

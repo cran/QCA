@@ -6,9 +6,17 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          show.cases = FALSE, diffmat=TRUE) {
     
     if (!is.tt(mydata)) {
-        verify.qmcc(mydata, outcome, conditions, incl.rem, expl.1, expl.0, expl.ctr,
+        verify.data(mydata, outcome, conditions, incl.rem, expl.1, expl.0, expl.ctr,
                     expl.mo, incl.1, incl.0, incl.ctr, incl.mo, quiet,
                     chart, use.letters, show.cases, diffmatrix)
+        
+        # check if the data present values other than 0 and 1
+        if (!all(as.matrix(mydata) %in% c(0, 1))) {
+            not.valid <- which(!(mydata == 0 | mydata == 1), arr.ind = TRUE)
+            cat("\n")
+            stop("The data present values other than 0 or 1.\nSee for example line ",
+                 not.valid[1, 1], ' from variable "', colnames(mydata)[not.valid[1, 2]], '"\n\n', call. = FALSE, sep="")
+        }
         
         tt <- truthTable(mydata, outcome, conditions, show.cases=TRUE, quiet=TRUE)
         if (all(conditions == c(""))) {
@@ -88,12 +96,8 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             cat("\n")
             stop("Nothing to explain. Please check the truth table.\n\n", call. = FALSE)
         }
-        #else if (length(linenums) == 1) {
-        #    cat("\n")
-        #    stop("Nothing to reduce. There is only one combination to be explained.\n\n",
-        #         call. = FALSE)
-        #}
-        else if (length(linenums) == prod(tt$noflevels)) {
+        
+        if (length(linenums) == prod(tt$noflevels)) {
             cat("\n")
             stop(paste("All combinations have been included into analysis. The solution is 1.\n",
                        "Please check the truth table.", "\n\n", sep=""), call. = FALSE)
@@ -187,7 +191,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
     }
     
-    initial <- apply(copyinput, 1, writePrimeimp, collapse=collapse)
+    initial <- apply(copyinput, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
     
     
     # create the prime implicants chart
@@ -198,7 +202,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         input <- input[!reduced, , drop=FALSE]
     }
     
-    primeimp <- apply(input, 1, writePrimeimp, collapse=collapse)
+    primeimp <- apply(input, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
     primeimpsort <- sortVector(primeimp)
     mtrx <- mtrx[match(primeimpsort, primeimp), , drop=FALSE]
     rownames(mtrx) <- primeimpsort
@@ -225,7 +229,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             input.incl <- input.incl[!reduced, , drop=FALSE]
         }
         
-        primeimp.incl <- apply(input.incl, 1, writePrimeimp, collapse=collapse)
+        primeimp.incl <- apply(input.incl, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
         primeimpsort <- sortVector(primeimp.incl)
         mtrx.incl <- mtrx.incl[match(primeimpsort, primeimp.incl), , drop=FALSE]
         rownames(mtrx.incl) <- primeimpsort
@@ -288,50 +292,48 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     cat("\n\n")
     
     if (!is.list(solution)) {
-        cat("Solution: ", prettyString(solution, 70, 10, " + "), "\n\n", sep="")
+        cat(prettyString("Solution:", paste(sortVector(solution), collapse=" + ")))
     }
     else {
-        cat("There are multiple solutions:\n")
+        cat("There are multiple solutions:\n\n")
         prettyNums <- formatC(seq(length(solution)), dig = nchar(length(solution))-1, flag = 0)
         for (i in seq(length(solution))) {
-            cat("Solution ", paste(prettyNums[i], ": ", sep=""),
-                prettyString(sortVector(solution[[i]]), 70, 11, " + "), "\n", sep="")
+            preamble <- paste("Solution ", prettyNums[i], ":", sep="")
+            str.solution <- paste(sortVector(solution[[i]]), collapse=" + ")
+            cat(prettyString(preamble, str.solution))
         }
+        cat("\n")
         if (length(ess.prime.imp) > 0) {
-            cat("Essential prime implicants: ", 
-                prettyString(sortVector(ess.prime.imp), 53, 28, " + "), "\n", sep="")
+            preamble <- "Essential prime implicants:"
+            str.implicants <- paste(sortVector(ess.prime.imp), collapse=" + ")
+            cat(prettyString(preamble, str.implicants))
         }
         cat("\n")
     }
     
-    
      # create a string vector of all prime implicants, sorted according to size
     all.primeimps <- NULL
-    for (i in 1:length(solution)) {
+    for (i in seq(length(solution))) {
         all.primeimps <- c(all.primeimps, solution[[i]])
-    }
+        }
     all.primeimps <- sortVector(unique(all.primeimps))
     
-    # print the lines from the initial data, which correspond to the minimized prime implicants
+     # print the lines from the initial data, which correspond to the minimized prime implicants
     if (show.cases) {
          # for start, mydata.rows will be a string with all _existing_ combinations (e.g. "AbcDe")
         mydata.rows <- createString(mydata[, -which(colnames(mydata) == outcome)], use.letters)
-        mtrx <- demoChart(all.primeimps, mydata.rows, use.letters)
+        mtrx <- demoChart(all.primeimps, mydata.rows, ifelse(use.letters, "", "\\*"))
         
-        # replace mydata.rows with a vector of all rownames (case IDs) from the initial data
+         # replace mydata.rows with a vector of all rownames (case IDs) from the initial data
         mydata.rows <- rownames(mydata)
         
-        # check which is the largest number of characters in the prime implicant names
-        max.length <- max(nchar(all.primeimps))
-        for (i in 1:length(all.primeimps)) {
-            rows.explained <- mydata.rows[mtrx[i, ]]
-            lines.explained <- paste(rows.explained, collapse="; ")
-            if (nchar(lines.explained) > 50) {
-                lines.explained <- prettyString(rows.explained, 50, max.length + 22, "; ")
-            }
-            cat(all.primeimps[i], 
-                paste(rep(" ", max.length - nchar(all.primeimps[i]) + 1), collapse=""),
-                "correspond to lines: ", lines.explained, "\n", sep="")
+        cat("Correspondence to cases:\n")
+        for (i in seq(length(all.primeimps))) {
+            blanks <- paste(rep(" ", max(nchar(all.primeimps)) - nchar(all.primeimps[i])), collapse="")
+            cat(blanks)
+            preamble <- paste(all.primeimps[i], ":", sep="")
+            lines.explained <- paste(mydata.rows[mtrx[i, ]], collapse="; ")
+            cat(prettyString(preamble, lines.explained, blanks))
         }
         cat("\n")
     }
@@ -344,17 +346,26 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         for (i in unique(var.cond)) {
             if (length(which(var.cond == i)) > 1) {
                 cat(paste(letters[i], "/", LETTERS[i], sep=""), "is the absence/presence of", varnames[i], "\n")
-            }
+                }
             else {
                 if (conditions[which(var.cond == i)] %in% LETTERS) {
                     cat(" ", LETTERS[i], "is the presence of", varnames[i], "\n")
-                }
+                    }
                 else {
-                    cat(" ", letters[i], "is the  absence of", varnames[i], "\n")
+                    cat(" ", letters[i], "is the absence  of", varnames[i], "\n")
                 }
             }
         }
         cat("\n")
     }
+    
+    if (length(linenums) == 1) {
+        preamble <- "NB:"
+        warning.message <- paste("There is only one combination to be explained.",
+                                 "The solution is simply that combination,",
+                                 "this algorithm did not perform any minimization.")
+        cat("\n")
+        cat(prettyString(preamble, warning.message))
+        cat("\n")
+    }
 }
-
