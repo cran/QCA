@@ -1,9 +1,6 @@
 
 - work on a new function to solve the PI chart
 
-- drop function prettyString on behalf of the native strwrap
-
-- extend the algorithm to multi-valued data
 - implement option to handle missing outcome
 - implement option for simplifying assumptions
 - implement fuzzy-sets (inclusion) algorithms 

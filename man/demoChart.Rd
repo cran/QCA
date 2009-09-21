@@ -14,13 +14,13 @@ but its arguments are more complex.
 }
 
 \usage{
-demoChart(rows, columns, use.letters=TRUE)
+demoChart(rows, columns, splitmethod="")
 }
 
 \arguments{
   \item{rows}{a vector of strings, containing the prime implicants}                                 
   \item{columns}{a vector of strings, containing all combinations of conditions from the original data}
-  \item{use.letters}{are letters used instead of column names}
+  \item{splitmethod}{scalar, either "" or "\\*" to declare how to split the strings}
 }
 
 \value{

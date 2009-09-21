@@ -1,4 +1,4 @@
-`verify.qmcc` <-
+`verify.data` <-
 function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
          incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
@@ -67,12 +67,14 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         stop("Missing data found; this is not (yet) supported.\n\n", call. = FALSE)
     }
     
+    return(outcome)
+    
     # check if the data present values other than 0 and 1
-    if (!all(as.matrix(mydata) %in% c(0, 1))) {
-        not.valid <- which(!(mydata == 0 | mydata == 1), arr.ind = TRUE)
+    if (!all(mydata[, outcome] %in% c(0, 1))) {
+        not.valid <- which(!(outcome == 0 | outcome == 1))
         cat("\n")
-        stop("The data present values other than 0 or 1.\nSee for example line ",
-             not.valid[1, 1], ' from variable "', colnames(mydata)[not.valid[1, 2]], '"\n\n', call. = FALSE, sep="")
+        stop("The outcome variable present values other than 0 or 1.\nSee for example line ",
+             not.valid[1], "\n\n", call. = FALSE, sep="")
     }
 }
 

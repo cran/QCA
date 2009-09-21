@@ -10,6 +10,7 @@ bridge between the qualitative and quantitative worlds, and its fundamental phil
 on Mill's methods of inductive inquiry. Given a dataset with cases on the rows
 (or better said, case studies) and various conditions on the columns, this function finds
 which condition (or combination of conditions) is necessary and/or sufficient to trigger the outcome.
+As of version 0.6-0, qmcc() is explicitely working with binary data only.
 }
 
 \usage{
@@ -46,8 +47,8 @@ qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
 Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative
 and quantitative strategies}, Berkeley: University of California Press
 
-Dusa, Adrian 2007 \emph{A mathematical solution to the boolean minimization problem},
-http://www.compasss.org/WPShort.htm
+Dusa, Adrian 2007 \emph{A mathematical solution to the boolean minimization problem}, available on
+http://www.compasss.org/pages/resources/wptheme.html
 }
 
 \author{

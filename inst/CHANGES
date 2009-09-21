@@ -1,28 +1,44 @@
+Version 0.6-0
+    o eqmcc() now accepts multi-valued data!
+    o eqmcc() gained a new argument "uplow" (FALSE by default), to print the
+      solution in upper/lower letters if at all possible
+    o Improved version of findPrimes(), to accommodate multi-valued data
+    o Improved version of createString(), to accommodate multi-valued data
+    o Improved version of writePrimeimp(), to accommodate multi-valued data
+    o Improved version of the internal function writePrimeimp(), to accommodate
+      multi-valued data
+    o Modified version of demoChart(), the argument "use.letters" was replaced
+      by "splitmethod"
+    o prettyString() is completely changed, using the native strwrap() and it is
+      now an internal function.
+    o qmcc() and eqmcc() were changed accordingly, using the new prettyString()
+    o New toy dataset "MV" to test multi-valued data
+
 Version 0.5-4
-    o eliminated the error message if there is only one causal combination to
+    o Eliminated the error message if there is only one causal combination to
       explain, it seems this is more informative than a logically equivalent
       error message (thanks to Burt Monroe for pointing that)
 
 Version 0.5-3
-    o fixed a minor bug in truthTable(), now it correctly arranges the columns
+    o Fixed a minor bug in truthTable(), now it correctly arranges the columns
       corresponding to the outcome values
     o truthTable() now allows for multi-values, both in the causal conditions and in
       the outcome
 
 Version 0.5-2
-    o fixed a major bug in createMatrix() regarding multi-value data
-    o trapped an error when the PI chart is too large, in function solveChart()
+    o Fixed a major bug in createMatrix() regarding multi-value data
+    o Trapped an error when the PI chart is too large, in function solveChart()
 
 Version 0.5-1
-    o updated and cleaned most function descriptions
-    o functions is.tt() and print.tt() are now user accessible
-    o fixed a small bug in rowDominance2(), a matrix unintentionally dropped dimensions
-    o fixed a small bug in eqmcc() for complete truth tables
+    o Updated and cleaned most function descriptions
+    o Functions is.tt() and print.tt() are now user accessible
+    o Fixed a small bug in rowDominance2(), a matrix unintentionally dropped dimensions
+    o Fixed a small bug in eqmcc() for complete truth tables
       (thanks to ronggui for pointing that out)
 
 Version 0.5-0
     o truthTable() now returns an object of class "tt"
-    o new internal functions is.tt() and print.tt()
+    o New internal functions is.tt() and print.tt()
     o qmcc() and eqmcc() now accept a truth table as well as raw data
 
 Version 0.4-9
@@ -99,7 +115,7 @@ Version 0.2-5
       part of the "utils" package (loaded by default)
     o New function sortMatrix() in the internal functions
     o Argument verifications are now part of internal functions
-    o New function readTosmana() for reading Tosmana's XML data files
+    o New function readTosmana() for reading Tosmana's XML data files'
 
 Version 0.2-2
     o Completely redesigned function allExpr() - now allExpressions()

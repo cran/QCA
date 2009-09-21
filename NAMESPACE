@@ -21,7 +21,7 @@ export(allExpressions,
     sortMatrix,
     sortVector,
     truthTable,
-    verify.qmcc,
+    verify.data,
     verify.tt,
     writePrimeimp,
     writeSolution)
