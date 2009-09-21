@@ -7,15 +7,15 @@ function (noflevels, input.combs) {
                  call. = FALSE)
             }
         else {
-            if (any(input.combs > prod(noflevels + 1))) {
+            if (any(input.combs > prod(noflevels))) {
                 cat("\n")
                 stop(paste("Some line numbers do not belong in the solution-space for",
                            length(noflevels), "causal conditions.\n\n"), call. = FALSE)
                 }
-            input.combs <- getRow(noflevels + 1, input.combs)
+            input.combs <- getRow(noflevels, input.combs)
             }
         }
-    mbase <- rev(c(1, cumprod(rev(noflevels + 1))))[-1]
+    mbase <- rev(c(1, cumprod(rev(noflevels))))[-1]
     allcombn <- t(createMatrix(rep(2, length(noflevels)))[-1, ])
     sort(unique(as.vector(apply(input.combs, 1, function(x) (x*mbase) %*% allcombn + 1))))
     }

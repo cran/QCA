@@ -20,8 +20,9 @@ However it is widely known that, for large number of conditions (over 15), the a
 memory hungry therefore very slow. 
 Starting with version 0.4-5 the package has a new function called "eqmcc" (from "E"nhanced
 Quine-McCluskey) that finds exact solutions with a substantially lower memory consumption,
-therefore much faster. The next versions will have more functions to address multi-valued
-and fuzzy-set QCA. The package doesn't currently handle missing values in the data.
+and from version 0.6-0 this function also performs multi-value QCA.
+The next versions of the package will have more functions to address fuzzy-set QCA and
+deal with missing values in the data.
 As of version 0.1-3 there is also a graphical user interface in the package QCAGUI.
 }
 
@@ -29,8 +30,8 @@ As of version 0.1-3 there is also a graphical user interface in the package QCAG
     \tabular{ll}{
     Package: \tab QCA\cr
     Type: \tab Package\cr
-    Version: \tab 0.6-0\cr
-    Date: \tab 2009-09-20\cr
+    Version: \tab 0.6-1\cr
+    Date: \tab 2009-09-21\cr
     License: \tab GPL version 2 or newer\cr
     }
 }
@@ -45,10 +46,11 @@ Maintainer: \tab Adrian Dusa <dusa.adrian@gmail.com>
 Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative and
 quantitative strategies}, Berkeley:University of California Press
 
-Dusa, Adrian 2007 \emph{A mathematical solution to the boolean minimization problem},
-http://www.compasss.org/WPShort.htm
+Dusa, Adrian (2007) \emph{A mathematical solution to the boolean minimization problem},
 
-Dusa, Adrian 2007 \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/WPShort.htm
+http://www.compasss.org/files/WPfiles/Dusa2007.pdf
+
+Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
 }
 
 \keyword{cluster}

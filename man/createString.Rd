@@ -16,7 +16,7 @@ createString(mydata, use.letters=TRUE, uplow=TRUE)
 \arguments{
   \item{mydata}{a matrix or a dataframe}
   \item{use.letters}{logical, use letters instead of column names}
-  \item{uplow}{logical, use upper/lower notation if possible}
+  \item{uplow}{logical, use upper/lower notation if possible, for binary data}
 }
 
 \value{

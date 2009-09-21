@@ -1,3 +1,10 @@
+Version 0.6-1
+    o Minor improvements to findPrimes() and findSubsets(), their first argument
+      "noflevels" now must be specifically declared in the higher dimension matrix
+    o Fixed a small bug in eqmcc() that prevented correct multi-value minimization
+      when not including the remainders (thanks to Damien Bol for pointing that)
+    o Argument "uplow" in eqmcc() is now TRUE by default
+
 Version 0.6-0
     o eqmcc() now accepts multi-valued data!
     o eqmcc() gained a new argument "uplow" (FALSE by default), to print the

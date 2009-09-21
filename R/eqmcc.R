@@ -3,7 +3,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
          incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
          quiet = FALSE, chart = FALSE, use.letters = TRUE, show.cases = FALSE,
-         uplow=FALSE) {
+         uplow=TRUE) {
     
     
     if (!is.tt(mydata)) {
@@ -68,10 +68,10 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     
     if (incl.rem) {
-        primes <- sort(setdiff(findPrimes(noflevels, explain), findPrimes(noflevels, exclude)))
+        primes <- sort(setdiff(findPrimes(noflevels + 1, explain), findPrimes(noflevels + 1, exclude)))
         index <- 0
         while ((index <- index + 1) < length(primes)) {
-            primes <- setdiff(primes, findSubsets(noflevels, primes[index], max(primes)))
+            primes <- setdiff(primes, findSubsets(noflevels + 1, primes[index], max(primes)))
         }
         primes <- getRow(noflevels + 1, primes)
     }
@@ -85,14 +85,21 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             to.be.compared <- as.matrix(which(distance == 1, arr.ind=TRUE))
             
             if (nrow(to.be.compared) > 0) {
-                logical.result <- apply(to.be.compared, 1, function(idx) explain[idx[1], ] == explain[idx[2], ])
-                compare.minimized <- unique(as.vector(to.be.compared))
-                result <- sapply(1:nrow(to.be.compared), function(idx) explain[to.be.compared[idx, 1], ])
-                result[!logical.result] <- 0
-                minimized[compare.minimized] <- TRUE
+                differences <- t(apply(to.be.compared, 1, function(idx) explain[idx[1], ] != explain[idx[2], ]))
+                result <- matrix(0, nrow=0, ncol=ncol(differences))
+                for (i in 1:nrow(differences)) {
+                    stable.values <- explain[to.be.compared[i, 1], !differences[i, ]]
+                    subset.explain <- apply(explain[, !differences[i, ]], 1, function(x) all(x == stable.values))
+                    if (sum(subset.explain) == noflevels[differences[i, ]]) {
+                        minimized[subset.explain] <- TRUE
+                        minimization.result <- explain[to.be.compared[i, 1], ]
+                        minimization.result[differences[i, ]] <- 0
+                        result <- rbind(result, as.vector(minimization.result))
+                    }
+                }
             }
             if (sum(minimized) > 0) {
-                explain <- rbind(explain[!minimized, ], unique(t(result)))
+                explain <- rbind(explain[!minimized, ], unique(result))
             }
         }
         primes <- explain
