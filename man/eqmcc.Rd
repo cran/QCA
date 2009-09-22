@@ -20,7 +20,7 @@ eqmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
      expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
      incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
      quiet = FALSE, chart = FALSE, use.letters = TRUE, show.cases = FALSE,
-     uplow=FALSE)
+     uplow=TRUE)
 }
 
 \arguments{
@@ -42,7 +42,7 @@ eqmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
   \item{chart}{logical, print the prime implicants chart}
   \item{use.letters}{logical, should letters be used instead of column names}
   \item{show.cases}{logical, show the lines corresponding to every minimized prime implicant}
-  \item{uplow}{logical, use upper/lower notation if possible}
+  \item{uplow}{logical, use upper/lower notation if possible, for binary data}
 }
 
 \references{
