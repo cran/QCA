@@ -322,7 +322,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     if (show.cases) {
          # for start, mydata.rows will be a string with all _existing_ combinations (e.g. "AbcDe")
         mydata.rows <- createString(mydata[, -which(colnames(mydata) == outcome)], use.letters)
-        mtrx <- demoChart(all.primeimps, mydata.rows, ifelse(use.letters, "", "\\*"))
+        mtrx <- demoChart(all.primeimps, mydata.rows, ifelse(use.letters, "", "*"))
         
          # replace mydata.rows with a vector of all rownames (case IDs) from the initial data
         mydata.rows <- rownames(mydata)

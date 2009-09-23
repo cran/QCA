@@ -10,7 +10,7 @@ function(idx, collapse="*", uplow=FALSE) {
         condition[idx == 2] <- toupper(conditions[idx == 2])
     } else {
         for (i in sort(unique(as.vector(idx)))) {
-            condition[idx == i] <- paste(conditions[idx == i], "(", i - 1, ")", sep="")
+            condition[idx == i] <- paste(conditions[idx == i], "{", i - 1, "}", sep="")
         }
     }
     primeimp <- paste(condition[idx != 0], collapse=collapse)

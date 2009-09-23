@@ -31,8 +31,7 @@ a vector with the line numbers of all possible subsets in the \eqn{3^k} space
 }
 
 \references{
-Dusa, Adrian (2007) \emph{A mathematical approach to the boolean minimization problem},
-
+Dusa, Adrian (2007) \emph{A mathematical approach to the boolean minimization problem}, available on
 http://www.compasss.org/files/WPfiles/Dusa2007.pdf
 
 Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/files/WPfiles/Dusa2007a.pdf

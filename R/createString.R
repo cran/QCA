@@ -15,7 +15,7 @@ function(mydata, use.letters=TRUE, uplow=TRUE) {
         changemydata[mydata == 1] <- toupper(rep(conditions, each=nrow(mydata))[mydata == 1])
     } else {
         for (i in sort(unique(as.vector(mydata)))) {
-            changemydata[mydata == i] <- paste(rep(conditions, each=nrow(mydata))[mydata == i], "(", i, ")", sep="")
+            changemydata[mydata == i] <- paste(rep(conditions, each=nrow(mydata))[mydata == i], "{", i, "}", sep="")
         }
     }
     

@@ -20,7 +20,7 @@ demoChart(rows, columns, splitmethod="")
 \arguments{
   \item{rows}{a vector of strings, containing the prime implicants}                                 
   \item{columns}{a vector of strings, containing all combinations of conditions from the original data}
-  \item{splitmethod}{scalar, either "" or "\\*" to declare how to split the strings}
+  \item{splitmethod}{string, to declare the separator of the input strings}
 }
 
 \value{
@@ -29,10 +29,10 @@ which columns
 }
 
 \references{
-Quine, W.V. 1952 \emph{The Problem of Simplifying Truth Functions},
+Quine, W.V. (1952) \emph{The Problem of Simplifying Truth Functions},
 The American Mathematical Monthly, Vol. 59, No. 8. (Oct., 1952), pp. 521-531.
 
-Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative and
+Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative and
 quantitative strategies}, Berkeley: University of California Press}
 
 \author{

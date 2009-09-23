@@ -22,7 +22,7 @@ solveChart(chart)
 a matrix containing row indices of all possible solutions
 }
 
-\references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative 
+\references{Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative 
 and quantitative strategies}, Berkeley: University of California Press}
 
 \author{

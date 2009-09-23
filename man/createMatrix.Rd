@@ -18,7 +18,7 @@ createMatrix(noflevels)
   \item{noflevels}{a vector containing the number of levels for each variable in the dataset}
 }
 
-\references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative 
+\references{Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative 
 and quantitative strategies}, Berkeley: University of California Press}
 
 \author{

@@ -1,43 +1,15 @@
 `factorize` <- 
-function(my.string, use.letters=TRUE, 
-         sort.by.literals=FALSE, sort.by.number=FALSE) {
+function(my.string, splitmethod="", sort.by.literals=FALSE, sort.by.number=FALSE) {
              
     trimst <- function(string) gsub("^[[:space:]]+|[[:space:]]+$", "", string)
     my.string <- trimst(unlist(strsplit(my.string, "\\+")))
     if (length(my.string) == 1) return(my.string)
     
-    ifelse(use.letters, collapsemethod <- "", collapsemethod <- "*")
-    ifelse(use.letters, splitmethod <- "", splitmethod <- "\\*")
-    
-     # check if use.letters should be TRUE
-    if (!use.letters & !any(unlist(sapply(my.string, strsplit, "")) == "*")) {
-        cat("\n")
-        stop("Cannot find the separator character between conditions.\n",
-             "      Are you sure conditions' names are not simple letters?\n\n",
-             call. = FALSE)
-        }
+    collapse <- splitmethod
+    if (splitmethod != "") splitmethod <- paste("\\", splitmethod, sep="")
     
     # create a list with all prime implicants splitted by literals
     list.my.string <- sapply(my.string, strsplit, splitmethod)
-    
-     # check if use.letters should be FALSE
-    if (use.letters & any(unlist(lapply(list.my.string, "==", "*")))) {
-         # try and split by "*", see what the result is
-        list.my.string2 <- sapply(my.string, strsplit, "\\*")
-         # check if all splitted elements have length 1 (one literal)
-        one.literal <- all(lapply(list.my.string2, function(x) all(sapply(x, nchar) == 1)))
-        if (one.literal) {
-            collapsemethod <- "*"
-            star.indices <- lapply(list.my.string, function(x) which(x == "*"))
-            for (i in 1:length(list.my.string)) {
-                list.my.string[[i]] <- list.my.string[[i]][-star.indices[[i]]]
-                }
-            }
-        else {
-            cat("\n")
-            stop("Conditions' names are _not_ simple letters.\n\n", call. = FALSE)
-            }
-        }
     
      # create a matrix with all combinations of prime implicants to be compared for similar literals
     # all.combs <- as.matrix(combn(length(list.my.string), 2))
@@ -52,7 +24,7 @@ function(my.string, use.letters=TRUE,
         return(names(y)[y == length(x)])
         }))
     
-    names(match.list) <- lapply(match.list, paste, collapse=collapsemethod)
+    names(match.list) <- lapply(match.list, paste, collapse=collapse)
     
      # see wich comparisons didn't yield similar literals
     null.branches <- unlist(lapply(match.list, function(x) all(is.na(x))))
@@ -96,13 +68,13 @@ function(my.string, use.letters=TRUE,
                 
              # paste the other literals from each index, separated by " + "
             sol <- paste(sapply(my.string.index, function(x) {
-                    paste(list.my.string[[x]][!list.my.string[[x]] %in% common.factor], collapse=collapsemethod)
+                    paste(list.my.string[[x]][!list.my.string[[x]] %in% common.factor], collapse=collapse)
                     }), collapse=" + ")
             
-            common.factor <- paste(match.list[[i]], collapse=collapsemethod)
+            common.factor <- paste(match.list[[i]], collapse=collapse)
             
              # then combine everything having the common.factor in front of the paranthesys
-            factor.sol <- paste(common.factor, collapsemethod, "(", sol, ")", sep="")
+            factor.sol <- paste(common.factor, collapse, "(", sol, ")", sep="")
             selected.rows <- apply(all.combs, 1, function(x) any(x %in% my.string.index))
             
             if (!is.null(initial.index)) my.string.index <- sort(unique(c(initial.index, my.string.index)))

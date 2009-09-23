@@ -3,6 +3,7 @@ function(noflevels, row.no, maximum) {
     if (missing(maximum)) maximum <- prod(noflevels)
     mbaserow <- getRow(noflevels, row.no)
     mbase <- rev(c(1, cumprod(rev(noflevels))))[-1]
+    noflevels <- noflevels - 1
     
     increment <- function(x, y, cond.levels) {
         a <- x
