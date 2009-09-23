@@ -56,7 +56,7 @@ An object of class "tt", which is essentially a list with three components:\cr
     }
 }
 
-\references{Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative 
+\references{Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative 
 and quantitative strategies}, Berkeley: University of California Press}
 
 \author{

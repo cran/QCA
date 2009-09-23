@@ -1,8 +1,17 @@
+Version 0.6-2
+    o Modified version of factorize(), the argument "use.letters" was replaced
+      by "splitmethod"
+    o Improved documentation and citations
+    o Improved version of findPrimes(), eliminating empty prime implicants (line
+      1 in the 3^k matrix)
+    o Fixed a bug in findSubsets(), did not calculate correctly for the case of
+      multi-values
+
 Version 0.6-1
     o Minor improvements to findPrimes() and findSubsets(), their first argument
       "noflevels" now must be specifically declared in the higher dimension matrix
     o Fixed a small bug in eqmcc() that prevented correct multi-value minimization
-      when not including the remainders (thanks to Damien Bol for pointing that)
+      when excluding the remainders (thanks to Damien Bol for pointing that)
     o Argument "uplow" in eqmcc() is now TRUE by default
 
 Version 0.6-0
@@ -29,8 +38,8 @@ Version 0.5-4
 Version 0.5-3
     o Fixed a minor bug in truthTable(), now it correctly arranges the columns
       corresponding to the outcome values
-    o truthTable() now allows for multi-values, both in the causal conditions and in
-      the outcome
+    o truthTable() now allows for multi-values, both in the causal conditions
+      and in the outcome
 
 Version 0.5-2
     o Fixed a major bug in createMatrix() regarding multi-value data
@@ -39,7 +48,8 @@ Version 0.5-2
 Version 0.5-1
     o Updated and cleaned most function descriptions
     o Functions is.tt() and print.tt() are now user accessible
-    o Fixed a small bug in rowDominance2(), a matrix unintentionally dropped dimensions
+    o Fixed a small bug in rowDominance2(), a matrix unintentionally dropped
+      dimensions
     o Fixed a small bug in eqmcc() for complete truth tables
       (thanks to ronggui for pointing that out)
 
@@ -50,7 +60,8 @@ Version 0.5-0
 
 Version 0.4-9
     o Functions findPrimes() and findSubsets() are now at user level
-    o Improved version of factorize(), the former did not detect some combinations
+    o Improved version of factorize(), the former did not detect some
+      combinations
 
 Version 0.4-8
     o New internal function findPrimes()
@@ -66,13 +77,14 @@ Version 0.4-6
     o Function shortqca() is now eqmcc(), faster by a factor of at least 2
 
 Version 0.4-5
-    o New experimental function shortqca(),  many times faster than qmcc() for a large of
-      causal conditions (over 11), with a _very_ low memory consumption; it can easily work
-      with 16 or 17 causal conditions. It is only experimental but it looks very promising,
-      especially for multi-valued data.
+    o New experimental function shortqca(),  many times faster than qmcc() for a
+      large of causal conditions (over 11), with a _very_ low memory consumption;
+      it can easily work with 16 or 17 causal conditions. It is only experimental
+      but it looks very promising, especially for multi-valued data.
 
 Version 0.4-3
-    o Fixed a bug in qmcc(), a matrix unintentionally dropped dimensions upon subsetting
+    o Fixed a bug in qmcc(), a matrix unintentionally dropped dimensions upon
+      subsetting
 
 Version 0.4-2
     o Fixed a bug in qmcc(), the data was not correctly subsetted.
@@ -83,10 +95,10 @@ Version 0.4-2
 Version 0.4-1
     o Added a namespace for the package
     o Completely rewritten version of base3rows(), now much faster
-    o Reworked version of createMatrix(), now much faster for the same number of values
-      in each condition
-    o Added option "diffmat" to the main qmcc() function; users can choose to generate
-      the differences matrix or not: speed or low memory consumption.
+    o Reworked version of createMatrix(), now much faster for the same number of
+      values in each condition
+    o Added option "diffmat" to the main qmcc() function; users can choose to
+      generate the differences matrix or not: speed or low memory consumption.
 
 Version 0.4-0
     o Reworked version of qmcc() with a substantially lower memory consumption;
@@ -100,26 +112,28 @@ Version 0.3-5
     o Reworked version of truthTable()
 
 Version 0.3-1
-    o New function rowDominance() to ease the solving of large prime implicants charts
+    o New function rowDominance() to ease the solving of large prime implicants
+      charts
 
 Version 0.3-0
     o New function getRow() which returnes the combination of levels for
       a specific row number
     o Fixed a minor bug overseen by the changes in version 0.2-6
     o Function createMatrix() now accepts multiple values (not just 0 and 1)
-    o qmcc() is now 20 times faster and it can reasonably work with up to 11 conditions
+    o qmcc() is now 20 times faster and it can reasonably work with up to 11
+      conditions
     o completely redesigned function createChart(), which is now internal
     o old function createChart() is now called demoChart()
 
 Version 0.2-6
-    o QCA does not depend on package "cluster" anymore as qmcc() is now based on dist()
-      from the standard stats package, instead of daisy()
+    o QCA does not depend on package "cluster" anymore as qmcc() is now based on
+      dist() from the standard stats package, instead of daisy()
 
 Version 0.2-5
     o Minor documentation fixes
     o Almost completely rewriten prettyTable() and minor changes to truthTable()
-    o QCA does not depend on package "combinat" anymore, as function combn() is now
-      part of the "utils" package (loaded by default)
+    o QCA does not depend on package "combinat" anymore, as function combn() is
+      now part of the "utils" package (loaded by default)
     o New function sortMatrix() in the internal functions
     o Argument verifications are now part of internal functions
     o New function readTosmana() for reading Tosmana's XML data files'
@@ -131,9 +145,11 @@ Version 0.2-2
     o New user level function solveChart() - pulled out of the main qmcc()
 
 Version 0.2-1
-    o New function createMatrix() which creates the base matrix for the truth table
+    o New function createMatrix() which creates the base matrix for the truth
+      table
     o New function base3rows()
     o Fixed minor bug in writeSolution()
 
 Version 0.2-0
-    o New function factorize() which finds all common factors of literals in a QCA solution
+    o New function factorize() which finds all common factors of literals in a
+      QCA solution

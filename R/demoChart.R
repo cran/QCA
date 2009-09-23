@@ -1,5 +1,6 @@
 `demoChart` <-
 function(rows, columns, splitmethod="") {
+    if (splitmethod != "") splitmethod <- paste("\\", splitmethod, sep="")
     mtrx <- t(sapply(rows, function(x) {
         y <- unlist(strsplit(x, splitmethod))
         sapply(columns, function(idcol) {

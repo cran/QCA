@@ -46,10 +46,14 @@ eqmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
 }
 
 \references{
-Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative
+Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative
 and quantitative strategies}, Berkeley: University of California Press
 
-Dusa, Adrian 2007 \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
+Cronqvist, Lasse (2005) \emph{Introduction to MVQCA}
+http://www.tosmana.net/resources/introduction_to_mvqca.pdf
+
+Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}
+http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
 }
 
 \author{
@@ -60,7 +64,7 @@ Faculty of Sociology and Social Work, University of Bucharest\cr
 dusa.adrian@unibuc.ro
 }
 
-\note{The speed is greatly improved: for 15 causal conditions it takes less than 2 minutes,
+\note{The speed is greatly improved: for bvQCA and 15 causal conditions it takes less than 2 minutes,
 compared to 10 minutes in qmcc(). The memory consumption is tiny by comparison: also for
 15 causal conditions, qmcc() uses about 1.5 GB of RAM, where eqmcc() uses about 50 MB.
 }

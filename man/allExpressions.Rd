@@ -27,7 +27,7 @@ allExpressions(no.conditions, inside=TRUE, arrange=FALSE)
 a matrix with \eqn{3^k - 1} rows
 }
 
-\references{Ragin, Charles C. 2000 \emph{Fuzzy-set social science},
+\references{Ragin, Charles C. (2000) \emph{Fuzzy-set social science},
 Chicago: The University of Chicago Press}
 
 \author{

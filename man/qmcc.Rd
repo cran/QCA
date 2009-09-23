@@ -44,11 +44,11 @@ qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
 }
 
 \references{
-Ragin, Charles C. 1987 \emph{The Comparative Method. Moving beyond qualitative
+Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative
 and quantitative strategies}, Berkeley: University of California Press
 
-Dusa, Adrian 2007 \emph{A mathematical solution to the boolean minimization problem}, available on
-http://www.compasss.org/pages/resources/wptheme.html
+Dusa, Adrian (2007) \emph{A mathematical approach to the boolean minimization problem}, available on
+http://www.compasss.org/files/WPfiles/Dusa2007.pdf
 }
 
 \author{

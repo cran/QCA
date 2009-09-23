@@ -66,7 +66,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
                    "Please check the truth table.", "\n\n", sep=""), call. = FALSE)
     }
     
-    
     if (incl.rem) {
         primes <- sort(setdiff(findPrimes(noflevels + 1, explain), findPrimes(noflevels + 1, exclude)))
         index <- 0
@@ -186,7 +185,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          # for start, mydata.rows will be a string with all _existing_ combinations (e.g. "AbcDe")
         mydata.rows <- createString(mydata[, -which(colnames(mydata) == outcome)], use.letters, uplow)
         
-        mtrx <- demoChart(all.primeimps, mydata.rows, ifelse(use.letters & uplow, "", "\\*"))
+        mtrx <- demoChart(all.primeimps, mydata.rows, ifelse(use.letters & uplow, "", "*"))
         
          # replace mydata.rows with a vector of all rownames (case IDs) from the initial data
         mydata.rows <- rownames(mydata)
