@@ -25,9 +25,7 @@ A vector of strings, with length equal to the number of rows in \bold{mydata}
 
 \author{
 Adrian Dusa\cr
-Romanian Social Data Archive\cr
-adi@roda.ro\cr
-Faculty of Sociology and Social Work, University of Bucharest\cr
+University of Bucharest, Faculty of Sociology and Social Work\cr
 dusa.adrian@unibuc.ro
 }
 

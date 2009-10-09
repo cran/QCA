@@ -26,13 +26,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
     }
     
-    if (quiet) {show.cases <- chart <- FALSE}
-    
-    # check if the user checked both something like "expl.1" AND "incl.1"
-    if (expl.1 & incl.1) {
-        cat("\nWarning: the presence of the outcome cannot be both explained and included\n\n")
-        incl.1 <- FALSE
-    }
+    if (quiet) {show.cases <- FALSE} # chart <- 
     
     noflevels <- tt$noflevels
     
@@ -81,17 +75,18 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             distance <- dist(explain, method="manhattan")
             distance <- as.matrix(distance)
             distance[!upper.tri(distance)] <- NA
-            to.be.compared <- as.matrix(which(distance == 1, arr.ind=TRUE))
+             # tbc means "to be compared"
+            tbc <- as.matrix(which(distance == 1, arr.ind=TRUE))
             
-            if (nrow(to.be.compared) > 0) {
-                differences <- t(apply(to.be.compared, 1, function(idx) explain[idx[1], ] != explain[idx[2], ]))
+            if (nrow(tbc) > 0) {
+                differences <- t(apply(tbc, 1, function(idx) explain[idx[1], ] != explain[idx[2], ]))
                 result <- matrix(0, nrow=0, ncol=ncol(differences))
                 for (i in 1:nrow(differences)) {
-                    stable.values <- explain[to.be.compared[i, 1], !differences[i, ]]
+                    stable.values <- explain[tbc[i, 1], !differences[i, ]]
                     subset.explain <- apply(explain[, !differences[i, ]], 1, function(x) all(x == stable.values))
                     if (sum(subset.explain) == noflevels[differences[i, ]]) {
                         minimized[subset.explain] <- TRUE
-                        minimization.result <- explain[to.be.compared[i, 1], ]
+                        minimization.result <- explain[tbc[i, 1], ]
                         minimization.result[differences[i, ]] <- 0
                         result <- rbind(result, as.vector(minimization.result))
                     }
@@ -117,7 +112,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         collapse <- ifelse(uplow, "", "*")
         }
     else {
-        colnames(primes) <- colnames(inputt) <- colnames(mydata[, seq(ncol(mydata) - 1)])
+        colnames(primes) <- colnames(inputt) <- colnames(mydata[, seq(ncol(primes))])
         }
     
     initial <- apply(inputt, 1, writePrimeimp, collapse=collapse, uplow=uplow)
@@ -141,14 +136,11 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     if (chart) {
         cat("\n")
         mtrx2 <- mtrx
-         # if not quiet, print the prime implicants chart
-        if (!quiet) {
-            rownames(mtrx2) <- paste(rownames(mtrx2), "")
-            mtrx2[mtrx]  <- "x"
-            mtrx2[!mtrx] <- "-"
-            print(prettyTable(mtrx2))
-            }
-        }
+        rownames(mtrx2) <- paste(rownames(mtrx2), "")
+        mtrx2[mtrx]  <- "x"
+        mtrx2[!mtrx] <- "-"
+        print(prettyTable(mtrx2))
+    }
     
     cat("\n\n")
     

@@ -11,7 +11,7 @@ function (noflevels, input.combs) {
                 cat("\n")
                 stop(paste("Some line numbers do not belong in the solution-space for",
                            length(noflevels), "causal conditions.\n\n"), call. = FALSE)
-                }
+            }
             input.combs <- getRow(noflevels, input.combs)
         }
     }

@@ -39,9 +39,7 @@ Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/f
 
 \author{
 Adrian Dusa\cr
-Romanian Social Data Archive\cr
-adi@roda.ro\cr
-Faculty of Sociology and Social Work, University of Bucharest\cr
+University of Bucharest, Faculty of Sociology and Social Work\cr
 dusa.adrian@unibuc.ro
 }
 

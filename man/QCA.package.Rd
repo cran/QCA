@@ -29,8 +29,8 @@ As of version 0.1-3 there is also a graphical user interface in the package QCAG
     \tabular{ll}{
     Package: \tab QCA\cr
     Type: \tab Package\cr
-    Version: \tab 0.6-2\cr
-    Date: \tab 2009-09-23\cr
+    Version: \tab 0.6-3\cr
+    Date: \tab 2009-10-09\cr
     License: \tab GPL version 2 or newer\cr
     }
 }
