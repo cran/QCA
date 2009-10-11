@@ -1,3 +1,7 @@
+Version 0.6-3
+    o Fixed a bug in factorize(), the argument "use.letters" was replaced
+      by "splitmethod", a matrix unintentionally dropped dimensions
+
 Version 0.6-2
     o Modified version of factorize(), the argument "use.letters" was replaced
       by "splitmethod"
@@ -51,7 +55,7 @@ Version 0.5-1
     o Fixed a small bug in rowDominance2(), a matrix unintentionally dropped
       dimensions
     o Fixed a small bug in eqmcc() for complete truth tables
-      (thanks to ronggui for pointing that out)
+      (thanks to Ronggui Huang for pointing that)
 
 Version 0.5-0
     o truthTable() now returns an object of class "tt"

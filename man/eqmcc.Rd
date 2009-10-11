@@ -46,21 +46,13 @@ eqmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
 }
 
 \references{
-Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative
-and quantitative strategies}, Berkeley: University of California Press
-
-Cronqvist, Lasse (2005) \emph{Introduction to MVQCA}
-http://www.tosmana.net/resources/introduction_to_mvqca.pdf
-
 Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}
 http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
 }
 
 \author{
 Adrian Dusa\cr
-Romanian Social Data Archive\cr
-adi@roda.ro\cr
-Faculty of Sociology and Social Work, University of Bucharest\cr
+University of Bucharest, Faculty of Sociology and Social Work\cr
 dusa.adrian@unibuc.ro
 }
 
@@ -91,7 +83,7 @@ eqmcc(Osa, outcome="OUT", expl.0=TRUE, incl.rem=TRUE, incl.ctr=TRUE, show.cases=
 
 # for multi-value data
 data(MV)
-eqmcc(MV, outcome="OUT", expl.1=TRUE, show.cases=TRUE)
+eqmcc(MV, outcome="OUT", expl.1=TRUE, incl.rem=TRUE, show.cases=TRUE)
 
 }
 

@@ -14,7 +14,7 @@ function(my.string, splitmethod="", sort.by.literals=FALSE, sort.by.number=FALSE
      # create a matrix with all combinations of prime implicants to be compared for similar literals
     # all.combs <- as.matrix(combn(length(list.my.string), 2))
     all.combs <- createMatrix(rep(2, length(list.my.string)))
-    all.combs <- all.combs[rowSums(all.combs) > 1, ]
+    all.combs <- all.combs[rowSums(all.combs) > 1, , drop=FALSE]
     all.combs <- col(all.combs) * as.vector(all.combs)
     
      # create a list with matched literals between prime implicants

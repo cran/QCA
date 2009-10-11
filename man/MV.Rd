@@ -4,7 +4,7 @@
 
 \alias{MV}
 
-\title{Random Multi-Value data with 3 causal conditions and 1 outcome}
+\title{Random Multi-Value data with 4 causal conditions and 1 outcome}
 
 \description{
 This data was generated for testing purposes on MV data.

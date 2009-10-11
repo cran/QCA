@@ -4,4 +4,5 @@
 - implement option to handle missing outcome
 - implement option for simplifying assumptions
 - implement fuzzy-sets (inclusion) algorithms 
+- implement temporal QCA
 

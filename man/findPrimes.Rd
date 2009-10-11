@@ -39,9 +39,7 @@ Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/f
 
 \author{
 Adrian Dusa\cr
-Romanian Social Data Archive\cr
-adi@roda.ro\cr
-Faculty of Sociology and Social Work, University of Bucharest\cr
+University of Bucharest, Faculty of Sociology and Social Work\cr
 dusa.adrian@unibuc.ro
 }
 
@@ -55,7 +53,7 @@ findPrimes(noflevels + 1, 14)         #  2  4  5 10 11 13 14
 findPrimes(noflevels + 1, 17)         #  2  7  8 10 11 16 17
 
 # both line numbers 14 and 17
-findPrimes(noflevels + 1, c(14, 17))  #  2  4  5 10 11 13 14  7  8 16 17
+findPrimes(noflevels + 1, c(14, 17))  #  2  4  5  7  8 10 11 13 14 16 17
 
 
 # input.combs as a matrix
@@ -65,7 +63,7 @@ findPrimes(noflevels + 1, c(14, 17))  #  2  4  5 10 11 13 14  7  8 16 17
 #[1,]    1    1    1
 #[2,]    1    2    1
 
-findPrimes(noflevels + 1, input.combs) #  2  4  5 10 11 13 14  7  8 16 17
+findPrimes(noflevels + 1, input.combs) #  2  4  5  7  8 10 11 13 14 16 17
 }
 
 \keyword{misc}

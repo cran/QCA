@@ -3,7 +3,6 @@ function(noflevels, row.no, maximum) {
     if (missing(maximum)) maximum <- prod(noflevels)
     mbaserow <- getRow(noflevels, row.no)
     mbase <- rev(c(1, cumprod(rev(noflevels))))[-1]
-    noflevels <- noflevels - 1
     
     increment <- function(x, y, cond.levels) {
         a <- x
@@ -21,6 +20,11 @@ function(noflevels, row.no, maximum) {
     }
     
     indices <- which(!mbaserow)
+    
+     # bring all levels to the "normal" values, in order to increment times
+     # exactly those values
+    noflevels <- noflevels - 1
+    
     for (k in rev(indices)) {
         row.no <- increment(row.no, mbase[k], noflevels[k])
     }
