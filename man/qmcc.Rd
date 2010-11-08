@@ -43,18 +43,20 @@ qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
   \item{diffmat}{generate the differences matrix}
 }
 
+\value{an invisible list with three components: minimised PIs, number of k PIs to solve the PI chart and the solution(s)}
+
 \references{
 Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative
 and quantitative strategies}, Berkeley: University of California Press
 
-Dusa, Adrian (2007) \emph{A mathematical approach to the boolean minimization problem}, available on
-http://www.compasss.org/files/WPfiles/Dusa2007.pdf
+Dusa, Adrian (2010) \emph{A mathematical approach to the boolean minimization problem},
+Quality & Quantity vol.44, no.1, pp.99-113
 }
 
 \author{
 Adrian Dusa\cr
 University of Bucharest, Faculty of Sociology and Social Work\cr
-dusa.adrian@unibuc.ro
+dusadrian@unibuc.ro
 }
 
 \note{The function finds an exact solution very quickly for relatively small number of conditions.

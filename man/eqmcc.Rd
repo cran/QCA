@@ -5,9 +5,9 @@
 \title{Enhanced Quine-McCluskey algorithm}
 
 \description{
-This function is designed to improve the speed and memory problems that qmcc() currently hasm
-and it has very high chances to replace the main qmcc() in the future; all tests have been
-successful, the solutions are exactly the same down to the last literal.
+This function is designed to improve the speed and memory problems of qmcc()
+and it has very high chances to replace it in the future. All tests have been
+successful, the solutions are exactly similar down to the last literal.
 It has about the same options as qmcc(), minus the "details" and "diffmatrix"
 arguments which are no longer required.
 It is called "eqmcc" because it doesn't follow the classic minimization algorithm but
@@ -45,6 +45,8 @@ eqmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
   \item{uplow}{logical, use upper/lower notation if possible, for binary data}
 }
 
+\value{an invisible list with three components: minimised PIs, number of k PIs to solve the PI chart and the solution(s)}
+
 \references{
 Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}
 http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
@@ -53,7 +55,7 @@ http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
 \author{
 Adrian Dusa\cr
 University of Bucharest, Faculty of Sociology and Social Work\cr
-dusa.adrian@unibuc.ro
+dusadrian@unibuc.ro
 }
 
 \note{The speed is greatly improved: for bvQCA and 15 causal conditions it takes less than 2 minutes,

@@ -5,7 +5,6 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
          quiet = FALSE, chart = FALSE, use.letters = TRUE, show.cases = FALSE,
          uplow=TRUE) {
     
-    
     if (!is.tt(mydata)) {
         verify.data(mydata, outcome, conditions, incl.rem, expl.1, expl.0,
                     expl.ctr, expl.mo, incl.1, incl.0, incl.ctr, incl.mo,
@@ -117,20 +116,29 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     initial <- apply(inputt, 1, writePrimeimp, collapse=collapse, uplow=uplow)
     
+    output <- list()
+    
      # create the prime implicants chart
     mtrx <- createChart(primes, inputt)
     reduced <- rowDominance2(mtrx, primes)
     
     primeimp <- apply(reduced$primes, 1, writePrimeimp, collapse=collapse, uplow=uplow)
     primeimpsort <- sortVector(primeimp)
+    output$PIs <- primeimpsort
     mtrx <- reduced$mtrx[match(primeimpsort, primeimp), , drop=FALSE]
     rownames(mtrx) <- primeimpsort
     colnames(mtrx) <- initial
     
     sol.matrix <- solveChart(mtrx)
+    output$k <- sol.matrix[[1]]
+    if (length(sol.matrix)==1) {
+        return(invisible(output))
+    }
+    
+    sol.matrix <- sol.matrix[[2]]
     
     solution.list <- writeSolution(sol.matrix, mtrx)
-    solution <- solution.list[[1]]
+    output$solution <- solution <- solution.list[[1]]
     ess.prime.imp <- rownames(mtrx)[solution.list[[2]]]
     
     if (chart) {
@@ -203,4 +211,5 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         cat(prettyString(preamble, warning.message))
         cat("\n")
     }
+    return(invisible(output))
 }

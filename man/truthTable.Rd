@@ -3,7 +3,7 @@
 \alias{print.tt}
 \alias{is.tt}
 
-\title{Truth table}
+\title{Create a truth table}
 
 \description{
 For any number of conditions, there is a finite number of possible combinations of
@@ -62,7 +62,7 @@ and quantitative strategies}, Berkeley: University of California Press}
 \author{
 Adrian Dusa\cr
 University of Bucharest, Faculty of Sociology and Social Work\cr
-dusa.adrian@unibuc.ro
+dusadrian@unibuc.ro
 }
 
 \seealso{\code{\link{qmcc}}, \code{\link{eqmcc}}}

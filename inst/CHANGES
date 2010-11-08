@@ -1,3 +1,11 @@
+Version 0.6-4
+    o The functions qmcc() and eqmcc() now return an invisible list with three components:
+      - the minimized PIs
+      - the number of k PIs necessary to cover all initial causal combinations in the PI chart
+      - the final solution(s)
+    o Removed redundant code from verify.data()
+    o Changed the error message on failure to solve the PI chart (thanks to Juha Järvi)
+
 Version 0.6-3
     o Fixed a bug in factorize(), the argument "use.letters" was replaced
       by "splitmethod", a matrix unintentionally dropped dimensions

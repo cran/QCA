@@ -66,19 +66,9 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         cat("\n")
         stop("Missing data found; this is not (yet) supported.\n\n", call. = FALSE)
     }
-    
-    return(outcome)
-    
-    # check if the data present values other than 0 and 1
-    if (!all(mydata[, outcome] %in% c(0, 1))) {
-        not.valid <- which(!(outcome == 0 | outcome == 1))
-        cat("\n")
-        stop("The outcome variable present values other than 0 or 1.\nSee for example line ",
-             not.valid[1], "\n\n", call. = FALSE, sep="")
-    }
 }
 
-         
+
 `verify.tt` <-
 function(mydata, outcome = "", conditions = c(""), complete = FALSE, show.cases = FALSE) {
     

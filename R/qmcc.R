@@ -151,6 +151,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             if (any(minimized)) {
                  # create the next input matrix, which will contain all rows from the initial
                  # input matrix which have not been minimized, plus the rows from the reduced vector
+                 # using the formula 2x-y
                 linenums <- unique(c(linenums[!minimized], 2*result[,1] - result[,2]))
                 iteration <- iteration + 1
             }
@@ -193,6 +194,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     initial <- apply(copyinput, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
     
+    output <- list()
     
     # create the prime implicants chart
     mtrx <- createChart(input, copyinput)
@@ -205,20 +207,27 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     primeimp <- apply(input, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
     primeimpsort <- sortVector(primeimp)
     mtrx <- mtrx[match(primeimpsort, primeimp), , drop=FALSE]
-    rownames(mtrx) <- primeimpsort
+    rownames(mtrx) <- output$PIs <- primeimpsort
     colnames(mtrx) <- initial
     
     reduced <- rowDominance(mtrx)
     
     if (any(reduced)) {
         mtrxDom <- mtrx[!reduced, , drop=FALSE]
-        rownames(mtrxDom) <- primeimpsort[!reduced]
+        rownames(mtrxDom) <- output$PIs <- primeimpsort[!reduced]
     }
     else {
         mtrxDom <- mtrx
     }
     
     sol.matrix <- solveChart(mtrxDom)
+    
+    output$k <- sol.matrix[[1]]
+    if (length(sol.matrix)==1) {
+        return(invisible(output))
+    }
+    
+    sol.matrix <- sol.matrix[[2]]
     
     if (repetitions == 2) {
          # do the same thing if the user included other values for minimization
@@ -232,24 +241,28 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         primeimp.incl <- apply(input.incl, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
         primeimpsort <- sortVector(primeimp.incl)
         mtrx.incl <- mtrx.incl[match(primeimpsort, primeimp.incl), , drop=FALSE]
-        rownames(mtrx.incl) <- primeimpsort
+        rownames(mtrx.incl) <- output$PIs <- primeimpsort
         colnames(mtrx.incl) <- initial
         reduced <- rowDominance(mtrx.incl)
         
         if (any(reduced)) {
             mtrxDom.incl <- mtrx.incl[!reduced, , drop=FALSE]
-            rownames(mtrxDom.incl) <- primeimpsort[!reduced]
+            rownames(mtrxDom.incl) <- output$PIs <- primeimpsort[!reduced]
         }
         else {
             mtrxDom.incl <- mtrx.incl
         }
         
         sol.matrix.incl <- solveChart(mtrxDom.incl)
+        output$k <- sol.matrix.incl[[1]]
+        if (length(sol.matrix.incl)==1) {
+            return(invisible(output))
+        }
+        sol.matrix.incl <- sol.matrix.incl[[2]]
     }
     
-    
     solution.list <- writeSolution(sol.matrix, mtrxDom)
-    solution <- solution.list[[1]]
+    output$solution <- solution <- solution.list[[1]]
     ess.prime.imp <- rownames(mtrxDom)[solution.list[[2]]]
     
     if (repetitions == 2) {
@@ -368,4 +381,5 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         cat(prettyString(preamble, warning.message))
         cat("\n")
     }
+    return(invisible(output))
 }

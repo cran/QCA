@@ -26,7 +26,7 @@ A vector of strings, with length equal to the number of rows in \bold{mydata}
 \author{
 Adrian Dusa\cr
 University of Bucharest, Faculty of Sociology and Social Work\cr
-dusa.adrian@unibuc.ro
+dusadrian@unibuc.ro
 }
 
 \seealso{\code{\link{createChart}}}
