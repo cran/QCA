@@ -28,7 +28,7 @@ a matrix with the combination of levels corresponding to the desired row number(
 \author{
 Adrian Dusa\cr
 University of Bucharest, Faculty of Sociology and Social Work\cr
-dusa.adrian@unibuc.ro
+dusadrian@unibuc.ro
 }
 
 \seealso{\code{\link{createMatrix}}, \code{\link[base]{expand.grid}}}

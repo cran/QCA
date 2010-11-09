@@ -5,14 +5,14 @@
 \title{Find all possible subsets of a given prime implicant}
 
 \description{
-It is a general rule that all subsets can be found in the \eqn{3^k} space,
-understood as all possible combinations of values in base 3, each variable having
-three levels: 0, 1 and 2 (Dusa, 2007, 2007a).
+It is a general rule that all subsets can be found in the \eqn{n^k} space,
+understood as all possible combinations of values in any combination of bases \eqn{n},
+each causal condition having three or more levels (Dusa, 2010, 2007).
 If a prime implicant can be considered a superset of an initial combination of causal
 conditions, the reverse is also true: the initial combination is a subset of a prime implicant.
 Even more, a less minimum prime implicant (with more literals) is also a subset of another
 shorter (more minimum) prime implicant.
-This function finds all possible such subsets for a given prime implicant, in the \eqn{3^k} space.
+This function finds all possible such subsets for a given prime implicant, in the \eqn{n^k} space.
 }
 
 \usage{
@@ -31,16 +31,16 @@ a vector with the line numbers of all possible subsets in the \eqn{3^k} space
 }
 
 \references{
-Dusa, Adrian (2007) \emph{A mathematical approach to the boolean minimization problem}, available on
-http://www.compasss.org/files/WPfiles/Dusa2007.pdf
+Dusa, Adrian (2010) \emph{A mathematical approach to the boolean minimization problem},
+Quality & Quantity vol.44, no.1, pp.99-113
 
-Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
+Dusa, Adrian (2007) \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
 }
 
 \author{
 Adrian Dusa\cr
 University of Bucharest, Faculty of Sociology and Social Work\cr
-dusa.adrian@unibuc.ro
+dusadrian@unibuc.ro
 }
 
 \seealso{\code{\link{findPrimes}}}

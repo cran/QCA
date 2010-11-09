@@ -5,9 +5,9 @@
 \title{Find all possible prime implicants of one or several combinations of causal conditions}
 
 \description{
-It is a general rule that all prime implicants can be found in the \eqn{3^k} space,
-understood as all possible combinations of values in base 3, each variable having
-three levels: 0, 1 and 2 (Dusa, 2007, 2007a).
+It is a general rule that all prime implicants can be found in the \eqn{n^k} space,
+understood as all possible combinations of values in any combination of bases \eqn{n},
+each causal condition having three or more levels (Dusa, 2010, 2007).
 There is a finite number of prime implicants for any combination of causal conditions, equal to
 \eqn{2^k - 1}, where \eqn{k} is the number of causal conditions. Counting out the input combination
 itself, the actual number is \eqn{2^k - 2}.
@@ -31,16 +31,16 @@ a vector with the line numbers of all possible prime implicants in the \eqn{3^k}
 }
 
 \references{
-Dusa, Adrian (2007) \emph{A mathematical approach to the boolean minimization problem}, available on
-http://www.compasss.org/files/WPfiles/Dusa2007.pdf
+Dusa, Adrian (2010) \emph{A mathematical approach to the boolean minimization problem},
+Quality & Quantity vol.44, no.1, pp.99-113
 
-Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
+Dusa, Adrian (2007) \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
 }
 
 \author{
 Adrian Dusa\cr
 University of Bucharest, Faculty of Sociology and Social Work\cr
-dusa.adrian@unibuc.ro
+dusadrian@unibuc.ro
 }
 
 \seealso{\code{\link{getRow}}, \code{\link{findSubsets}}}

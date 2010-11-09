@@ -26,7 +26,7 @@ a matrix with character elements
 \author{
 Adrian Dusa\cr
 University of Bucharest, Faculty of Sociology and Social Work\cr
-dusa.adrian@unibuc.ro
+dusadrian@unibuc.ro
 }
 
 \seealso{\code{\link[base]{print}}}

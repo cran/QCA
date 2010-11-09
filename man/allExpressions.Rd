@@ -33,7 +33,7 @@ Chicago: The University of Chicago Press}
 \author{
 Adrian Dusa\cr
 University of Bucharest, Faculty of Sociology and Social Work\cr
-dusa.adrian@unibuc.ro
+dusadrian@unibuc.ro
 }
 
 \examples{

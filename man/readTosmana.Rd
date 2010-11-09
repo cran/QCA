@@ -20,7 +20,7 @@ readTosmana(filename)
 \author{
 Adrian Dusa\cr
 University of Bucharest, Faculty of Sociology and Social Work\cr
-dusa.adrian@unibuc.ro
+dusadrian@unibuc.ro
 }
 
 \note{This function requires the XML package}
