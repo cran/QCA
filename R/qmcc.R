@@ -71,7 +71,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     }
     
     if (details & repetitions == 2 & any.inclusions) {
-        cat("\nStep 1. Finding prime implicants...\n\n  For the explained and included values:", "\n\n")
+        cat("\nStep 1. Finding prime implicants...\n\n  For both explained and included values:", "\n\n")
     }
     else if (details & repetitions == 1) {
         cat("\nStep 1. Finding prime implicants...\n\n  For the explained values:", "\n\n")
@@ -89,15 +89,15 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         }
         
         explain <- tt$tt[, outcome] %in% explain
-        linenums <- copylinenums <- totlines[line.tt[explain]]
-        if (incl.rem & repetition == 1) linenums <- sort(c(linenums, totlines[-line.tt]))
+        primelines <- inputlines <- totlines[line.tt[explain]]
+        if (incl.rem & repetition == 1) primelines <- sort(c(primelines, totlines[-line.tt]))
         
-        if (all(is.na(linenums))) {
+        if (all(is.na(primelines))) {
             cat("\n")
             stop("Nothing to explain. Please check the truth table.\n\n", call. = FALSE)
         }
         
-        if (length(linenums) == prod(tt$noflevels)) {
+        if (length(primelines) == prod(tt$noflevels)) {
             cat("\n")
             stop(paste("All combinations have been included into analysis. The solution is 1.\n",
                        "Please check the truth table.", "\n\n", sep=""), call. = FALSE)
@@ -105,7 +105,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         
         
         if (details & repetition == 2) {
-            cat("  Now finding prime implicants only for the explained values:", "\n\n")
+            cat("  For the explained values only:", "\n\n")
         }
         
         
@@ -115,22 +115,22 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         while (any(minimized)) {
             if (details) {
                 cat ("  Iteration ", iteration, "\n       Number of (unique) prime implicants:",
-                formatC(length(linenums), big.mark=",", big.interval=3, format="fg"), "\n")
+                formatC(length(primelines), big.mark=",", big.interval=3, format="fg"), "\n")
             } #, " (",
-              #formatC(choose(nrow(input), 2), big.mark=",", big.interval=3, format="fg"), 
+              #formatC(choose(nrow(primes), 2), big.mark=",", big.interval=3, format="fg"), 
               #" possible paired comparisons)\n", sep="")}
             
-            max.diffs <- ceiling(length(linenums)*length(tt$noflevels)/2)
+            max.diffs <- ceiling(length(primelines)*length(tt$noflevels)/2)
             result <- matrix(nrow=max.diffs, ncol=2)
             startrow <- 1
             for (i in seq(length(tt$noflevels))) {
                 if (diffmat) {
-                    match.lines <- linenums[linenums %in% diffmatrix[, i]]
+                    match.lines <- primelines[primelines %in% diffmatrix[, i]]
                 }
                 else {
-                    match.lines <- linenums[linenums %in% outer(seq_len(mbase[i]), seq(mbase[i], 3*mbase[1] - mbase[i] - 1, 3*mbase[i]), "+")]
+                    match.lines <- primelines[primelines %in% outer(seq_len(mbase[i]), seq(mbase[i], 3*mbase[1] - mbase[i] - 1, 3*mbase[i]), "+")]
                 }
-                match.lines <- match.lines[(match.lines + mbase[i]) %in% linenums]
+                match.lines <- match.lines[(match.lines + mbase[i]) %in% primelines]
                 length.match <- length(match.lines)
                 if (length.match > 0) {
                     endrow <- startrow + length.match - 1
@@ -140,7 +140,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             }
             
             result <- result[-(startrow:max.diffs), , drop=FALSE]
-            minimized <- linenums %in% result
+            minimized <- primelines %in% result
             
             
             if (details) {
@@ -149,26 +149,25 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             }
             
             if (any(minimized)) {
-                 # create the next input matrix, which will contain all rows from the initial
-                 # input matrix which have not been minimized, plus the rows from the reduced vector
+                 # create the next primes matrix, which will contain all rows from the initial
+                 # primes matrix which have not been minimized, plus the rows from the reduced vector
                  # using the formula 2x-y
-                linenums <- unique(c(linenums[!minimized], 2*result[,1] - result[,2]))
+                primelines <- unique(c(primelines[!minimized], 2*result[,1] - result[,2]))
                 iteration <- iteration + 1
             }
             else {
-                linenums <- sort(unique(linenums))
+                primelines <- sort(unique(primelines))
                 if (repetitions == 2 & repetition == 1) {
-                    linenums.incl <- linenums
+                    primelines.incl <- primelines
                     if (details) {cat ("\n")}
                 }
             }
         }
     }
-    
-    input <- getRow(tt$noflevels + 1, linenums)
-    copyinput <- getRow(tt$noflevels + 1, copylinenums)
+    primes <- getRow(tt$noflevels + 1, primelines)
+    input <- getRow(tt$noflevels + 1, inputlines)
     if (repetitions == 2) {
-        input.incl <- getRow(tt$noflevels + 1, linenums.incl)
+        primes.incl <- getRow(tt$noflevels + 1, primelines.incl)
     }
     
     # check if the condition names are not already letters
@@ -178,47 +177,41 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     # if not already letters and user specifies using letters for conditions, change it
     if (use.letters & !alreadyletters) {
-        colnames(input) <- colnames(copyinput) <- LETTERS[1:ncol(input)]
+        colnames(primes) <- colnames(input) <- LETTERS[1:ncol(primes)]
         if (repetitions == 2) {
-            colnames(input.incl) <- LETTERS[1:ncol(input)]
+            colnames(primes.incl) <- LETTERS[1:ncol(primes)]
         }
         changed <- TRUE
         collapse = ""
     }
     else {
-        colnames(input) <- colnames(copyinput) <- colnames(mydata[, seq(ncol(mydata) - 1)])
+        colnames(primes) <- colnames(input) <- colnames(mydata[, seq(ncol(mydata) - 1)])
         if (repetitions == 2) {
-            colnames(input.incl) <- colnames(mydata[, seq(ncol(mydata) - 1)])
+            colnames(primes.incl) <- colnames(mydata[, seq(ncol(mydata) - 1)])
         }
     }
     
-    initial <- apply(copyinput, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
+    primeimp <- apply(primes, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
+    primeimp <- primeimp[match(sortVector(primeimp), primeimp)]
+    primes <- primes[match(sortVector(primeimp), primeimp), ]
     
     output <- list()
+    output$initials <- initial <- apply(input, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
+    output$PIs <- primeimp
     
     # create the prime implicants chart
-    mtrx <- createChart(input, copyinput)
-    reduced <- rowSums(mtrx) == 0
-    if (any(reduced)) {
-        mtrx <- mtrx[!reduced, , drop=FALSE]
-        input <- input[!reduced, , drop=FALSE]
-    }
+    mtrx <- output$PIchart <- createChart(primes, input)
     
-    primeimp <- apply(input, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
-    primeimpsort <- sortVector(primeimp)
-    mtrx <- mtrx[match(primeimpsort, primeimp), , drop=FALSE]
-    rownames(mtrx) <- output$PIs <- primeimpsort
+    
+    reduced <- rowSums(mtrx) == 0
+    mtrx <- mtrx[!reduced, , drop=FALSE]
+    primes <- primes[!reduced, , drop=FALSE]
+    primeimp <- primeimp[!reduced]
+    
+    rownames(mtrx) <- primeimp
     colnames(mtrx) <- initial
     
-    reduced <- rowDominance(mtrx)
-    
-    if (any(reduced)) {
-        mtrxDom <- mtrx[!reduced, , drop=FALSE]
-        rownames(mtrxDom) <- output$PIs <- primeimpsort[!reduced]
-    }
-    else {
-        mtrxDom <- mtrx
-    }
+    mtrxDom <- mtrx[!rowDominance(mtrx), , drop=FALSE]
     
     sol.matrix <- solveChart(mtrxDom)
     
@@ -231,27 +224,22 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     
     if (repetitions == 2) {
          # do the same thing if the user included other values for minimization
-        mtrx.incl <- createChart(input.incl, copyinput)
+        primeimp.incl <- apply(primes.incl, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
+        primes.incl <- primes.incl[match(sortVector(primeimp.incl), primeimp.incl), ]
+        
+        output$PIs <- primeimp.incl[match(sortVector(primeimp.incl), primeimp.incl)]
+        mtrx.incl <- output$PIchart <- createChart(primes.incl, input)
+        
         reduced <- rowSums(mtrx.incl) == 0
-        if (length(reduced) > 0) {
-            mtrx.incl <- mtrx.incl[!reduced, , drop=FALSE]
-            input.incl <- input.incl[!reduced, , drop=FALSE]
-        }
+        mtrx.incl <- mtrx.incl[!reduced, , drop=FALSE]
+        primes.incl <- primes.incl[!reduced, , drop=FALSE]
+        primeimp.incl <- primeimp.incl[!reduced]
         
-        primeimp.incl <- apply(input.incl, 1, writePrimeimp, collapse=collapse, uplow=TRUE)
-        primeimpsort <- sortVector(primeimp.incl)
-        mtrx.incl <- mtrx.incl[match(primeimpsort, primeimp.incl), , drop=FALSE]
-        rownames(mtrx.incl) <- output$PIs <- primeimpsort
+        rownames(mtrx.incl) <- primeimp.incl
         colnames(mtrx.incl) <- initial
-        reduced <- rowDominance(mtrx.incl)
         
-        if (any(reduced)) {
-            mtrxDom.incl <- mtrx.incl[!reduced, , drop=FALSE]
-            rownames(mtrxDom.incl) <- output$PIs <- primeimpsort[!reduced]
-        }
-        else {
-            mtrxDom.incl <- mtrx.incl
-        }
+        reduced <- rowDominance(mtrx.incl)
+        mtrxDom.incl <- mtrx.incl[!reduced, , drop=FALSE]
         
         sol.matrix.incl <- solveChart(mtrxDom.incl)
         output$k <- sol.matrix.incl[[1]]
@@ -262,13 +250,13 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
     }
     
     solution.list <- writeSolution(sol.matrix, mtrxDom)
-    output$solution <- solution <- solution.list[[1]]
+    solution <- output$solution <- solution.list[[1]]
     ess.prime.imp <- rownames(mtrxDom)[solution.list[[2]]]
     
     if (repetitions == 2) {
          # compare the two solutions and retain the one with the smallest number of conditions (literals)
         solution.list.incl <- writeSolution(sol.matrix.incl, mtrxDom.incl)
-        solution.incl <- solution.list.incl[[1]]
+        solution.incl <- output$solution <- solution.list.incl[[1]]
         ess.prime.imp.incl <- rownames(mtrxDom.incl)[solution.list.incl[[2]]]
         ncond <- unique(toupper(unlist(strsplit(solution[[1]], ""))))
         ncond.incl <- unique(toupper(unlist(strsplit(solution.incl[[1]], ""))))
@@ -372,7 +360,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         cat("\n")
     }
     
-    if (length(linenums) == 1) {
+    if (length(primelines) == 1) {
         preamble <- "NB:"
         warning.message <- paste("There is only one combination to be explained.",
                                  "The solution is simply that combination,",

@@ -45,7 +45,8 @@ eqmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
   \item{uplow}{logical, use upper/lower notation if possible, for binary data}
 }
 
-\value{an invisible list with three components: minimised PIs, number of k PIs to solve the PI chart and the solution(s)}
+\value{an invisible list with five components: initial combinations, minimised PIs,
+the raw PI chart, the number of k PIs to solve the PI chart and the solution(s)}
 
 \references{
 Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}

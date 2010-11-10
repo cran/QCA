@@ -1,3 +1,6 @@
+Version 0.6-5
+    o qmcc() and eqmcc() now additionally returns invisibly the PIchart and the initial combinations
+
 Version 0.6-4
     o The functions qmcc() and eqmcc() now return an invisible list with three components:
       - the minimized PIs

@@ -3,7 +3,7 @@ function(mtrx, primes) {
     sums <- rowSums(mtrx)
     mtrx <- mtrx[order(sums, decreasing=TRUE), , drop=FALSE]
     primes <- primes[order(sums, decreasing=TRUE), , drop=FALSE]
-    sums <- sort(sums, decreasing=T)
+    sums <- sort(sums, decreasing=TRUE)
     line.no <- 1
     while(line.no < nrow(mtrx)) {
         less <- sums < sums[line.no]

@@ -114,17 +114,20 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
         colnames(primes) <- colnames(inputt) <- colnames(mydata[, seq(ncol(primes))])
         }
     
-    initial <- apply(inputt, 1, writePrimeimp, collapse=collapse, uplow=uplow)
+    primeimp <- apply(primes, 1, writePrimeimp, collapse=collapse, uplow=uplow)
+    primeimpsort <- sortVector(primeimp)
+    primes <- primes[match(sortVector(primeimpsort), primeimp), ]
     
     output <- list()
+    output$initials <- initial <- apply(inputt, 1, writePrimeimp, collapse=collapse, uplow=uplow)
+    output$PIs <- primeimpsort
     
      # create the prime implicants chart
-    mtrx <- createChart(primes, inputt)
+    mtrx <- output$PIchart <- createChart(primes, inputt)
     reduced <- rowDominance2(mtrx, primes)
     
     primeimp <- apply(reduced$primes, 1, writePrimeimp, collapse=collapse, uplow=uplow)
     primeimpsort <- sortVector(primeimp)
-    output$PIs <- primeimpsort
     mtrx <- reduced$mtrx[match(primeimpsort, primeimp), , drop=FALSE]
     rownames(mtrx) <- primeimpsort
     colnames(mtrx) <- initial

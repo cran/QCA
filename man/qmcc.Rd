@@ -43,7 +43,8 @@ qmcc(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
   \item{diffmat}{generate the differences matrix}
 }
 
-\value{an invisible list with three components: minimised PIs, number of k PIs to solve the PI chart and the solution(s)}
+\value{an invisible list with five components: initial combinations, minimised PIs,
+the raw PI chart, the number of k PIs to solve the PI chart and the solution(s)}
 
 \references{
 Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative
