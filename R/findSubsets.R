@@ -1,12 +1,12 @@
 `findSubsets` <-
-function(noflevels, row.no, maximum) {
-    if (missing(maximum)) maximum <- prod(noflevels)
-    mbaserow <- getRow(noflevels, row.no)
-    mbase <- rev(c(1, cumprod(rev(noflevels))))[-1]
+function(noflevels3k, row.no, maximum) {
+    if (missing(maximum)) maximum <- prod(noflevels3k)
+    mbaserow <- getRow(noflevels3k, row.no)
+    mbase <- rev(c(1, cumprod(rev(noflevels3k))))[-1]
     
     increment <- function(x, y, cond.levels) {
         a <- x
-        for (i in 1:cond.levels) {
+        for (i in seq(cond.levels)) {
             a <- as.vector(outer(y, a, "+"))
             if (max(a) >= maximum) {
                 x <- c(x, a[a <= maximum])
@@ -23,7 +23,7 @@ function(noflevels, row.no, maximum) {
     
      # bring all levels to the "normal" values, in order to increment times
      # exactly those values
-    noflevels <- noflevels - 1
+    noflevels <- noflevels3k - 1
     
     for (k in rev(indices)) {
         row.no <- increment(row.no, mbase[k], noflevels[k])

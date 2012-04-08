@@ -1,10 +1,5 @@
 `verify.data` <-
-function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
-         expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
-         incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
-         quiet = FALSE, details = FALSE, chart = FALSE, use.letters = TRUE,
-         show.cases = FALSE, diffmatrix=TRUE) {
-
+function(mydata, outcome = "", conditions = c("")) {
      # check if the data has column names
     if (is.null(colnames(mydata))) {
         cat("\n")
@@ -14,7 +9,7 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
      # check the outcome specified by the user
     if (nchar(outcome) == 0) {
         cat("\n")
-        stop("You haven't specified the outcome variable.\n\n", call. = FALSE)
+        stop("You haven't specified the outcome set.\n\n", call. = FALSE)
     }
     else if (! outcome %in% colnames(mydata)) {
         cat("\n")
@@ -42,6 +37,16 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
             stop("Cannot find a solution with only one causal condition.\n\n", call. = FALSE)
         }
     }
+}
+
+         
+         
+`verify.expl` <-
+function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
+         expl.1 = FALSE, expl.0 = FALSE, expl.ctr = FALSE, expl.mo = FALSE,
+         incl.1 = FALSE, incl.0 = FALSE, incl.ctr = FALSE, incl.mo = FALSE,
+         quiet = FALSE, details = FALSE, chart = FALSE, use.letters = TRUE,
+         show.cases = FALSE, diffmatrix=TRUE) {
     
     # check if all cases have been included in analysis
     if ((expl.0 | incl.0) & (expl.1 | incl.1) & (expl.ctr | incl.ctr) & incl.rem) {
@@ -70,11 +75,15 @@ function(mydata, outcome = "", conditions = c(""), incl.rem = FALSE,
 
 
 `verify.tt` <-
-function(mydata, outcome = "", conditions = c(""), complete = FALSE, show.cases = FALSE) {
+function(mydata, outcome = "", conditions = c(""), complete = FALSE, show.cases = FALSE, incl.cut1 = 1, incl.cut0 = 1) {
+    
+    if (is.tt(mydata)) {
+        mydata <- mydata$initial.data
+    }
     
     if (nchar(outcome) == 0) {
         cat("\n")
-        stop("You haven't specified the outcome variable.\n\n", call. = FALSE)
+        stop("You haven't specified the outcome set.\n\n", call. = FALSE)
     }
     else if (! outcome %in% colnames(mydata)) {
         cat("\n")
@@ -85,7 +94,7 @@ function(mydata, outcome = "", conditions = c(""), complete = FALSE, show.cases 
     if (length(conditions) > 1) {
         if (outcome %in% conditions) {
             cat("\n")
-            stop('Variable "', outcome, '" cannot be both outcome _and_ condition!\n\n', call. = FALSE)
+            stop('"', outcome, '" cannot be both outcome _and_ condition!\n\n', call. = FALSE)
         }
         if (!all(conditions %in% colnames(mydata))) {
             cat("\n")
@@ -101,6 +110,128 @@ function(mydata, outcome = "", conditions = c(""), complete = FALSE, show.cases 
     if (any(is.na(mydata))) {
         cat("\n")
         stop("Missing data found; this is not (yet) supported.\n\n", call. = FALSE)
+    }
+    
+    # checking for the two including cut-offs
+    if (any(c(incl.cut1, incl.cut0) < 0) | any(c(incl.cut1, incl.cut0) > 1)) {
+        cat("\n")
+        stop("The including cut-off(s) should be bound to the interval [0, 1].\n\n", call. = FALSE)
+    }
+    
+    if (incl.cut0 > incl.cut1 & incl.cut0 < 1) {
+        cat("\n")
+        stop("incl.cut0 cannot be greater than incl.cut1.\n\n", call. = FALSE)
+    }
+    
+    mydata <- as.data.frame(lapply(mydata, function(x) {
+        x <- as.character(x)
+        x[x %in% c("-", "dc")] <- -1
+        return(as.numeric(x))
+    }))
+    
+    if (any(mydata[, conditions] > 1 & mydata[, conditions] %% 1 > 0)) {
+        cat("\n")
+        stop("Uncalibrated data.\nFuzzy sets should have values bound to the interval [0 , 1] and all other values should be crisp.\n\n", call. = FALSE)
+    }
+}
+
+
+`verify.qca` <-
+function(mydata, outcome = "", conditions = c(""), explain = c(""),
+         include = c(""), use.letters = FALSE, direxp=c()) {
+
+     # check if the data has column names
+    if (is.null(colnames(mydata))) {
+        cat("\n")
+        stop("Please specify the column names for your data.\n\n", call. = FALSE)
+    }
+    
+     # check the outcome specified by the user
+    if (nchar(outcome) == 0) {
+        cat("\n")
+        stop("You haven't specified the outcome set.\n\n", call. = FALSE)
+    }
+    else if (! outcome %in% colnames(mydata)) {
+        cat("\n")
+        stop("The outcome's name is not correct.\n\n", call. = FALSE)
+    }
+    
+     # check if the user specifies something to explain
+    if (explain == c("")) {
+        cat("\n")
+        stop("You have not specified what to explain.\n\n", call. = FALSE)
+    }
+    
+     # check if the user specifies something to explain
+    if (length(explain) > 1 | !all(explain %in% c(0, 1, "C"))) {
+        cat("\n")
+        stop("You should explain either 0, 1, or \"C\".\n\n", call. = FALSE)
+    }
+    
+    chexplain <- c(0, 1)[which(0:1 %in% explain)]
+    chinclude <- c(0, 1)[which(0:1 %in% include)]
+    if (length(chinclude) > 0) {
+        if (any(chinclude != chexplain)) {
+            chinclude <- chinclude[which(chinclude != chexplain)]
+            cat("\n")
+            stop(paste("You cannot include ", chinclude, " since you want to explain ", chexplain, ".\n\n", sep=""), call. = FALSE)
+        }
+    }
+    
+    if (!all(include %in% c("?", "0", "1", "C"))) {
+        cat("\n")
+        stop("You can only include one or more of the following: \"?\", \"C\", \"0\" and \"1\".\n\n", call. = FALSE)
+    }
+    
+    
+    # subset the data with the conditions specified
+    if (length(conditions) > 1) {
+        if (outcome %in% conditions) {
+            cat("\n")
+            stop('Variable "', outcome, '" cannot be both outcome _and_ condition!\n\n', call. = FALSE)
+        }
+        if (!all(conditions %in% names(mydata))) {
+            cat("\n")
+            stop("The conditions' names are not correct.\n\n", call. = FALSE)
+        }
+    }
+    else if (length(conditions) == 1) {
+        if (outcome == conditions) {
+            cat("\n")
+            stop('Variable "', outcome, '" cannot be both outcome _and_ condition!\n\n', call. = FALSE)
+        }
+        else {
+            cat("\n")
+            stop("Cannot find a solution with only one causal condition.\n\n", call. = FALSE)
+        }
+    }
+    
+     # if more than 26 conditions (plus one outcome), we cannot use letters
+    if (use.letters & ncol(mydata) > 27) {
+        cat("\n")
+        stop("Cannot use letters. There are more than 26 conditions.\n\n", call. = FALSE)
+    }
+    
+    # checking for complete data (without missings)
+    if (any(is.na(mydata))) {
+        cat("\n")
+        stop("Missing data found; this is not (yet) supported.\n\n", call. = FALSE)
+    }
+    
+    # checking the directional expectations
+    if (!is.null(direxp)) {
+        if (length(conditions) > 0) {
+            if (length(direxp) != length(conditions)) {
+                cat("\n")
+                stop("Number of expectations does not match number of conditions.\n\n", call. = FALSE)
+            }
+        }
+        else {
+            if (length(direxp) != ncol(mydata) - 1) {
+                cat("\n")
+                stop("Number of expectations does not match number of conditions.\n\n", call. = FALSE)
+            }
+        }
     }
 }
 

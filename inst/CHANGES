@@ -1,5 +1,29 @@
+Version 1.0-0
+    o The QCA package is now ready for fuzzy sets (thanks to Alrik Thiem's efforts)
+    o eqmcc() and truthTable() are extensively reworked, for compatibility with fuzzy sets
+    o When fed with a truth table object (of class "tt"), the (e)qmcc() function automatically
+      determines the causal conditions and the outcome
+    o New function pof(), which computes parameters of fit for a variety of input options
+    o New function findTh(), that finds thresholds for crisp sets calibrations
+    o New function calibrate(), that recodes the initial data into either crisp or fuzzy sets 
+    o New function superSubset() for analysing necessity and sufficiency
+    o New argument "rowdom" to function eqmcc(), which allows maximum flexibility for solving
+      the PI chart. The user is now able to choose whether to apply row dominance or not
+    o Truth tables dropped columns "freq0" and "freq1", and gained column "incl"
+    o Truth tables can be sorted
+    o The truthTable() function now returns a raw truth table with numerical columns, plus a
+      new component with the recoded data if fuzzy sets are used
+    o prettyTable() and createString() functions are now internal
+    o Fixed a very old bug in qmcc() related to the decision of which solution is more parsimonious
+      (thanks to Michael Baumgartner for pointing that)
+    o findPrimes() is now findSubsets()
+    o New printing methods for PI charts - objects of class "pic", parameters of fit - class "pof",
+      superSubset() results - class "ss", allExpressions() - class"aE" and factorization results - class "fctr"
+    o Function qmcc() has been obsoleted
+    o Numerous other bug fixes and improvements
+
 Version 0.6-5
-    o qmcc() and eqmcc() now additionally returns invisibly the PIchart and the initial combinations
+    o qmcc() and eqmcc() now additionally return invisibly the PIchart and the initial combinations
 
 Version 0.6-4
     o The functions qmcc() and eqmcc() now return an invisible list with three components:

@@ -11,44 +11,74 @@ Qualitative Comparative Analysis
 }
 
 \description{
-This package implements the comparative methodology as described in Ragin (1987) and Ragin (2000).
-The analysis is the bridge between the qualitative and quantitative worlds, making use of the
-qualitative procedures in a systematic, algorithmic way (therefore increasing the "confidence"
-in the results, as understood by quantitative researchers).
-The ''exact'' Quine-McCluskey algorithm for crisp sets is implemented, both for bvQCA (binary-value QCA)
-and for mvQCA (multi-value QCA, from version 0.6-0).
-Starting with version 0.4-5 the package has a new function called "eqmcc" (from "E"nhanced
-Quine-McCluskey) that finds exact solutions with a substantially lower memory consumption.
-The next versions of the package will have more functions to address fsQCA (fuzzy-sets QCA),
-tsQCA (temporal-sequence QCA) and to deal with missing values in the data.
-There is also a graphical user interface in the package QCAGUI.
+This package implements the method of Qualitative Comparative Analysis (QCA) as developed by Ragin (1987, 2000, 2008).
+QCA is a configurational comparative technique which uses Boolean instead of linear algebra. This difference changes 
+the understanding of causation as symmetric (linear algebra) to an understanding of causation as asymmetric (Boolean algebra). 
+
+QCA is based on set relations between a number of (explaining) conditions and an (explained) outcome, with the two 
+concepts of necessity and sufficiency at its core. If some condition or combination of conditions is a superset of 
+the outcome, the former is necessary for the latter. If some condition or combination of conditions is a subset of
+the outcome, the former is sufficient for the latter.
+
+Three related variants of QCA exist: crisp-set QCA (csQCA), multi-value QCA (mvQCA) and fuzzy-set QCA (fsQCA). A 
+subvariant of csQCA called temporal QCA (tQCA) is suitable for event sequence relations.  
+
+In this package, the "exact" Quine-McCluskey algorithm for crisp sets is implemented for csQCA and mvQCA (from 
+version 0.6-0), and fsQCA as well as tQCA from version 1.0-0. Starting with version 0.4-5 the package has a new function 
+called "eqmcc" ("e"nhanced Quine-McCluskey) which finds exact solutions faster and with substantially lower 
+memory consumption (Dusa 2007, 2010).
+
+How to make the most of R's and the QCA package's capabilities for QCA is demonstrated in detail with many examples 
+by Thiem and Dusa (2012). 
+
 }
 
 \details{
     \tabular{ll}{
     Package: \tab QCA\cr
-    Type: \tab Package\cr
-    Version: \tab 0.6-5\cr
-    Date: \tab 2010-11-10\cr
+    Type:    \tab Package\cr
+    Version: \tab 1.0-0\cr
+    Date:    \tab 2012-04-08\cr
     License: \tab GPL (>= 2)\cr
     }
 }
 
 \author{
-\tabular{ll}{
-Author: \tab Adrian Dusa <dusadrian@unibuc.ro>\cr
-Maintainer: \tab Adrian Dusa <dusadrian@unibuc.ro>
-}}
 
-\references{
-Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative and
-quantitative strategies}, Berkeley:University of California Press
+\bold{Authors}:\cr
+Adrian Dusa\cr
+Department of Sociology\cr
+University of Bucharest\cr
+\email{dusadrian@unibuc.ro}
 
-Dusa, Adrian (2010) \emph{A mathematical approach to the boolean minimization problem},
-Quality & Quantity vol.44, no.1, pp.99-113
+Alrik Thiem\cr
+Department of Humanities, Social and Political Sciences\cr
+Swiss Federal Institute of Technology Zurich\cr
+\email{thiem@sipo.gess.ethz.ch}
 
-Dusa, Adrian (2007a) \emph{Enhancing Quine-McCluskey}, http://www.compasss.org/files/WPfiles/Dusa2007a.pdf
+\bold{Maintainer}:\cr
+Adrian Dusa
 }
 
-\keyword{cluster}
+\references{
+A. Dusa. \emph{Enhancing Quine-McCluskey}. WP 2007-49, COMPASSS, 2007.\cr
+URL: http://www.compasss.org/files/WPfiles/Dusa2007a.pdf.
+
+A. Dusa. A Mathematical Approach to the Boolean Minimization Problem.
+\emph{Quality & Quantity}, 44(1): 99-113, 2010.
+
+C. C. Ragin. \emph{The Comparative Method: Moving beyond Qualitative and Quantitative Strategies}. 
+University of California Press, Berkeley, 1987.
+
+C. C. Ragin. \emph{Fuzzy-Set Social Science}, University of Chicago Press, Chicago, 2000.
+
+C. C. Ragin. \emph{Redesigning Social Inquiry: Fuzzy Sets and Beyond}. University of Chicago Press, 
+Chicago, 2008.
+
+A. Thiem and A. Dusa. \emph{Qualitative Comparative Analysis with R: A User's Guide}. 
+Springer, New York, 2012.
+
+}
+
+\keyword{package}
 

@@ -1,20 +1,11 @@
-"allExpressions" <-
-function(no.conditions, inside=TRUE, arrange=FALSE) {
-    return.matrix <- createMatrix(rep(3, no.conditions))
-    return.matrix <- return.matrix - 1
-    return.matrix[return.matrix < 0] <- NA
+`allExpressions` <-
+function(noflevels, raw=FALSE, arrange=FALSE) {
+    aEmat <- createMatrix(noflevels + 1)
     if (arrange) {
-        return.matrix <- sortMatrix(return.matrix)
-        sum.nas <- apply(return.matrix, 1, function(idx) sum(is.na(idx)))
-        return.matrix <- return.matrix[order(sum.nas, decreasing=TRUE), ]
-        }
-    
-    if (inside) {
-        return.matrix
-        }
-    else {
-        return.matrix[is.na(return.matrix)] <- ""
-        print(prettyTable(return.matrix))
-        }
+        aEmat <- sortMatrix(aEmat)
+        sum.zeros <- apply(aEmat, 1, function(idx) sum(idx == 0))
+        aEmat <- aEmat[order(sum.zeros, decreasing=TRUE), ]
     }
+    return(structure(list(aE=aEmat - 1, raw=raw), class = "aE"))
+}
 

@@ -2,7 +2,7 @@
 
 \alias{getRow}
 
-\title{Get a specific row from a truth table}
+\title{Get a Specific Row from a Truth Table}
 
 \description{
 A truth table is formed by the unique combinations of causal conditions' levels. For binary
@@ -12,23 +12,17 @@ the decimal representation of a row number into its corresponding combination of
 }
 
 \usage{
-getRow(noflevels, row.no, zerobased=FALSE)
+getRow(noflevels, row.no, zerobased = FALSE)
 }
 
 \arguments{
-  \item{noflevels}{a vector containing the number of levels for each causal condition}
-  \item{row.no}{a vector, the desired row number(s) from the truth table}
-  \item{zerobased}{logical; if TRUE the first row number from the truth table is zero}
+  \item{noflevels}{A vector containing the number of levels for each condition}
+  \item{row.no}{A vector, the desired row number(s) from the truth table}
+  \item{zerobased}{Logical, the first row number from the truth table is zero}
 }
 
 \value{
 a matrix with the combination of levels corresponding to the desired row number(s)
-}
-
-\author{
-Adrian Dusa\cr
-University of Bucharest, Faculty of Sociology and Social Work\cr
-dusadrian@unibuc.ro
 }
 
 \seealso{\code{\link{createMatrix}}, \code{\link[base]{expand.grid}}}
@@ -45,4 +39,4 @@ noflevels <- c(2, 3, 2)
 getRow(noflevels, 11) # 1 2 0
 }
 
-\keyword{misc}
+\keyword{functions}

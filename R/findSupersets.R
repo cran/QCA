@@ -1,4 +1,4 @@
-`findPrimes` <-
+`findSupersets` <-
 function (noflevels, input.combs) {
     if (!is.matrix(input.combs)) {
         if (!is.vector(input.combs)) {

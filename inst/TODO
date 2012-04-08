@@ -1,8 +1,7 @@
+- implement option to handle missing values
+
+- work on mv data with any types of categories, not just numbers.
 
 - work on a new function to solve the PI chart
 
-- implement option to handle missing outcome
-- implement option for simplifying assumptions
-- implement fuzzy-sets (inclusion) algorithms 
-- implement temporal QCA
 

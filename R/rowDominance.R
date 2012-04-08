@@ -11,13 +11,13 @@ function(mtrx) {
             for (k in x) {
                 to.be.reduced <- sapply(y, function(h) {
                     all(mtrx[k, mtrx[h,]])
-                    })
+                })
                 reduced[y[to.be.reduced]] <- TRUE
-                }
             }
         }
-    return(reduced)
     }
+    return(reduced)
+}
 
 
 
