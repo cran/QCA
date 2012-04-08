@@ -1,93 +1,158 @@
 \name{truthTable}
 \alias{truthTable}
-\alias{print.tt}
 \alias{is.tt}
 
-\title{Create a truth table}
+\title{Create a Truth Table}
 
 \description{
-For any number of conditions, there is a finite number of possible combinations of
-presence/absence.\cr
-\code{truthTable()} finds the observed combinations among all possible ones, prints the frequency
-of each observed combination and establishes the value for the outcome in this way:\cr
-- if all observed combinations agree on having the same outcome value (either 0 or 1), then the 
-value for the outcome will be set to that value\cr
-- for any given combination, if the outcome present values of both 0 and 1 then the value for the
-outcome will be set to a contradiction ("C")\cr
-- for all other possible combinations, the outcome is missing and will be coded with "?"\cr
+A truth table lists every \dfn{configuration} (combination of condition literals) and its outcome value. 
+This function creates truth tables from any kind of common input data. For crisp-set data (binary and multi-valued), 
+cases are assigned directly to the unique configuration in which they have full membership. For fuzzy-set data, the function 
+first detects in which configuration a case has membership above 0.5 before assigning it to this configuration.\cr
 \cr
-\code{is.tt()} checkes if an object has the class tt (if it is a truth table); such an
-object is created by truthTable()\cr
-\cr
-\code{print.tt()} has an S3 method for printing objects of class 'tt'
+\code{is.tt()} checkes whether an object has class "tt" (truth table); such an
+object is created by \code{truthTable()}\cr
 }
 
 \usage{
-truthTable(mydata, outcome = "", conditions = c(""), complete = FALSE,
-           show.cases = FALSE, quiet = FALSE)
+truthTable(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1, 
+           incl.cut0 = 1, complete = FALSE, show.cases = FALSE, sort.by = c(""),
+           decreasing = TRUE, use.letters = FALSE, ...)
 
 is.tt(x)
-
-\method{print}{tt}(x, funqmcc=FALSE, ...)
 }
 
 \arguments{
-  \item{mydata}{the dataset we use for minimization}
-  \item{outcome}{the name of the outcome variable in the dataset}
-  \item{conditions}{the name of the conditions from the dataset (if not specified, all variables
-  but the outcome are considered conditions)}
-  \item{quiet}{if TRUE, return the truth table invisibly}
-  \item{show.cases}{show the rownames from the original dataset for each combination of conditions}
-  \item{complete}{prints the complete truth table, including the missing combinations}
-  \item{x}{an object of class tt}
-  \item{funqmcc}{logical, if called by (e)qmcc() function(s) it prints only the observed
-  combinations from the initial data}
-  \item{...}{other arguments from the generic print (not used in this function)}
+  \item{mydata}{A dataset of (binary or multi-valued) crisp or fuzzy-set data}
+  \item{outcome}{The name of the outcome set}
+  \item{conditions}{The names of the conditions}
+  \item{n.cut}{The minimum number of cases with membership > 0.5 for an outcome value of "0", "1" or "C"}
+  \item{incl.cut1}{The minimum sufficiency inclusion score for an outcome value of "1"}
+  \item{incl.cut0}{The maximum sufficiency inclusion score for an outcome value of "0"}
+  \item{complete}{Logical, print complete truth table}
+  \item{show.cases}{Logical, print case names}
+  \item{sort.by}{Sort truth table by inclusion scores and/or number of cases}
+  \item{decreasing}{Sort in decreasing or increasing order of value(s) passed to \code{sort.by}}
+  \item{use.letters}{Logical, use letters instead of set names}
+  \item{x}{An object of class "tt"}
+  \item{...}{Other arguments (used internally)}
 }
 
-\value{
-An object of class "tt", which is essentially a list with three components:\cr
-    \tabular{ll}{
-    \$tt: \tab the truth table itself\cr
-    \$indexes: \tab a vector with the base 10 representation of the\cr
-               \tab truth table observed combinations\cr
-    \$noflevels: \tab a vector with the number of levels from all input\cr
-                 \tab variables\cr
+\value{An object of class "tt", which is a list with the following components:\cr
+    \tabular{lll}{
+        \tab tt           \tab the truth table itself\cr
+        \tab indexes      \tab the truth table line numbers\cr
+        \tab noflevels    \tab a vector with the number of levels for all conditions\cr
+        \tab initial.data \tab the initial data\cr
+        \tab recoded.data \tab the recoded data, for post fuzzy-set conversion\cr
+        \tab cases        \tab case names for the truth table combination\cr
     }
 }
 
-\references{Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative 
-and quantitative strategies}, Berkeley: University of California Press}
+\details{
+The dataset specifed as \code{mydata} has to have the following structure: values of 0 and 1 for binary-value crisp sets,
+values between 0 and 1 for fuzzy set data, and values beginning with 0 and increments of 1 for mutli-value crisp set data.
+"Don't care" values are indicated by a dash "-" or the placeholder "dc". These values are ignored in the minimization. Sets
+which contain these values are excluded from the computation of parameters of fit.  
 
-\author{
-Adrian Dusa\cr
-University of Bucharest, Faculty of Sociology and Social Work\cr
-dusadrian@unibuc.ro
+If the argument \code{conditions} is not specified, all sets in \code{mydata} but the outcome are included 
+as conditions.
+
+Configurations that contain fewer than \code{n.cut} cases with membership above 0.5 are coded as logical remainders 
+("?"). If the number of such cases is at least \code{n.cut}, configurations with an inclusion score of at least 
+\code{incl.cut1} are coded as true ("1"), configuration with an inclusion score below \code{incl.cut1} but with at least 
+\code{incl.cut0} are coded as a contradiction ("C"), and configurations with an inclusion score below \code{incl.cut0} 
+are coded as false ("0"). If \code{incl.cut0} is not specified, it is set equal to \code{incl.cut1} and no contradictions 
+can occur.
+
+The \code{sort.by} argument orders all configurations by their inclusion scores (\emph{incl}) or the number of
+cases with membership above 0.5 they contain (\emph{n}) or both, in either order.
+
+If the conditions are already named with single letters, the argument \code{use.letters} will have no effect.
 }
 
-\seealso{\code{\link{qmcc}}, \code{\link{eqmcc}}}
+\references{
+P. Emmenegger. Job Security Regulations in Western Democracies: A Fuzzy Set Analysis.
+\emph{European Journal of Political Research}, 50(3):336-364, 2011.
+
+C. Hartmann and J. Kemmerzell. Understanding Variations in Party Bans in Africa.
+\emph{Democratization}, 17(4):642-665, 2010.
+
+M. L. Krook. Women's Representation in Parliament: A Qualitative Comparative Analysis.
+\emph{Political Studies}, 58(5):886-908, 2010.
+
+C. C. Ragin. \emph{The Comparative Method: Moving beyond Qualitative and Quantitative Strategies}. 
+University of California Press, Berkeley, 1987.
+
+C. C. Ragin. \emph{Redesigning Social Inquiry: Fuzzy Sets and Beyond}. University of Chicago Press, 
+Chicago, 2008.
+
+C. C. Ragin and S. I. Strand. Using Qualitative Comparative Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).
+\emph{Sociological Methods & Research}, 36(4):431-441, 2008.
+
+A. Thiem and A. Dusa. \emph{Qualitative Comparative Analysis with R: A User's Guide}. 
+Springer, New York, 2012.
+
+}
+
+\seealso{\code{\link{eqmcc}}}
 
 \examples{
-data(Osa)
+# csQCA using Krook (2010)
+#-------------------------
+data(Krook)
+Krook
 
 # print the truth table
-truthTable(Osa, outcome="OUT", show.cases=TRUE)
+truthTable(Krook, outcome = "WNP")
 
-# print the complete truth table
-truthTable(Osa, outcome="OUT", complete=TRUE, show.cases=TRUE)
+# print the complete truth table, show cases, sort by inclusions
+# scores and then number of cases
+truthTable(Krook, outcome = "WNP", complete = TRUE, show.cases = TRUE,
+  sort.by = c("incl", "n"))
 
-# save the result into an R object:
-mytable <- truthTable(Osa, outcome="OUT", complete=TRUE, show.cases=TRUE, quiet=TRUE)
+# code configurations with 1 case as remainders
+KrookTT <- truthTable(Krook, outcome = "WNP", n.cut = 2, show.cases = TRUE)
+KrookTT
 
-mytable # or print.tt(mytable)
+# print the cases that were assigned to remainders based on n.cut
+KrookTT$excluded
 
-# check the components
+# fsQCA using Emmenegger (2011)
+#------------------------------
+data(Emme)
+Emme
 
-mytable$tt # the truth table itself
+# code non-remainder configurations with inclusion scores between 0.5 
+# and 0.9 as contradictions
+EmmeTT <- truthTable(Emme, outcome = "JSR", incl.cut1 = 0.9, incl.cut0 = 0.5)
+EmmeTT
 
-mytable$indexes # base 10 representation of input combinations
+# get the raw truth table as a component of the truth table object EmmeTT
+EmmeTT$tt 
 
-mytable$noflevels # number of levels from each causal condition
+# mvQCA using Hartmann and Kemmerzell (2010)
+#-------------------------------------------
+data(HarKem)
+HarKem
+
+# code non-remainder configurations with inclusion scores below 1 but above
+# 0.4 as contradictions 
+HarKemTT <- truthTable(HarKem, outcome = "PB", 
+  conditions = c("C","F","T","V"), incl.cut0 = 0.4)
+HarKemTT
+
+# list the number of condition levels  
+HarKemTT$noflevels
+
+# tQCA using Ragin and Strand (2008)
+#-----------------------------------
+data(RagStr)
+RagStr
+
+# tQCA truth table with "don't care" values
+truthTable(RagStr, outcome = "REC")
+
 }
 
-\keyword{misc}
+\keyword{functions}

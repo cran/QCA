@@ -2,18 +2,29 @@
  ## as the name of the conditions (columns), collapsed together in a single string
 
 `writePrimeimp` <- 
-function(idx, collapse="*", uplow=FALSE) {
-    conditions <- names(idx)
-    condition <- idx
-    if (uplow) {
-        condition[idx == 1] <- tolower(conditions[idx == 1])
-        condition[idx == 2] <- toupper(conditions[idx == 2])
-    } else {
-        for (i in sort(unique(as.vector(idx)))) {
-            condition[idx == i] <- paste(conditions[idx == i], "{", i - 1, "}", sep="")
-        }
+function(idx, collapse="*", uplow=FALSE, use.tilde=FALSE) {
+    
+    if (use.tilde) {
+        uplow <- FALSE
     }
-    primeimp <- paste(condition[idx != 0], collapse=collapse)
-    return(primeimp)
+    
+    idx <- as.data.frame(idx)
+    
+    for (i in seq(ncol(idx))) {
+        if (uplow) {
+            conditions <- c(tolower(colnames(idx)[i]), toupper(colnames(idx)[i]))
+        }
+        else if (use.tilde) {
+            conditions <- c(paste("~", toupper(colnames(idx)[i]), sep=""), toupper(colnames(idx)[i]))
+        }
+        else {
+            conditions <- paste(colnames(idx)[i], "{", seq(max(idx[, i])) - 1, "}", sep="")
+        }
+        idx[idx[, i] != 0, i] <- conditions[idx[idx[, i] != 0, i]]
+    }
+    
+    return(apply(idx, 1, function(x) {
+        paste(x[x != 0], collapse=collapse)
+    }))
 }
 

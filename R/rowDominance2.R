@@ -18,6 +18,6 @@ function(mtrx, primes) {
             break
             }
         }
-    return(list(mtrx=mtrx, primes=primes))
+    return(list(mtrx=mtrx, expressions=primes))
     }
 

@@ -2,11 +2,11 @@
 
 \alias{readTosmana}
 
-\title{Read Tosmana XML data file}
+\title{Read Tosmana XML Data File}
 
 \description{
-Tosmana saves it's data by default in XML format. This function reads the XML file and coerces
-it to an R dataframe object.
+Tosmana can save data in XML format. This function reads XML files and coerces
+them to R data frame objects.
 }
 
 \usage{
@@ -14,17 +14,9 @@ readTosmana(filename)
 }
 
 \arguments{
-  \item{filename}{a string, the path to the XML file}
-}
-
-\author{
-Adrian Dusa\cr
-University of Bucharest, Faculty of Sociology and Social Work\cr
-dusadrian@unibuc.ro
+  \item{filename}{A string, the path to the XML file}
 }
 
 \note{This function requires the XML package}
 
-
-
-\keyword{misc}
+\keyword{functions}

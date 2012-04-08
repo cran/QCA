@@ -2,46 +2,43 @@
 
 \alias{allExpressions}
 
-\title{Create a matrix with all possible combinations of conditions}
+\title{Create a Matrix with all Possible Combinations of Conditions}
 
 \description{
-There are \eqn{3^k - 1} possible expressions (where \eqn{k} is the number of conditions)
-for a crisp-set procedure. Possible values for conditions are 1 (presence), 0 (absence) and NA
-(the condition being a subset of a larger one).
-The matrix grows exponentially so it is not reccomended to run this function for a large number of 
-causal conditions (say over 12) as the computer will quickly run out of resources.
+There are exactly \eqn{3^k} possible expressions (where \eqn{k} is the number of conditions) for a binary 
+crisp-set procedure. For multi-value crisp data, the general formula for the number of possible expressions 
+is \code{prod(noflevels + 1)}, where \code{noflevels} is a vector with the number of levels for each causal condition.
+As the matrix grows exponentially, it is not recommended to run this function for a large number of conditions (> 15).
 }
 
 \usage{
-allExpressions(no.conditions, inside=TRUE, arrange=FALSE)
+allExpressions(noflevels, raw = FALSE, arrange = FALSE)
 }
 
 \arguments{
-  \item{no.conditions}{the number of conditions from the dataset}
-  \item{inside}{if TRUE, returns the raw result matrix; if FALSE, print the result matrix without NAs}
-  \item{arrange}{if TRUE the program tries hard to arrange the result matrix for visual inspection
+  \item{noflevels}{The number of levels for each causal condition}
+  \item{raw}{logical: if TRUE, returns the raw result matrix; if FALSE, print the result matrix without NAs}
+  \item{arrange}{logical: if TRUE the program tries hard to arrange the result matrix for visual inspection
    (however this takes a lot of additional time for large matrices)}
 }
 
 \value{
-a matrix with \eqn{3^k - 1} rows
+A matrix with \code{prod(noflevels + 1)} rows
 }
 
-\references{Ragin, Charles C. (2000) \emph{Fuzzy-set social science},
-Chicago: The University of Chicago Press}
-
-\author{
-Adrian Dusa\cr
-University of Bucharest, Faculty of Sociology and Social Work\cr
-dusadrian@unibuc.ro
+\references{
+C. C. Ragin. \emph{Fuzzy-Set Social Science}, University of Chicago Press, Chicago, 2000.
 }
+
+\seealso{\code{\link{createMatrix}}}
+
 
 \examples{
 # for 3 conditions
-allExpressions(3, inside=FALSE)
+allExpressions(rep(3, 3))
 
 # the same matrix, this time arranged better
-allExpressions(3, inside=FALSE, arrange=TRUE)
+allExpressions(rep(3, 3), arrange=TRUE)
 }
 
-\keyword{misc}
+\keyword{functions}

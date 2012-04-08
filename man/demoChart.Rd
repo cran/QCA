@@ -2,25 +2,23 @@
 
 \alias{demoChart}
 
-\title{Create the prime implicants chart}
+\title{Create the Prime Implicants Chart}
 
 \description{
 This function creates a chart having the prime implicants on the rows and the observed combinations
 of conditions on the columns. It is useful to determine visually which prime implicant (if any)
 is essential. The chart is subsequently processed algorithmically to further reduce the reduntant
-prime implicants.
-This function is for demonstration purposes only. The internal function createChart() is faster
-but its arguments are more complex.
+prime implicants. This function is for demonstration purposes only.
 }
 
 \usage{
-demoChart(rows, columns, splitmethod="")
+demoChart(rows, columns, splitmethod = "")
 }
 
 \arguments{
-  \item{rows}{a vector of strings, containing the prime implicants}                                 
-  \item{columns}{a vector of strings, containing all combinations of conditions from the original data}
-  \item{splitmethod}{string, to declare the separator of the input strings}
+  \item{rows}{A vector of strings, containing the prime implicants}                                 
+  \item{columns}{A vector of strings, containing all combinations of conditions from the original data}
+  \item{splitmethod}{String, to declare the separator of the input strings}
 }
 
 \value{
@@ -29,16 +27,12 @@ which columns
 }
 
 \references{
-Quine, W.V. (1952) \emph{The Problem of Simplifying Truth Functions},
-The American Mathematical Monthly, Vol. 59, No. 8. (Oct., 1952), pp. 521-531.
+W.V. Quine. The Problem of Simplifying Truth Functions. \emph{American Mathematical Monthly}, 
+59(8):521-531, 1952.
 
-Ragin, Charles C. (1987) \emph{The Comparative Method. Moving beyond qualitative and
-quantitative strategies}, Berkeley: University of California Press}
+C. C. Ragin. \emph{The Comparative Method: Moving beyond Qualitative and Quantitative Strategies}. 
+University of California Press, Berkeley, 1987.
 
-\author{
-Adrian Dusa\cr
-University of Bucharest, Faculty of Sociology and Social Work\cr
-dusadrian@unibuc.ro
 }
 
 \seealso{\code{\link{prettyTable}}}
@@ -59,4 +53,4 @@ prettyTable(chart)
 
 }
 
-\keyword{misc}
+\keyword{functions}
