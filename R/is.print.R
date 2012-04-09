@@ -72,7 +72,7 @@ function(x, ...) {
 
 
 
-`print.qca` <-
+`print.qca` <-                                                      
 function(x, ...) {
     if (x$opts$print.truth.table) {
         print.tt(x$tt)
@@ -103,7 +103,7 @@ function(x, ...) {
                 
             if (x$opts$show.cases) {
                 PIchart <- x$PIchart$i.sol[[i]][[1]]
-                PIchart <- PIchart[rownames(PIchart) %in% unique(unlist(x$i.sol[[i]]$solution[[1]])), ]
+                PIchart <- PIchart[rownames(PIchart) %in% unique(unlist(x$i.sol[[i]]$solution[[1]])), , drop=FALSE]
                 mult.cov <- ifelse(any(colSums(PIchart) > 1), length(unlist(lapply(x$inputcases[colSums(PIchart) > 1], strsplit, split=","))), 0)
                 cat("\nNumber of multiple-covered cases:", mult.cov, "\n")
             }
@@ -142,7 +142,7 @@ function(x, ...) {
                 PIchart <- x$PIchart$p.sol[[1]]
             }
             
-            PIchart <- PIchart[rownames(PIchart) %in% unique(unlist(x$solution[[1]])), ]
+            PIchart <- PIchart[rownames(PIchart) %in% unique(unlist(x$solution[[1]])), , drop=FALSE]
             mult.cov <- ifelse(any(colSums(PIchart) > 1), length(unlist(lapply(x$inputcases[colSums(PIchart) > 1], strsplit, split=","))), 0)
             cat("Number of multiple-covered cases:", mult.cov, "\n\n")
         }
@@ -615,6 +615,44 @@ function(x, ...) {
     }
     cat("\n")
 }
+
+
+
+
+#`print.pims` <-
+#function(x, ...) {
+    #line.length <- floor(getOption("width")*0.95)
+    #rownames(x) <- format(rownames(x))
+    #x <- apply(x, 2, formatC, digits=3, format="f")
+    #nchar.rownames <- nchar(rownames(x)[1])
+    
+    #for (i in seq(ncol(x))) {
+    #    colnames(x)[i] <- format(colnames(x)[i], width=max(5, nchar(colnames(x)[i])))
+    #}
+    
+    #sep.row <- paste(rep("-", nchar.rownames + ifelse(ncol(x) > 1, sum(nchar(colnames(x)[-ncol(x)])) + 2*(ncol(x) - 1), 0) + max(nchar(colnames(x)[ncol(x)]), 5) + 2), collapse="")
+    #nchar.sep.row <- nchar(sep.row)
+    #if (nchar.sep.row < line.length) {
+    #    columns <- paste(colnames(x), collapse="  ")
+    #    cat(paste(paste(rep(" ", nchar.rownames), collapse=""), columns, sep="  "), "\n")
+    #    cat(sep.row, "\n")
+    #    for (i in seq(nrow(x))) {
+    #        catrow <- paste(rownames(x)[i], x[i, 1], sep="  ")
+    #        if (ncol(x) > 1) {
+    #            for (colno in seq(2, ncol(x))) {
+    #                ncharcol <- nchar(colnames(x)[colno - 1])
+    #                catrow <- paste(catrow, x[i, colno], sep=paste(rep(" ", max(2, ifelse(ncharcol > 5, ncharcol - 3, 0))), collapse=""))
+    #            }
+    #        }
+    #        cat(catrow, "\n")
+    #    }
+    #    cat(sep.row, "\n")
+    #}
+    #else {
+    #    
+    #}
+    #print(unclass(x))
+#}
 
 
 
