@@ -1,4 +1,4 @@
-9d1b5b684bdfa8a6db92724d534834a4 *DESCRIPTION
+2278e95d67a24182ce2b987501710d13 *DESCRIPTION
 e1ffb28a31e9585d6a21eb622590b275 *NAMESPACE
 4bf41cf0cf67e71524dbff3b21351289 *R/allExpressions.R
 2b15ceaba781260c8aa310918e83e6fb *R/base3rows.R
@@ -13,7 +13,7 @@ a51223c4bb39ecdec2f47bf295b7f3a9 *R/factorize.R
 4e8fff4f4c5fdbd53ffa38e20f0cb6e1 *R/findSupersets.R
 db2bf8c6ee16acb0e897107cd679a041 *R/findTh.R
 3eb1d9b8e325271d2001b027c0372779 *R/getRow.R
-65c3d75a11cd921d6a8bb48c2783839f *R/is.print.R
+09afbf5c5e062b060df9177525b39cc6 *R/is.print.R
 a398b77a5d3dc31e3276659cdec7dbac *R/pof.R
 bd65b31abc755dfededdcd6b94fa4cb7 *R/prettyString.R
 37c11c979aae741aae5ebe6b126e184e *R/prettyTable.R
@@ -23,7 +23,7 @@ f55e8abf6efbc4a42b645712a5408434 *R/rowDominance2.R
 f57b27bb660cfbc53a5973a406a55ba2 *R/solveChart.R
 06ed2e6bd138f8eba0c762444e8800d3 *R/sortMatrix.R
 c4b0eff02984ebbf2d1763ba53797d06 *R/sortVector.R
-631b75eab4654a30f859431e2d3cf7a5 *R/superSubset.R
+cbd41d06e1dfea0f1b5789cb80bcd57c *R/superSubset.R
 13b2788bab8711675ffd1f873850daa5 *R/truthTable.R
 23bad053a08d43a5d9701be073524df1 *R/verifyQCA.R
 2707199cdea410444af5a032c96b7964 *R/writePrimeimp.R
@@ -34,13 +34,13 @@ d41d8cd98f00b204e9800998ecf8427e *README
 94ec9858412808eaafcec4a979cc8454 *data/Krook.tab.gz
 3e133615b1903e6e1460364c2cd3e5de *data/RagStr.tab.gz
 a73ac869754f2e149c9aff2126775e47 *data/Rokkan.tab.gz
-4156263fa9a4e57625c435d573e718c3 *inst/CHANGES
+2cd1a56afed370d4efad3272d97df390 *inst/CHANGES
 bd0a65ff9ac9f16a751022b7a791f0f8 *inst/TODO
 bb60e8884848098a02314aa57e404f89 *man/Emme.Rd
 88486fcc2c54230db01d505f8bb8e9be *man/HarKem.Rd
 1aa7416e07a195dc9b3c898ede2fa617 *man/Krook.Rd
 9156292a20f7e0e9ef79c4ac35927889 *man/QCA-internal.Rd
-2c14a7e6488e4306661fac496e242aab *man/QCA.package.Rd
+78b9d8bccfd584421ba298f2680c4ff8 *man/QCA.package.Rd
 18f7d7e4035c7119ae51bf85c17ac7a7 *man/RagStr.Rd
 08d65b83c07a99b173ec3ae38b0f6277 *man/Rokkan.Rd
 7520a1c9fe029be9961cf2ff78a30eab *man/allExpressions.Rd

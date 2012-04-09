@@ -1,3 +1,6 @@
+Version 1.0-1
+    o fixed a small bug that prevented the printing on the screen a solution with only one term.
+
 Version 1.0-0
     o The QCA package is now ready for fuzzy sets (thanks to Alrik Thiem's efforts)
     o eqmcc() and truthTable() are extensively reworked, for compatibility with fuzzy sets
