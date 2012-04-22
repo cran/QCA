@@ -15,9 +15,9 @@ object is created by \code{truthTable()}\cr
 }
 
 \usage{
-truthTable(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1, 
-           incl.cut0 = 1, complete = FALSE, show.cases = FALSE, sort.by = c(""),
-           decreasing = TRUE, use.letters = FALSE, ...)
+truthTable(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
+           incl.cut1 = 1, incl.cut0 = 1, complete = FALSE, show.cases = FALSE,
+           sort.by = c(""), decreasing = TRUE, use.letters = FALSE, ...)
 
 is.tt(x)
 }
@@ -25,6 +25,7 @@ is.tt(x)
 \arguments{
   \item{mydata}{A dataset of (binary or multi-valued) crisp or fuzzy-set data}
   \item{outcome}{The name of the outcome set}
+  \item{neg.out}{Logical, use negation of outcome set}
   \item{conditions}{The names of the conditions}
   \item{n.cut}{The minimum number of cases with membership > 0.5 for an outcome value of "0", "1" or "C"}
   \item{incl.cut1}{The minimum sufficiency inclusion score for an outcome value of "1"}
@@ -52,8 +53,8 @@ is.tt(x)
 \details{
 The dataset specifed as \code{mydata} has to have the following structure: values of 0 and 1 for binary-value crisp sets,
 values between 0 and 1 for fuzzy set data, and values beginning with 0 and increments of 1 for mutli-value crisp set data.
-"Don't care" values are indicated by a dash "-" or the placeholder "dc". These values are ignored in the minimization. Sets
-which contain these values are excluded from the computation of parameters of fit.  
+"Don't care" values are indicated by a dash "-", the placeholder "dc" or any negative integer. These values are ignored 
+in the minimization. Sets which contain these values are excluded from the computation of parameters of fit.  
 
 If the argument \code{conditions} is not specified, all sets in \code{mydata} but the outcome are included 
 as conditions.
@@ -126,6 +127,11 @@ Emme
 # code non-remainder configurations with inclusion scores between 0.5 
 # and 0.9 as contradictions
 EmmeTT <- truthTable(Emme, outcome = "JSR", incl.cut1 = 0.9, incl.cut0 = 0.5)
+EmmeTT
+
+# truth table based on negated outcome set
+EmmeTT <- truthTable(Emme, outcome = "JSR", neg.out = TRUE, incl.cut1 = 0.9, 
+  incl.cut0 = 0.5)
 EmmeTT
 
 # get the raw truth table as a component of the truth table object EmmeTT

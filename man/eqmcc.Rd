@@ -12,10 +12,10 @@ the classical Quine McCluskey minimization algorithm.
 }
 
 \usage{
-eqmcc(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1,
-      incl.cut0 = 1, explain = "1", include = c(""), omit = c(), direxp = c(),
-      rowdom = TRUE, details = FALSE, show.cases = FALSE, use.tilde = FALSE,
-      use.letters = FALSE)
+eqmcc(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
+      incl.cut1 = 1, incl.cut0 = 1, explain = "1", include = c(""), omit = c(),
+      direxp = c(), rowdom = TRUE, details = FALSE, show.cases = FALSE,
+      use.tilde = FALSE, use.letters = FALSE)
 
 is.qca(x)
 }
@@ -23,6 +23,7 @@ is.qca(x)
 \arguments{
   \item{mydata}{A truth table object or a dataset of (binary or multi-value) crisp or fuzzy-set data}
   \item{outcome}{The name of the outcome set}
+  \item{neg.out}{Logical, use negation of outcome set (ignored if \code{mydata} is a truth table object)}
   \item{conditions}{The names of the condition sets (if not specified, all sets in \code{mydata} but the outcome)}
   \item{n.cut}{The minimum number of cases with membership > 0.5 for an outcome value of "0", "1" or "C"}
   \item{incl.cut1}{The minimum sufficiency inclusion score for an outcome value of "1"}
@@ -30,7 +31,7 @@ is.qca(x)
   \item{explain}{The outcome value to be explained, either "1", "0" or "C"}
   \item{include}{The outcome value(s) of additional configurations to be included in the minimization}
   \item{omit}{A vector or a matrix of configurations to be omitted from minimization}
-  \item{direxp}{A numeric vector of directional expectations}
+  \item{direxp}{A vector of directional expectations}
   \item{rowdom}{Logical, apply row dominance principle to eliminate dominated PIs}
   \item{details}{Logical, present details about solution}
   \item{show.cases}{Logical, also print case names if \code{details = TRUE}}
@@ -44,7 +45,7 @@ is.qca(x)
         \tab tt        \tab the truth table object\cr
         \tab excluded  \tab the line numbers of the excluded configurations\cr
         \tab initials  \tab the initial fundamental products be to explained\cr
-        \tab PIs       \tab the PIs\cr
+        \tab PIs       \tab the Prime Implicants, results of the minimization procedure\cr
         \tab PIchart   \tab a list containing the PI chart(s)\cr
         \tab solution  \tab a list of solution(s)\cr
         \tab SA        \tab the Simplifying Assumptions\cr
@@ -55,8 +56,9 @@ is.qca(x)
 \code{mydata} can be a truth table object (an object of class "tt" returned by \code{truthTable()}) 
 or a dataset of (binary or multi-value) crisp or fuzzy-set data. The dataset specifed as \code{mydata} has to have the following 
 structure: values of 0 and 1 for binary-value crisp sets, values between 0 and 1 for fuzzy set data, and values beginning with 0 
-and increments of 1 for mutli-value crisp set data. "Don't care" values are indicated by a dash "-" or the placeholder "dc". These 
-values are ignored in the minimization. Sets which contain these values are excluded from the computation of parameters of fit.
+and increments of 1 for mutli-value crisp set data. "Don't care" values are indicated by a dash "-" or the placeholder "dc" or any 
+negative integer. These values are ignored in the minimization. Sets which contain these values are excluded from the computation 
+of parameters of fit.
 
 If the argument \code{conditions} is not specified, all sets in the dataset of (binary or multi-value) crisp 
 or fuzzy-set data but the outcome are included.
@@ -103,13 +105,13 @@ P. Emmenegger. Job Security Regulations in Western Democracies: A Fuzzy Set Anal
 C. Hartmann and J. Kemmerzell. Understanding Variations in Party Bans in Africa.
 \emph{Democratization}, 17(4):642-665, 2010.
 
-M. L. Krook. Women's Representation in Parliament: A Qualitative Comparative Analysis.
+M.L. Krook. Women's Representation in Parliament: A Qualitative Comparative Analysis.
 \emph{Political Studies}, 58(5):886-908, 2010.
 
-C. C. Ragin. \emph{Redesigning Social Inquiry: Fuzzy Sets and Beyond}. University of Chicago Press, 
+C.C. Ragin. \emph{Redesigning Social Inquiry: Fuzzy Sets and Beyond}. University of Chicago Press, 
 Chicago, 2008.
 
-C. C. Ragin and S. I. Strand. Using Qualitative Comparative Analysis to Study Causal Order: Comment on 
+C.C. Ragin and S.I. Strand. Using Qualitative Comparative Analysis to Study Causal Order: Comment on 
 Caren and Panofsky (2005). \emph{Sociological Methods & Research}, 36(4):431-441, 2008.
 }
 
@@ -123,6 +125,12 @@ Krook
 
 # explain true configurations, complex solution
 eqmcc(Krook, outcome = "WNP")
+
+# explain true configurations with negated outcome set, complex solution
+eqmcc(Krook, outcome = "WNP", neg.out = TRUE)
+
+# same result with false configurations (not always the case!)
+eqmcc(Krook, outcome = "WNP", explain = "0")
 
 # explain true configurations, parsimonious solution, 
 # with solution details
@@ -181,10 +189,10 @@ eqmcc(HarKem, outcome = "PB", conditions = conds, incl.cut0 = 0.4,
 
 # explain true configurations, intermediate solution,
 # with directional expectations:
-# C{1}, F{1,2}, T{2}, V contribute to PB  
+# C{1}, F{1,2}, T{2}, V contribute to PB
 
 HarKemSI <- eqmcc(HarKem, outcome = "PB", conditions = conds, 
-  include = "?", direxp = c("1","1;2","2",1))
+  include = "?", direxp = c(1, "1;2", 2, 1))
 HarKemSI
 
 # tQCA using Ragin and Strand (2008)

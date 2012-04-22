@@ -1,8 +1,8 @@
 `eqmcc` <-
-function(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1,
-         incl.cut0 = 1, explain = "1", include = c(""), omit = c(), direxp = c(),
-         rowdom = TRUE, details = FALSE, show.cases = FALSE, use.tilde = FALSE,
-         use.letters = FALSE) {
+function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
+         incl.cut1 = 1, incl.cut0 = 1, explain = "1", include = c(""), omit = c(),
+         direxp = c(), rowdom = TRUE, details = FALSE, show.cases = FALSE,
+         use.tilde = FALSE, use.letters = FALSE) {
     
     print.truth.table <- details & !is.tt(mydata)
     if (all(include == "")) {
@@ -19,7 +19,7 @@ function(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1,
         
         indata <- mydata
         tt <- truthTable(mydata, outcome, conditions, show.cases=show.cases, n.cut=n.cut,
-                         incl.cut1=incl.cut1, incl.cut0=incl.cut0, use.letters=use.letters)
+                         incl.cut1=incl.cut1, incl.cut0=incl.cut0, use.letters=use.letters, neg.out=neg.out)
         
         recdata <- tt$recoded.data
         conditions <- toupper(conditions)
@@ -50,6 +50,7 @@ function(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1,
                 stop("Number of expectations does not match number of conditions.\n\n", call. = FALSE)
             }
         }
+        neg.out <- tt$neg.out
     }
     
     getSolution <- function() {
@@ -94,8 +95,6 @@ function(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1,
         return(list(k=k, mtrx=mtrx, reduced=reduced, all.PIs=all.PIs, solution.list=solution.list))
     }
     
-    val.outcome <- indata[, outcome]
-    sum.outcome <- sum(val.outcome)
     uplow <- TRUE
     noflevels <- tt$noflevels
     
@@ -280,10 +279,10 @@ function(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1,
         }
         
         if (length(p.sol$solution.list[[1]]) == 1) {
-            listIC <- pof(p.sol$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases, relation = "sufficiency", via.eqmcc=TRUE)
+            listIC <- pof(p.sol$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases, relation = "sufficiency", neg.out=neg.out, via.eqmcc=TRUE)
         }
         else {
-            listIC <- pof(p.sol$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases,
+            listIC <- pof(p.sol$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases, neg.out=neg.out,
                             solution.list=output$solution, essential=output$essential, relation = "sufficiency", via.eqmcc=TRUE)
         }
         
@@ -438,11 +437,11 @@ function(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1,
                 }
                 
                 if (length(i.sol.index$solution.list[[1]]) == 1) {
-                    i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases, relation = "sufficiency", via.eqmcc = TRUE)
+                    i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases, relation = "sufficiency", neg.out=neg.out, via.eqmcc = TRUE)
                 }
                 else {
                     i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases, relation = "sufficiency",
-                                                  solution.list=i.sol.index$solution.list[[1]], essential=i.sol.index$solution.list[[2]], via.eqmcc = TRUE)
+                                                  solution.list=i.sol.index$solution.list[[1]], essential=i.sol.index$solution.list[[2]], neg.out=neg.out, via.eqmcc = TRUE)
                 }
                 output$pims$i.sol[[index]] <- i.sol[[index]]$IC$pims
                 i.sol[[index]]$IC$pims <- NULL

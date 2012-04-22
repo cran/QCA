@@ -1,5 +1,9 @@
+Version 1.0-2
+    o Correct PRI scores for relation "necessity" and neg.out = TRUE
+    o New argument "neg.out" for both truthTable() and eqmcc() functions
+
 Version 1.0-1
-    o fixed a small bug that prevented the printing on the screen a solution with only one term.
+    o Fixed a small bug that prevented the printing on the screen a solution with only one term.
 
 Version 1.0-0
     o The QCA package is now ready for fuzzy sets (thanks to Alrik Thiem's efforts)
@@ -12,7 +16,7 @@ Version 1.0-0
     o New function superSubset() for analysing necessity and sufficiency
     o New argument "rowdom" to function eqmcc(), which allows maximum flexibility for solving
       the PI chart. The user is now able to choose whether to apply row dominance or not
-    o Truth tables dropped columns "freq0" and "freq1", and gained column "incl"
+    o Truth tables dropped columns "freq0" and "freq1", and gained columns "incl" and "PRI"
     o Truth tables can be sorted
     o The truthTable() function now returns a raw truth table with numerical columns, plus a
       new component with the recoded data if fuzzy sets are used
