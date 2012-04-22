@@ -44,10 +44,12 @@ A. Dusa. A Mathematical Approach to the Boolean Minimization Problem.
 # all three conditions are binary, having two levels: 0 and 1
 noflevels <- c(2, 2, 2)
 
-findSubsets(noflevels + 1, 2)     #  5  8 11 14 17 20 23 26
+#  5  8 11 14 17 20 23 26
+findSubsets(noflevels + 1, 2)
 
 # stopping at maximum row number 20
-findSubsets(noflevels + 1, 2, 20) #  5  8 11 14 17 20
+# 5  8 11 14 17 20
+findSubsets(noflevels + 1, 2, 20)
 }
 
 \keyword{functions}

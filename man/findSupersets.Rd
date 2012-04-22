@@ -44,11 +44,15 @@ A. Dusa. A Mathematical Approach to the Boolean Minimization Problem.
 # all three conditions are binary, having two levels: 0 and 1
 noflevels <- c(2, 2, 2)
 
-findSupersets(noflevels + 1, 14)         #  2  4  5 10 11 13 14
-findSupersets(noflevels + 1, 17)         #  2  7  8 10 11 16 17
+# 2 4 5 10 11 13 14
+findSupersets(noflevels + 1, 14)
+
+# 2 7 8 10 11 16 17
+findSupersets(noflevels + 1, 17)
 
 # both line numbers 14 and 17
-findSupersets(noflevels + 1, c(14, 17))  #  2  4  5  7  8 10 11 13 14 16 17
+# 2 4 5 7 8 10 11 13 14 16 17
+findSupersets(noflevels + 1, c(14, 17))
 
 
 # input.combs as a matrix
@@ -58,7 +62,8 @@ findSupersets(noflevels + 1, c(14, 17))  #  2  4  5  7  8 10 11 13 14 16 17
 #[1,]    1    1    1
 #[2,]    1    2    1
 
-findSupersets(noflevels + 1, input.combs) #  2  4  5  7  8 10 11 13 14 16 17
+# 2 4 5 7 8 10 11 13 14 16 17
+findSupersets(noflevels + 1, input.combs)
 }
 
 \keyword{functions}

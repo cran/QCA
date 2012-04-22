@@ -225,11 +225,11 @@ function(x, ...) {
         }
         prettyNums <- format(seq(nrow.incl.cov))
         
-        #print(incl.cov)
-        
-        incl.cov <- formatC(as.matrix(incl.cov), digits=3, format="f")
-        
-        #print(incl.cov)
+        for (i in seq(ncol(incl.cov))) {
+            NAs <- is.na(incl.cov[, i])
+            incl.cov[!NAs, i] <- formatC(incl.cov[!NAs, i], digits=3, format="f")
+            incl.cov[NAs, i] <- "  -  "
+        }
         
         colnames(incl.cov) <- format(colnames(incl.cov))
         if (essentials) {
@@ -276,7 +276,13 @@ function(x, ...) {
             incl.cov.cases <- incl.cov$cases
             incl.cov$cases <- NULL
         }
-        incl.cov <- formatC(as.matrix(incl.cov), digits=3, format="f")
+        
+        for (i in seq(ncol(incl.cov))) {
+            NAs <- is.na(incl.cov[, i])
+            incl.cov[!NAs, i] <- formatC(incl.cov[!NAs, i], digits=3, format="f")
+            incl.cov[NAs, i] <- "  -  "
+        }
+        
         if ("sol.incl.cov" %in% names(x)) {
             sol.incl.cov <- t(as.matrix(x$sol.incl.cov))
             rownames(sol.incl.cov) <- "S1"
@@ -312,7 +318,7 @@ function(x, ...) {
         max.chars <- line.length - 1
     }
     else {
-        first.printed.row <- paste(c(rep(" ", nchar.rownames + nchar.nrow + 24), rep("-", 7*(ncol(incl.cov) - (2 + valid.cov.u)) - 2)), collapse="")
+        first.printed.row <- paste(c(rep(" ", nchar.rownames + nchar.nrow + 25), rep("-", 7*(ncol(incl.cov) - (2 + valid.cov.u)) - 2)), collapse="")
         max.chars <- nchar(first.printed.row)
     }
     other.args <- list(...)
@@ -533,18 +539,23 @@ function(x, ...) {
     }
     
     
+    
     incl.cov <- x$incl.cov
     cat("\n")
     prettyNums <- format(seq(nrow(incl.cov)))
     rownames(incl.cov) <- format(rownames(incl.cov))
     colnames(incl.cov) <- format(colnames(incl.cov), width=5)
     for (i in seq(ncol(incl.cov))) {
-        incl.cov[, i] <- formatC(incl.cov[, i], , digits=3, format="f")
+        NAs <- is.na(incl.cov[, i])
+        incl.cov[!NAs, i] <- formatC(incl.cov[!NAs, i], digits=3, format="f")
+        incl.cov[NAs, i] <- "  -  "
     }
+    
     nchar.rownames <- nchar(rownames(incl.cov)[1])
     cat(paste(c(paste(rep(" ", nchar.rownames + nchar(nrow(incl.cov)) + 2), collapse=""), format(colnames(incl.cov))), collapse="  "), "\n")
     sep.row <- paste(rep("-", nchar.rownames + nchar(nrow(incl.cov)) + 23), collapse="")
     cat(sep.row, "\n")
+    
     for (i in seq(nrow(incl.cov))) {
         cat(paste(prettyNums[i], paste(c(rownames(incl.cov)[i], incl.cov[i, ]), collapse="  "), sep="  "), "\n")
     }
@@ -617,42 +628,6 @@ function(x, ...) {
 }
 
 
-
-
-#`print.pims` <-
-#function(x, ...) {
-    #line.length <- floor(getOption("width")*0.95)
-    #rownames(x) <- format(rownames(x))
-    #x <- apply(x, 2, formatC, digits=3, format="f")
-    #nchar.rownames <- nchar(rownames(x)[1])
-    
-    #for (i in seq(ncol(x))) {
-    #    colnames(x)[i] <- format(colnames(x)[i], width=max(5, nchar(colnames(x)[i])))
-    #}
-    
-    #sep.row <- paste(rep("-", nchar.rownames + ifelse(ncol(x) > 1, sum(nchar(colnames(x)[-ncol(x)])) + 2*(ncol(x) - 1), 0) + max(nchar(colnames(x)[ncol(x)]), 5) + 2), collapse="")
-    #nchar.sep.row <- nchar(sep.row)
-    #if (nchar.sep.row < line.length) {
-    #    columns <- paste(colnames(x), collapse="  ")
-    #    cat(paste(paste(rep(" ", nchar.rownames), collapse=""), columns, sep="  "), "\n")
-    #    cat(sep.row, "\n")
-    #    for (i in seq(nrow(x))) {
-    #        catrow <- paste(rownames(x)[i], x[i, 1], sep="  ")
-    #        if (ncol(x) > 1) {
-    #            for (colno in seq(2, ncol(x))) {
-    #                ncharcol <- nchar(colnames(x)[colno - 1])
-    #                catrow <- paste(catrow, x[i, colno], sep=paste(rep(" ", max(2, ifelse(ncharcol > 5, ncharcol - 3, 0))), collapse=""))
-    #            }
-    #        }
-    #        cat(catrow, "\n")
-    #    }
-    #    cat(sep.row, "\n")
-    #}
-    #else {
-    #    
-    #}
-    #print(unclass(x))
-#}
 
 
 

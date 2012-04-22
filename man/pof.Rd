@@ -5,19 +5,19 @@
 \title{Set-Relational Parameters of Fit}
 
 \description{
-This function computes three set-relational parameters of fit: inclusion, PRI and (raw) coverage scores.
+This function computes three set-relational parameters of fit: inclusion, PRI and coverage scores.
 }
 
 \usage{
-pof(setms, mydata, outcome = "", relation = "necessity", neg.out = FALSE, ...)
+pof(setms, mydata, outcome = "", neg.out = FALSE, relation = "necessity", ...)
 }
 
 \arguments{
   \item{setms}{Set membership scores, or a matrix with crisp set representations, or a vector of line numbers}
   \item{mydata}{The original dataset}
   \item{outcome}{The name of the outcome set}
-  \item{relation}{The set relation of the conditions to the outcome, either "necessity" or "sufficiency"}
   \item{neg.out}{Logical, use negation of outcome set}
+  \item{relation}{The set relation of the conditions to the outcome, either "necessity" or "sufficiency"}
   \item{...}{Other arguments from the generic print (not used in this function)}
 }
 
@@ -57,7 +57,7 @@ pof(x, Krook, outcome = "WNP", neg.out = TRUE)
 pof(x, Krook, outcome = "WNP", relation = "sufficiency") 
 
 # now for the negated outcome
-pof(x, Krook, outcome = "WNP", relation = "sufficiency", neg.out = TRUE)
+pof(x, Krook, outcome = "WNP", neg.out = TRUE, relation = "sufficiency")
 
 # fsQCA using Emmenegger (2011)
 #------------------------------

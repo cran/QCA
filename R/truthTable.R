@@ -1,7 +1,7 @@
 `truthTable` <-
-function(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1, 
-           incl.cut0 = 1, complete = FALSE, show.cases = FALSE, sort.by = c(""),
-           decreasing = TRUE, use.letters = FALSE, ...) {
+function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
+         incl.cut1 = 1, incl.cut0 = 1, complete = FALSE, show.cases = FALSE,
+         sort.by = c(""), decreasing = TRUE, use.letters = FALSE, ...) {
     
     if (all(conditions == c(""))) {
         conditions <- names(mydata)[-which(names(mydata) == outcome)]
@@ -18,6 +18,10 @@ function(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1,
     outcome <- toupper(outcome)
     
     mydata <- initial.data <- mydata[, c(conditions, outcome)]
+    
+    if (neg.out) {
+        mydata[, outcome] <- 1 - mydata[, outcome]
+    }
     
     dc.code <- unique(unlist(lapply(mydata, function(x) {
         if (is.numeric(x)) {
@@ -194,7 +198,7 @@ function(mydata, outcome = "", conditions = c(""), n.cut = 1, incl.cut1 = 1,
         }
     }
     
-    x <- list(tt=tt, indexes=sort(unique(line.mydata)), noflevels=as.vector(noflevels), initial.data=initial.data, recoded.data=mydata, cases=cases)
+    x <- list(tt=tt, indexes=sort(unique(line.mydata)), noflevels=as.vector(noflevels), initial.data=initial.data, recoded.data=mydata, cases=cases, neg.out=neg.out)
     
     if (any(excluded)) {
        x$excluded <- excluded.cases

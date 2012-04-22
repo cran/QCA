@@ -17,9 +17,9 @@ allExpressions(noflevels, raw = FALSE, arrange = FALSE)
 
 \arguments{
   \item{noflevels}{The number of levels for each causal condition}
-  \item{raw}{logical: if TRUE, returns the raw result matrix; if FALSE, print the result matrix without NAs}
-  \item{arrange}{logical: if TRUE the program tries hard to arrange the result matrix for visual inspection
-   (however this takes a lot of additional time for large matrices)}
+  \item{raw}{Logical, return the raw result matrix; if FALSE, print the result matrix without NAs}
+  \item{arrange}{Logical, try to arrange the result matrix for visual inspection
+   (takes a lot of additional time for large matrices)}
 }
 
 \value{
@@ -38,7 +38,7 @@ C. C. Ragin. \emph{Fuzzy-Set Social Science}, University of Chicago Press, Chica
 allExpressions(rep(3, 3))
 
 # the same matrix, this time arranged better
-allExpressions(rep(3, 3), arrange=TRUE)
+allExpressions(rep(3, 3), arrange = TRUE)
 }
 
 \keyword{functions}

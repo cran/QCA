@@ -10,19 +10,19 @@ subset (sufficiency) relation to the outcome and are minimally complex.
 }
 
 \usage{
-superSubset(mydata, outcome = "", conditions = c(""), relation = "necessity",
-            incl.cut = 1, cov.cut = 0, neg.out = FALSE, use.tilde = FALSE,
+superSubset(mydata, outcome = "", neg.out = FALSE, conditions = c(""), 
+            relation = "necessity", incl.cut = 1, cov.cut = 0, use.tilde = FALSE,
             use.letters = FALSE)
 }
 
 \arguments{
   \item{mydata}{A dataset of (binary or multi-value) crisp or fuzzy-set data}
   \item{outcome}{The name of the outcome set}
+  \item{neg.out}{Logical, use negation of outcome set}
   \item{conditions}{The names of the condition}
   \item{relation}{The set relation of the conditions to the outcome, either "necessity" or "sufficiency"}
   \item{incl.cut}{The minimal inclusion score}
   \item{cov.cut}{The minimal coverage score}
-  \item{neg.out}{Logical, use negation of outcome set}
   \item{use.tilde}{Logical, use a tilde for set negation}
   \item{use.letters}{Logical, use letters instead of set names}
 }
@@ -39,7 +39,7 @@ This function returns a list of those combinations of the \eqn{3^k - 1} potentia
 which are minimally complex, yet exceed the given cut-offs for inclusion and coverage scores. In addition to inclusion 
 and coverage scores, PRI (proportional reduction in inconsistency) scores are also returned.
 
-When relation = "necessity", the initial set of combinations is comprised of the \eqn{2k} order-1 combinations as well 
+If \code{relation = "necessity"}, the initial set of combinations is comprised of the \eqn{2k} order-1 combinations as well 
 as their negations. This set is expanded incrementally by forming conjunctive combinations of a higher order as long as 
 the cut-offs are still met. The inclusion cut-off always enjoys a higher priority than the coverage cut-off. All resulting 
 combinations as well as all subcombinations of a lower order will be returned.
@@ -47,12 +47,12 @@ combinations as well as all subcombinations of a lower order will be returned.
 If none of the initial order-1 combinations passes the inclusion cut-off, \code{superSubset()} will search for disjunctive 
 combinations until the cut-offs have been met. Only the disjunctive combinations thus found will be returned.
 
-When relation = "sufficiency", the initial set of combinations is comprised of all order-\eqn{k} conjunctive combinations. 
+If \code{relation = "sufficiency"}, the initial set of combinations is comprised of all order-\eqn{k} conjunctive combinations. 
 This set is reduced incrementally by forming conjunctive combinations of a lower order as long as the cut-offs are still met. 
 Only the conjunctive combinations of the lowest order will be printed. Disjunctive combinations are not formed. For more details, 
 see Thiem and Dusa (2012).
 
-The argument \code{use.tilde} only applies to  non-multi-value data. If the conditions are already named with single letters, 
+The argument \code{use.tilde} only applies to non-multi-value data. If the conditions are already named with single letters, 
 the argument \code{use.letters} will have no effect.
 }
     
@@ -94,8 +94,8 @@ EmmeSS <- superSubset(Emme, outcome = "JSR", relation = "sufficiency",
 EmmeSS
 
 # the same criteria, but for the negation of the outcome
-EmmeSSN <- superSubset(Emme, outcome = "JSR", relation = "sufficiency", 
-  incl.cut = 0.9, cov.cut = 0.4, neg.out = TRUE)
+EmmeSSN <- superSubset(Emme, outcome = "JSR", neg.out = TRUE, 
+  relation = "sufficiency", incl.cut = 0.9, cov.cut = 0.4)
 EmmeSSN
 
 # the combination membership scores for all cases

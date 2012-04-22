@@ -1,5 +1,5 @@
 `pof` <-
-function(setms, mydata, outcome="", relation = "necessity", neg.out=FALSE, ...) {
+function(setms, mydata, outcome="", neg.out=FALSE, relation = "necessity", ...) {
     
     other.args <- list(...)
     
@@ -172,10 +172,10 @@ function(setms, mydata, outcome="", relation = "necessity", neg.out=FALSE, ...) 
         sol.cov.without <- 0
         if (length.expr > 1) {
             if (pims) {
-                sol.cov.without <- Recall(setms[, -i, drop=FALSE], mydata, outcome, recursive=TRUE, via.eqmcc=("via.eqmcc" %in% names(other.args)))
+                sol.cov.without <- Recall(setms[, -i, drop=FALSE], mydata, outcome, recursive=TRUE, via.eqmcc=("via.eqmcc" %in% names(other.args)), neg.out=neg.out)
             }
             else {
-                sol.cov.without <- Recall(setms[-i, , drop=FALSE], mydata, outcome, recursive=TRUE, via.eqmcc=("via.eqmcc" %in% names(other.args)))
+                sol.cov.without <- Recall(setms[-i, , drop=FALSE], mydata, outcome, recursive=TRUE, via.eqmcc=("via.eqmcc" %in% names(other.args)), neg.out=neg.out)
             }
         }
         incl.cov[i, 4] <- sum(inclusions)/sum.outcome - sol.cov.without
@@ -222,10 +222,10 @@ function(setms, mydata, outcome="", relation = "necessity", neg.out=FALSE, ...) 
         
         for (i in seq(length.solution)) {
             if (pims) {
-                individual[[i]] <- Recall(setms[ , solution.list[[i]], drop=FALSE], mydata, outcome, individual=TRUE, via.eqmcc=TRUE, individual=TRUE, relation="sufficiency")
+                individual[[i]] <- Recall(setms[ , solution.list[[i]], drop=FALSE], mydata, outcome, individual=TRUE, via.eqmcc=TRUE, individual=TRUE, relation="sufficiency", neg.out=neg.out)
             }
             else {
-                individual[[i]] <- Recall(setms[solution.list[[i]], , drop=FALSE], mydata, outcome, individual=TRUE, via.eqmcc=TRUE, individual=TRUE, relation="sufficiency")
+                individual[[i]] <- Recall(setms[solution.list[[i]], , drop=FALSE], mydata, outcome, individual=TRUE, via.eqmcc=TRUE, individual=TRUE, relation="sufficiency", neg.out=neg.out)
             }
         }
         return(structure(list(overall=result.list, individual=individual, essential=other.args$essential, pims=as.data.frame(mins), relation=relation), class="pof"))
