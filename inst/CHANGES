@@ -1,3 +1,6 @@
+Version 1.0-3
+    o fixed a couple of printing bugs
+
 Version 1.0-2
     o Correct PRI scores for relation "necessity" and neg.out = TRUE
     o New argument "neg.out" for both truthTable() and eqmcc() functions

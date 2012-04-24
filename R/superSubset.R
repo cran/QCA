@@ -113,9 +113,8 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), relation = "
             }
         }
         
-        
         if (length(expressions) == 0) {
-            stop("\nThere are no groupings that match given criteria.\n\n", call. = FALSE)
+            stop("\nThere are no combinations that match given criteria.\n\n", call. = FALSE)
         }
         
         result.matrix <- getRow(noflevels + 1, expressions)
@@ -157,7 +156,7 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), relation = "
             }
             
             if (length(expressions) == 0) {
-                stop("\nThere are no groupings that match given criteria.\n\n", call. = FALSE)
+                stop("\nThere are no combinations that match given criteria.\n\n", call. = FALSE)
             }
             
             result.matrix <- getRow(noflevels + 1, expressions)
@@ -174,7 +173,7 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), relation = "
                                  row.names=writePrimeimp(result.matrix, collapse=collapse, uplow=uplow, use.tilde=use.tilde))
         }
         else {
-            stop("\nThere are no groupings that match given criteria.\n\n", call. = FALSE)
+            stop("\nThere are no combinations that match given criteria.\n\n", call. = FALSE)
         }
     }
     
@@ -203,7 +202,4 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), relation = "
     mins <- as.data.frame(mins)
     return(structure(list(incl.cov=result, coms=mins, use.letters=use.letters, letters=replacements), class="ss"))
 }
-
-
-
 

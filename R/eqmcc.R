@@ -93,8 +93,11 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         solution.list <- writeSolution(sol.matrix, mtrx)
         
         return(list(k=k, mtrx=mtrx, reduced=reduced, all.PIs=all.PIs, solution.list=solution.list))
-    }
+    }   
     
+    
+    val.outcome <- indata[, outcome]
+    sum.outcome <- sum(val.outcome)
     uplow <- TRUE
     noflevels <- tt$noflevels
     
