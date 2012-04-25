@@ -76,12 +76,13 @@ as the truth table.
 
 Directional expectations for filtering logical remainders are specified by the \code{direxp} argument. For binary-value 
 crisp sets and fuzzy sets they should be given as a vector of the same length and in the same order of conditions as in 
-\code{conditions}. A value of "1" indicates that the presence of the condition is expected to contribute to the outcome, 
-"0" that the absence of the condition is expected to contribute to the outcome, and "-1" indicates no directional expectation. 
-In the case of multi-value crisp sets, directional expectations require the identification of the category name(s), separated
-by semicolons and all enclosed by double quotes. The provision of a category name indicates that the presence of this category 
-is expected to contribute to the outcome. Implicitly, the absence of all other categories is expected to contribute to the 
-outcome.
+\code{conditions}. A value of "1" indicates that the presence of the condition is expected to contribute to an outcome value
+of "1", "0" that the absence of the condition is expected to contribute to an outcome value of "1", and "-1" indicates no 
+directional expectation regarding the set-theoretic relation between the configuration and the outcome set. In the case of 
+multi-value crisp sets, directional expectations require the identification of the category name(s), separated by semicolons 
+and all enclosed by double quotes. The provision of a category name indicates that the presence of this category is expected 
+to contribute to an outcome value of "1". Implicitly, it is the absence of all other categories which is expected to 
+contribute.
 
 If alternative minimal sums exist, all of them are printed if the row dominance principle for PIs is not applied as specified 
 in the logical argument \code{rowdom}. One inessential prime implicant \eqn{P1} dominates another \eqn{P2} if all fundamental 

@@ -5,6 +5,7 @@ function(setms, mydata, outcome="", neg.out=FALSE, relation = "necessity", ...) 
     
     recursive <- "recursive" %in% names(other.args)
     individual <- "individual" %in% names(other.args)
+    via.eqmcc <- "via.eqmcc" %in% names(other.args)
     
     conditions <- names(mydata)[-which(names(mydata) == outcome)]
     
@@ -172,10 +173,10 @@ function(setms, mydata, outcome="", neg.out=FALSE, relation = "necessity", ...) 
         sol.cov.without <- 0
         if (length.expr > 1) {
             if (pims) {
-                sol.cov.without <- Recall(setms[, -i, drop=FALSE], mydata, outcome, recursive=TRUE, via.eqmcc=("via.eqmcc" %in% names(other.args)), neg.out=neg.out)
+                sol.cov.without <- Recall(setms[, -i, drop=FALSE], mydata, outcome, recursive=TRUE, via.eqmcc=via.eqmcc, neg.out=neg.out)
             }
             else {
-                sol.cov.without <- Recall(setms[-i, , drop=FALSE], mydata, outcome, recursive=TRUE, via.eqmcc=("via.eqmcc" %in% names(other.args)), neg.out=neg.out)
+                sol.cov.without <- Recall(setms[-i, , drop=FALSE], mydata, outcome, recursive=TRUE, via.eqmcc=via.eqmcc, neg.out=neg.out)
             }
         }
         incl.cov[i, 4] <- sum(inclusions)/sum.outcome - sol.cov.without
@@ -200,7 +201,7 @@ function(setms, mydata, outcome="", neg.out=FALSE, relation = "necessity", ...) 
     
     result.list <- list(incl.cov=incl.cov, relation=relation)
     
-    if (!pims & "via.eqmcc" %in% names(other.args)) {
+    if (!pims & via.eqmcc) {
         result.list$sol.incl.cov <- c(sol.incl, sol.pri, sum.cov)
         result.list$pims <- as.data.frame(mins)
     }

@@ -224,7 +224,6 @@ function(x, ...) {
             }
         }
         prettyNums <- format(seq(nrow.incl.cov))
-        
         for (i in seq(ncol(incl.cov))) {
             NAs <- is.na(incl.cov[, i])
             incl.cov[!NAs, i] <- formatC(incl.cov[!NAs, i], digits=3, format="f")
@@ -240,16 +239,17 @@ function(x, ...) {
             incl.cov <- incl.cov[!essential.PIs.rows, , drop=FALSE]
             for (i in seq(ind.len)) {
                 unique.coverages <- formatC(x$individual[[i]]$incl.cov$cov.u[rownames(x$individual[[i]]$incl.cov) %in% essential.PIs], digits=3, format="f")
-                incl.cov.e <- cbind(incl.cov.e, unique.coverages)
+                incl.cov.e <- cbind(incl.cov.e, S=unique.coverages, stringsAsFactors=FALSE)
                 x$individual[[i]]$incl.cov <- x$individual[[i]]$incl.cov[!rownames(x$individual[[i]]$incl.cov) %in% essential.PIs, ]
             }
         }
         
         for (i in seq(ind.len)) {
-            incl.cov <- cbind(incl.cov, "     ")
+            incl.cov <- cbind(incl.cov, "     ", stringsAsFactors=FALSE)
             colnames(incl.cov)[ncol(incl.cov)] <- format(ifelse(ind.len < line.length, paste("(S", i, ")", sep=""), paste("S", i, sep="")), width=5)
             incl.cov[rownames(x$individual[[i]]$incl.cov), ncol(incl.cov)] <- formatC(x$individual[[i]]$incl.cov$cov.u, digits=3, format="f")
         }
+        
         sol.incl.cov <- matrix(unlist(lapply(x$individual, "[", "sol.incl.cov")),
                                nrow=length(x$individual), ncol=3, byrow=TRUE)
         rownames(sol.incl.cov) <- paste("S", seq(length(x$individual)), sep="")
@@ -258,12 +258,12 @@ function(x, ...) {
     }
     else {
         incl.cov <- x$incl.cov
-        if (x$relation == "sufficiency") {
-            if (sum(as.numeric(incl.cov[, "cov.u"])) == 0) {
-                valid.cov.u <- FALSE
-                incl.cov <- incl.cov[, -which(colnames(incl.cov) == "cov.u")]
-            }
-        }
+        #if (x$relation == "sufficiency") {
+        #    if (sum(as.numeric(incl.cov[, "cov.u"])) == 0) {
+        #        valid.cov.u <- FALSE
+        #        incl.cov <- incl.cov[, -which(colnames(incl.cov) == "cov.u")]
+        #    }
+        #}
         
         nrow.incl.cov <- nrow(incl.cov)
         nchar.nrow <- nchar(nrow.incl.cov)
@@ -626,9 +626,6 @@ function(x, ...) {
     }
     cat("\n")
 }
-
-
-
 
 
 

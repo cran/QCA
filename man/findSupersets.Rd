@@ -16,11 +16,11 @@ This function computes all possible unique supersets for a specific set of combi
 }
 
 \usage{
-findSupersets(noflevels, input.combs)
+findSupersets(noflevels3k, input.combs)
 }
 
 \arguments{
-  \item{noflevels}{A vector containing the number of levels for each causal condition plus 1
+  \item{noflevels3k}{A vector containing the number of levels for each causal condition plus 1
   (because all prime implicants are to be found in the higher matrix)}
   \item{input.combs}{A matrix with combinations of causal conditions or a vector of
   line numbers from the same matrix}

@@ -37,7 +37,8 @@ superSubset(mydata, outcome = "", neg.out = FALSE, conditions = c(""),
 \details{
 This function returns a list of those combinations of the \eqn{3^k - 1} potential combinations of \eqn{k} conditions 
 which are minimally complex, yet exceed the given cut-offs for inclusion and coverage scores. In addition to inclusion 
-and coverage scores, PRI (proportional reduction in inconsistency) scores are also returned.
+and coverage scores, PRI (proportional reduction in inconsistency) scores are also returned. The following paragraphs 
+describe the theoretical idea behind the function. Computionally, the algorithm implementation is more efficient.
 
 If \code{relation = "necessity"}, the initial set of combinations is comprised of the \eqn{2k} order-1 combinations as well 
 as their negations. This set is expanded incrementally by forming conjunctive combinations of a higher order as long as 
