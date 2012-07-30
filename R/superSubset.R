@@ -2,6 +2,11 @@
 function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), relation = "necessity",
          incl.cut = 1, cov.cut = 0, use.tilde = FALSE, use.letters = FALSE) {
     
+    memcare <- FALSE # to be updated with a future version
+    
+    incl.cut <- incl.cut - .Machine$double.eps ^ 0.5
+    cov.cut <- cov.cut - ifelse(cov.cut > 0, .Machine$double.eps ^ 0.5, 0)
+    
     if (all(conditions == c(""))) {
         conditions <- names(mydata)[-which(names(mydata) == outcome)]
     }
@@ -19,13 +24,15 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), relation = "
     mydata <- mydata[, c(conditions, outcome)]
     nofconditions <- length(conditions)
     
+    
     if (neg.out) {
         mydata[, outcome] <- 1 - mydata[, outcome]
     }
     
     uplow <- !use.tilde
     
-    fuzzy.cc <- apply(mydata[, conditions], 2, function(x) any(x %% 1 > 0))
+    fc <- apply(mydata[, conditions], 2, function(x) any(x %% 1 > 0))
+    
     if (mv.data <- any(mydata[, conditions] > 1)) {
         uplow <- use.tilde <- FALSE
     }
@@ -41,80 +48,36 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), relation = "
         collapse <- ifelse(!uplow | use.tilde, "*", "")
     }
     
-            
-    check.equal <- function(x, y) {
-        check.vector <- as.logical(unlist(lapply(x, all.equal, y)))
-        check.vector[is.na(check.vector)] <- FALSE
-        return(check.vector)
-    }
-    
     noflevels <- apply(mydata[, conditions], 2, max) + 1
-    noflevels[fuzzy.cc] <- 2
-    
-    nk <- createMatrix(noflevels + 1)
-    colnames(nk) <- conditions
-    nk <- nk[-1, ] # first row is always empty
-    
-    minmat <- maxmat <- matrix(NA, nrow=nrow(mydata), ncol=nrow(nk))
-    rownames(minmat) <- rownames(maxmat) <- rownames(mydata)
+    noflevels[fc] <- 2
+    mbase <- c(rev(cumprod(rev(noflevels + 1))), 1)[-1]
     
     
-    for (i in seq(nrow(mydata))) {
-        row.i <- as.numeric(mydata[i, conditions])
-        minmax <- apply(nk, 1, function(x, values=row.i) {
-            if (any(onex3k <- x[fuzzy.cc] == 1)) {
-                values[fuzzy.cc][onex3k] <- 1 - values[fuzzy.cc][onex3k]
-            }
-            copy.values <- values[!fuzzy.cc] + 1 # move it into the nk space
-            if (length(copy.values) > 0) {
-                values[!fuzzy.cc][x[!fuzzy.cc] != copy.values] <- 0
-                values[!fuzzy.cc][x[!fuzzy.cc] == copy.values] <- 1
-            }
-            return(range(values[x != 0]))
-        })
-        minmat[i, ] <- minmax[1, ]
-        maxmat[i, ] <- minmax[2, ]
-    }
-    
-    expressions <- colnames(minmat) <- colnames(maxmat) <- rownames(nk) <- seq_len(nrow(nk)) + 1 # plus 1 because first row of the nk matrix was deleted
-    
-    sum.outcome <- sum(mydata[, outcome])
-    val.outcome <- mydata[, outcome]
-    incov <- apply(minmat, 2, function(x) sum(pmin(x, val.outcome))/c(sum(x), sum.outcome))
-    pri <- apply(minmat, 2, function(x) {
-        prisum <- sum(pmin(x, val.outcome, 1 - val.outcome))
-        if (relation == "necessity") {
-            prisum <- sum(pmin(x, val.outcome, 1 - x))
-        }
-        (sum(pmin(x, val.outcome)) - prisum)/(ifelse(relation == "necessity", sum.outcome, sum(x)) - prisum)
-    })
-    
-    na.minscores <- is.na(incov[1, ])
-    incov <- incov[, !na.minscores]
-    expressions <- expressions[!na.minscores]
-    pri <- pri[!na.minscores]
-    
-    if (relation == "sufficiency") {
-        incl <- incov[1, ]
-        cov.r  <- incov[2, ]
+    if (memcare) {
+        CMatrix <- .Call("superSubsetMem", as.matrix(mydata[, conditions]), noflevels, mbase, fc, mydata[, outcome], relation == "necessity", package="QCA")
     }
     else {
-        incl <- incov[2, ]
-        cov.r  <- incov[1, ]
+        nk <- createMatrix(noflevels + 1)
+        colnames(nk) <- conditions
+        nk <- nk[-1, ] # first row is always empty
+        
+        CMatrix <- .Call("superSubset", as.matrix(mydata[, conditions]), nk, fc, mydata[, outcome], relation == "necessity", package="QCA")
     }
     
-    expressions <- expressions[(incl > incl.cut | check.equal(incl, incl.cut)) & (cov.r > cov.cut | check.equal(cov.r, cov.cut))]  
+    expressions <- colnames(CMatrix) <- seq_len(ncol(CMatrix)) + 1 # plus 1 because the first row of the nk matrix was deleted
+    lincl <- ifelse(relation == "necessity", 2, 1)
     
-    if (length(expressions) > 0) {
-        index <- 0
+    expressions <- expressions[CMatrix[lincl, ] >= incl.cut & CMatrix[3 - lincl, ] >= cov.cut]
+    
+    prev.result <- FALSE
+    lexpressions <- length(expressions)
+    if (lexpressions > 0) {
         if (relation == "sufficiency") {
-            while ((index <- index + 1) < length(expressions)) {
-                expressions <- setdiff(expressions, findSubsets(noflevels + 1, expressions[index], max(expressions)))
+            # expressions <- .Call("removeRedundants", expressions, noflevels, mbase, package="QCA")
+            index <- 0
+            while((index <- index + 1) < length(expressions)) {
+                expressions <- expressions[is.na(match(expressions, .Call("findSubsets", expressions[index], noflevels, mbase, max(expressions), package="QCA")))]
             }
-        }
-        
-        if (length(expressions) == 0) {
-            stop("\nThere are no combinations that match given criteria.\n\n", call. = FALSE)
         }
         
         result.matrix <- getRow(noflevels + 1, expressions)
@@ -124,64 +87,76 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), relation = "
         sum.zeros <- apply(result.matrix, 1, function(idx) sum(idx == 0))
         result.matrix <- result.matrix[order(sum.zeros, decreasing=TRUE), , drop=FALSE]
         #collapsign <- "*"
-        result <- data.frame(incl=incl[rownames(result.matrix)],
-                             PRI=pri[rownames(result.matrix)],
-                             cov.r=cov.r[rownames(result.matrix)],
-                             stringsAsFactors=FALSE,
-                             row.names=writePrimeimp(result.matrix, collapse=collapse, uplow=uplow, use.tilde=use.tilde))
+        row_names <- writePrimeimp(result.matrix, collapse=collapse, uplow=uplow, use.tilde=use.tilde)
+        prev.result <- TRUE
+        result <- data.frame(incl  = CMatrix[lincl, rownames(result.matrix)],
+             PRI   = CMatrix[5, rownames(result.matrix)],
+             cov.r = CMatrix[3 - lincl, rownames(result.matrix)],
+             stringsAsFactors=FALSE,
+             row.names=row_names)
     }
-    else { # there is no combination which exceeds incl.cut
-        if (relation == "necessity") {
-            expressions <- seq_len(nrow(nk)) + 1
-            # val.outcome and sum.outcome are already initialized
-            incov <- apply(maxmat, 2, function(x) sum(pmin(x, val.outcome))/c(sum(x), sum.outcome))
-            pri <- apply(maxmat, 2, function(x) {
-                prisum <- sum(pmin(x, 1 - x, val.outcome))
-                (sum(pmin(x, val.outcome)) - prisum)/(sum(val.outcome) - prisum)
-            })
-            
-            na.maxscores <- is.na(incov[1, ])
-            incov <- incov[, !na.maxscores]
-            expressions <- expressions[!na.maxscores]
-            pri <- pri[!na.maxscores]
-            
-            incl <- incov[2, ]
-            cov.r  <- incov[1, ]
-            
-            expressions <- expressions[(incl > incl.cut | check.equal(incl, incl.cut)) & (cov.r > cov.cut | check.equal(cov.r, cov.cut))]
-            
-            index <- 0 # !!!!!!!!!!!!!!
-            while ((index <- index + 1) < length(expressions)) {
-                expressions <- setdiff(expressions, findSubsets(noflevels + 1, expressions[index], max(expressions)))
-            }
-            
-            if (length(expressions) == 0) {
-                stop("\nThere are no combinations that match given criteria.\n\n", call. = FALSE)
-            }
-            
-            result.matrix <- getRow(noflevels + 1, expressions)
-            rownames(result.matrix) <- expressions
-            colnames(result.matrix) <- conditions
-            result.matrix <- sortMatrix(result.matrix)
-            sum.zeros <- apply(result.matrix, 1, function(idx) sum(idx == 0))
-            result.matrix <- result.matrix[order(sum.zeros, decreasing=TRUE), , drop=FALSE]
-            collapse <- "+"
-            result <- data.frame(incl=incl[rownames(result.matrix)],
-                                 PRI=pri[rownames(result.matrix)],
-                                 cov.r=cov.r[rownames(result.matrix)],
-                                 stringsAsFactors=FALSE,
-                                 row.names=writePrimeimp(result.matrix, collapse=collapse, uplow=uplow, use.tilde=use.tilde))
+    
+    lexprnec <- 0
+    if (relation == "necessity") {
+        exprnec <- seq_len(ncol(CMatrix)) + 1
+        
+        exprnec <- exprnec[CMatrix[4, ] >= incl.cut & CMatrix[3, ] >= cov.cut]
+        
+        # exprnec <- .Call("removeRedundants", exprnec, noflevels, mbase, package="QCA")
+        index <- 0 # !!!!!!!!!!!!!!
+        while((index <- index + 1) < length(exprnec)) {
+            exprnec <- exprnec[is.na(match(exprnec, .Call("findSubsets", exprnec[index], noflevels, mbase, max(exprnec), package="QCA")))]
         }
-        else {
+        
+        exprnec <- setdiff(exprnec, expressions)
+        lexprnec <- length(exprnec)
+        
+        
+        if (lexprnec + lexpressions == 0) {
             stop("\nThere are no combinations that match given criteria.\n\n", call. = FALSE)
+        }
+        
+        if (lexprnec > 0) {
+            result.matrix2 <- getRow(noflevels + 1, exprnec)
+            rownames(result.matrix2) <- exprnec
+            colnames(result.matrix2) <- conditions
+            result.matrix2 <- sortMatrix(result.matrix2)
+            
+            sum.zeros <- apply(result.matrix2, 1, function(idx) sum(idx == 0))
+            result.matrix2 <- result.matrix2[order(sum.zeros, decreasing=TRUE), , drop=FALSE]
+            row_names2 <- writePrimeimp(result.matrix2, collapse="+", uplow=uplow, use.tilde=use.tilde)
+            
+            if (prev.result) {
+                result <- rbind(result, data.frame(incl  = CMatrix[4, rownames(result.matrix2)],
+                    PRI   = CMatrix[6, rownames(result.matrix2)],
+                    cov.r = CMatrix[3, rownames(result.matrix2)],
+                    stringsAsFactors=FALSE,
+                    row.names=row_names2))
+                row_names <- c(row_names, row_names2)
+                result.matrix <- rbind(result.matrix, result.matrix2)
+            }
+            else {
+                result <- data.frame(incl = CMatrix[4, rownames(result.matrix2)],
+                    PRI = CMatrix[6, rownames(result.matrix2)],
+                    cov.r = CMatrix[3, rownames(result.matrix2)],
+                    stringsAsFactors=FALSE,
+                    row.names=row_names2)
+                row_names <- row_names2
+                result.matrix <- result.matrix2
+            }
+            
         }
     }
     
-    expressions <- result.matrix
-    fc <- apply(mydata[, conditions], 2, function(x) any(x %% 1 > 0))
-    mins <- apply(expressions, 1, function(e) {
-        apply(mydata[, conditions], 1, function(v) {
-            
+    if (lexprnec + lexpressions == 0) { # there is no combination which exceeds incl.cut
+        stop("\nThere are no combinations that match given criteria.\n\n", call. = FALSE)
+    }
+    
+    
+    mins <- matrix(NA, nrow=nrow(mydata), ncol=nrow(result.matrix))
+    for (i in seq(nrow(result.matrix))) {
+        mins[, i] <- apply(mydata[, conditions], 1, function(v) {
+            e <- result.matrix[i, , drop=FALSE]
             if (any(ox <- e[fc] == 1)) {
                 v[fc][ox] <- 1 - v[fc][ox]
             }
@@ -190,16 +165,20 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), relation = "
                 v[!fc][e[!fc] != cp + 1] <- 0
                 v[!fc][e[!fc] == cp + 1] <- 1
             }
-            if (collapse == "+") {
-                return(max(v[e != 0]))
-            }
-            else {
+            if (rownames(e) %in% expressions) {
                 return(min(v[e != 0]))
             }
+            else {
+                return(max(v[e != 0]))
+            }
         })
-    })
+    }
+    
     colnames(mins) <- rownames(result)
+    rownames(mins) <- rownames(mydata)
     mins <- as.data.frame(mins)
     return(structure(list(incl.cov=result, coms=mins, use.letters=use.letters, letters=replacements), class="ss"))
 }
+
+
 

@@ -1,11 +1,11 @@
 `factorize` <- 
-function(sol.obj, splitmethod="", sort.by.literals=FALSE, sort.by.number=FALSE) {
+function(bool.sum, prod.split="", sort.factorizing=FALSE, sort.factorized=FALSE) {
     
     factor.function <- function(trimmed.string) {
         my.string <- trimmed.string
         
         # create a list with all prime implicants split by literals
-        list.my.string <- sapply(trimmed.string, strsplit, splitmethod)
+        list.my.string <- sapply(trimmed.string, strsplit, prod.split)
         
          # create a matrix with all combinations of prime implicants to be compared for similar literals
         all.combs <- createMatrix(rep(2, length(list.my.string)))
@@ -41,8 +41,8 @@ function(sol.obj, splitmethod="", sort.by.literals=FALSE, sort.by.number=FALSE) 
                     all.combs <- all.combs[!null.branches, , drop=FALSE]
                 }
                 
-                if (sort.by.literals) {
-                    sort.by.number <- FALSE
+                if (sort.factorizing) {
+                    sort.factorized <- FALSE
                     lengths.vector <- as.numeric(unlist(lapply(match.list, length)))
                     match.list <- match.list[rev(order(lengths.vector))]
                     all.combs <- all.combs[rev(order(lengths.vector)), ]
@@ -121,7 +121,7 @@ function(sol.obj, splitmethod="", sort.by.literals=FALSE, sort.by.number=FALSE) 
                 if (length(final.solution) > 1) {
                     final.solution.list <- strsplit(final.solution, "\\.")
                     
-                    if (sort.by.number) {
+                    if (sort.factorized) {
                         order.vector <- order(unlist(lapply(lapply(final.solution.list, "[", 1), nchar)), decreasing=TRUE)
                         final.solution.list <- final.solution.list[order.vector]
                         final.solution <- final.solution[order.vector]
@@ -160,22 +160,22 @@ function(sol.obj, splitmethod="", sort.by.literals=FALSE, sort.by.number=FALSE) 
         }
     }
     
-    collapse <- splitmethod
-    if (splitmethod != "") splitmethod <- paste("\\", splitmethod, sep="")
+    collapse <- prod.split
+    if (prod.split != "") prod.split <- paste("\\", prod.split, sep="")
     
-    if (is.qca(sol.obj)) {
-        collapse <- splitmethod <- sol.obj$opts$collapse
-        if (splitmethod != "") splitmethod <- paste("\\", splitmethod, sep="")
-        if ("i.sol" %in% names(sol.obj)) {
-            result <- list(i.sol=vector("list", length=length(sol.obj$i.sol)))
-            for (i in seq(length(sol.obj$i.sol))) {
-                names(result$i.sol)[i] <- paste(sol.obj$i.sol[[i]]$p.sol, collapse=" + ")
-                result$i.sol[[i]] <- lapply(sol.obj$i.sol[[i]]$solution, factor.function)
-                names(result$i.sol[[i]]) <- unlist(lapply(sol.obj$i.sol[[i]]$solution, paste, collapse=" + "))
+    if (is.qca(bool.sum)) {
+        collapse <- prod.split <- bool.sum$opts$collapse
+        if (prod.split != "") prod.split <- paste("\\", prod.split, sep="")
+        if ("i.sol" %in% names(bool.sum)) {
+            result <- list(i.sol=vector("list", length=length(bool.sum$i.sol)))
+            for (i in seq(length(bool.sum$i.sol))) {
+                names(result$i.sol)[i] <- paste(bool.sum$i.sol[[i]]$p.sol, collapse=" + ")
+                result$i.sol[[i]] <- lapply(bool.sum$i.sol[[i]]$solution, factor.function)
+                names(result$i.sol[[i]]) <- unlist(lapply(bool.sum$i.sol[[i]]$solution, paste, collapse=" + "))
             }
         }
         else {
-            result <- lapply(sol.obj$solution, function(x) {
+            result <- lapply(bool.sum$solution, function(x) {
                 if (length(x) > 1) {
                     return(factor.function(x))
                 }
@@ -183,20 +183,20 @@ function(sol.obj, splitmethod="", sort.by.literals=FALSE, sort.by.number=FALSE) 
                     return(NULL)
                 }
             })
-            names(result) <- unlist(lapply(sol.obj$solution, paste, collapse=" + "))
+            names(result) <- unlist(lapply(bool.sum$solution, paste, collapse=" + "))
         }
     }
-    else if (is.character(sol.obj) & length(sol.obj) == 1) {
+    else if (is.character(bool.sum) & length(bool.sum) == 1) {
         trimst <- function(string) gsub("^[[:space:]]+|[[:space:]]+$", "", string)
-        trimmed.str <- trimst(unlist(strsplit(sol.obj, "\\+")))
+        trimmed.str <- trimst(unlist(strsplit(bool.sum, "\\+")))
         
         if (length(trimmed.str) == 1) {
-            result <- list(sol.obj)
-            names(result) <- sol.obj
+            result <- list(bool.sum)
+            names(result) <- bool.sum
         }
         else {
             result <- list(factor.function(trimmed.str))
-            names(result) <- sol.obj
+            names(result) <- bool.sum
         }
     }
     

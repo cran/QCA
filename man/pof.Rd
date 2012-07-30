@@ -13,7 +13,7 @@ pof(setms, mydata, outcome = "", neg.out = FALSE, relation = "necessity", ...)
 }
 
 \arguments{
-  \item{setms}{Set membership scores, or a matrix with crisp set representations, or a vector of line numbers}
+  \item{setms}{Set membership scores, or a matrix with crisp-set representations, or a vector of line numbers}
   \item{mydata}{The original dataset}
   \item{outcome}{The name of the outcome set}
   \item{neg.out}{Logical, use negation of outcome set}
@@ -26,7 +26,7 @@ pof(setms, mydata, outcome = "", neg.out = FALSE, relation = "necessity", ...)
   refers to any kind of set, including original condition sets, conjunctive or disjunctive combinations returned 
   by \code{superSubset()}, prime implicants returned by \code{eqmcc()} or any other compound set.
   
-  It can also be a matrix with the crisp set representation of the causal conditions, or even a vector
+  It can also be a matrix with the crisp-set representation of the conditions, or even a vector
   of line numbers corresponding to those representations.
 }
 
@@ -80,7 +80,10 @@ EmmeSC
 pof(1 - EmmeSC$pims$c.sol, Emme, outcome = "JSR", relation = "sufficiency")
 
 # parameters of fit for any term, including configurations;
-# use "-1" as a placeholder for a minimized literal; 
+# use "-1" as a placeholder for a minimized condition;
+# matrix representation of R*p*V and S*c*L*P*v:
+#      "S"  "C"  "L"  "R"  "P"  "V"
+#
 #     [,1] [,2] [,3] [,4] [,5] [,6]
 #[1,]   -1   -1   -1    1    0    1
 #[2,]    1    0    1   -1    1    0
@@ -90,16 +93,32 @@ confs <- matrix(c(-1, -1, -1,  1, 0, 1,
 confs
 pof(confs, Emme, outcome = "JSR", relation = "sufficiency")
 
-# or even vectors of line numbers from the n^k matrix
+# or even vectors of line numbers from the implicant matrix
 pof(c(43, 57), Emme, "JSR", relation = "sufficiency")
 
-# in this case, the line numbers 43 and 57 represent the following
-# terms / configurations:
+# the line numbers 43 and 57 represent l*r*P and L*V:
+#      "S"  "C"  "L"  "R"  "P"  "V"
+#
 #     [,1] [,2] [,3] [,4] [,5] [,6]
-#[1,]   -1   -1    0    0    1   -1   -> l*r*P
-#[2,]   -1   -1    1   -1   -1    1   -> L*V
+#[1,]   -1   -1    0    0    1   -1 
+#[2,]   -1   -1    1   -1   -1    1  
 
 getRow(rep(3, 6), c(43, 57)) - 1
+
+# parameters of fit for a data frame
+x <- data.frame(A = c(1,1,1,0,1), B = c(1,1,1,0,1),
+                C = c(0,1,0,0,1), D = c(0,0,1,0,1),
+                O = c(1,1,1,0,1))
+
+pof(x[,-5], x, outcome = "O")
+
+# for a single column from that data frame;
+# requires special argument drop = FALSE to avoid
+# dropping of dimensions and conversion to vector
+pof(x[, "C", drop = FALSE], x, outcome = "O")
+
+# for multiple columns from that data frame
+pof(x[, 1:2], x[, 1:5], outcome = "O")
 
 }
 

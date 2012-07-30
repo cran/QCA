@@ -2,13 +2,11 @@
 
 \alias{allExpressions}
 
-\title{Create a Matrix with all Possible Combinations of Conditions}
+\title{Create an Implicant Matrix}
 
 \description{
-There are exactly \eqn{3^k} possible expressions (where \eqn{k} is the number of conditions) for a binary 
-crisp-set procedure. For multi-value crisp data, the general formula for the number of possible expressions 
-is \code{prod(noflevels + 1)}, where \code{noflevels} is a vector with the number of levels for each causal condition.
-As the matrix grows exponentially, it is not recommended to run this function for a large number of conditions (> 15).
+This function creates an implicant matrix. The implicant matrix consists of all supersets of a 
+truth table's configurations, including the configurations themselves as well as the empty set.
 }
 
 \usage{
@@ -16,29 +14,37 @@ allExpressions(noflevels, raw = FALSE, arrange = FALSE)
 }
 
 \arguments{
-  \item{noflevels}{The number of levels for each causal condition}
-  \item{raw}{Logical, return the raw result matrix; if FALSE, print the result matrix without NAs}
+  \item{noflevels}{The number of levels for each condition}
+  \item{raw}{Logical, return the implicant matrix with "don't care" indicator}
   \item{arrange}{Logical, try to arrange the result matrix for visual inspection
-   (takes a lot of additional time for large matrices)}
+                 (takes a lot of additional time for large matrices)}
+}
+
+\details{
+The formula for the number of implicants is \eqn{\prod_{j = 1}^{k}{p_j + 1}}, where \eqn{p_j} 
+is the number of levels for condition \eqn{j} and \eqn{k} is the number of conditions. As the 
+matrix grows exponentially, it is not recommended to run this function for a large number of 
+conditions (\eqn{k > 15}).
 }
 
 \value{
-A matrix with \code{prod(noflevels + 1)} rows
-}
-
-\references{
-C. C. Ragin. \emph{Fuzzy-Set Social Science}, University of Chicago Press, Chicago, 2000.
+A matrix with \eqn{\prod_{j = 1}^{k}{p_j + 1}} rows
 }
 
 \seealso{\code{\link{createMatrix}}}
 
-
 \examples{
-# for 3 conditions
-allExpressions(rep(3, 3))
+# three conditions with two levels each
+allExpressions(noflevels = rep(2, 3))
 
-# the same matrix, this time arranged better
-allExpressions(rep(3, 3), arrange = TRUE)
+# three conditions with three levels each
+allExpressions(noflevels = rep(3, 3))
+
+# arranged differently
+allExpressions(noflevels = rep(3, 3), arrange = TRUE)
+
+# with "don't care" indicator
+allExpressions(noflevels = rep(3, 3), raw = TRUE)
 }
 
 \keyword{functions}

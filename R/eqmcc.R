@@ -1,7 +1,7 @@
 `eqmcc` <-
 function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
-         incl.cut1 = 1, incl.cut0 = 1, explain = "1", include = c(""), omit = c(),
-         direxp = c(), rowdom = TRUE, details = FALSE, show.cases = FALSE,
+         incl.cut1 = 1, incl.cut0 = 1, explain = "1", include = c(""), all.sol = FALSE,
+         omit = c(), direxp = c(), rowdom = TRUE, details = FALSE, show.cases = FALSE,
          use.tilde = FALSE, use.letters = FALSE) {
     
     print.truth.table <- details & !is.tt(mydata)
@@ -10,6 +10,7 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     }
     
     if (!is.tt(mydata)) {
+        
         if (all(conditions == c(""))) {
             conditions <- names(mydata)[-which(names(mydata)==outcome)]
         }
@@ -18,12 +19,13 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         verify.qca(mydata, outcome, conditions, explain, include, use.letters, direxp)
         
         indata <- mydata
-        tt <- truthTable(mydata, outcome, conditions, show.cases=show.cases, n.cut=n.cut,
+        tt <- truthTable(mydata=mydata, outcome=outcome, conditions=conditions, show.cases=show.cases, n.cut=n.cut,
                          incl.cut1=incl.cut1, incl.cut0=incl.cut0, use.letters=use.letters, neg.out=neg.out)
         
         recdata <- tt$recoded.data
         conditions <- toupper(conditions)
         outcome <- toupper(outcome)
+        names(indata) <- c(conditions, outcome)
     }
     else {
         chexplain <- c(0, 1)[which(0:1 %in% explain)]
@@ -77,14 +79,11 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         rownames(mtrx) <- PI.red.sort
         colnames(mtrx) <- initial
         
+        sol.matrix <- solveChart(mtrx, all.sol = all.sol)
         
+        sol.matrix <- matrix(rownames(mtrx)[sol.matrix], nrow=nrow(sol.matrix))
         
-        sol.matrix <- solveChart(mtrx)
-        
-        k <- sol.matrix[[1]]
-        sol.matrix <- matrix(rownames(mtrx)[sol.matrix[[2]]], nrow=k)
-        
-        all.PIs <- sortVector(unique(as.vector(sol.matrix)), collapse=collapse)
+        all.PIs <- sortVector(unique(as.vector(sol.matrix[!is.na(sol.matrix)])), collapse=collapse)
         # mtrx <- mtrx[rownames(mtrx) %in% all.PIs, , drop=FALSE]
         reduced$expressions <- reduced$expressions[sortVector(rownames(reduced$expressions)[rownames(reduced$expressions) %in% all.PIs], collapse=collapse), , drop=FALSE]
         
@@ -92,11 +91,10 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         
         solution.list <- writeSolution(sol.matrix, mtrx)
         
-        return(list(k=k, mtrx=mtrx, reduced=reduced, all.PIs=all.PIs, solution.list=solution.list))
+        return(list(mtrx=mtrx, reduced=reduced, all.PIs=all.PIs, solution.list=solution.list))
     }   
     
-    
-    val.outcome <- indata[, outcome]
+    val.outcome <- indata[, toupper(names(indata)) == outcome]
     sum.outcome <- sum(val.outcome)
     uplow <- TRUE
     noflevels <- tt$noflevels
@@ -245,13 +243,16 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     
     c.sol <- p.sol <- getSolution()
     
-    
     if (incl.rem) {
         expressions <- sort(setdiff(findSupersets(noflevels + 1, expl.matrix), findSupersets(noflevels + 1, excl.matrix)))
+        mvector <- c(rev(cumprod(rev(noflevels + 1))), 1)[-1]
+        
+        # expressions <- .Call("removeRedundants", expressions, noflevels, mvector, package="QCA")
         index <- 0
         while ((index <- index + 1) < length(expressions)) {
-            expressions <- setdiff(expressions, findSubsets(noflevels + 1, expressions[index], max(expressions)))
+            expressions <- expressions[is.na(match(expressions, .Call("findSubsets", expressions[index], noflevels, mvector, max(expressions))))]
         }
+        
         expressions <- getRow(noflevels + 1, expressions)
         colnames(expressions) <- colnames(inputt)
         p.sol <- getSolution()

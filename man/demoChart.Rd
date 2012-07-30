@@ -2,13 +2,10 @@
 
 \alias{demoChart}
 
-\title{Create the Prime Implicants Chart}
+\title{Create a Prime Implicant Chart}
 
 \description{
-This function creates a chart having the prime implicants on the rows and the observed combinations
-of conditions on the columns. It is useful to determine visually which prime implicant (if any)
-is essential. The chart is subsequently processed algorithmically to further reduce the reduntant
-prime implicants. This function is for demonstration purposes only.
+This function creates prime implicant charts. It is for demonstration purposes only. 
 }
 
 \usage{
@@ -16,41 +13,45 @@ demoChart(rows, columns, splitmethod = "")
 }
 
 \arguments{
-  \item{rows}{A vector of strings, containing the prime implicants}                                 
-  \item{columns}{A vector of strings, containing all combinations of conditions from the original data}
-  \item{splitmethod}{String, to declare the separator of the input strings}
+  \item{rows}{A vector of strings containing the prime implicants}                                 
+  \item{columns}{A vector of strings containing the fundamental products}
+  \item{splitmethod}{A string declaring the separator of the input strings}
+}
+
+\details{
+This function creates prime implicant (PI) charts as first proposed by Quine (1952) and 
+McCluskey (1956). PI charts have the prime implicants listed on the rows and the fundamental 
+products (the configurations from the truth table to be included in the minimization process) 
+listed on the columns. This function is for demonstration purposes only. 
 }
 
 \value{
-a logical matrix showing which conditions from the (minimized) prime implicants are found in 
-which columns
+A logical matrix showing which columns are subsets of which rows
 }
 
 \references{
-W.V. Quine. The Problem of Simplifying Truth Functions. \emph{American Mathematical Monthly}, 
+E. J. McCluskey. Minimization of Boolean Functions. \emph{Bell Systems Technical Journal}, 
+35(6):1417-1444, 1956.
+
+W. V. Quine. The Problem of Simplifying Truth Functions. \emph{American Mathematical Monthly}, 
 59(8):521-531, 1952.
-
-C. C. Ragin. \emph{The Comparative Method: Moving beyond Qualitative and Quantitative Strategies}. 
-University of California Press, Berkeley, 1987.
-
 }
 
-\seealso{\code{\link{prettyTable}}}
-
 \examples{
+# a simple PI chart, formatted using internal function prettyTable()
+PIs <- c("A", "B", "c") # the prime implicants
+FPs <- c("ABC", "Abc", "AbC", "aBc") # the fundamental products
 
-chart <- demoChart(c("A", "B", "c"), c("ABC", "Abc", "AbC", "aBc"))
+chart <- demoChart(PIs, FPs)
 prettyTable(chart)
 
+# example from Quine (1952, p.528)
+PIs <- c("AB", "BC", "Ac", "aC", "abd", "bcd")
+FPs <- c("ABCD", "ABCd", "ABcD", "ABcd", "AbcD", "Abcd",
+         "aBCD", "aBCd", "abCD", "abCd", "abcd")
 
-# Quine's example, page 528
-rows <- c("AB", "BC", "Ac", "aC", "abd", "bcd")
-cols <- c("ABCD", "ABCd", "ABcD", "ABcd", "AbcD", "Abcd",
-          "aBCD", "aBCd", "abCD", "abCd", "abcd")
-
-chart <- demoChart(rows, cols)
+chart <- demoChart(PIs, FPs)
 prettyTable(chart)
-
 }
 
 \keyword{functions}

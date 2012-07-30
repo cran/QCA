@@ -2,41 +2,40 @@
 
 \alias{solveChart}
 
-\title{Reduce the Redundant Prime Implicants}
+\title{Eliminate Redundant Prime Implicants}
 
 \description{
-While the minimization procedure finds a certain number of prime implicants, not all of them
-are necessary. This function reduces the number of prime implicants to a minimal solution.
+This function reduces the complete sum of prime implicants to a minimal sum by 
+eliminating redundant prime implicants.
 }
 
 \usage{
-solveChart(chart)
+solveChart(chart, all.sol = FALSE)
 }
 
 \arguments{
-  \item{chart}{The prime implicants chart, a matrix with TRUE/FALSE values}
+  \item{chart}{A prime implicant chart}
+  \item{all.sol}{Find all possible, non-overlapping, sums}
 }
 
 \value{
-a matrix containing row indices of all possible solutions
+A matrix containing row indices of all possible solutions
 }
-
-\references{
-C. C. Ragin. \emph{The Comparative Method: Moving beyond Qualitative and Quantitative Strategies}. 
-University of California Press, Berkeley, 1987.
-}
-
-
-\seealso{\code{\link{createChart}}}
 
 \examples{
-# the chart to be reduced
-chart <- demoChart(c("A", "B", "c"), c("ABC", "Abc", "AbC", "aBc"))
+# a simple PI chart, formatted using internal function prettyTable()
+PIs <- c("A", "B", "c", "D") # all prime implicants; the complete sum
+FPs <- c("AbCD", "AbCd", "aBcd", "aBCD") # the fundamental products
+
+chart <- demoChart(PIs, FPs)
 prettyTable(chart)
 
-# solution: first and second or first and third prime implicants
+# minimal sum: first or second PI: A + B
 solveChart(chart)
 
+# all sums: first or second PI (A + B);
+# first or third or fourth PI (A + c + D)
+solveChart(chart, all.sol = TRUE)
 }
 
 \keyword{functions}

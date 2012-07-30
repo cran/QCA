@@ -11,25 +11,31 @@ Qualitative Comparative Analysis
 }
 
 \description{
-This package implements the method of Qualitative Comparative Analysis (QCA) as developed by Ragin (1987, 2000, 2008).
-QCA is a configurational comparative technique which uses Boolean instead of linear algebra. This difference changes 
-the understanding of causation as symmetric (linear algebra) to an understanding of causation as asymmetric (Boolean algebra). 
+This package implements the method of Qualitative Comparative Analysis (QCA) as 
+developed and extended by Ragin (1987, 2000, 2008). QCA is a configurational 
+comparative technique which uses Boolean instead of linear algebra. In particular, 
+it draws on the concepts and notation of set theory. 
 
-QCA is based on set relations between a number of (explaining) conditions and an (explained) outcome, with the two 
-concepts of necessity and sufficiency at its core. If some condition or combination of conditions is a superset of 
-the outcome, the former is necessary for the latter. If some condition or combination of conditions is a subset of
-the outcome, the former is sufficient for the latter.
+QCA models involve a number of conditions and outcomes whose subset and superset 
+relations are analyzed and framed in terms of necessity and sufficiency. If some 
+condition or combination of conditions is a superset of the outcome, the former 
+is necessary for the latter. If some condition or combination of conditions is a 
+subset of the outcome, the former is sufficient for the latter.
 
-Three related variants of QCA exist: crisp-set QCA (csQCA), multi-value QCA (mvQCA) and fuzzy-set QCA (fsQCA). A 
-subvariant of csQCA called temporal QCA (tQCA) is suitable for event sequence relations.  
+Three related variants of QCA exist: crisp-set QCA (csQCA), multi-value QCA (mvQCA) 
+and fuzzy-set QCA (fsQCA). A subvariant of csQCA called temporal QCA (tQCA) is suitable 
+for event sequence relations. The QCA package provides extensive functionality for 
+all of these variants.  
 
-In this package, the "exact" Quine-McCluskey algorithm for crisp sets is implemented for csQCA and mvQCA (from 
-version 0.6-0), and fsQCA as well as tQCA from version 1.0-0. Starting with version 0.4-5 the package has a new function 
-called "eqmcc" ("e"nhanced Quine-McCluskey) which finds exact solutions faster and with substantially lower 
-memory consumption (Dusa 2007, 2010).
+The ``exact'' Quine-McCluskey algorithm for crisp sets has been implemented for csQCA and mvQCA 
+since version 0.6-0, and fsQCA as well as tQCA since version 1.0-0. Starting with version 
+0.4-5 the package has a new function called "eqmcc" (enhanced Quine-McCluskey) which finds 
+exact solutions much faster and with substantially lower memory consumption (Dusa 2007, 2010).
+Since version 1.0-4, some intensive computationally parts of the R code were compiled in the
+C language, considerably increasing the speed even further.
 
-How to make the most of R's and the QCA package's capabilities for QCA is demonstrated in detail with many examples 
-by Thiem and Dusa (2012). 
+How to make the most of R's and the QCA package's capabilities is demonstrated in detail 
+with many examples by Thiem and Dusa (2012). 
 
 }
 
@@ -37,15 +43,14 @@ by Thiem and Dusa (2012).
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 1.0-3\cr
-    Date:    \tab 2012-04-24\cr
+    Version: \tab 1.0-4\cr
+    Date:    \tab 2012-07-30\cr
     License: \tab GPL (>= 2)\cr
     }
 }
 
 \author{
 
-\bold{Authors}:\cr
 Adrian Dusa\cr
 Department of Sociology\cr
 University of Bucharest\cr
@@ -62,10 +67,10 @@ Adrian Dusa
 
 \references{
 A. Dusa. \emph{Enhancing Quine-McCluskey}. WP 2007-49, COMPASSS, 2007.\cr
-URL: http://www.compasss.org/files/WPfiles/Dusa2007a.pdf.
+URL: http://www.compasss.org/wpseries/Dusa2007b.pdf.
 
 A. Dusa. A Mathematical Approach to the Boolean Minimization Problem.
-\emph{Quality & Quantity}, 44(1): 99-113, 2010.
+\emph{Quality & Quantity}, 44(1):99-113, 2010.
 
 C. C. Ragin. \emph{The Comparative Method: Moving beyond Qualitative and Quantitative Strategies}. 
 University of California Press, Berkeley, 1987.
