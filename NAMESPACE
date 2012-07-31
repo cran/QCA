@@ -1,3 +1,4 @@
+useDynLib(QCA)
 export(allExpressions,
     base3rows,
     calibrate,

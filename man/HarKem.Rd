@@ -4,7 +4,7 @@
 
 \alias{HarKem}
 
-\title{Introduction of Party Ban Provisions and their Implementation in sub-Saharan Africa}
+\title{Party Bans Sub-Saharan Africa}
 
 \description{
 The data frame \bold{HarKem} has 48 rows and 7 columns.

@@ -82,6 +82,18 @@ KrookSS
 # the combination membership scores for all cases
 KrookSS$coms
 
+# mvQCA using Hartmann and Kemmerzell (2010)
+#-------------------------------------------
+data(HarKem)
+HarKem
+
+# find all optimal combinations with perfect necessity inclusion
+HarKemSS <- superSubset(HarKem, outcome = "PB", conditions = c("C", "F", "T", "V"))
+HarKemSS
+
+# the combination membership scores for all cases
+HarKemSS$coms
+
 # fsQCA using Emmenegger (2011)
 #------------------------------
 data(Emme)

@@ -28,6 +28,12 @@ function(noflevels3k, row.no, maximum) {
     for (k in rev(indices)) {
         row.no <- increment(row.no, mbase[k], noflevels[k])
     }
-    return(row.no[-1])
+    
+    if (length(row.no) > 1) {
+        return(row.no[-1])
+    }
+    else {
+        return(NULL)
+    }
 }
 

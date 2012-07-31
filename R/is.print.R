@@ -14,9 +14,9 @@ function(x) {
 
 `print.tt` <-
 function(x, ...) {
-    if (prod(x$noflevels) > 1024) {
+    if (nrow(x$tt) > 1024) {
         cat("\n")
-        cat(paste("Warning: The truth table is too large (", prod(x$noflevels), " rows). ",
+        cat(paste("Warning: The truth table is too large (", nrow(x$tt), " rows). ",
                   "Printing it on the screen is impractical.\n         ",
                   "N.B.: You can still use its internal components (see ?str).", "\n\n", sep=""))
     }

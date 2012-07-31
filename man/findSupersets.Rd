@@ -2,17 +2,11 @@
 
 \alias{findSupersets}
 
-\title{Find all Possible Supersets of One or Several Combinations}
+\title{Find Supersets of Configurations in the Implicant Matrix}
 
 \description{
-It is a general rule that all supersets can be found in the \eqn{n^k} space,
-understood as all possible combinations of values in any combination of bases \eqn{n},
-each causal condition having three or more levels (Dusa, 2010, 2007).
-There is a finite number of prime implicants for any combination of causal conditions, equal to
-\eqn{2^k - 1}, where \eqn{k} is the number of causal conditions. Counting out the input combination
-itself, the actual number is \eqn{2^k - 2}.
-This function computes all possible unique supersets for a specific set of combinations
-(either to explain or to exclude).
+This function finds all possible unique supersets for a specific set of configurations 
+in the implicant matrix.
 }
 
 \usage{
@@ -20,50 +14,58 @@ findSupersets(noflevels3k, input.combs)
 }
 
 \arguments{
-  \item{noflevels3k}{A vector containing the number of levels for each causal condition plus 1
-  (because all prime implicants are to be found in the higher matrix)}
-  \item{input.combs}{A matrix with combinations of causal conditions or a vector of
-  line numbers from the same matrix}
+  \item{noflevels3k}{A vector containing the number of levels for each condition incremented by 1}
+  \item{input.combs}{A matrix of configurations or a vector of their row numbers in the implicant matrix}
+}
+
+\details{
+The number of supersets for any combination of condition literals is equal to
+\eqn{2^k - 1}, where \eqn{k} is the number of conditions. The implicant matrix 
+consists of all configurations and their supersets, including the empty set. The formula 
+for the number of implicants is \eqn{\prod_{j = 1}^{k}{p_j + 1}}, where \eqn{p_j} is 
+the number of levels for condition \eqn{j} and \eqn{k} is the number of conditions 
+(Dusa, 2010, 2007). The \code{findSupersets()} function finds all unique supersets of 
+a specific set of configurations in the implicant matrix.
 }
 
 \value{
-a vector with the line numbers of all possible prime implicants in the \eqn{3^k} space
+A vector of the line numbers of all possible supersets in the implicant matrix
 }
 
 \references{
 A. Dusa. \emph{Enhancing Quine-McCluskey}. WP 2007-49, COMPASSS, 2007.\cr
-URL: http://www.compasss.org/files/WPfiles/Dusa2007a.pdf.
+URL: http://www.compasss.org/wpseries/Dusa2007b.pdf.
 
 A. Dusa. A Mathematical Approach to the Boolean Minimization Problem.
-\emph{Quality & Quantity}, 44(1): 99-113, 2010.
+\emph{Quality & Quantity}, 44(1):99-113, 2010.
 }
 
 \seealso{\code{\link{getRow}}, \code{\link{findSubsets}}}
 
 \examples{
-# all three conditions are binary, having two levels: 0 and 1
+# three conditions with two levels each
 noflevels <- c(2, 2, 2)
 
-# 2 4 5 10 11 13 14
-findSupersets(noflevels + 1, 14)
+# row number 14 of the implicant matrix corresponding to the configuration
+# containing the first level of all condition
+getRow(noflevels = noflevels + 1, row.no = 14) - 1
 
-# 2 7 8 10 11 16 17
-findSupersets(noflevels + 1, 17)
+# the row numbers of the implicant matrix which correspond to supersets of this
+# configuration
+(rows <- findSupersets(noflevels + 1, input.combs = 14))
 
-# both line numbers 14 and 17
-# 2 4 5 7 8 10 11 13 14 16 17
-findSupersets(noflevels + 1, c(14, 17))
+# the corresponding matrix representation of these rows 
+getRow(noflevels = noflevels + 1, row.no = rows) - 1
 
+# now for row numbers 14 and 17
+getRow(noflevels = noflevels + 1, row.no = c(14, 17)) - 1
+(rows <- findSupersets(noflevels + 1, input.combs = c(14, 17)))
+getRow(noflevels = noflevels + 1, row.no = rows) - 1
 
-# input.combs as a matrix
-(input.combs <- getRow(noflevels + 1, c(14, 17)))
+# in matrix representation
+(input.combs <- getRow(noflevels + 1, row.no = c(14, 17)))
+findSupersets(noflevels + 1, input.combs = input.combs)
 
-#     [,1] [,2] [,3]
-#[1,]    1    1    1
-#[2,]    1    2    1
-
-# 2 4 5 7 8 10 11 13 14 16 17
-findSupersets(noflevels + 1, input.combs)
 }
 
 \keyword{functions}

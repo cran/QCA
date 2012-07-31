@@ -13,8 +13,8 @@ the classical Quine McCluskey minimization algorithm.
 
 \usage{
 eqmcc(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
-      incl.cut1 = 1, incl.cut0 = 1, explain = "1", include = c(""), omit = c(),
-      direxp = c(), rowdom = TRUE, details = FALSE, show.cases = FALSE,
+      incl.cut1 = 1, incl.cut0 = 1, explain = "1", include = c(""), all.sol = FALSE,
+      omit = c(), direxp = c(), rowdom = TRUE, details = FALSE, show.cases = FALSE,
       use.tilde = FALSE, use.letters = FALSE)
 
 is.qca(x)
@@ -30,6 +30,7 @@ is.qca(x)
   \item{incl.cut0}{The maximum sufficiency inclusion score for an outcome value of "0"}
   \item{explain}{The outcome value to be explained, either "1", "0" or "C"}
   \item{include}{The outcome value(s) of additional configurations to be included in the minimization}
+  \item{all.sol}{Derive all possible solutions, irrespective of the number of PIs}
   \item{omit}{A vector or a matrix of configurations to be omitted from minimization}
   \item{direxp}{A vector of directional expectations}
   \item{rowdom}{Logical, apply row dominance principle to eliminate dominated PIs}
@@ -70,6 +71,16 @@ Configurations that contain fewer than \code{n.cut} cases with membership above 
 are coded as false ("0"). If \code{incl.cut0} is not specified, it is set equal to \code{incl.cut1} and no contradictions 
 can occur.
 
+The argument \code{explain} specifies the outcome value to be explained. Note that \code{explain = 0} is not the same as
+explaining the negation of the outcome, although the solution may be the same, particularly for crisp sets.
+
+The argument \code{include} specifies the outcome values of those configurations which shall be included in addition to
+the configurations which are to be explained. Note that argument combinations such as \code{explain = "1", include = "0"}
+make no sense.
+
+When \code{rowdom = FALSE}, the argument \code{all.sol} solves the PI chart by deriving all possible solutions, 
+irrespective of the number of PIs (suggestion by Michael Baumgartner).
+
 The argument \code{omit} can be used to omit any configuration from the minimization. If the \code{omit} argument is a 
 vector, it should contain row numbers from the (complete) truth table. If it is a matrix, it should be of the same format 
 as the truth table.
@@ -95,10 +106,10 @@ If the conditions are already named with single letters, the argument \code{use.
 
 \references{
 A. Dusa. A Mathematical Approach to the Boolean Minimization Problem.
-\emph{Quality & Quantity}, 44(1), pp.99-113, 2010.
+\emph{Quality & Quantity}, 44(1):99-113, 2010.
 
 A. Dusa. \emph{Enhancing Quine-McCluskey}. WP 2007-49, COMPASSS, 2007.\cr
-URL: http://www.compasss. org/files/WPfiles/Dusa2007a.pdf.
+URL: http://www.compasss.org/wpseries/Dusa2007b.pdf.
 
 P. Emmenegger. Job Security Regulations in Western Democracies: A Fuzzy Set Analysis.
 \emph{European Journal of Political Research}, 50(3):336-364, 2011.
@@ -156,9 +167,9 @@ KrookSC$initials
 data(Emme)
 Emme
 
-# explain false configurations, parsimonious solution, 
+# explain true configurations with negated outcome set, parsimonious solution,
 # with solution details
-eqmcc(Emme, outcome = "JSR", explain = "0", include = "?", 
+eqmcc(Emme, outcome = "JSR", neg.out = TRUE, include = "?", 
   details = TRUE)
 
 # explain true configurations, intermediate solution, 
@@ -169,6 +180,22 @@ EmmeSI
 
 # check PI chart for intermediate solution
 EmmeSI$PIchart$i.sol
+
+# check simplifying assumptions
+EmmeSI$SA$S1
+
+# check easy counterfactuals
+EmmeSI$i.sol$C1P1$cntfs
+
+# plot all PIs from intermediate solution
+PIsc <- EmmeSI$pims$i.sol$C1P1
+par(mfrow = c(2, 2))
+for(i in 1:4){
+ plot(PIsc[, i], Emme$JSR, pch = 19, ylab = "JSR",
+  xlab = colnames(PIsc)[i], xlim = c(0, 1), ylim = c(0, 1),
+  main = paste("PI", print(i)))
+ abline(0, 1)
+}
 
 # mvQCA using Hartmann and Kemmerzell (2010)
 #-------------------------------------------
@@ -196,14 +223,19 @@ HarKemSI <- eqmcc(HarKem, outcome = "PB", conditions = conds,
   include = "?", direxp = c(1, "1;2", 2, 1))
 HarKemSI
 
+# deriving all possible solutions of the PI chart, not just minimal sum
+
+HarKemALL <- eqmcc(HarKem, outcome = "PB", conditions = conds, 
+  include = "?", all.sol = TRUE, rowdom = FALSE)
+HarKemALL
+
 # tQCA using Ragin and Strand (2008)
 #-----------------------------------
 data(RagStr)
 RagStr
 
-# explain true configurations, complex solution, 
-# with solution details and cases;
-# condition EBA is automatically excluded from parameters of fit
+# explain true configurations, complex solution, with solution details and cases;
+# auxiliary condition EBA is automatically excluded from parameters of fit
 eqmcc(RagStr, outcome = "REC", details = TRUE, show.cases = TRUE)
 }
 

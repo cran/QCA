@@ -6,8 +6,8 @@
 
 \description{
 A truth table lists every \dfn{configuration} (combination of condition literals) and its outcome value. 
-This function creates truth tables from any kind of common input data. For crisp-set data (binary and multi-valued), 
-cases are assigned directly to the unique configuration in which they have full membership. For fuzzy-set data, the function 
+This function creates truth tables from any kind of common input data. For crisp-set data (binary and multi-value), 
+cases are assigned directly to the unique configuration in which they have membership. For fuzzy-set data, the function 
 first detects in which configuration a case has membership above 0.5 before assigning it to this configuration.\cr
 \cr
 \code{is.tt()} checkes whether an object has class "tt" (truth table); such an
@@ -23,7 +23,7 @@ is.tt(x)
 }
 
 \arguments{
-  \item{mydata}{A dataset of (binary or multi-valued) crisp or fuzzy-set data}
+  \item{mydata}{A dataset of (binary or multi-value) crisp or fuzzy-set data}
   \item{outcome}{The name of the outcome set}
   \item{neg.out}{Logical, use negation of outcome set}
   \item{conditions}{The names of the conditions}
@@ -41,12 +41,13 @@ is.tt(x)
 
 \value{An object of class "tt", which is a list with the following components:\cr
     \tabular{lll}{
-        \tab tt           \tab the truth table itself\cr
-        \tab indexes      \tab the truth table line numbers\cr
-        \tab noflevels    \tab a vector with the number of levels for all conditions\cr
+        \tab tt           \tab the truth table\cr
+        \tab indexes      \tab the configuration line numbers\cr
+        \tab noflevels    \tab a vector with the number of condition levels\cr
         \tab initial.data \tab the initial data\cr
-        \tab recoded.data \tab the recoded data, for post fuzzy-set conversion\cr
-        \tab cases        \tab case names for the truth table combination\cr
+        \tab recoded.data \tab recoded data (if crisp, same as \code{initial.data}; if fuzzy, 
+                               dichotomized version of \code{initial.data})\cr
+        \tab cases        \tab the cases with membership above 0.5 in each configuration\cr
     }
 }
 
@@ -150,6 +151,9 @@ HarKemTT
 
 # list the number of condition levels  
 HarKemTT$noflevels
+
+# which configurations have more than 2 cases
+which(HarKemTT$tt$n > 2)
 
 # tQCA using Ragin and Strand (2008)
 #-----------------------------------

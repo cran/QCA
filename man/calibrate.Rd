@@ -72,14 +72,14 @@ arguments \code{logistic} and \code{ecdf} are mutually exclusive, with the first
 }
 
 \value{
-A numeric vector of crisp set values or fuzzy set membership scores.
+A numeric vector of crisp set values or fuzzy set membership scores
 }
 
 \references{
 G. Bojadziev and M. Bojadziev. \emph{Fuzzy Logic for Business, Finance, and 
 Management}. 2nd ed., World Scientific, New Jersey, 2007.
 
-Clark, T. D., J. M. Larson, J. N. Mordeson, J. D. Potter, and M. J. Wierman. 
+T. D. Clark, J. M. Larson, J. N. Mordeson, J. D. Potter, and M. J. Wierman. 
 \emph{Applying Fuzzy Mathematics to Formal Models in Comparative Politics}. 
 Springer, Berlin, 2008.
 

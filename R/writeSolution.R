@@ -8,19 +8,21 @@ function(sol.matrix, mtrx) {
     rownames(row.matrix) <- rownames(mtrx)
     
     for (i in seq(ncol(sol.matrix))) {
-        row.matrix[sol.matrix[, i], i] <- TRUE
+        aa <- sol.matrix[, i]
+        aa <- aa[!is.na(aa)]
+        row.matrix[aa, i] <- TRUE
     }
     
     ess.PIs <- rownames(mtrx)[rowSums(row.matrix) == ncol(row.matrix)]
     
-    if (length(ess.PIs) > 0) {
-        for (i in seq(ncol(sol.matrix))) {
-            solution[[i]] <- c(ess.PIs, sol.matrix[, i][!(sol.matrix[, i] %in% ess.PIs)])
+    for (i in seq(ncol(sol.matrix))) {
+        aa <- sol.matrix[, i]
+        aa <- aa[!is.na(aa)]
+        if (length(ess.PIs) > 0) {
+            solution[[i]] <- c(ess.PIs, aa[!(aa %in% ess.PIs)])
         }
-    }
-    else {
-        for (i in seq(ncol(sol.matrix))) {
-            solution[[i]] <- sol.matrix[, i]
+        else {
+            solution[[i]] <- aa
         }
     }
     output[[1]] <- lapply(solution, as.vector)

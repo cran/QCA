@@ -1,10 +1,16 @@
 `truthTable` <-
 function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
          incl.cut1 = 1, incl.cut0 = 1, complete = FALSE, show.cases = FALSE,
-         sort.by = c(""), decreasing = TRUE, use.letters = FALSE, ...) {
+         sort.by = c(""), decreasing = TRUE, use.letters = FALSE,...) {
+    
+    memcare <- FALSE # to be updated with a future version
     
     if (all(conditions == c(""))) {
         conditions <- names(mydata)[-which(names(mydata) == outcome)]
+    }
+    
+    if (memcare) {
+        complete <- FALSE
     }
     
     verify.tt(mydata, outcome, conditions, complete, show.cases, incl.cut1, incl.cut0)
@@ -12,7 +18,6 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     if (incl.cut0 > incl.cut1) {
         incl.cut0 <- incl.cut1
     }
-    
     colnames(mydata) <- toupper(colnames(mydata))
     conditions <- toupper(conditions)
     outcome <- toupper(outcome)
@@ -46,6 +51,7 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         return(as.numeric(x))
     }))
     mydata[mydata < 0] <- -1
+    rownames(mydata) <- rownames(initial.data)
     
     nofconditions <- length(conditions)
     fuzzy.cc <- apply(mydata[, conditions], 2, function(x) any(x %% 1 > 0))
@@ -71,74 +77,59 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         return(as.vector(noflevels))
     }
     
-    excluded <- rep(FALSE, nrow(mydata))
-    
-     ## function needed to check equality of sub-unit numbers (a floating point issue...)
-    check.equal <- function(x, y) {
-        check.vector <- as.logical(unlist(lapply(x, all.equal, y)))
-        check.vector[is.na(check.vector)] <- FALSE
-        return(check.vector)
+    if (memcare) {
+        mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
+        inclpri <- .Call("truthTableMem", as.matrix(mydata[, conditions]), noflevels, mbase, fuzzy.cc, mydata[, outcome], package="QCA")
+    }
+    else {
+        tt <- createMatrix(noflevels)
+        inclpri <- .Call("truthTable", as.matrix(mydata[, conditions]), tt, fuzzy.cc, mydata[, outcome], package="QCA")
     }
     
-    tt <- createMatrix(noflevels)
-    minmat <- matrix(NA, nrow=nrow(mydata), ncol=nrow(tt))
-    colnames(minmat) <- seq_len(nrow(tt))
-    rownames(minmat) <- rownames(mydata)
+    colnames(inclpri[[1]]) <- seq_len(ncol(inclpri[[1]]))
+    line.mydata <- inclpri[[2]]
     
-    for (i in seq(nrow(mydata))) {
-        row.i <- as.numeric(mydata[i, conditions])
-        minmat[i, ] <- apply(tt, 1, function(x, values=row.i) {
-            if (any(zerox <- x[fuzzy.cc] == 0)) {
-                values[fuzzy.cc][zerox] <- 1 - values[fuzzy.cc][zerox]
-            }
-            copy.values <- values[!fuzzy.cc]
-            if (length(copy.values) > 0) {
-                values[!fuzzy.cc][x[!fuzzy.cc] != copy.values] <- 0
-                values[!fuzzy.cc][x[!fuzzy.cc] == copy.values] <- 1
-            }
-            return(min(values))
-        })
+    preserve <- inclpri[[1]][3, ] >= n.cut
+    inclpri  <- inclpri[[1]][1:2, ]
+    # inclpri  <- inclpri[[1]][1:2, ncut.fre >= n.cut]
+    
+    inclpri[is.na(inclpri)] <- NA
+    
+    outvalues <- as.numeric(inclpri[1, preserve] >= (incl.cut1 - .Machine$double.eps ^ 0.5))
+    outvalues[inclpri[1, preserve] < incl.cut1 & inclpri[1, preserve] >= (incl.cut0 - .Machine$double.eps ^ 0.5)] <- "C"
+    names(outvalues) <- colnames(inclpri)[preserve]
+    
+    freq.lines <- table(line.mydata)
+    
+    line.mydata[!line.mydata %in% colnames(inclpri)[preserve]] <- 0
+    
+    excluded <- line.mydata == 0
+    line.mydata <- line.mydata[!excluded]
+    
+    
+    if (memcare) {
+        mydata[!excluded, conditions] <- getRow(noflevels, line.mydata)
+    }
+    else {
+        mydata[!excluded, conditions] <- tt[line.mydata, ]
     }
     
-    preserve  <- apply(minmat, 2, function(x)  sum(x > 0.5)) >= n.cut
-    val.outcome <- mydata[, outcome]
-    inclusion <- apply(minmat, 2, function(x) sum(pmin(x, val.outcome))/sum(x))
-    pri <- apply(minmat, 2, function(x) {
-        prisum <- sum(pmin(x, 1 - val.outcome, val.outcome))
-        (sum(pmin(x, val.outcome)) - prisum)/(sum(x) - prisum)
-    })
-    inclusion[is.na(inclusion)] <- NA
-    pri[is.na(pri)] <- NA
     
-    minmat <- minmat[, preserve]
-    outvalues <- as.numeric(inclusion[preserve] > incl.cut1 | check.equal(inclusion[preserve], incl.cut1))
-    outvalues[inclusion[preserve] < incl.cut1 & (inclusion[preserve] > incl.cut0 | check.equal(inclusion[preserve], incl.cut0))] <- "C"
-    
-    for (i in seq_len(nrow(mydata))) {
-        if (any(minmat[i, ] > 0.5)) {
-            minmatcol <- which(minmat[i, ] > 0.5)
-            mydata[i, conditions] <- tt[as.numeric(colnames(minmat)[minmatcol]), ]
-            mydata[i, outcome] <- outvalues[minmatcol]
-        }
-        else {
-            excluded[i] <- TRUE
-        }
-    }
     
     if (any(excluded)) {
         excluded.cases <- mydata[excluded, ]
         mydata <- mydata[!excluded, ]
     }
     
-    mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
-    line.mydata <- drop(mbase %*% t(mydata[, conditions])) + 1
+    mydata[, outcome] <- outvalues[match(line.mydata, names(outvalues))]
     
-    if (complete) {
+    
+    if (complete) { # implicitly memcare is FALSE
         line.tt <- seq_len(dim(tt)[1])
     }
-    else {
+    else { # this doesn't implicitly imply memcare = TRUE, although it could be
         line.tt <- sort(unique(line.mydata))
-        tt <- tt[line.tt, ]
+        tt <- getRow(noflevels, line.tt)
     }
     
     tt <- as.data.frame(tt)
@@ -149,8 +140,9 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     tt$OUT <- as.character(tt$OUT)
     
     tt[, "n"] <- 0
-    freq.lines <- table(line.mydata)
-    tt[names(freq.lines), "n"] <- freq.lines
+    lines.in.tt <- which(names(freq.lines) %in% rownames(tt))
+    tt[names(freq.lines)[lines.in.tt], "n"] <- freq.lines[lines.in.tt]
+    
     
     outcome.values <- sort(unique(mydata[, outcome]))
     
@@ -159,13 +151,13 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         tt[match(names(linesubset), line.tt), "OUT"] <- outcome.values[i]
     }
     
+    
     tt <- cbind(tt, incl="-", PRI="-")
     tt$incl <- as.character(tt$incl)
     tt$PRI <- as.character(tt$PRI)
-    inclusion <- inclusion[which(names(inclusion) %in% rownames(tt))]
-    pri <- pri[which(names(pri) %in% rownames(tt))]
-    tt[names(inclusion), "incl"] <- inclusion
-    tt[names(inclusion), "PRI"] <- pri
+    inclpri <- inclpri[, which(colnames(inclpri) %in% rownames(tt))]
+    tt[colnames(inclpri), "incl"] <- inclpri[1, ]
+    tt[colnames(inclpri), "PRI"] <- inclpri[2, ]
     
     if (any(sort.by != "")) {
         sort.args <- c("incl", "n")
@@ -180,8 +172,10 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         }
     }
     
+    #return(list(line.tt, initial.data, line.mydata))
+    
     cases <- sapply(line.tt, function(x) {
-        paste(rownames(initial.data)[which(line.mydata == x)], collapse=",")
+        paste(rownames(mydata)[which(line.mydata == x)], collapse=",")
     })
     
     if (show.cases) {

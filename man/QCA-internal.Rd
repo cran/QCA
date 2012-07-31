@@ -31,7 +31,7 @@
   \code{prettyTable}, \code{rowDominance}, \code{rowDominance2}, \code{sortVector},
   \code{sortMatrix}, \code{writePrimeimp} and \code{writeSolution}
   are internal functions of the QCA package which are not designed to be called directly
-  by the user. All of them are used by the main \code{(e)qmcc} function(s), except
+  by the user. All of them are used by the \code{eqmcc} function, except
   \code{sortMatrix} which is used by \code{allExpressions}. The verification and error
   messages have been moved to the internal functions \code{verify.data} and \code{verify.tt}.
 }

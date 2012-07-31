@@ -22,7 +22,7 @@ findTh(x, groups = 2, hclustm = "complete", distm = "euclidean")
 
 \value{
 A numeric vector of suggested threshold(s) for dividing base variables 
-into the desired number of groups.
+into the desired number of groups
 }
 
 \note{Default values from the \code{hclust()} method and the \code{dist()} method are used for 
