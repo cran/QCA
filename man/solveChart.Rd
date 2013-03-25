@@ -14,12 +14,12 @@ solveChart(chart, all.sol = FALSE)
 }
 
 \arguments{
-  \item{chart}{A prime implicant chart}
-  \item{all.sol}{Find all possible, non-overlapping, sums}
+  \item{chart}{A prime implicant chart.}
+  \item{all.sol}{Find all possible, non-overlapping, sums.}
 }
 
 \value{
-A matrix containing row indices of all possible solutions
+A matrix containing row indices of all possible solutions.
 }
 
 \examples{

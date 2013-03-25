@@ -14,10 +14,9 @@ allExpressions(noflevels, raw = FALSE, arrange = FALSE)
 }
 
 \arguments{
-  \item{noflevels}{The number of levels for each condition}
-  \item{raw}{Logical, return the implicant matrix with "don't care" indicator}
-  \item{arrange}{Logical, try to arrange the result matrix for visual inspection
-                 (takes a lot of additional time for large matrices)}
+  \item{noflevels}{The number of levels for each condition.}
+  \item{raw}{Logical, return the implicant matrix with "don't care" indicator.}
+  \item{arrange}{Logical, try to arrange the result matrix for visual inspection.}
 }
 
 \details{
@@ -28,7 +27,7 @@ conditions (\eqn{k > 15}).
 }
 
 \value{
-A matrix with \eqn{\prod_{j = 1}^{k}{p_j + 1}} rows
+A matrix with \eqn{\prod_{j = 1}^{k}{p_j + 1}} rows.
 }
 
 \seealso{\code{\link{createMatrix}}}

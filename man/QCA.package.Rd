@@ -29,13 +29,13 @@ all of these variants.
 
 The ``exact'' Quine-McCluskey algorithm for crisp sets has been implemented for csQCA and mvQCA 
 since version 0.6-0, and fsQCA as well as tQCA since version 1.0-0. Starting with version 
-0.4-5 the package has a new function called "eqmcc" (enhanced Quine-McCluskey) which finds 
+0.4-5 the package employed a new function called ``eqmcc'' (enhanced Quine-McCluskey) which finds 
 exact solutions much faster and with substantially lower memory consumption (Dusa 2007, 2010).
-Since version 1.0-4, some intensive computationally parts of the R code were compiled in the
-C language, considerably increasing the speed even further.
+Since version 1.0-4, computationally intensive parts of the R code were compiled in the C language,
+considerably increasing the speed of some functions.
 
 How to make the most of R's and the QCA package's capabilities is demonstrated in detail 
-with many examples by Thiem and Dusa (2012). 
+with many examples by Thiem and Dusa (2013). 
 
 }
 
@@ -43,8 +43,8 @@ with many examples by Thiem and Dusa (2012).
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 1.0-4\cr
-    Date:    \tab 2012-07-30\cr
+    Version: \tab 1.0-5\cr
+    Date:    \tab 2013-03-25\cr
     License: \tab GPL (>= 2)\cr
     }
 }
@@ -54,9 +54,9 @@ with many examples by Thiem and Dusa (2012).
 Adrian Dusa\cr
 Department of Sociology\cr
 University of Bucharest\cr
-\email{dusadrian@unibuc.ro}
+\email{dusa.adrian@unibuc.ro}
 
-Alrik Thiem\cr
+Alrik Thiem
 Department of Humanities, Social and Political Sciences\cr
 Swiss Federal Institute of Technology Zurich\cr
 \email{thiem@sipo.gess.ethz.ch}

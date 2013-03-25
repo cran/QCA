@@ -5,17 +5,19 @@
 \title{Create a Truth Table}
 
 \description{
-A truth table lists every \dfn{configuration} (combination of condition literals) and its outcome value. 
-This function creates truth tables from any kind of common input data. For crisp-set data (binary and multi-value), 
-cases are assigned directly to the unique configuration in which they have membership. For fuzzy-set data, the function 
-first detects in which configuration a case has membership above 0.5 before assigning it to this configuration.\cr
+A truth table lists every \dfn{configuration} (combination of condition literals) 
+and its outcome value. This function creates truth tables from any kind of common 
+input data. For crisp-set data (binary and multi-value), cases are assigned directly 
+to the unique configuration in which they have membership. For fuzzy-set data, the 
+function first detects in which configuration a case has membership above 0.5 before 
+assigning it to this configuration.\cr
 \cr
-\code{is.tt()} checkes whether an object has class "tt" (truth table); such an
-object is created by \code{truthTable()}\cr
+\code{is.tt()} tests whether an object has class "tt" (a truth table created by 
+\code{truthTable()}
 }
 
 \usage{
-truthTable(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
+truthTable(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
            incl.cut1 = 1, incl.cut0 = 1, complete = FALSE, show.cases = FALSE,
            sort.by = c(""), decreasing = TRUE, use.letters = FALSE, ...)
 
@@ -23,32 +25,30 @@ is.tt(x)
 }
 
 \arguments{
-  \item{mydata}{A dataset of (binary or multi-value) crisp or fuzzy-set data}
-  \item{outcome}{The name of the outcome set}
-  \item{neg.out}{Logical, use negation of outcome set}
-  \item{conditions}{The names of the conditions}
-  \item{n.cut}{The minimum number of cases with membership > 0.5 for an outcome value of "0", "1" or "C"}
-  \item{incl.cut1}{The minimum sufficiency inclusion score for an outcome value of "1"}
-  \item{incl.cut0}{The maximum sufficiency inclusion score for an outcome value of "0"}
-  \item{complete}{Logical, print complete truth table}
-  \item{show.cases}{Logical, print case names}
-  \item{sort.by}{Sort truth table by inclusion scores and/or number of cases}
-  \item{decreasing}{Sort in decreasing or increasing order of value(s) passed to \code{sort.by}}
-  \item{use.letters}{Logical, use letters instead of set names}
-  \item{x}{An object of class "tt"}
-  \item{...}{Other arguments (used internally)}
+  \item{data}{A dataset of (binary or multi-value) crisp or fuzzy-set data.}
+  \item{outcome}{The name of the outcome set.}
+  \item{neg.out}{Logical, use negation of outcome set.}
+  \item{conditions}{The names of the conditions.}
+  \item{n.cut}{The minimum number of cases with membership > 0.5 for an outcome value of "0", "1" or "C".}
+  \item{incl.cut1}{The minimum sufficiency inclusion score for an outcome value of "1".}
+  \item{incl.cut0}{The maximum sufficiency inclusion score for an outcome value of "0".}
+  \item{complete}{Logical, print complete truth table.}
+  \item{show.cases}{Logical, print case names.}
+  \item{sort.by}{Sort truth table by inclusion scores and/or number of cases.}
+  \item{decreasing}{Sort in decreasing or increasing order of value(s) passed to \code{sort.by}.}
+  \item{use.letters}{Logical, use letters instead of set names.}
+  \item{x}{An object of class "tt".}
+  \item{...}{Other arguments (used internally).}
 }
 
 \value{An object of class "tt", which is a list with the following components:\cr
-    \tabular{lll}{
-        \tab tt           \tab the truth table\cr
-        \tab indexes      \tab the configuration line numbers\cr
-        \tab noflevels    \tab a vector with the number of condition levels\cr
-        \tab initial.data \tab the initial data\cr
-        \tab recoded.data \tab recoded data (if crisp, same as \code{initial.data}; if fuzzy, 
-                               dichotomized version of \code{initial.data})\cr
-        \tab cases        \tab the cases with membership above 0.5 in each configuration\cr
-    }
+  \item{tt}{The truth table.}
+  \item{indexes}{The configuration line numbers.}
+  \item{noflevels}{A vector with the number of condition levels.}
+  \item{initial.data}{The initial data.}
+  \item{recoded.data}{Recoded data (if crisp, same as \code{initial.data}; if fuzzy, 
+                      dichotomized version of \code{initial.data}).}
+  \item{cases}{The cases with membership above 0.5 in each configuration.}
 }
 
 \details{
@@ -93,7 +93,7 @@ C. C. Ragin and S. I. Strand. Using Qualitative Comparative Analysis to Study Ca
 \emph{Sociological Methods & Research}, 36(4):431-441, 2008.
 
 A. Thiem and A. Dusa. \emph{Qualitative Comparative Analysis with R: A User's Guide}. 
-Springer, New York, 2012.
+Springer, New York, 2013.
 
 }
 

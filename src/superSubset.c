@@ -4,28 +4,27 @@
 
 SEXP superSubset(SEXP x, SEXP y, SEXP fuz, SEXP vo, SEXP nec) { 
     int i, j, k, index;
-    double *p_x, *p_incovpri, *p_vo, min, max, so, sumx_min, sumx_max, sumpmin_min, sumpmin_max, prisum_min, prisum_max, temp1, temp2;
-    int xrows, xcols, yrows, *p_y;
-    Rboolean *p_fuz, *p_nec;
+    double *p_x, *p_incovpri, *p_vo, min, max, so = 0.0, sumx_min, sumx_max, sumpmin_min, sumpmin_max, prisum_min, prisum_max, temp1, temp2;
+    int xrows, xcols, yrows, *p_y, *p_fuz, *p_nec;
     
     SEXP usage = PROTECT(allocVector(VECSXP, 5));
     SET_VECTOR_ELT(usage, 0, x = coerceVector(x, REALSXP));
     SET_VECTOR_ELT(usage, 1, y = coerceVector(y, INTSXP));
-    SET_VECTOR_ELT(usage, 2, fuz = coerceVector(fuz, LGLSXP));
+    SET_VECTOR_ELT(usage, 2, fuz = coerceVector(fuz, INTSXP));
     SET_VECTOR_ELT(usage, 3, vo = coerceVector(vo, REALSXP));
-    SET_VECTOR_ELT(usage, 4, nec = coerceVector(nec, LGLSXP));
+    SET_VECTOR_ELT(usage, 4, nec = coerceVector(nec, INTSXP));
     
     xrows = nrows(x);
     yrows = nrows(y);
     xcols = ncols(x);
     
-    double dataline[xcols], copyline[xcols];
+    double copyline[xcols];
     
     p_x = REAL(x);
     p_y = INTEGER(y);
-    p_fuz = LOGICAL(fuz);
+    p_fuz = INTEGER(fuz);
     p_vo = REAL(vo);
-    p_nec = LOGICAL(nec);
+    p_nec = INTEGER(nec);
     
     
     // create the list to be returned to R
@@ -58,7 +57,7 @@ SEXP superSubset(SEXP x, SEXP y, SEXP fuz, SEXP vo, SEXP nec) {
                 
                 index = k + yrows * j;
                 
-                if (p_fuz[j]) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
+                if (p_fuz[j] == 1) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
                     if (p_y[index] == 1) {
                         copyline[j] = 1 - copyline[j];
                     }
@@ -127,25 +126,24 @@ SEXP superSubset(SEXP x, SEXP y, SEXP fuz, SEXP vo, SEXP nec) {
 
 SEXP superSubsetMem(SEXP x, SEXP noflevels, SEXP mbase, SEXP fuz, SEXP vo, SEXP nec) { 
     int i, j, k, index;
-    double *px, *pincovpri, *pvo, min, max, so, sumx_min, sumx_max, sumpmin_min, sumpmin_max, prisum_min, prisum_max, temp1, temp2;
-    int xrows, xcols, yrows, *pnoflevels, *pmbase, lmbase;
-    Rboolean *pfuz, *pnec;
+    double *px, *pincovpri, *pvo, min, max, so = 0.0, sumx_min, sumx_max, sumpmin_min, sumpmin_max, prisum_min, prisum_max, temp1, temp2;
+    int xrows, xcols, yrows, *pnoflevels, *pmbase, lmbase,  *pfuz, *pnec;
     
     SEXP usage = PROTECT(allocVector(VECSXP, 6));
     SET_VECTOR_ELT(usage, 0, x = coerceVector(x, REALSXP));
     SET_VECTOR_ELT(usage, 1, noflevels = coerceVector(noflevels, INTSXP));
     SET_VECTOR_ELT(usage, 2, mbase = coerceVector(mbase, INTSXP));
-    SET_VECTOR_ELT(usage, 3, fuz = coerceVector(fuz, LGLSXP));
+    SET_VECTOR_ELT(usage, 3, fuz = coerceVector(fuz, INTSXP));
     SET_VECTOR_ELT(usage, 4, vo = coerceVector(vo, REALSXP));
-    SET_VECTOR_ELT(usage, 5, nec = coerceVector(nec, LGLSXP));
+    SET_VECTOR_ELT(usage, 5, nec = coerceVector(nec, INTSXP));
     
     
     px = REAL(x);
     pnoflevels = INTEGER(noflevels);
     pmbase = INTEGER(mbase);
-    pfuz = LOGICAL(fuz);
+    pfuz = INTEGER(fuz);
     pvo = REAL(vo);
-    pnec = LOGICAL(nec);
+    pnec = INTEGER(nec);
     
     
     yrows = pnoflevels[0] + 1;
@@ -161,7 +159,7 @@ SEXP superSubsetMem(SEXP x, SEXP noflevels, SEXP mbase, SEXP fuz, SEXP vo, SEXP 
     //yrows = nrows(y);
     xcols = ncols(x);
     
-    double dataline[xcols], copyline[xcols];
+    double copyline[xcols];
     
     
     
@@ -195,7 +193,7 @@ SEXP superSubsetMem(SEXP x, SEXP noflevels, SEXP mbase, SEXP fuz, SEXP vo, SEXP 
                 
                 index = div(div(k + 1, pmbase[j]).quot, pnoflevels[j] + 1).rem;
                 
-                if (pfuz[j]) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
+                if (pfuz[j] == 1) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
                     if (index == 1) {
                         copyline[j] = 1 - copyline[j];
                     }

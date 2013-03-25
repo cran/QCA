@@ -14,8 +14,8 @@ findSupersets(noflevels3k, input.combs)
 }
 
 \arguments{
-  \item{noflevels3k}{A vector containing the number of levels for each condition incremented by 1}
-  \item{input.combs}{A matrix of configurations or a vector of their row numbers in the implicant matrix}
+  \item{noflevels3k}{A vector containing the number of levels for each condition incremented by 1.}
+  \item{input.combs}{A matrix of configurations or a vector of their row numbers in the implicant matrix.}
 }
 
 \details{
@@ -29,7 +29,7 @@ a specific set of configurations in the implicant matrix.
 }
 
 \value{
-A vector of the line numbers of all possible supersets in the implicant matrix
+A vector of the line numbers of all possible supersets in the implicant matrix.
 }
 
 \references{

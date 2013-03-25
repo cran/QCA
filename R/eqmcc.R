@@ -1,25 +1,24 @@
 `eqmcc` <-
-function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
+function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
          incl.cut1 = 1, incl.cut0 = 1, explain = "1", include = c(""), all.sol = FALSE,
          omit = c(), direxp = c(), rowdom = TRUE, details = FALSE, show.cases = FALSE,
          use.tilde = FALSE, use.letters = FALSE) {
     
-    print.truth.table <- details & !is.tt(mydata)
+    print.truth.table <- details & !is.tt(data)
     if (all(include == "")) {
         include <- explain
     }
     
-    if (!is.tt(mydata)) {
-        
+    if (!is.tt(data)) {
         if (all(conditions == c(""))) {
-            conditions <- names(mydata)[-which(names(mydata)==outcome)]
+            conditions <- names(data)[-which(names(data)==outcome)]
         }
         
-        mydata <- mydata[, c(conditions, outcome)]
-        verify.qca(mydata, outcome, conditions, explain, include, use.letters, direxp)
+        data <- data[, c(conditions, outcome)]
+        verify.qca(data, outcome, conditions, explain, include, use.letters, direxp)
         
-        indata <- mydata
-        tt <- truthTable(mydata=mydata, outcome=outcome, conditions=conditions, show.cases=show.cases, n.cut=n.cut,
+        indata <- data
+        tt <- truthTable(data=data, outcome=outcome, conditions=conditions, show.cases=show.cases, n.cut=n.cut,
                          incl.cut1=incl.cut1, incl.cut0=incl.cut0, use.letters=use.letters, neg.out=neg.out)
         
         recdata <- tt$recoded.data
@@ -37,7 +36,7 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
                 stop(paste("You cannot include ", chinclude, " since you want to explain ", chexplain, ".\n\n", sep=""), call. = FALSE)
             }
         }
-        tt <- mydata
+        tt <- data
         indata <- tt$initial.data
         recdata <- tt$recoded.data
         conditions <- names(recdata)[seq(length(tt$noflevels))]
@@ -59,6 +58,7 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         
         PI <- writePrimeimp(expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde)
         rownames(expressions) <- PI
+        
         PI.sort <- sortVector(PI, collapse=collapse)
         
         expressions <- expressions[match(sortVector(PI.sort, collapse=collapse), PI), , drop=FALSE]
@@ -78,7 +78,6 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         
         rownames(mtrx) <- PI.red.sort
         colnames(mtrx) <- initial
-        
         sol.matrix <- solveChart(mtrx, all.sol = all.sol)
         
         sol.matrix <- matrix(rownames(mtrx)[sol.matrix], nrow=nrow(sol.matrix))
@@ -111,7 +110,7 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         return(as.numeric(x))
     }))
     
-    expl.incl <- unique(c(explain, include))
+    expl.incl <- unique(c(explain, include)) # here "include" may contain contradictions; missings are irrelevant as they were already erased
     subset.tt <- tt$tt[, "OUT"] %in% expl.incl
     expl.matrix <- as.matrix(tt$tt[subset.tt, seq(length(noflevels))])
     expl.matrix <- matrix(as.numeric(expl.matrix), ncol=length(noflevels)) + 1
@@ -243,19 +242,19 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     
     c.sol <- p.sol <- getSolution()
     
+    mbase <- rev(c(1, cumprod(rev(noflevels + 1))))[-1]
+    
     if (incl.rem) {
-        expressions <- sort(setdiff(findSupersets(noflevels + 1, expl.matrix), findSupersets(noflevels + 1, excl.matrix)))
-        mvector <- c(rev(cumprod(rev(noflevels + 1))), 1)[-1]
         
-        # expressions <- .Call("removeRedundants", expressions, noflevels, mvector, package="QCA")
-        index <- 0
-        while ((index <- index + 1) < length(expressions)) {
-            expressions <- expressions[is.na(match(expressions, .Call("findSubsets", expressions[index], noflevels, mvector, max(expressions))))]
-        }
+        expressions <- sort(setdiff(findSupersets(noflevels + 1, expl.matrix), findSupersets(noflevels + 1, excl.matrix)))
+        expressions <- .Call("removeRedundants", expressions, noflevels, mbase, PACKAGE="QCA")
         
         expressions <- getRow(noflevels + 1, expressions)
+        
         colnames(expressions) <- colnames(inputt)
+        
         p.sol <- getSolution()
+        
     }
     
     output$PIs <- p.sol$all.PIs
@@ -282,13 +281,17 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
             }
         }
         
+        
+        
         if (length(p.sol$solution.list[[1]]) == 1) {
-            listIC <- pof(p.sol$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases, relation = "sufficiency", neg.out=neg.out, via.eqmcc=TRUE)
+            listIC <- pof(p.sol$reduced$expressions - 1, outcome, indata, showc=show.cases, cases=expr.cases, neg.out=neg.out,
+                          relation = "sufficiency", via.eqmcc=TRUE)
         }
         else {
-            listIC <- pof(p.sol$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases, neg.out=neg.out,
-                            solution.list=output$solution, essential=output$essential, relation = "sufficiency", via.eqmcc=TRUE)
+            listIC <- pof(p.sol$reduced$expressions - 1, outcome, indata, showc=show.cases, cases=expr.cases, neg.out=neg.out,
+                          relation = "sufficiency", via.eqmcc=TRUE, solution.list=output$solution, essential=output$essential)
         }
+        
         
         if (incl.rem) {
             output$pims$p.sol <- listIC$pims
@@ -311,7 +314,7 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     output$opts$show.cases <- show.cases
     output$opts$use.letters <- use.letters
     output$opts$collapse <- collapse
-    mbase <- rev(c(1, cumprod(rev(noflevels + 1))))[-1]
+    
     output$SA <- lapply(p.sol$solution.list[[1]], function(x) {
         p.expressions <- p.sol$reduced$expressions[x, , drop=FALSE]
         
@@ -441,11 +444,13 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
                 }
                 
                 if (length(i.sol.index$solution.list[[1]]) == 1) {
-                    i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases, relation = "sufficiency", neg.out=neg.out, via.eqmcc = TRUE)
+                    i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, outcome, indata, showc=show.cases,
+                                             cases=expr.cases, relation = "sufficiency", neg.out=neg.out, via.eqmcc = TRUE)
                 }
                 else {
-                    i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, indata, outcome, showc=show.cases, cases=expr.cases, relation = "sufficiency",
-                                                  solution.list=i.sol.index$solution.list[[1]], essential=i.sol.index$solution.list[[2]], neg.out=neg.out, via.eqmcc = TRUE)
+                    i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, outcome, indata, showc=show.cases,
+                                             cases=expr.cases, relation = "sufficiency", neg.out=neg.out, via.eqmcc = TRUE,
+                                             solution.list=i.sol.index$solution.list[[1]], essential=i.sol.index$solution.list[[2]])
                 }
                 output$pims$i.sol[[index]] <- i.sol[[index]]$IC$pims
                 i.sol[[index]]$IC$pims <- NULL

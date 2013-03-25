@@ -258,7 +258,7 @@ function(x, ...) {
     }
     else {
         incl.cov <- x$incl.cov
-        #if (x$relation == "sufficiency") {
+        #if (x$relation  %in% c("sufficiency", "suf")) {
         #    if (sum(as.numeric(incl.cov[, "cov.u"])) == 0) {
         #        valid.cov.u <- FALSE
         #        incl.cov <- incl.cov[, -which(colnames(incl.cov) == "cov.u")]
@@ -304,7 +304,7 @@ function(x, ...) {
         rownames(incl.cov.e) <- format(rownames(incl.cov.e), width=max(2, nchar.rownames))
     }
     
-    if (x$relation == "necessity") {
+    if (x$relation %in% c("necessity", "nec")) {
         incl.cov <- incl.cov[, 1:3]
     }
     
@@ -314,7 +314,7 @@ function(x, ...) {
         sol.incl.cov <- formatC(sol.incl.cov, digits=3, format="f")
     }
     
-    if (x$relation == "necessity") {
+    if (x$relation %in% c("necessity", "nec")) {
         max.chars <- line.length - 1
     }
     else {
@@ -567,41 +567,46 @@ function(x, ...) {
 
 `print.fctr` <-
 function(x, ...) {
-    xprint <- function(fx) {
-        for (i in seq(length(fx))) {
-            cat("S: ")
-            preamblength <- nchar(prettyNumsSol[i]) + 3
-            cat(prettyString(names(fx)[i], getOption("width") - 3, 3, " + "), "\n\n")
-            
-            if (!is.null(fx[[i]])) {
-                for (j in seq(length(fx[[i]]))) {
-                    prettyNumsFact <- formatC(seq(length(fx[[i]])), digits = nchar(length(fx[[i]])) - 1, flag = 0)
-                    cat(paste("F", prettyNumsFact[j], ": ", sep=""))
-                    flength <- nchar(prettyNumsFact[j]) + 3
-                    strvctr <- unlist(strsplit(fx[[i]][[j]], split=" + "))
-                    cat(prettyString(strvctr, getOption("width") - flength, flength, " + "), "\n")
-                }
-                cat("\n")
-            }
-            else {
-                cat("No factorization possible.\n")
+    xprint <- function(fx, i.sol.name="", num="") {
+         # fx is a list of length 1
+         # its name is the name of the solution, collapsed with " + "
+        cat(paste(i.sol.name, "S", num, ": ", names(fx), sep=""), "\n\n")
+        fx <- fx[[1]]
+        
+        if (is.null(fx)) {
+            cat("No factorization possible.\n")
+        }
+        else {
+            for (i in seq(length(fx))) {
+                prettyNumsFact <- formatC(seq(length(fx)), digits = nchar(length(fx)) - 1, flag = 0)
+                cat(paste("F", prettyNumsFact[i], ": ", sep=""))
+                flength <- nchar(prettyNumsFact[i]) + 3
+                strvctr <- unlist(strsplit(fx[i], split=" + "))
+                cat(prettyString(strvctr, getOption("width") - flength, flength, " + "), "\n")
             }
             cat("\n")
         }
+        cat("\n")
     }
     
-    prettyNumsSol <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
+    
+    
     cat("\n")
     if (names(x)[1] == "i.sol") {
         for (isol in seq(length(x$i.sol))) {
-            cat(paste("    p.sol:", names(x$i.sol)[isol]), "\n\n")
-            for (xf in x$i.sol) {
-                xprint(xf)
+            
+            prettyNumsSol <- formatC(seq(length(x$i.sol[[isol]])), digits = nchar(length(x$i.sol[[isol]])) - 1, flag = 0)
+            
+            for (xf in seq(length(x$i.sol[[isol]]))) {
+                xprint(x$i.sol[[isol]][xf], i.sol.name=names(x$i.sol)[isol], num=prettyNumsSol[xf])
             }
         }
     }
     else {
-        xprint(x)
+        prettyNumsSol <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
+        for (i in seq(length(x))) {
+            xprint(x[i], num=prettyNumsSol[i])
+        }
     }
     
 }
@@ -626,6 +631,45 @@ function(x, ...) {
     }
     cat("\n")
 }
+
+
+
+
+#`print.pims` <-
+#function(x, ...) {
+    #line.length <- floor(getOption("width")*0.95)
+    #rownames(x) <- format(rownames(x))
+    #x <- apply(x, 2, formatC, digits=3, format="f")
+    #nchar.rownames <- nchar(rownames(x)[1])
+    
+    #for (i in seq(ncol(x))) {
+    #    colnames(x)[i] <- format(colnames(x)[i], width=max(5, nchar(colnames(x)[i])))
+    #}
+    
+    #sep.row <- paste(rep("-", nchar.rownames + ifelse(ncol(x) > 1, sum(nchar(colnames(x)[-ncol(x)])) + 2*(ncol(x) - 1), 0) + max(nchar(colnames(x)[ncol(x)]), 5) + 2), collapse="")
+    #nchar.sep.row <- nchar(sep.row)
+    #if (nchar.sep.row < line.length) {
+    #    columns <- paste(colnames(x), collapse="  ")
+    #    cat(paste(paste(rep(" ", nchar.rownames), collapse=""), columns, sep="  "), "\n")
+    #    cat(sep.row, "\n")
+    #    for (i in seq(nrow(x))) {
+    #        catrow <- paste(rownames(x)[i], x[i, 1], sep="  ")
+    #        if (ncol(x) > 1) {
+    #            for (colno in seq(2, ncol(x))) {
+    #                ncharcol <- nchar(colnames(x)[colno - 1])
+    #                catrow <- paste(catrow, x[i, colno], sep=paste(rep(" ", max(2, ifelse(ncharcol > 5, ncharcol - 3, 0))), collapse=""))
+    #            }
+    #        }
+    #        cat(catrow, "\n")
+    #    }
+    #    cat(sep.row, "\n")
+    #}
+    #else {
+    #    
+    #}
+    #print(unclass(x))
+#}
+
 
 
 

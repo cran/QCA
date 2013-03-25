@@ -18,14 +18,14 @@ high job security regulations in Western democracies using fsQCA.
 \format{
 The data contains the following sets:
 
-\tabular{rl}{
-\bold{S}   \tab Condition: high level of statism \cr
-\bold{C}   \tab Condition: high level of non-market coordination \cr
-\bold{L}   \tab Condition: high level of labour movement strength \cr
-\bold{R}   \tab Condition: high level of Catholicism \cr
-\bold{P}   \tab Condition: high level of religious party strength \cr
-\bold{V}   \tab Condition: many institutional veto points \cr
-\bold{JSR} \tab Outcome  : high level of job security regulations \cr
+\tabular{rrl}{
+ numeric \tab \bold{S}   \tab Condition: high level of statism\cr
+ numeric \tab \bold{C}   \tab Condition: high level of non-market coordination\cr
+ numeric \tab \bold{L}   \tab Condition: high level of labour movement strength\cr
+ numeric \tab \bold{R}   \tab Condition: high level of Catholicism\cr
+ numeric \tab \bold{P}   \tab Condition: high level of religious party strength\cr
+ numeric \tab \bold{V}   \tab Condition: many institutional veto points\cr
+ numeric \tab \bold{JSR} \tab Outcome  : high level of job security regulations\cr
 }
 }
 

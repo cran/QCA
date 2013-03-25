@@ -1,34 +1,39 @@
 `truthTable` <-
-function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
+function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
          incl.cut1 = 1, incl.cut0 = 1, complete = FALSE, show.cases = FALSE,
-         sort.by = c(""), decreasing = TRUE, use.letters = FALSE,...) {
+         sort.by = c(""), decreasing = TRUE, use.letters = FALSE, ...) {
     
     memcare <- FALSE # to be updated with a future version
+    other.args <- list(...)
+    via.pof <- "via.pof" %in% names(other.args)
     
     if (all(conditions == c(""))) {
-        conditions <- names(mydata)[-which(names(mydata) == outcome)]
+        conditions <- names(data)[-which(names(data) == outcome)]
     }
     
     if (memcare) {
         complete <- FALSE
     }
     
-    verify.tt(mydata, outcome, conditions, complete, show.cases, incl.cut1, incl.cut0)
+    if (!via.pof) {
+        verify.tt(data, outcome, conditions, complete, show.cases, incl.cut1, incl.cut0)
+    }
     
     if (incl.cut0 > incl.cut1) {
         incl.cut0 <- incl.cut1
     }
-    colnames(mydata) <- toupper(colnames(mydata))
+    
+    colnames(data) <- toupper(colnames(data))
     conditions <- toupper(conditions)
     outcome <- toupper(outcome)
     
-    mydata <- initial.data <- mydata[, c(conditions, outcome)]
+    data <- initial.data <- data[, c(conditions, outcome)]
     
     if (neg.out) {
-        mydata[, outcome] <- 1 - mydata[, outcome]
+        data[, outcome] <- 1 - data[, outcome]
     }
     
-    dc.code <- unique(unlist(lapply(mydata, function(x) {
+    dc.code <- unique(unlist(lapply(data, function(x) {
         if (is.numeric(x)) {
             return(x[x < 0])
         }
@@ -45,49 +50,52 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         stop("Multiple \"Don't care\" codes found.\n\n", call. = FALSE)
     }
     
-    mydata <- as.data.frame(lapply(mydata, function(x) {
+    data <- as.data.frame(lapply(data, function(x) {
         x <- as.character(x)
         x[x == dc.code] <- -1
         return(as.numeric(x))
     }))
-    mydata[mydata < 0] <- -1
-    rownames(mydata) <- rownames(initial.data)
+    
+    names(data) <- c(conditions, outcome)
+    
+    data[data < 0] <- -1
+    rownames(data) <- rownames(initial.data)
     
     nofconditions <- length(conditions)
-    fuzzy.cc <- apply(mydata[, conditions], 2, function(x) any(x %% 1 > 0))
+    fuzzy.cc <- apply(data[, conditions, drop=FALSE], 2, function(x) any(x %% 1 > 0))
     
     for (i in seq(length(conditions))) {
         if (!fuzzy.cc[i]) {
-            copy.cc <- mydata[, i]
+            copy.cc <- data[, i]
             if (any(copy.cc < 0)) {
                 copy.cc[copy.cc < 0] <- max(copy.cc) + 1
-                mydata[, i] <- copy.cc
+                data[, i] <- copy.cc
             }
         }
     }
     
     # the data MUST begin with 0 and MUST be incremented by 1 for each level...!
     # perhaps trying something like
-    # apply(mydata[, conditions], 2, function(x) length(unique(x))) + 1
-    noflevels <- apply(mydata[, conditions], 2, max) + 1
+    # apply(data[, conditions], 2, function(x) length(unique(x))) + 1
+    noflevels <- apply(data[, conditions, drop=FALSE], 2, max) + 1
     noflevels[fuzzy.cc] <- 2
     
-    other.args <- list(...)
-    if ("via.pof" %in% names(other.args)) {
+    
+    if (via.pof) {
         return(as.vector(noflevels))
     }
     
     if (memcare) {
         mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
-        inclpri <- .Call("truthTableMem", as.matrix(mydata[, conditions]), noflevels, mbase, fuzzy.cc, mydata[, outcome], package="QCA")
+        inclpri <- .Call("truthTableMem", as.matrix(data[, conditions]), noflevels, mbase, as.numeric(fuzzy.cc), data[, outcome], package="QCA")
     }
     else {
         tt <- createMatrix(noflevels)
-        inclpri <- .Call("truthTable", as.matrix(mydata[, conditions]), tt, fuzzy.cc, mydata[, outcome], package="QCA")
+        inclpri <- .Call("truthTable", as.matrix(data[, conditions]), tt, as.numeric(fuzzy.cc), data[, outcome], package="QCA")
     }
     
     colnames(inclpri[[1]]) <- seq_len(ncol(inclpri[[1]]))
-    line.mydata <- inclpri[[2]]
+    line.data <- inclpri[[2]]
     
     preserve <- inclpri[[1]][3, ] >= n.cut
     inclpri  <- inclpri[[1]][1:2, ]
@@ -99,36 +107,36 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     outvalues[inclpri[1, preserve] < incl.cut1 & inclpri[1, preserve] >= (incl.cut0 - .Machine$double.eps ^ 0.5)] <- "C"
     names(outvalues) <- colnames(inclpri)[preserve]
     
-    freq.lines <- table(line.mydata)
+    freq.lines <- table(line.data)
     
-    line.mydata[!line.mydata %in% colnames(inclpri)[preserve]] <- 0
+    line.data[!line.data %in% colnames(inclpri)[preserve]] <- 0
     
-    excluded <- line.mydata == 0
-    line.mydata <- line.mydata[!excluded]
+    excluded <- line.data == 0
+    line.data <- line.data[!excluded]
     
     
     if (memcare) {
-        mydata[!excluded, conditions] <- getRow(noflevels, line.mydata)
+        data[!excluded, conditions] <- getRow(noflevels, line.data)
     }
     else {
-        mydata[!excluded, conditions] <- tt[line.mydata, ]
+        data[!excluded, conditions] <- tt[line.data, ]
     }
     
     
     
     if (any(excluded)) {
-        excluded.cases <- mydata[excluded, ]
-        mydata <- mydata[!excluded, ]
+        excluded.cases <- data[excluded, ]
+        data <- data[!excluded, ]
     }
     
-    mydata[, outcome] <- outvalues[match(line.mydata, names(outvalues))]
+    data[, outcome] <- outvalues[match(line.data, names(outvalues))]
     
     
     if (complete) { # implicitly memcare is FALSE
         line.tt <- seq_len(dim(tt)[1])
     }
     else { # this doesn't implicitly imply memcare = TRUE, although it could be
-        line.tt <- sort(unique(line.mydata))
+        line.tt <- sort(unique(line.data))
         tt <- getRow(noflevels, line.tt)
     }
     
@@ -144,10 +152,10 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     tt[names(freq.lines)[lines.in.tt], "n"] <- freq.lines[lines.in.tt]
     
     
-    outcome.values <- sort(unique(mydata[, outcome]))
+    outcome.values <- sort(unique(data[, outcome]))
     
     for (i in seq(length(outcome.values))) {
-        linesubset <- table(line.mydata[mydata[, outcome] == outcome.values[i]])
+        linesubset <- table(line.data[data[, outcome] == outcome.values[i]])
         tt[match(names(linesubset), line.tt), "OUT"] <- outcome.values[i]
     }
     
@@ -172,10 +180,10 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         }
     }
     
-    #return(list(line.tt, initial.data, line.mydata))
+    #return(list(line.tt, initial.data, line.data))
     
     cases <- sapply(line.tt, function(x) {
-        paste(rownames(mydata)[which(line.mydata == x)], collapse=",")
+        paste(rownames(data)[which(line.data == x)], collapse=",")
     })
     
     if (show.cases) {
@@ -186,13 +194,13 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         if (!fuzzy.cc[i]) {
             if (any(initial.data[, i] == dc.code)) {
                 tt[, i][tt[, i] == max(tt[, i])] <- dc.code
-                mydata[, i][mydata[, i] == max(mydata[, i])] <- dc.code
+                data[, i][data[, i] == max(data[, i])] <- dc.code
                 noflevels[i] <- noflevels[i] - 1
             }
         }
     }
     
-    x <- list(tt=tt, indexes=sort(unique(line.mydata)), noflevels=as.vector(noflevels), initial.data=initial.data, recoded.data=mydata, cases=cases, neg.out=neg.out)
+    x <- list(tt=tt, indexes=sort(unique(line.data)), noflevels=as.vector(noflevels), initial.data=initial.data, recoded.data=data, cases=cases, neg.out=neg.out)
     
     if (any(excluded)) {
        x$excluded <- excluded.cases
@@ -201,7 +209,7 @@ function(mydata, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     x$tt$incl[is.na(x$tt$incl)] <- "-"
     x$tt$PRI[is.na(x$tt$PRI)] <- "-"
     
-    if (use.letters & sum(nchar(colnames(mydata)[-ncol(mydata)])) != (ncol(mydata) - 1)) { # also verify if not already letters
+    if (use.letters & sum(nchar(colnames(data)[-ncol(data)])) != (ncol(data) - 1)) { # also verify if not already letters
         colnames(x$tt)[seq(nofconditions)] <- LETTERS[seq(nofconditions)]
     }
     return(structure(x, class="tt"))

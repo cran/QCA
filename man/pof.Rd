@@ -9,13 +9,13 @@ This function computes three set-relational parameters of fit: inclusion, PRI an
 }
 
 \usage{
-pof(setms, mydata, outcome = "", neg.out = FALSE, relation = "necessity", ...)
+pof(setms, outcome, data, neg.out = FALSE, relation = "necessity", ...)
 }
 
 \arguments{
   \item{setms}{Set membership scores, or a matrix with crisp-set representations, or a vector of line numbers}
-  \item{mydata}{The original dataset}
-  \item{outcome}{The name of the outcome set}
+  \item{outcome}{The name of the outcome set, or a vector of outcome values}
+  \item{data}{The working dataset}
   \item{neg.out}{Logical, use negation of outcome set}
   \item{relation}{The set relation of the conditions to the outcome, either "necessity" or "sufficiency"}
   \item{...}{Other arguments from the generic print (not used in this function)}
@@ -48,16 +48,16 @@ Krook
 x <- Krook[,1:5]
  
 # get necessity parameters of fit for all conditions
-pof(x, Krook, outcome = "WNP")
+pof(x, outcome = "WNP", Krook)
 
 # now for the negated outcome
-pof(x, Krook, outcome = "WNP", neg.out = TRUE)
+pof(x, outcome = "WNP", Krook, neg.out = TRUE)
 
 # get sufficiency parameters of fit for all original conditions
-pof(x, Krook, outcome = "WNP", relation = "sufficiency") 
+pof(x, outcome = "WNP", Krook, relation = "sufficiency") 
 
 # now for the negated outcome
-pof(x, Krook, outcome = "WNP", neg.out = TRUE, relation = "sufficiency")
+pof(x, outcome = "WNP", Krook, neg.out = TRUE, relation = "sufficiency")
 
 # fsQCA using Emmenegger (2011)
 #------------------------------
@@ -70,14 +70,14 @@ Emme
 
 EmmeNR <- superSubset(Emme, outcome = "JSR", incl.cut = 0.965, cov.cut = 0.6)
 EmmeNR
-pof(EmmeNR$coms, Emme, outcome = "JSR", neg.out = TRUE) 
+pof(EmmeNR$coms, outcome = "JSR", Emme, neg.out = TRUE) 
 
 # first derive the complex solution, then check whether the negations 
 # of the prime implicants are also sufficient for the outcome 
 
 EmmeSC <- eqmcc(Emme, outcome = "JSR", incl.cut1 = 0.9, details = TRUE)
 EmmeSC
-pof(1 - EmmeSC$pims$c.sol, Emme, outcome = "JSR", relation = "sufficiency")
+pof(1 - EmmeSC$pims$c.sol, outcome = "JSR", Emme, relation = "sufficiency")
 
 # parameters of fit for any term, including configurations;
 # use "-1" as a placeholder for a minimized condition;
@@ -91,10 +91,10 @@ pof(1 - EmmeSC$pims$c.sol, Emme, outcome = "JSR", relation = "sufficiency")
 confs <- matrix(c(-1, -1, -1,  1, 0, 1, 
                    1,  0,  1, -1, 1, 0), nrow = 2, byrow = TRUE)
 confs
-pof(confs, Emme, outcome = "JSR", relation = "sufficiency")
+pof(confs, outcome = "JSR", Emme, relation = "sufficiency")
 
 # or even vectors of line numbers from the implicant matrix
-pof(c(43, 57), Emme, "JSR", relation = "sufficiency")
+pof(c(43, 57), "JSR", Emme, relation = "sufficiency")
 
 # the line numbers 43 and 57 represent l*r*P and L*V:
 #      "S"  "C"  "L"  "R"  "P"  "V"
@@ -110,15 +110,23 @@ x <- data.frame(A = c(1,1,1,0,1), B = c(1,1,1,0,1),
                 C = c(0,1,0,0,1), D = c(0,0,1,0,1),
                 O = c(1,1,1,0,1))
 
-pof(x[,-5], x, outcome = "O")
+pof(x[,-5], outcome = "O", x)
 
 # for a single column from that data frame;
 # requires special argument drop = FALSE to avoid
 # dropping of dimensions and conversion to vector
-pof(x[, "C", drop = FALSE], x, outcome = "O")
+pof(x[, "C", drop = FALSE], outcome = "O", x)
 
 # for multiple columns from that data frame
-pof(x[, 1:2], x[, 1:5], outcome = "O")
+pof(x[, 1:2], outcome = "O", x[, 1:5])
+
+# inclusion and coverage of a single condition and the outcome
+pof(x$D, x$O)
+
+# inclusion of coverage of any two vectors
+v1 <- c(.7, .1, .5, .3, .9, .7, .3, .3, .3, .1, .0, .9)
+v2 <- c(.8, .3, .4, .4, .8, .6, .3, .2, .4, .2, .1, .9)
+pof(v1, v2)
 
 }
 

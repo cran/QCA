@@ -1,43 +1,122 @@
 `pof` <-
-function(setms, mydata, outcome="", neg.out=FALSE, relation = "necessity", ...) {
+function(setms, outcome, data, neg.out=FALSE, relation = "necessity", ...) {
+    funargs <- as.list(match.call())
     
     other.args <- list(...)
     
     recursive <- "recursive" %in% names(other.args)
-    individual <- "individual" %in% names(other.args)
     via.eqmcc <- "via.eqmcc" %in% names(other.args)
+    force.rows <- "force.rows" %in% names(other.args)
     
-    conditions <- names(mydata)[-which(names(mydata) == outcome)]
+    if (recursive) {
+        mins <- other.args$mins
+        outcome <- other.args$vo
+        sum.outcome <- other.args$so
+        pims <- other.args$pims
+        incl.cov <- matrix(NA, nrow=ncol(mins), ncol=4)
+    }
+    else {
+        outcomename <- ""
     
-    if (!recursive) {
-        
-        noflevels <- truthTable(mydata, outcome=outcome, via.pof=TRUE)
-        
-        if (!relation %in% c("necessity", "sufficiency")) {
-            stop("\nThe relationship should be either \"necessity\" or \"sufficiency\".\n\n", call. = FALSE)
+        if (all(is.character(outcome)) & length(outcome) == 1) {
+            if (missing(data)) {
+                cat("\n")
+                stop("The data argument is missing, with no default.\n\n", call. = FALSE)
+            }
+            else {
+                outcomename <- outcome
+                outcome <- data[, outcome]
+            }
+        }
+        else if (is.vector(outcome)) {
+            outcomename <- as.character(funargs$outcome)
+            
+            if (outcomename[1] == "[") {
+                condnumber <- suppressWarnings(as.numeric(outcomename[length(outcomename)]))
+                if (is.na(condnumber)) {
+                    outcomename <- toupper(outcomename[length(outcomename)])
+                }
+                else {
+                    outcomename <- toupper(colnames(get(outcomename[2]))[condnumber])
+                }
+            }
+            else if (outcomename[1] == "$") {
+                outcomename <- toupper(outcomename[length(outcomename)])
+            }
+        }
+        else {
+            cat("\n")
+            stop("The outcome should be either a column name in the data or a vector of values.\n\n", call. = FALSE)
         }
         
-        colnames(mydata) <- toupper(colnames(mydata))
-        conditions <- toupper(conditions)
-        outcome <- toupper(outcome)
         
-        mydata <- mydata[, c(conditions, outcome)]
-    }
-    
-    pims <- FALSE
-    if (is.data.frame(setms)) {
-        if (nrow(setms) == nrow(mydata)) {
-            if (all(rownames(setms) == rownames(mydata))) {
-                pims <- TRUE
+        if (!(relation %in% c("necessity", "sufficiency", "suf", "nec"))) {
+            cat("\n")
+            stop("The relationship should be either \"necessity\" or \"sufficiency\".\n\n", call. = FALSE)
+        }
+        
+        if (!missing(data)) {
+            
+            if (length(outcome) != nrow(data)) {
+                cat("\n")
+                stop("The outcome's length should be the same as the number of rows in the data.\n\n", call. = FALSE)
+            }
+            
+            if (any(outcomename %in% names(data))) {
+                noflevels <- truthTable(data, outcome=outcomename, via.pof=TRUE)
             }
             else {
                 cat("\n")
-                stop("The row names of the \"setms\" component should be the same as the data row names.\n\n", call. = FALSE)
+                stop("The outcome was not found in the data.\n\n", call. = FALSE)
+            }
+            
+            colnames(data) <- toupper(colnames(data))
+            conditions <- names(data)[-which(names(data) == outcomename)]
+            outcomename <- toupper(outcomename)
+            data <- data[, c(conditions, outcomename)]
+        }
+        
+        
+        pims <- FALSE
+        if (is.data.frame(setms)) {
+            if (missing(outcome)) {
+                cat("\n")
+                stop("Outcome is missing, with no default.\n\n", call. = FALSE)
+            }
+            else {
+                # colnames(setms) <- toupper(colnames(setms))
+                conditions <- colnames(setms)
+                
+                if (missing(data)) { # outcome was already checked to be (or coerced to) a vector
+                    if (nrow(setms) == length(outcome)) {
+                        newdata <- cbind(setms, outcome)
+                        colnames(newdata)[ncol(newdata)] <- outcomename
+                        pims <- TRUE
+                    }
+                    else {
+                        cat("\n")
+                        stop("The length of outcome should be the same as the number of rows in \"setms\".\n\n", call. = FALSE)
+                    }
+                }
+                else {
+                    if (nrow(setms) == nrow(data)) {
+                        data <- cbind(setms, outcome)
+                        colnames(data)[ncol(data)] <- outcomename
+                        pims <- TRUE
+                    }
+                    else {
+                        cat("\n")
+                        stop("The number of rows in \"setms\" should be the same as the number of rows in the data.\n\n", call. = FALSE)
+                    }
+                }
             }
         }
-    }
-    else if (is.matrix(setms)) {
-        if (!recursive & !individual) {
+        else if (is.matrix(setms)) {
+            if (missing(data)) {
+                cat("\n")
+                stop("The data argument is missing, with no default.\n\n", call. = FALSE)
+            }
+            
             if (ncol(setms) == length(conditions)) {
                 setms[setms < 0] <- -1
                 setms <- setms + 1
@@ -47,103 +126,247 @@ function(setms, mydata, outcome="", neg.out=FALSE, relation = "necessity", ...) 
                 stop("The number of columns in the \"setms\" does not match the number of conditions.\n\n", call. = FALSE)
             }
         }
-    }
-    else if (is.vector(setms)) {
-        if (!is.null(names(setms))) {
-            if (all(names(setms) == rownames(mydata))) {
-                setms <- data.frame(setms)
-                colnames(setms) <- "COM"
-                pims <- TRUE
+        else if (is.vector(setms)) {
+            setms <- suppressWarnings(as.numeric(setms))
+            setms <- setms[!is.na(setms)]
+            
+            if (length(setms) == 0) {
+                cat("\n")
+                stop("The \"setms\" argument does not contain any numbers.\n\n", call. = FALSE)
+            }
+            
+            if (force.rows) {
+                if (missing(data)) {
+                    cat("\n")
+                    stop("The data argument is missing, with no default.\n\n", call. = FALSE)
+                }
+                
+                if (any(table(setms) > 1) | any(setms == 0)) {
+                    cat("\n")
+                    stop("The \"setms\" argument does not appear to be a vector of row numbers.\n\n", call. = FALSE)
+                }
+                
+                setms <- getRow(noflevels + 1, setms)
+                
             }
             else {
-                cat("\n")
-                stop("The \"setms\" argument should be either a matrix of crisp set representation of groupings or a data frame of \"min\" scores.\n\n", call. = FALSE)
+                if (length(setms) == length(outcome)) {
+                    if (all(setms >= 0 & setms <= 1) | any(table(setms) > 1)) {
+                        newdata <- cbind(setms, outcome)
+                        conditions <- as.character(funargs$setms)
+                        
+                        if (length(conditions) > 1) {
+                            if (conditions[1] == "[" || conditions[1] == "[[") {
+                                condnumber <- suppressWarnings(as.numeric(conditions[length(conditions)]))
+                                
+                                if (is.na(condnumber)) {
+                                    conditions <- conditions[length(conditions)]
+                                }
+                                else {
+                                    obj <- conditions[2]
+                                    objdollar <- unlist(strsplit(obj, split="\\$"))
+                                    if (length(objdollar) > 1) {
+                                        obj <- get(objdollar[1])
+                                        for (i in seq(2, length(objdollar))) {
+                                            obj <- obj[[objdollar[i]]]
+                                        }
+                                    }
+                                    else {
+                                        obj <- get(obj)
+                                    }
+                                    conditions <- colnames(obj)[condnumber]
+                                }
+                            }
+                            else if (conditions[1] == "$") {
+                                conditions <- conditions[length(conditions)]
+                            }
+                            else if (conditions[1] == "-") {
+                                conditions <- conditions[length(conditions)]
+                                condollar <- unlist(strsplit(conditions, split="\\$"))
+                                
+                                
+                                if (length(condollar) > 1) {
+                                    obj <- get(condollar[1])
+                                    lastcond <- condollar[length(condollar)]
+                                    
+                                    condsplit <- unlist(strsplit(lastcond, split=""))
+                                    
+                                    if (condsplit[length(condsplit)] == "]") {
+                                        condindex <- unlist(strsplit(lastcond, split="\\["))
+                                        
+                                        condollar[length(condollar)] <- condindex[1]
+                                        
+                                        for (i in seq(2, length(condollar))) {
+                                            obj <- obj[[condollar[i]]]
+                                        }
+                                        
+                                        condindex <- condindex[length(condindex)]
+                                        
+                                        condindex <- gsub(",", "", condindex)
+                                        condindex <- gsub("\\]", "", condindex)
+                                        condindex <- gsub("^[[:space:]]+|[[:space:]]+$", "", condindex)
+                                        condindex <- gsub("\"", "", condindex)
+                                        
+                                        condnumber <- suppressWarnings(as.numeric(condindex))
+                                        
+                                        if (is.na(condnumber)) {
+                                            conditions <- condindex
+                                        }
+                                        else {
+                                            conditions <- colnames(obj)[condnumber]
+                                        }
+                                    }
+                                    else {
+                                        conditions <- lastcond
+                                    }
+                                }
+                                else {
+                                    condsplit <- unlist(strsplit(condollar, split=""))
+                                    if (condsplit[length(condsplit)] == "]") {
+                                        condindex <- unlist(strsplit(condollar, split="\\["))
+                                        obj <- get(condindex[1])
+                                        condindex <- condindex[length(condindex)]
+                                        
+                                        condindex <- gsub(",", "", condindex)
+                                        condindex <- gsub("\\]", "", condindex)
+                                        condindex <- gsub("^[[:space:]]+|[[:space:]]+$", "", condindex)
+                                        condindex <- gsub("\"", "", condindex)
+                                        
+                                        condnumber <- suppressWarnings(as.numeric(condindex))
+                                        
+                                        if (is.na(condnumber)) {
+                                            conditions <- condindex
+                                        }
+                                        else {
+                                            conditions <- colnames(obj)[condnumber]
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                cat("\n")
+                                stop("Unknown type of input in the \"setms\" argument.\n\n", call. = FALSE)
+                            }
+                        }
+                        
+                        colnames(newdata) <- c(conditions, outcomename)
+                        pims <- TRUE
+                    }
+                    else {
+                        if (any(setms > 5)) {
+                            cat("\n")
+                            stop("Assuming this is a vector of row numbers, data argument is missing with no default (try force.rows = TRUE).\n\n", call. = FALSE)
+                        }
+                    }
+                }
+                else {
+                    if (missing(data)) {
+                        cat("\n")
+                        stop("Data argument is missing, or the length of \"setms\" is not equal to the length of outcome.\n\n", call. = FALSE)
+                    }
+                    else {
+                        setms <- getRow(noflevels + 1, setms)
+                    }
+                }
             }
-        }
-        else if (all(!is.na(as.numeric(setms)))) {
-            setms <- getRow(noflevels + 1, as.numeric(setms))
         }
         else {
             cat("\n")
-            stop("The \"setms\" argument should be either a matrix of crisp set representation of groupings or a data frame of \"min\" scores.\n\n", call. = FALSE)
-        }
-    }
-    else {
-        cat("\n")
-        stop("The \"setms\" argument should be either a matrix of crisp set representation of groupings or a data frame of \"min\" scores.\n\n", call. = FALSE)
-    }
-    
-    
-    
-    if (is.matrix(setms) & !recursive) {
-        if (is.null(colnames(setms))) {
-            colnames(setms) <- conditions
+            stop("The \"setms\" argument is not correct.\n\n", call. = FALSE)
         }
         
-        if (is.null(rownames(setms))) {
-            use.tilde <- FALSE
-            if ("use.tilde" %in% names(other.args)) {
-                rownames(setms) <- writePrimeimp(setms, uplow=all(noflevels == 2), use.tilde=other.args$use.tilde)
+        if (missing(data)) {
+            data <- as.data.frame(newdata)
+            noflevels <- truthTable(data, outcome=outcomename, via.pof=TRUE)
+        }
+        
+        if (is.matrix(setms)) { # necessary here and not above because setms might be a vector and then transformed into a matrix via getRow()
+            if (is.null(colnames(setms))) {
+                colnames(setms) <- conditions
+            }
+            
+            if (is.null(rownames(setms))) {
+                use.tilde <- FALSE
+                if ("use.tilde" %in% names(other.args)) {
+                    rownames(setms) <- writePrimeimp(setms, uplow=all(noflevels == 2), use.tilde=other.args$use.tilde)
+                }
+                else {
+                    rownames(setms) <- writePrimeimp(setms, uplow=all(noflevels == 2))
+                }
+            }
+        }
+        
+        
+        hastime <- logical(length(conditions))
+        for (i in seq(length(conditions))) {
+            if (any(data[, i] %in% c("-", "dc", "?"))) {
+                hastime[i] <- TRUE
+            }
+        }
+        
+        
+        if (!pims) {
+            setms <- setms[, !hastime, drop=FALSE]
+        }
+        
+        data[, which(hastime)] <- NULL
+        conditions <- conditions[!hastime]
+        
+        if (neg.out) {
+            outcome <- 1 - outcome
+        }
+        sum.outcome <- sum(outcome)
+        
+        if (pims) {
+            mins <- setms
+            if (is.vector(setms)) {
+                length.expr <- 1
             }
             else {
-                rownames(setms) <- writePrimeimp(setms, uplow=all(noflevels == 2))
+                length.expr <- ncol(mins)
             }
+            incl.cov <- matrix(NA, nrow=length.expr, ncol=4)
         }
-    }
-    
-    
-    hastime <- logical(length(conditions))
-    for (i in seq(length(conditions))) {
-        if (any(mydata[, i] %in% c("-", "dc", "?"))) {
-            hastime[i] <- TRUE
-        }
-    }
-    if (!pims) {
-        setms <- setms[, !hastime, drop=FALSE]
-    }
-    mydata[, which(hastime)] <- NULL
-    conditions <- conditions[!hastime]
-    
-    
-    val.outcome <- mydata[, outcome]
-    if (neg.out) {
-        val.outcome <- 1 - val.outcome
-    }
-    sum.outcome <- sum(val.outcome)
-    
-    if (pims) {
-        mins <- setms
-        incl.cov <- matrix(NA, nrow=ncol(setms), ncol=4)
-        length.expr <- ncol(setms)
-    }
-    else {
-        fc <- apply(mydata[, conditions], 2, function(x) any(x %% 1 > 0))
-        incl.cov <- matrix(NA, nrow=nrow(setms), ncol=4)
-        
-        length.expr <- nrow(setms)
-        
-        mins <- apply(setms, 1, function(e) {
-            apply(mydata[, conditions], 1, function(v) {
-                
-                if (any(ox <- e[fc] == 1)) {
-                    v[fc][ox] <- 1 - v[fc][ox]
-                }
-                
-                if (length(cp <- v[!fc]) > 0) {
-                    v[!fc][e[!fc] != cp + 1] <- 0
-                    v[!fc][e[!fc] == cp + 1] <- 1
-                }
-                
-                min(v[e != 0])
+        else {
+            
+            fc <- apply(data[, conditions], 2, function(x) any(x %% 1 > 0))
+            incl.cov <- matrix(NA, nrow=nrow(setms), ncol=4)
+            
+            length.expr <- nrow(setms)
+            
+            mins <- apply(setms, 1, function(e) {
+                apply(data[, conditions], 1, function(v) {
+                    
+                    if (any(ox <- e[fc] == 1)) {
+                        v[fc][ox] <- 1 - v[fc][ox]
+                    }
+                    
+                    if (length(cp <- v[!fc]) > 0) {
+                        v[!fc][e[!fc] != cp + 1] <- 0
+                        v[!fc][e[!fc] == cp + 1] <- 1
+                    }
+                    
+                    return(min(v[e != 0]))
+                })
             })
-        })
+        }
     }
     
-    pmins <- apply(mins, 2, pmin, val.outcome)
-    primins <- apply(mins, 2, function(x) pmin(x, 1 - val.outcome, val.outcome))
+    if (is.vector(mins)) {
+        mins <- as.data.frame(mins)
+        colnames(mins) <- conditions
+    }
     
-    if (relation == "necessity") {
-        primins <- apply(mins, 2, function(x) pmin(x, 1 - x, val.outcome))
+    
+    rownames(incl.cov) <- colnames(mins)
+    colnames(incl.cov) <- c("incl", "PRI", "cov.r", "cov.u")
+    
+    
+    pmins <- apply(mins, 2, pmin, outcome)
+    primins <- apply(mins, 2, function(x) pmin(x, 1 - outcome, outcome))
+    
+    if (relation %in% c("necessity", "nec")) {
+        primins <- apply(mins, 2, function(x) pmin(x, 1 - x, outcome))
     }
     
     incl.cov[, 1] <- colSums(pmins)/colSums(mins)
@@ -151,47 +374,26 @@ function(setms, mydata, outcome="", neg.out=FALSE, relation = "necessity", ...) 
     incl.cov[, 3] <- colSums(pmins)/sum.outcome
     
     
-    if (relation == "necessity") {
+    if (relation %in% c("necessity", "nec")) {
         incl.cov[, 1] <- colSums(pmins)/sum.outcome
         incl.cov[, 2] <- (colSums(pmins) - colSums(primins))/(sum.outcome - colSums(primins))
         incl.cov[, 3] <- colSums(pmins)/colSums(mins)
     }
     
-    maxmins <- apply(mins, 1, max)
-    inclusions <- apply(apply(mins, 2, function (x) pmin(x, val.outcome)), 1, max)
-    prisol <- pmin(maxmins, 1 - val.outcome, val.outcome)
     
-    if (relation == "necessity") {
-        prisol <- pmin(maxmins, 1 - maxmins, val.outcome)
+    maxmins <- fuzzyor(mins) # union
+    inclusions <- fuzzyor(pmins)
+    prisol <- pmin(maxmins, 1 - outcome, outcome)
+    
+    if (relation %in% c("necessity", "nec")) {
+        prisol <- pmin(maxmins, 1 - maxmins, outcome)
     }
     
-    if (recursive) {
-        return(sum(inclusions)/sum.outcome)
-    }
-    
-    for (i in seq(length.expr)) {
-        sol.cov.without <- 0
-        if (length.expr > 1) {
-            if (pims) {
-                sol.cov.without <- Recall(setms[, -i, drop=FALSE], mydata, outcome, recursive=TRUE, via.eqmcc=via.eqmcc, neg.out=neg.out)
-            }
-            else {
-                sol.cov.without <- Recall(setms[-i, , drop=FALSE], mydata, outcome, recursive=TRUE, via.eqmcc=via.eqmcc, neg.out=neg.out)
-            }
+    if (ncol(mins) > 1) {
+        for (i in seq(nrow(incl.cov))) {
+            incl.cov[i, 4] <- incl.cov[i, 3] - sum(pmin(pmins[, i], fuzzyor(pmins[, -i]), outcome))/sum.outcome
         }
-        incl.cov[i, 4] <- sum(inclusions)/sum.outcome - sol.cov.without
     }
-    
-    colnames(incl.cov) <- c("incl", "PRI", "cov.r", "cov.u")
-    
-    if (pims) {
-        rownames(incl.cov) <- colnames(setms)
-    }
-    else {
-        rownames(incl.cov) <- rownames(setms)
-    }
-    
-    incl.cov <- as.data.frame(incl.cov)
     
     # solution incl, pri and cov
     sol.incl <- sum(inclusions)/sum(maxmins)
@@ -199,14 +401,14 @@ function(setms, mydata, outcome="", neg.out=FALSE, relation = "necessity", ...) 
     sum.cov <- sum(inclusions)/sum.outcome
     
     
-    result.list <- list(incl.cov=incl.cov, relation=relation)
+    result.list <- list(incl.cov=as.data.frame(incl.cov), relation=relation)
     
     if (!pims & via.eqmcc) {
         result.list$sol.incl.cov <- c(sol.incl, sol.pri, sum.cov)
         result.list$pims <- as.data.frame(mins)
     }
     
-    if ("individual" %in% names(other.args)) {
+    if ("recursive" %in% names(other.args)) {
         return(result.list)
     }
     
@@ -222,12 +424,9 @@ function(setms, mydata, outcome="", neg.out=FALSE, relation = "necessity", ...) 
         individual <- vector("list", length=length.solution)
         
         for (i in seq(length.solution)) {
-            if (pims) {
-                individual[[i]] <- Recall(setms[ , solution.list[[i]], drop=FALSE], mydata, outcome, individual=TRUE, via.eqmcc=TRUE, individual=TRUE, relation="sufficiency", neg.out=neg.out)
-            }
-            else {
-                individual[[i]] <- Recall(setms[solution.list[[i]], , drop=FALSE], mydata, outcome, individual=TRUE, via.eqmcc=TRUE, individual=TRUE, relation="sufficiency", neg.out=neg.out)
-            }
+            individual[[i]] <- Recall(relation="sufficiency", recursive=TRUE, via.eqmcc=TRUE,
+                                      mins=mins[, solution.list[[i]], drop=FALSE],
+                                      vo = outcome, so = sum.outcome, pims=pims)
         }
         return(structure(list(overall=result.list, individual=individual, essential=other.args$essential, pims=as.data.frame(mins), relation=relation), class="pof"))
     }

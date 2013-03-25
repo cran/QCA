@@ -14,8 +14,8 @@ createMatrix(noflevels, logical = FALSE)
 }
 
 \arguments{
-  \item{noflevels}{The number of levels for each condition}
-  \item{logical}{Logical, return the matrix in logical values (only binary-level crisp data)}
+  \item{noflevels}{The number of levels for each condition.}
+  \item{logical}{Logical, return the matrix in logical values (only binary-level crisp data).}
 }
 
 \details{
@@ -46,6 +46,9 @@ University of California Press, Berkeley, 1987.
 # create a configuration matrix with 3 binary-level conditions
 noflevels <- rep(2, 3)
 createMatrix(noflevels)
+
+# with logical values
+createMatrix(noflevels, logical = TRUE)
 
 # its implicant matrix, where "-1" stands for an eliminated condition
 createMatrix(noflevels + 1) - 1

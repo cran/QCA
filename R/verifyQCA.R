@@ -102,8 +102,8 @@ function(mydata, outcome = "", conditions = c(""), complete = FALSE, show.cases 
         }
     }
     else if (nchar(conditions) > 0) {
-                cat("\n")
-                stop("Cannot create a truth table with only one condition.\n\n", call. = FALSE)
+        cat("\n")
+        stop("Cannot create a truth table with only one condition.\n\n", call. = FALSE)
     }
     
     # checking for complete data (without missings)
@@ -122,6 +122,8 @@ function(mydata, outcome = "", conditions = c(""), complete = FALSE, show.cases 
         cat("\n")
         stop("incl.cut0 cannot be greater than incl.cut1.\n\n", call. = FALSE)
     }
+    
+    mydata <- mydata[, c(conditions, outcome)]
     
     mydata <- as.data.frame(lapply(mydata, function(x) {
         x <- as.character(x)
