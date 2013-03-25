@@ -16,15 +16,15 @@ calibrate(x, type = "crisp", thresholds = NA, include = TRUE, logistic = FALSE,
 }
 
 \arguments{
-  \item{x}{An interval or ratio-scaled base variable}
-  \item{type}{The calibration type, either "crisp" or "fuzzy"}
-  \item{thresholds}{A vector of thresholds}
-  \item{include}{Logical, include threshold(s) in the set (\code{type = "crisp"} only)}
-  \item{logistic}{Calibrate to fuzzy sets using the logistic function}
-  \item{idm}{The set inclusion degree of membership for the logistic function}
-  \item{ecdf}{Calibrate to fuzzy sets using the empirical cumulative distribution function (ECDF) of the base variable}
-  \item{p}{Parameter: if p > 1 concentration, if 0 < p < 1 dilation below crossover}
-  \item{q}{Parameter: if q > 1 dilation, if 0 < q < 1 concentration above crossover}
+  \item{x}{An interval or ratio-scaled base variable.}
+  \item{type}{The calibration type, either "crisp" or "fuzzy".}
+  \item{thresholds}{A vector of thresholds.}
+  \item{include}{Logical, include threshold(s) in the set (\code{type = "crisp"} only).}
+  \item{logistic}{Calibrate to fuzzy sets using the logistic function.}
+  \item{idm}{The set inclusion degree of membership for the logistic function.}
+  \item{ecdf}{Calibrate to fuzzy sets using the empirical cumulative distribution function of the base variable.}
+  \item{p}{Parameter: if p > 1 concentration, if 0 < p < 1 dilation below crossover.}
+  \item{q}{Parameter: if q > 1 dilation, if 0 < q < 1 concentration above crossover.}
 }
 
 \details{
@@ -39,7 +39,7 @@ groups - 0s, 1s and 2s.
 For \code{type = "fuzzy"}, this function can generate linear, s-shaped and inverted s-shaped 
 fuzzy numbers with respect to end-point concepts, including logistic transformations.
 It can generate trapezoidal, triangular and bell-shaped fuzzy numbers with respect to mid-point concepts 
-(Bojadziev and Bojadziev, 2007; Clark et al., 2008; Thiem and Dusa, 2012).
+(Bojadziev and Bojadziev, 2007; Clark et al., 2008; Thiem and Dusa, 2013).
 
 For calibrating fuzzy sets based on end-point concepts, thresholds should be specified as
 a numeric vector \code{thresholds = c(thEX, thCR, thIN)}, where \code{thEX} is the threshold for 
@@ -72,7 +72,7 @@ arguments \code{logistic} and \code{ecdf} are mutually exclusive, with the first
 }
 
 \value{
-A numeric vector of crisp set values or fuzzy set membership scores
+A numeric vector of crisp set or fuzzy set membership scores.
 }
 
 \references{
@@ -84,7 +84,7 @@ T. D. Clark, J. M. Larson, J. N. Mordeson, J. D. Potter, and M. J. Wierman.
 Springer, Berlin, 2008.
 
 A. Thiem and A. Dusa. \emph{Qualitative Comparative Analysis with R: A User's Guide}. 
-Springer, New York, 2012.
+Springer, New York, 2013.
 }
 
 \examples{

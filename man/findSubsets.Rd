@@ -14,9 +14,9 @@ findSubsets(noflevels3k, row.no, maximum)
 }
 
 \arguments{
-  \item{noflevels3k}{A vector containing the number of levels for each condition incremented by 1}
-  \item{row.no}{The row number of the implicant in the implicant matrix}
-  \item{maximum}{The highest row number to be returned}
+  \item{noflevels3k}{A vector containing the number of levels for each condition incremented by 1.}
+  \item{row.no}{The row number of the implicant in the implicant matrix.}
+  \item{maximum}{The highest row number to be returned.}
 }
 
 \details{
@@ -29,7 +29,7 @@ implicant matrix which correspond to all possible subsets of an implicant.
 }
 
 \value{
-A vector of the line numbers of all possible subsets in the implicant matrix
+A vector of the line numbers of all possible subsets in the implicant matrix.
 }
 
 \references{

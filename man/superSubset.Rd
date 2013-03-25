@@ -1,7 +1,7 @@
 \name{superSubset}
 \alias{superSubset}
 
-\title{Find Superset/Subset Relations}
+\title{Find Superset and Subset Relations}
 
 \description{
 This function finds all conjunctive/disjunctive combinations of conditions among all possible such 
@@ -10,28 +10,26 @@ subset (sufficiency) relation to the outcome and are minimally complex.
 }
 
 \usage{
-superSubset(mydata, outcome = "", neg.out = FALSE, conditions = c(""), 
-            relation = "necessity", incl.cut = 1, cov.cut = 0, use.tilde = FALSE,
-            use.letters = FALSE)
+superSubset(data, outcome = "", neg.out = FALSE, conditions = c(""), 
+            relation = "necessity", incl.cut = 1, cov.cut = 0, 
+            use.tilde = FALSE, use.letters = FALSE)
 }
 
 \arguments{
-  \item{mydata}{A dataset of (binary or multi-value) crisp or fuzzy-set data}
-  \item{outcome}{The name of the outcome set}
-  \item{neg.out}{Logical, use negation of outcome set}
-  \item{conditions}{The names of the condition}
-  \item{relation}{The set relation of the conditions to the outcome, either "necessity" or "sufficiency"}
-  \item{incl.cut}{The minimal inclusion score}
-  \item{cov.cut}{The minimal coverage score}
-  \item{use.tilde}{Logical, use a tilde for set negation}
-  \item{use.letters}{Logical, use letters instead of set names}
+  \item{data}{A dataset of (binary or multi-value) crisp or fuzzy-set data.}
+  \item{outcome}{The name of the outcome set.}
+  \item{neg.out}{Logical, use negation of outcome set.}
+  \item{conditions}{The names of the condition.}
+  \item{relation}{The set relation of the conditions to the outcome, either "necessity" or "sufficiency".}
+  \item{incl.cut}{The minimal inclusion score.}
+  \item{cov.cut}{The minimal coverage score.}
+  \item{use.tilde}{Logical, use a tilde for set negation.}
+  \item{use.letters}{Logical, use letters instead of set names.}
 }
 
 \value{An object of class "ss", which is a list with the following components:\cr
-    \tabular{ll}{
-      $incl.cov: \tab a dataframe with the parameters of fit\cr
-      $coms:     \tab a dataframe with the combination membership scores  
-    }
+  \item{incl.cov}{A dataframe with the parameters of fit.}
+  \item{coms}{A dataframe with the combination membership scores.}
 }
 
 \details{
@@ -51,7 +49,7 @@ combinations until the cut-offs have been met. Only the disjunctive combinations
 If \code{relation = "sufficiency"}, the initial set of combinations is comprised of all order-\eqn{k} conjunctive combinations. 
 This set is reduced incrementally by forming conjunctive combinations of a lower order as long as the cut-offs are still met. 
 Only the conjunctive combinations of the lowest order will be printed. Disjunctive combinations are not formed. For more details, 
-see Thiem and Dusa (2012).
+see Thiem and Dusa (2013).
 
 The argument \code{use.tilde} only applies to non-multi-value data. If the conditions are already named with single letters, 
 the argument \code{use.letters} will have no effect.
@@ -65,7 +63,7 @@ M. L. Krook. Women's Representation in Parliament: A Qualitative Comparative Ana
 \emph{Political Studies}, 58(5):886-908, 2010.
 
 A. Thiem and A. Dusa. \emph{Qualitative Comparative Analysis with R: A User's Guide}. 
-Springer, New York, 2012.    
+Springer, New York, 2013.    
 }
 
 \examples{

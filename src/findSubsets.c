@@ -9,26 +9,35 @@ SEXP findSubsets(SEXP rowno, SEXP noflevels, SEXP mbase, SEXP max) {
     SEXP temp1, temp2;
     
     
+    
     SEXP usage = PROTECT(allocVector(VECSXP, 6));
     
     SET_VECTOR_ELT(usage, 0, rowno = coerceVector(rowno, INTSXP));
     SET_VECTOR_ELT(usage, 1, noflevels = coerceVector(noflevels, INTSXP));
     SET_VECTOR_ELT(usage, 2, mbase = coerceVector(mbase, INTSXP));
-    SET_VECTOR_ELT(usage, 3, max = coerceVector(max, INTSXP));
-    SET_VECTOR_ELT(usage, 4, temp1 = allocVector(INTSXP, 1));
-    
-    templung = 1;
-    
     
     prowno = INTEGER(rowno);
     pnoflevels = INTEGER(noflevels);
     pmbase = INTEGER(mbase);
+    
+    if (max == R_NilValue) {
+        SET_VECTOR_ELT(usage, 3, max = allocVector(INTSXP, 1));
+        pmax = INTEGER(max);
+        pmax[0] = prowno[length(rowno) - 1];
+    }
+    else {
+        SET_VECTOR_ELT(usage, 3, max = coerceVector(max, INTSXP));
+        pmax = INTEGER(max);
+    }
+    
+    SET_VECTOR_ELT(usage, 4, temp1 = allocVector(INTSXP, 1));
     ptemp1 = INTEGER(temp1);
-    pmax = INTEGER(max);
     
     ptemp1[0] = prowno[0];
     flag = 0;
     lmbase = length(mbase);
+    
+    templung = 1;
     
     
     //Rprintf("length(mbase): %d\n", length(mbase));
@@ -96,7 +105,6 @@ SEXP findSubsets(SEXP rowno, SEXP noflevels, SEXP mbase, SEXP max) {
     }
     
     UNPROTECT(1);
+    
     return(temp1);
 }
-
-

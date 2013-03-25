@@ -26,12 +26,12 @@ mobilization (and cleavage structures in general) in Western Europe.
 \format{
 The dataset contains the following sets:
 
-\tabular{rl}{
-\bold{C} \tab Condition: National church ("1" yes, "0" no)  \cr
-\bold{R} \tab Condition: Significant Roman Catholic population and participation in mass education ("1" yes, "0" no) \cr
-\bold{L} \tab Condition: State protection of landed interests ("1" yes, "0" no) \cr
-\bold{E} \tab Condition: Early state ("1" yes, "0" no) \cr
-\bold{S} \tab Outcome  : Major split in working-class movement provoked by Russian Revolution ("1" yes, "0" no) 
+\tabular{rrl}{
+ integer \tab \bold{C} \tab Condition: National church ("1" yes, "0" no)\cr
+ integer \tab \bold{R} \tab Condition: Significant Roman Catholic population ("1" yes, "0" no)\cr
+ integer \tab \bold{L} \tab Condition: State protection of landed interests ("1" yes, "0" no)\cr
+ integer \tab \bold{E} \tab Condition: Early state ("1" yes, "0" no)\cr
+ integer \tab \bold{S} \tab Outcome  : Major split in working-class movement ("1" yes, "0" no) 
 }
 }
 

@@ -6,24 +6,23 @@
 SEXP truthTable(SEXP x, SEXP y, SEXP fuz, SEXP vo) { 
     int i, j, k, index;
     double *p_x, *p_inclpri, *p_which, *p_vo, min, so, sumx, sumpmin, prisum, temp1, temp2;
-    int xrows, xcols, yrows, ncut, *p_y;
-    Rboolean *p_fuz;
+    int xrows, xcols, yrows, ncut, *p_y, *p_fuz;
     
     SEXP usage = PROTECT(allocVector(VECSXP, 4));
     SET_VECTOR_ELT(usage, 0, x = coerceVector(x, REALSXP));
     SET_VECTOR_ELT(usage, 1, y = coerceVector(y, INTSXP));
-    SET_VECTOR_ELT(usage, 2, fuz = coerceVector(fuz, LGLSXP));
+    SET_VECTOR_ELT(usage, 2, fuz = coerceVector(fuz, INTSXP));
     SET_VECTOR_ELT(usage, 3, vo = coerceVector(vo, REALSXP));
     
     xrows = nrows(x);
     yrows = nrows(y);
     xcols = ncols(x);
     
-    double dataline[xcols], copyline[xcols];
+    double copyline[xcols];
     
     p_x = REAL(x);
     p_y = INTEGER(y);
-    p_fuz = LOGICAL(fuz);
+    p_fuz = INTEGER(fuz);
     p_vo = REAL(vo);
     
     // create the list to be returned to R
@@ -37,7 +36,7 @@ SEXP truthTable(SEXP x, SEXP y, SEXP fuz, SEXP vo) {
     /* generate the expressions' line numbers
     int expressions[yrows];
     for (i = 0; i < yrows; i++) {
-        expressions[i] <- i + 2;
+        expressions[i] = i + 2;
     }
     */
     
@@ -62,7 +61,7 @@ SEXP truthTable(SEXP x, SEXP y, SEXP fuz, SEXP vo) {
                 
                 index = k + yrows * j;
                 
-                if (p_fuz[j]) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
+                if (p_fuz[j] == 1) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
                     if (p_y[index] == 0) {
                         copyline[j] = 1 - copyline[j];
                     }
@@ -113,7 +112,7 @@ SEXP truthTable(SEXP x, SEXP y, SEXP fuz, SEXP vo) {
                 
                 index = k + yrows * j;
                 
-                if (p_fuz[j]) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
+                if (p_fuz[j] == 1) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
                     if (p_y[index] == 0) {
                         copyline[j] = 1 - copyline[j];
                     }
@@ -152,14 +151,13 @@ SEXP truthTable(SEXP x, SEXP y, SEXP fuz, SEXP vo) {
 SEXP truthTableMem(SEXP x, SEXP noflevels, SEXP mbase, SEXP fuz, SEXP vo) { 
     int i, j, k, index;
     double *p_x, *p_inclpri, *p_which, *p_vo, min, so, sumx, sumpmin, prisum, temp1, temp2;
-    int xrows, xcols, yrows, ncut, *pnoflevels, *pmbase;
-    Rboolean *p_fuz;
+    int xrows, xcols, yrows, ncut, *pnoflevels, *pmbase, *p_fuz;
     
     SEXP usage = PROTECT(allocVector(VECSXP, 5));
     SET_VECTOR_ELT(usage, 0, x = coerceVector(x, REALSXP));
     SET_VECTOR_ELT(usage, 1, noflevels = coerceVector(noflevels, INTSXP));
     SET_VECTOR_ELT(usage, 2, mbase = coerceVector(mbase, INTSXP));
-    SET_VECTOR_ELT(usage, 3, fuz = coerceVector(fuz, LGLSXP));
+    SET_VECTOR_ELT(usage, 3, fuz = coerceVector(fuz, INTSXP));
     SET_VECTOR_ELT(usage, 4, vo = coerceVector(vo, REALSXP));
     
     xrows = nrows(x);
@@ -170,12 +168,12 @@ SEXP truthTableMem(SEXP x, SEXP noflevels, SEXP mbase, SEXP fuz, SEXP vo) {
     
     
     
-    double dataline[xcols], copyline[xcols]; 
+    double copyline[xcols]; 
     
     p_x = REAL(x);
     pnoflevels = INTEGER(noflevels);
     pmbase = INTEGER(mbase);
-    p_fuz = LOGICAL(fuz);
+    p_fuz = INTEGER(fuz);
     p_vo = REAL(vo);
     
     yrows = pnoflevels[0];
@@ -215,7 +213,7 @@ SEXP truthTableMem(SEXP x, SEXP noflevels, SEXP mbase, SEXP fuz, SEXP vo) {
                 index = div(div(k, pmbase[j]).quot, pnoflevels[j]).rem;
                 //Rprintf("k: %d  i: %d  j: %d  pmbase[j] %d  noflevels[j] %d      %d\n", k, i, j, pmbase[j], pnoflevels[j], index);
                 
-                if (p_fuz[j]) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
+                if (p_fuz[j] == 1) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
                     if (index == 0) {
                         copyline[j] = 1 - copyline[j];
                     }
@@ -266,7 +264,7 @@ SEXP truthTableMem(SEXP x, SEXP noflevels, SEXP mbase, SEXP fuz, SEXP vo) {
                 
                 index = div(div(k, pmbase[j]).quot, pnoflevels[j]).rem;
                 
-                if (p_fuz[j]) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
+                if (p_fuz[j] == 1) { // for the fuzzy variables, invert those who have the 3k value equal to 1 ("onex3k" in R)
                     if (index == 0) {
                         copyline[j] = 1 - copyline[j];
                     }

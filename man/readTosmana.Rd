@@ -14,7 +14,7 @@ readTosmana(filename)
 }
 
 \arguments{
-  \item{filename}{A string, the path to the XML file}
+  \item{filename}{A string, the path to the XML file.}
 }
 
 \note{This function requires the XML package}

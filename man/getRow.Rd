@@ -15,9 +15,9 @@ getRow(noflevels, row.no, zerobased = FALSE)
 }
 
 \arguments{
-  \item{noflevels}{A vector containing the number of levels for each condition}
-  \item{row.no}{A vector, the desired row numbers}
-  \item{zerobased}{Logical, the first row number is zero}
+  \item{noflevels}{A vector containing the number of levels for each condition.}
+  \item{row.no}{A vector, the desired row numbers.}
+  \item{zerobased}{Logical, the first row number is zero.}
 }
 
 \details{
@@ -28,7 +28,7 @@ by \eqn{\prod_{j = 1}^{k}{p_j}}, where \eqn{p_j} is the number of levels for con
 
 The implicant matrix consists of all supersets of the rows of a configuration matrix, including the 
 configurations themselves as well as the empty set. The formula for the number of implicants is 
-\eqn{\prod_{j = 1}^{k}{p_j + 1}}.
+\eqn{\prod_{j = 1}^{k}{(p_j + 1)}}.
 
 The \code{getRow()} function transforms the decimal representation of a row number from a
 configuration matrix into its corresponding combination of levels or from an implicant matrix 
@@ -36,8 +36,8 @@ into its corresponding combination of level index values.
 }
 
 \value{
-a matrix with the combination of levels / level index values corresponding to the desired row 
-number(s)
+A matrix with the combination of levels / level index values corresponding to the desired row 
+number(s).
 }
 
 \seealso{\code{\link{createMatrix}}, \code{\link[base]{expand.grid}}}
@@ -64,6 +64,7 @@ getRow(noflevels = x, row.no = 11)
 
 # the empty set in the implicant matrix 
 getRow(noflevels = x, 1) - 1
+
 }
 
 \keyword{functions}

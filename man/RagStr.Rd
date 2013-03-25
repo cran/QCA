@@ -19,19 +19,17 @@ universities using tQCA. The data has been reanalyzed in the study by Ragin and 
 \format{
 The data contains the following sets:
 
-\tabular{rl}{
-\bold{P}   \tab Condition: public university ("1" yes, "0" no) \cr
-\bold{E}   \tab Condition: support of elite allies ("1" yes, "0" no) \cr
-\bold{A}   \tab Condition: national union affiliation ("1" yes, "0" no) \cr
-\bold{S}   \tab Condition: a strike or strike threat ("1" yes, "0" no) \cr
-\bold{EBA} \tab Condition: \bold{E} present before \bold{A} ("1" yes, "0" no, "dc" don't care) \cr
-\bold{REC} \tab Outcome  : union recognition ("1" yes, "0" no)
+\tabular{rrl}{
+ integer \tab \bold{P}   \tab Condition: public university ("1" yes, "0" no) \cr
+ integer \tab \bold{E}   \tab Condition: support of elite allies ("1" yes, "0" no) \cr
+ integer \tab \bold{A}   \tab Condition: national union affiliation ("1" yes, "0" no) \cr
+ integer \tab \bold{S}   \tab Condition: a strike or strike threat ("1" yes, "0" no) \cr
+ factor  \tab \bold{EBA} \tab Condition: \bold{E} present before \bold{A} ("1" yes, "0" no, "dc" don't care) \cr
+ integer \tab \bold{REC} \tab Outcome  : union recognition ("1" yes, "0" no)
 }
 }
 
-\source{\url{http://www.compasss.org}}
-
-\references{
+\source{
 N. Caren and A. Panofsky. TQCA: A Technique for Adding Temporality to Qualitative Comparative Analysis.
 \emph{Sociological Methods & Research}, 34(2):147-172, 2005.
 

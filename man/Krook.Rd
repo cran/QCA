@@ -18,14 +18,13 @@ high women's representation in Western-democratic parliaments using csQCA.
 \format{
 The data contains the following sets:
 
-\tabular{rl}{
-\bold{ES}  \tab Condition: PR electoral system ("1" yes, "0" no) \cr
-\bold{QU}  \tab Condition: quota for women ("1" yes, "0" no) \cr
-\bold{WS}  \tab Condition: social-democratic welfare system ("1" yes, "0" no) \cr
-\bold{WM}  \tab Condition: autonomous women's movement ("1" yes, "0" no) \cr
-\bold{LP}  \tab Condition: seats held by left-libertarian parties ("1" at least 7 percent, "0" less than 7 percent) \cr
-\bold{WNP} \tab Outcome  : women in the single or lower house of parliament\cr
-           \tab ("1" at least 30 percent, "0" less than 30 percent)
+\tabular{rrl}{
+ integer \tab \bold{ES}  \tab Condition: PR electoral system ("1" yes, "0" no) \cr
+ integer \tab \bold{QU}  \tab Condition: quota for women ("1" yes, "0" no) \cr
+ integer \tab \bold{WS}  \tab Condition: social-democratic welfare system ("1" yes, "0" no) \cr
+ integer \tab \bold{WM}  \tab Condition: autonomous women's movement ("1" yes, "0" no) \cr
+ integer \tab \bold{LP}  \tab Condition: seats held by left-libertarian parties ("1" at least 7 percent, "0" less than 7 percent) \cr
+ integer \tab \bold{WNP} \tab Outcome  : women in single/lower house of parliament ("1" >= 30 percent, "0" < 30 percent)
 }
 }
 

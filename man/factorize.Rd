@@ -9,14 +9,15 @@ This function finds all combinations of factorizing or factorized literals in a 
 }
 
 \usage{
-factorize(bool.sum, prod.split = "", sort.factorizing = FALSE, sort.factorized = FALSE)
+factorize(bool.sum, prod.split = "", sort.factorizing = FALSE, 
+          sort.factorized = FALSE)
 }
 
 \arguments{
-  \item{bool.sum}{An object containting either the list of solutions, or a single character solution}
-  \item{prod.split}{The separator of the literals within a Boolean product}
-  \item{sort.factorizing}{Logical, sort results beginning with largest number of factorizing literals}
-  \item{sort.factorized}{Logical, sort results beginning with largest number of factorized literals}
+  \item{bool.sum}{An object containting either the list of solutions, or a single character solution.}
+  \item{prod.split}{The separator of the literals within a Boolean product.}
+  \item{sort.factorizing}{Logical, sort results beginning with largest number of factorizing literals.}
+  \item{sort.factorized}{Logical, sort results beginning with largest number of factorized literals.}
 }
 
 \details{

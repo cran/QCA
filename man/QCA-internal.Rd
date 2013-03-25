@@ -3,6 +3,8 @@
 \alias{base3rows}
 \alias{createChart}
 \alias{createString}
+\alias{fuzzyand}
+\alias{fuzzyor}
 \alias{prettyString}
 \alias{prettyTable}
 \alias{print.aE}

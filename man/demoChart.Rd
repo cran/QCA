@@ -13,9 +13,9 @@ demoChart(rows, columns, splitmethod = "")
 }
 
 \arguments{
-  \item{rows}{A vector of strings containing the prime implicants}                                 
-  \item{columns}{A vector of strings containing the fundamental products}
-  \item{splitmethod}{A string declaring the separator of the input strings}
+  \item{rows}{A vector of strings containing the prime implicants.}                                 
+  \item{columns}{A vector of strings containing the fundamental products.}
+  \item{splitmethod}{A string declaring the separator of the input strings.}
 }
 
 \details{
@@ -26,7 +26,7 @@ listed on the columns. This function is for demonstration purposes only.
 }
 
 \value{
-A logical matrix showing which columns are subsets of which rows
+A logical matrix showing which columns are subsets of which rows.
 }
 
 \references{

@@ -169,7 +169,7 @@ function(bool.sum, prod.split="", sort.factorizing=FALSE, sort.factorized=FALSE)
         if ("i.sol" %in% names(bool.sum)) {
             result <- list(i.sol=vector("list", length=length(bool.sum$i.sol)))
             for (i in seq(length(bool.sum$i.sol))) {
-                names(result$i.sol)[i] <- paste(bool.sum$i.sol[[i]]$p.sol, collapse=" + ")
+                names(result$i.sol) <- names(bool.sum$i.sol)
                 result$i.sol[[i]] <- lapply(bool.sum$i.sol[[i]]$solution, factor.function)
                 names(result$i.sol[[i]]) <- unlist(lapply(bool.sum$i.sol[[i]]$solution, paste, collapse=" + "))
             }

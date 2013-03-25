@@ -14,15 +14,15 @@ findTh(x, groups = 2, hclustm = "complete", distm = "euclidean")
 }
 
 \arguments{
-  \item{x}{An interval or ratio-scaled base variable}
-  \item{groups}{A vector of integers with the desired number of groups, see \code{?cutree}}
-  \item{hclustm}{The agglomeration (clustering) method to be used, see \code{?hclust}}
-  \item{distm}{The distance measure to be used, see \code{?dist}}
+  \item{x}{An interval or ratio-scaled base variable.}
+  \item{groups}{A vector of integers with the desired number of groups, see \code{?cutree}.}
+  \item{hclustm}{The agglomeration (clustering) method to be used, see \code{?hclust}.}
+  \item{distm}{The distance measure to be used, see \code{?dist}.}
 }
 
 \value{
 A numeric vector of suggested threshold(s) for dividing base variables 
-into the desired number of groups
+into the desired number of groups.
 }
 
 \note{Default values from the \code{hclust()} method and the \code{dist()} method are used for 
