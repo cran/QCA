@@ -1,8 +1,19 @@
 `solveChart` <-
-function(chart, all.sol = FALSE) {
+function(chart, row.dom = FALSE, all.sol = FALSE) {
     if (!is.logical(chart)) {
         cat("\n")
         stop("Use a T/F matrix. See demoChart's output.\n\n", call. = FALSE)
+    }
+    
+    if (all.sol) {
+        row.dom <- FALSE
+    }
+    
+    row.numbers <- seq(nrow(chart))
+    
+    if (row.dom) {
+        row.numbers <- rowDominance(chart)
+        chart <- chart[row.numbers, ]
     }
     
     output <- list()
@@ -27,24 +38,52 @@ function(chart, all.sol = FALSE) {
         output <- combos[, apply(combos, 2, function(idx) all(colSums(chart[idx, , drop=FALSE]) > 0)), drop=FALSE]
         
         if (all.sol & k < nrow(chart)) {
+            
+            output.all <- list()
+            output.all[[1]] <- output
+            
             for (i in seq(k + 1, nrow(chart))) {
                 combos <- combn(nrow(chart), i)
+                
                 combos <- combos[, apply(combos, 2, function(idx) all(colSums(chart[idx, , drop=FALSE]) > 0)), drop=FALSE]
-                already.sol <- apply(combos, 2, function(idx) {
-                    any(apply(output, 2, function(outx) {
-                        all(is.element(outx[!is.na(outx)], idx))
-                    }))
-                })
-                combos <- combos[, !already.sol, drop = FALSE]
+                
+                ## it is basically impossible to already be a solution, since "k + 1" is used
+                
+                for (j in seq(length(output.all))) {
+                    already.sol <- apply(combos, 2, function(idx) {
+                        any(apply(output.all[[j]], 2, function(outx) {
+                            all(is.element(outx[!is.na(outx)], idx))
+                        }))
+                    })
+                    
+                    combos <- combos[, !already.sol, drop = FALSE]
+                }
+                  
                 if (ncol(combos) > 0) {
-                    output <- cbind(rbind(output, NA), combos)
+                    output.all[[length(output.all) + 1]] <- combos
                 }
             }
+            
+            
+            if (length(output.all) > 1) {
+                max.nrows <- max(unlist(lapply(output.all, nrow)))
+                output.all <- lapply(output.all, function(x) {
+                    apply(x, 2, function(y) {c(y, rep(NA, max.nrows - length(y)))})
+                })
+                
+                output <- output.all[[1]]
+                
+                for (i in seq(2, length(output.all))) {
+                    output <- cbind(output, output.all[[i]])
+                }
+            }
+            
         }
     }
     else {
         output <- matrix(seq(nrow(chart)))
     }
-    return(output)
+    
+    return(matrix(row.numbers[output], nrow=nrow(output)))
 }
 

@@ -5,37 +5,71 @@
 \title{Eliminate Redundant Prime Implicants}
 
 \description{
-This function reduces the complete sum of prime implicants to a minimal sum by 
-eliminating redundant prime implicants.
+This function reduces the complete union of prime implicants to a minimal union 
+by eliminating redundant prime implicants.
 }
 
 \usage{
-solveChart(chart, all.sol = FALSE)
+solveChart(chart, row.dom = FALSE, all.sol = FALSE)
 }
 
 \arguments{
   \item{chart}{A prime implicant chart.}
-  \item{all.sol}{Find all possible, non-overlapping, sums.}
+  \item{row.dom}{Logical, apply row dominance to eliminate dominated inessential
+        prime implicants.}
+  \item{all.sol}{Logical, derive all possible (non-overlapping) solutions, 
+        irrespective of complexity.}
+}
+
+\details{
+This function solves prime implicant charts. Prime implicant charts have the prime 
+implicants listed on the rows and the truth table configurations from which they 
+have been derived listed on the columns (Quine 1952; McCluskey 1956). Each 
+configuration must be covered at least once by at least one prime implicant.
 }
 
 \value{
-A matrix containing row indices of all possible solutions.
+A matrix containing in its columns the row index values from the prime implicant 
+chart that form solutions according to the values specified by the user in the 
+function's arguments.
+}
+
+\references{
+McCluskey, Edward J. 1956. Minimization of Boolean Functions. 
+\emph{Bell Systems Technical Journal} 35 (6):1417-44.
+
+Quine, Willard V. 1952. The Problem of Simplifying Truth Functions. 
+\emph{American Mathematical Monthly} 59 (8):521-31.
 }
 
 \examples{
-# a simple PI chart, formatted using internal function prettyTable()
-PIs <- c("A", "B", "c", "D") # all prime implicants; the complete sum
-FPs <- c("AbCD", "AbCd", "aBcd", "aBCD") # the fundamental products
-
-chart <- demoChart(PIs, FPs)
+# simple PI chart, formatted using internal function prettyTable()
+PI <- c("A", "B", "c", "D") 
+CO <- c("AbCD", "AbCd", "aBcd", "aBCD") 
+chart <- demoChart(PI, CO)
 prettyTable(chart)
 
-# minimal sum: first or second PI: A + B
+# solution:
+# first or third PI: A + c
 solveChart(chart)
 
-# all sums: first or second PI (A + B);
-# first or third or fourth PI (A + c + D)
+# all non-overlapping solutions: 
+# first or third PI: A + c
+# second or third or fourth PI: B + c + D
 solveChart(chart, all.sol = TRUE)
+
+# a more complex example
+PI <- c("AB", "BC", "Ac", "aC", "abd", "bcd")
+CO <- c("ABCD", "ABCd", "ABcD", "ABcd", "AbcD", "Abcd",
+        "aBCD", "aBCd", "abCD", "abCd", "abcd")
+chart <- demoChart(PI, CO)
+prettyTable(chart)
+
+# AB + Ac + aC + abd
+# AB + Ac + aC + bcd
+# BC + Ac + aC + abd
+# BC + Ac + aC + bcd
+solveChart(chart)
 }
 
 \keyword{functions}

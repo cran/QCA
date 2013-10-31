@@ -2,132 +2,129 @@
 
 \alias{pof}
 
-\title{Set-Relational Parameters of Fit}
+\title{Compute Set-Relational Parameters of Fit}
 
 \description{
-This function computes three set-relational parameters of fit: inclusion, PRI and coverage scores.
+This function computes inclusion (consistency) and coverage scores.
 }
 
 \usage{
-pof(setms, outcome, data, neg.out = FALSE, relation = "necessity", ...)
+pof(setms, outcome, data, neg.out = FALSE, relation = "nec", ...)
 }
 
 \arguments{
-  \item{setms}{Set membership scores, or a matrix with crisp-set representations, or a vector of line numbers}
-  \item{outcome}{The name of the outcome set, or a vector of outcome values}
-  \item{data}{The working dataset}
-  \item{neg.out}{Logical, use negation of outcome set}
-  \item{relation}{The set relation of the conditions to the outcome, either "necessity" or "sufficiency"}
-  \item{...}{Other arguments from the generic print (not used in this function)}
+  \item{setms}{A data frame of set membership scores, or a matrix of implicants, 
+        or a vector of implicant matrix line numbers.}
+  \item{outcome}{A vector of outcome sets.}
+  \item{data}{The working data set.}
+  \item{neg.out}{Logical, use negation of outcome set.}
+  \item{relation}{The set relation between the set membership scores and the outcome, 
+        either "nec" or "suf".}
+  \item{...}{Other arguments (not used in this function).}
 }
 
 \details{
-  The argument \code{setms} specifies a dataframe of \emph{set} membership scores, where \emph{set}
-  refers to any kind of set, including original condition sets, conjunctive or disjunctive combinations returned 
-  by \code{superSubset()}, prime implicants returned by \code{eqmcc()} or any other compound set.
-  
-  It can also be a matrix with the crisp-set representation of the conditions, or even a vector
-  of line numbers corresponding to those representations.
+The argument \code{setms} specifies a data frame of \emph{set} membership scores, 
+where \emph{set} refers to any kind of set, including simple sets, combinations 
+returned by \code{superSubset()} (\code{coms}), prime implicants returned by 
+\code{eqmcc()} (\code{pims}) or any other compound set.
+
+The function also accepts a matrix of implicants with the value representation 
+of \code{createMatrix()}, or even a corresponding vector of implicant matrix line 
+numbers.
+
+The argument \code{outcome} specifies the outcome to be explained. Outcomes from 
+multivalent variables require curly-bracket notation (\code{X{value}}).
+
+The logical argument \code{neg.out} controls whether \code{outcome} is to be 
+explained or its negation. If \code{outcome} is from a multivalent variable, 
+\code{neg.out = TRUE} has the effect that the union of all remaining values 
+becomes the new outcome to be explained.
 }
 
 \references{
+Emmenegger, Patrick. 2011. Job Security Regulations in Western Democracies: A 
+Fuzzy Set Analysis. 
+\emph{European Journal of Political Research} 50 (3):336-64.
 
-P. Emmenegger. Job Security Regulations in Western Democracies: A Fuzzy Set Analysis.
-\emph{European Journal of Political Research}, 50(3):336-364, 2011.
-
-M. L. Krook. Women's Representation in Parliament: A Qualitative Comparative Analysis.
-\emph{Political Studies}, 58(5):886-908, 2010.
-
+Krook, Mona Lena. 2010. Women's Representation in Parliament: A Qualitative 
+Comparative Analysis. 
+\emph{Political Studies} 58 (5):886-908.
 }
+
+\seealso{\code{\link{eqmcc}}, \code{\link{superSubset}}}
 
 \examples{
 # csQCA using Krook (2010)
 #-------------------------
-data(Krook)
-Krook
-x <- Krook[,1:5]
+data(d.Kro)
+head(d.Kro)
+
+x.1 <- d.Kro[, 1:5]
+x.2 <- 1 - x.1
+names(x.2) <- tolower(names(x.1))
+x <- cbind(x.1, x.2)
  
-# get necessity parameters of fit for all conditions
-pof(x, outcome = "WNP", Krook)
+# necessity parameters of fit for all conditions
+pof(x, outcome = "WNP", d.Kro)
 
-# now for the negated outcome
-pof(x, outcome = "WNP", Krook, neg.out = TRUE)
+# for the negated outcome
+pof(x, outcome = "WNP", d.Kro, neg.out = TRUE)
 
-# get sufficiency parameters of fit for all original conditions
-pof(x, outcome = "WNP", Krook, relation = "sufficiency") 
+# sufficiency parameters of fit
+pof(x, outcome = "WNP", d.Kro, relation = "suf") 
 
-# now for the negated outcome
-pof(x, outcome = "WNP", Krook, neg.out = TRUE, relation = "sufficiency")
+# for the negated outcome
+pof(x, outcome = "WNP", d.Kro, neg.out = TRUE, relation = "suf")
 
 # fsQCA using Emmenegger (2011)
 #------------------------------
-data(Emme)
-Emme
+data(d.Emm)
+head(d.Emm)
 
-# first test for necessary conditions with superSubset(), then 
-# check whether the returned combinations are also necessary for 
-# the negation of the outcome
+# first test for minimally necessary combinations with superSubset(), 
+# then check whether these combinations are also necessary for the 
+# negation of the outcome
+Emm.nr <- superSubset(d.Emm, outcome = "JSR", incl.cut = 0.965, 
+  cov.cut = 0.6)
+Emm.nr
 
-EmmeNR <- superSubset(Emme, outcome = "JSR", incl.cut = 0.965, cov.cut = 0.6)
-EmmeNR
-pof(EmmeNR$coms, outcome = "JSR", Emme, neg.out = TRUE) 
+pof(Emm.nr$coms, outcome = "JSR", d.Emm, neg.out = TRUE) 
 
-# first derive the complex solution, then check whether the negations 
-# of the prime implicants are also sufficient for the outcome 
+# first derive the conservative solution, then check whether the 
+# negations of the prime implicants are also sufficient for the outcome 
+Emm.sc <- eqmcc(d.Emm, outcome = "JSR", incl.cut1 = 0.9, details = TRUE)
+Emm.sc
 
-EmmeSC <- eqmcc(Emme, outcome = "JSR", incl.cut1 = 0.9, details = TRUE)
-EmmeSC
-pof(1 - EmmeSC$pims$c.sol, outcome = "JSR", Emme, relation = "sufficiency")
+pof(1 - Emm.sc$pims, outcome = "JSR", d.Emm, relation = "suf")
 
-# parameters of fit for any term, including configurations;
-# use "-1" as a placeholder for a minimized condition;
-# matrix representation of R*p*V and S*c*L*P*v:
+# parameters of fit for matrix of implicants;
+# "-1" is the placeholder for an eliminated variable;
+# e.g.: R*p*V and S*c*L*P*v
 #      "S"  "C"  "L"  "R"  "P"  "V"
-#
 #     [,1] [,2] [,3] [,4] [,5] [,6]
 #[1,]   -1   -1   -1    1    0    1
 #[2,]    1    0    1   -1    1    0
+confs <- matrix(c(-1,-1,-1, 1, 0, 1, 
+                   1, 0, 1,-1, 1, 0), nrow = 2, byrow = TRUE)
 
-confs <- matrix(c(-1, -1, -1,  1, 0, 1, 
-                   1,  0,  1, -1, 1, 0), nrow = 2, byrow = TRUE)
-confs
-pof(confs, outcome = "JSR", Emme, relation = "sufficiency")
+pof(confs, outcome = "JSR", d.Emm, relation = "suf")
 
 # or even vectors of line numbers from the implicant matrix
-pof(c(43, 57), "JSR", Emme, relation = "sufficiency")
-
-# the line numbers 43 and 57 represent l*r*P and L*V:
-#      "S"  "C"  "L"  "R"  "P"  "V"
-#
-#     [,1] [,2] [,3] [,4] [,5] [,6]
-#[1,]   -1   -1    0    0    1   -1 
-#[2,]   -1   -1    1   -1   -1    1  
-
-getRow(rep(3, 6), c(43, 57)) - 1
+pof(c(43, 57), "JSR", d.Emm, relation = "suf")
 
 # parameters of fit for a data frame
 x <- data.frame(A = c(1,1,1,0,1), B = c(1,1,1,0,1),
                 C = c(0,1,0,0,1), D = c(0,0,1,0,1),
                 O = c(1,1,1,0,1))
 
-pof(x[,-5], outcome = "O", x)
+pof(x[, -5], outcome = "O", x)
 
-# for a single column from that data frame;
-# requires special argument drop = FALSE to avoid
-# dropping of dimensions and conversion to vector
-pof(x[, "C", drop = FALSE], outcome = "O", x)
+# for a single column from that data frame
+pof(x$A, x$O)
 
 # for multiple columns from that data frame
-pof(x[, 1:2], outcome = "O", x[, 1:5])
-
-# inclusion and coverage of a single condition and the outcome
-pof(x$D, x$O)
-
-# inclusion of coverage of any two vectors
-v1 <- c(.7, .1, .5, .3, .9, .7, .3, .3, .3, .1, .0, .9)
-v2 <- c(.8, .3, .4, .4, .8, .6, .3, .2, .4, .2, .1, .9)
-pof(v1, v2)
-
+pof(x[, 1:2], outcome = "O", x)
 }
 
 \keyword{functions}

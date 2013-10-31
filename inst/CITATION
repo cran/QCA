@@ -1,0 +1,16 @@
+citHeader("To cite package 'QCA' please use the following BibTeX entry:")
+
+citEntry(entry = "article",
+         author = personList(as.person("Alrik Thiem"),
+                             as.person("Adrian Dusa")),
+         year = "2013",
+         title = "QCA: A Package for Qualitative Comparative Analysis",
+         journal = "The R Journal",
+         volume = "5",
+         number = "1",
+         pages = "87-97",
+         textVersion = "Alrik Thiem and Adrian Dusa (2013). 
+                        QCA: A Package for Qualitative Comparative Analysis.
+                        The R Journal 5(1):87-97.")
+         
+                             

@@ -9,26 +9,63 @@
 
 
 `prettyString` <-
-function(string.vector, string.width=80, repeat.space=5, separator=",") {
+function(string.vector, string.width = 80, repeat.space = 5, separator = ",", sufnec = "", outcome = "", cases = FALSE) {
+    
+    if (length(string.vector) == 1) {
+        if (nchar(paste(string.vector, " ", sufnec, " ", outcome, sep="")) >= string.width) {
+            string.vector <- unlist(strsplit(string.vector, split = paste(" \\", separator, " ", sep="")))
+        }
+    }
+    
+    string <- string.vector[1]
+    
     if (length(string.vector) > 1) {
-        string <- string.vector[1]
         startpoint <- 1
-        for (j in 2:length(string.vector)) {
-            if (nchar(paste(string.vector[startpoint:j], collapse=separator)) > string.width) {
-                string <- paste(paste(string, "\n", sep=separator), 
-                                paste(rep(" ", repeat.space), collapse=""), 
-                                string.vector[j], sep="")
-                startpoint <- j
+        for (j in seq(2, length(string.vector) + 1)) {
+            if (j <= length(string.vector)) {
+                
+                if (nchar(paste(string.vector[seq(startpoint, j - ifelse(separator == ";", 1, 0))], collapse = paste(ifelse(separator == ";", "", " "), separator, " ", sep=""))) >= string.width) {
+                    # if (nchar(paste(string.vector[seq(startpoint, j - ifelse(separator == ";", 1, 0))], collapse = paste(ifelse(separator == ";", "", " "), separator, sep=""))) >= string.width) {
+                    #     string <- paste(paste(string, "\n", sep=""), 
+                    #                     paste(rep(" ", repeat.space), collapse=""),
+                    #                     separator, " ", string.vector[j], sep="")
+                    # }
+                    # else {
+                        string <- paste(paste(string, ifelse(separator == ";", "", " "), separator, "\n", sep = ""), 
+                                        paste(rep(" ", repeat.space), collapse=""),
+                                        string.vector[j], sep="")
+                    # }
+                    
+                    startpoint <- j
+                }
+                else {
+                    string <- paste(string, ifelse(separator == ";", "", " "), separator, " ", string.vector[j], sep = "")
+                }
             }
             else {
-                string <- paste(string, string.vector[j], sep=separator)
+                if (outcome != "") {
+                    
+                    # j is already bigger than the length of the string.vector
+                    last.part <- paste(paste(string.vector[seq(startpoint, j - 1)], collapse = paste(ifelse(separator == ";", "", " "), separator, " ", sep="")), sep="")
+                    
+                    if (nchar(paste(last.part, " ", sufnec, " ", outcome, sep = "")) >= string.width) {
+                        string <- paste(paste(string, "\n", sep=""),
+                                  paste(rep(" ", repeat.space), collapse=""),
+                                  sufnec, " ", outcome, sep = "")
+                    }
+                    else {
+                        string <- paste(string, " ", sufnec, " ", outcome, sep = "")
+                    }
+                }
             }
         }
-        string
     }
     else {
-        string.vector
+        if (outcome != "") {
+            string <- paste(string, " ", sufnec, " ", outcome, sep = "")
+        }
     }
+    return(string)
 }
 
 

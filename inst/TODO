@@ -1,7 +1,2 @@
-- implement option to handle missing values
-
-- work on mv data with any types of categories, not just numbers.
-
-- work on a new function to solve the PI chart
-
-
+- function deMorgan(): negate set-theoretic expressions with multivalent variables
+- inference-statistical tests for fuzzy sets

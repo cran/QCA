@@ -1,22 +1,25 @@
 `rowDominance` <-
 function(mtrx) {
-    rows <- rownames(mtrx)
+    mtrx.copy <- mtrx
     sums <- rowSums(mtrx)
-    tabsums <- sort(unique(sums))
-    reduced <- logical(nrow(mtrx))
-    if (length(tabsums) >= 2) {
-        for (i in length(tabsums):2) {
-            x <- which(sums == tabsums[i])
-            y <- which(sums < tabsums[i])
-            for (k in x) {
-                to.be.reduced <- sapply(y, function(h) {
-                    all(mtrx[k, mtrx[h,]])
-                })
-                reduced[y[to.be.reduced]] <- TRUE
-            }
+    mtrx <- mtrx[order(sums, decreasing=TRUE), , drop=FALSE]
+    
+    sums <- sort(sums, decreasing=TRUE)
+    line.no <- 1
+    while(line.no < nrow(mtrx)) {
+        less <- sums < sums[line.no]
+        if (any(less)) {
+            aa <- apply(mtrx[less, , drop=FALSE], 1, function(x) {all(mtrx[line.no, x])})
+            mtrx <- rbind(mtrx[!less, , drop=FALSE], mtrx[less, , drop=FALSE][!aa, , drop=FALSE])
+            sums <- rowSums(mtrx)
+            line.no <- line.no + 1
+        }
+        else {
+            break
         }
     }
-    return(reduced)
+    
+    return(match(rownames(mtrx), rownames(mtrx.copy)))
 }
 
 

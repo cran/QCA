@@ -1,11 +1,27 @@
 `factorize` <- 
-function(bool.sum, prod.split="", sort.factorizing=FALSE, sort.factorized=FALSE) {
+function(expression, prod.split="", sort.factorizing=FALSE, sort.factorized=FALSE) {
     
     factor.function <- function(trimmed.string) {
+        
         my.string <- trimmed.string
         
         # create a list with all prime implicants split by literals
-        list.my.string <- sapply(trimmed.string, strsplit, prod.split)
+        if (prod.split == "" & grepl("~", paste(trimmed.string, collapse = ""))) {
+            
+            list.my.string <- sapply(trimmed.string, strsplit, split = "")
+            
+            list.my.string <- lapply(list.my.string, function(x) {
+                tildas <- x == "~"
+                if (any(tildas)) {
+                    x[which(tildas) + 1] <- paste("~", x[which(tildas) + 1], sep="")
+                    x <- x[-which(tildas)]
+                }
+                return(x)
+            })
+        }
+        else {
+            list.my.string <- sapply(trimmed.string, strsplit, prod.split)
+        }
         
          # create a matrix with all combinations of prime implicants to be compared for similar literals
         all.combs <- createMatrix(rep(2, length(list.my.string)))
@@ -163,19 +179,19 @@ function(bool.sum, prod.split="", sort.factorizing=FALSE, sort.factorized=FALSE)
     collapse <- prod.split
     if (prod.split != "") prod.split <- paste("\\", prod.split, sep="")
     
-    if (is.qca(bool.sum)) {
-        collapse <- prod.split <- bool.sum$opts$collapse
+    if (is.qca(expression)) {
+        collapse <- prod.split <- expression$opts$collapse
         if (prod.split != "") prod.split <- paste("\\", prod.split, sep="")
-        if ("i.sol" %in% names(bool.sum)) {
-            result <- list(i.sol=vector("list", length=length(bool.sum$i.sol)))
-            for (i in seq(length(bool.sum$i.sol))) {
-                names(result$i.sol) <- names(bool.sum$i.sol)
-                result$i.sol[[i]] <- lapply(bool.sum$i.sol[[i]]$solution, factor.function)
-                names(result$i.sol[[i]]) <- unlist(lapply(bool.sum$i.sol[[i]]$solution, paste, collapse=" + "))
+        if ("i.sol" %in% names(expression)) {
+            result <- list(i.sol=vector("list", length=length(expression$i.sol)))
+            for (i in seq(length(expression$i.sol))) {
+                names(result$i.sol) <- paste(names(expression$i.sol), "S", sep="")
+                result$i.sol[[i]] <- lapply(expression$i.sol[[i]]$solution, factor.function)
+                names(result$i.sol[[i]]) <- unlist(lapply(expression$i.sol[[i]]$solution, paste, collapse=" + "))
             }
         }
         else {
-            result <- lapply(bool.sum$solution, function(x) {
+            result <- lapply(expression$solution, function(x) {
                 if (length(x) > 1) {
                     return(factor.function(x))
                 }
@@ -183,20 +199,48 @@ function(bool.sum, prod.split="", sort.factorizing=FALSE, sort.factorized=FALSE)
                     return(NULL)
                 }
             })
-            names(result) <- unlist(lapply(bool.sum$solution, paste, collapse=" + "))
+            names(result) <- unlist(lapply(expression$solution, paste, collapse=" + "))
         }
     }
-    else if (is.character(bool.sum) & length(bool.sum) == 1) {
+    else if (is.deMorgan(expression)) {
+        
+        if (names(expression)[1] == "S1") {
+            result <- lapply(expression, function(x) {
+                factor.function(x[[2]])
+            })
+            
+            names(result) <- unlist(lapply(expression, function(x) {
+                paste(x[[2]], collapse = " + ")
+            }))
+        }
+        else {
+            result <- list(lapply(expression, function(x) {
+                int.result <- lapply(x, function(y) {
+                    factor.function(y[[2]])
+                })
+                
+                names(int.result) <- unlist(lapply(x, function(y) {
+                    paste(y[[2]], collapse = " + ")
+                }))
+                
+                return(int.result)
+            }))
+            names(result) <- "i.sol"
+            names(result$i.sol) <- paste(names(result$i.sol), "N", sep="")
+        }
+        
+    }
+    else if (is.character(expression) & length(expression) == 1) {
         trimst <- function(string) gsub("^[[:space:]]+|[[:space:]]+$", "", string)
-        trimmed.str <- trimst(unlist(strsplit(bool.sum, "\\+")))
+        trimmed.str <- trimst(unlist(strsplit(expression, "\\+")))
         
         if (length(trimmed.str) == 1) {
-            result <- list(bool.sum)
-            names(result) <- bool.sum
+            result <- list(expression)
+            names(result) <- expression
         }
         else {
             result <- list(factor.function(trimmed.str))
-            names(result) <- bool.sum
+            names(result) <- expression
         }
     }
     

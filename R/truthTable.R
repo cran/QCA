@@ -1,22 +1,38 @@
 `truthTable` <-
-function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
+function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), n.cut = 1,
          incl.cut1 = 1, incl.cut0 = 1, complete = FALSE, show.cases = FALSE,
-         sort.by = c(""), decreasing = TRUE, use.letters = FALSE, ...) {
+         sort.by = c(""), decreasing = TRUE, use.letters = FALSE,
+         inf.test = c(""), ...) {
     
     memcare <- FALSE # to be updated with a future version
     other.args <- list(...)
     via.pof <- "via.pof" %in% names(other.args)
     
-    if (all(conditions == c(""))) {
-        conditions <- names(data)[-which(names(data) == outcome)]
-    }
-    
     if (memcare) {
         complete <- FALSE
     }
     
+    outcome.copy <- outcome
+    
+    initial.data <- data
+    
+    if (grepl("[{]", outcome)) {
+        outcome <- unlist(strsplit(outcome, split = ""))
+        outcome.value <- as.numeric(outcome[which(outcome == "{") + 1])
+        outcome <- paste(outcome[seq(1, which(outcome == "{") - 1)], collapse="")
+        if (!any(unique(data[, outcome]) == outcome.value)) {
+            cat("\n")
+            stop(paste("The value {", outcome.value, "} does not exist in the outcome.\n\n", sep=""), call. = FALSE)
+        }
+        data[, outcome] <- ifelse(data[, outcome] == outcome.value, 1, 0)
+    }
+    
+    if (all(conditions == c(""))) {
+        conditions <- names(data)[-which(names(data) == outcome)]
+    }
+    
     if (!via.pof) {
-        verify.tt(data, outcome, conditions, complete, show.cases, incl.cut1, incl.cut0)
+        verify.tt(data, outcome, conditions, complete, show.cases, incl.cut1, incl.cut0, inf.test)
     }
     
     if (incl.cut0 > incl.cut1) {
@@ -24,10 +40,12 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     }
     
     colnames(data) <- toupper(colnames(data))
+    colnames(initial.data) <- toupper(colnames(initial.data))
     conditions <- toupper(conditions)
     outcome <- toupper(outcome)
     
-    data <- initial.data <- data[, c(conditions, outcome)]
+    initial.data <- initial.data[, c(conditions, outcome)]
+    data <- data[, c(conditions, outcome)]
     
     if (neg.out) {
         data[, outcome] <- 1 - data[, outcome]
@@ -64,6 +82,7 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     nofconditions <- length(conditions)
     fuzzy.cc <- apply(data[, conditions, drop=FALSE], 2, function(x) any(x %% 1 > 0))
     
+    
     for (i in seq(length(conditions))) {
         if (!fuzzy.cc[i]) {
             copy.cc <- data[, i]
@@ -78,6 +97,7 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     # perhaps trying something like
     # apply(data[, conditions], 2, function(x) length(unique(x))) + 1
     noflevels <- apply(data[, conditions, drop=FALSE], 2, max) + 1
+    noflevels[noflevels == 1] <- 2
     noflevels[fuzzy.cc] <- 2
     
     
@@ -186,10 +206,6 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         paste(rownames(data)[which(line.data == x)], collapse=",")
     })
     
-    if (show.cases) {
-        tt <- cbind(tt, cases)
-    }
-    
     for (i in seq(length(conditions))) {
         if (!fuzzy.cc[i]) {
             if (any(initial.data[, i] == dc.code)) {
@@ -200,7 +216,43 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         }
     }
     
-    x <- list(tt=tt, indexes=sort(unique(line.data)), noflevels=as.vector(noflevels), initial.data=initial.data, recoded.data=data, cases=cases, neg.out=neg.out)
+    statistical.testing <- FALSE
+    
+    if (inf.test[1] == "binom") {
+        statistical.testing <- TRUE
+        if (length(inf.test) > 1) {
+            alpha <- as.numeric(inf.test[2]) # already checked if a number between 0 and 1
+        }
+        else {
+            alpha <- 0.05
+        }
+        
+        observed <- which(tt$OUT != "?")
+        success <- round(tt[observed, "n"] * as.numeric(tt[observed, "incl"]))
+        
+        tt <- cbind(tt, pval1 = "-", pval0 = "-")
+        tt[, "pval1"] <- tt[, "pval0"] <- as.character(tt[, "pval1"])
+        tt[observed, "OUT"] <- 0
+        
+        for (i in observed) {
+            pval1 <- tt[i, "pval1"] <- binom.test(success[i], tt[i, "n"], p = incl.cut1, alternative = "less")$p.value
+            pval0 <- tt[i, "pval0"] <- binom.test(success[i], tt[i, "n"], p = incl.cut0, alternative = "greater")$p.value
+            if (pval1 > alpha) {
+                tt[i, "OUT"] <- 1
+            }
+            else if (pval1 < alpha & pval0 < alpha) {
+                tt[i, "OUT"] <- "C"
+            }
+        }
+    }
+    
+    if (show.cases) {
+        tt <- cbind(tt, cases)
+    }
+    
+    x <- list(tt=tt, indexes=sort(unique(line.data)), noflevels=as.vector(noflevels),
+              initial.data=initial.data, recoded.data=data, cases=cases, neg.out=neg.out,
+              inf.test = statistical.testing, incl.cut1 = incl.cut1, incl.cut0 = incl.cut0)
     
     if (any(excluded)) {
        x$excluded <- excluded.cases
@@ -212,6 +264,9 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     if (use.letters & sum(nchar(colnames(data)[-ncol(data)])) != (ncol(data) - 1)) { # also verify if not already letters
         colnames(x$tt)[seq(nofconditions)] <- LETTERS[seq(nofconditions)]
     }
+    
+    x$outcome <- outcome.copy
+    
     return(structure(x, class="tt"))
 }
 

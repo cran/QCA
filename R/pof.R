@@ -1,5 +1,5 @@
 `pof` <-
-function(setms, outcome, data, neg.out=FALSE, relation = "necessity", ...) {
+function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
     funargs <- as.list(match.call())
     
     other.args <- list(...)
@@ -24,6 +24,19 @@ function(setms, outcome, data, neg.out=FALSE, relation = "necessity", ...) {
                 stop("The data argument is missing, with no default.\n\n", call. = FALSE)
             }
             else {
+                
+                if (grepl("[{]", outcome)) { # there is a "{" sign in the outcome's name
+                    outcome <- unlist(strsplit(outcome, split = ""))
+                    outcome.value <- as.numeric(outcome[which(outcome == "{") + 1])
+                    outcome <- paste(outcome[seq(1, which(outcome == "{") - 1)], collapse="")
+                    
+                    if (!any(unique(data[, outcome]) == outcome.value)) {
+                        cat("\n")
+                        stop(paste("The value {", outcome.value, "} does not exist in the outcome.\n\n", sep=""), call. = FALSE)
+                    }
+                    data[, outcome] <- ifelse(data[, outcome] == outcome.value, 1, 0)
+                }
+                
                 outcomename <- outcome
                 outcome <- data[, outcome]
             }
@@ -62,6 +75,7 @@ function(setms, outcome, data, neg.out=FALSE, relation = "necessity", ...) {
                 stop("The outcome's length should be the same as the number of rows in the data.\n\n", call. = FALSE)
             }
             
+            
             if (any(outcomename %in% names(data))) {
                 noflevels <- truthTable(data, outcome=outcomename, via.pof=TRUE)
             }
@@ -71,11 +85,10 @@ function(setms, outcome, data, neg.out=FALSE, relation = "necessity", ...) {
             }
             
             colnames(data) <- toupper(colnames(data))
-            conditions <- names(data)[-which(names(data) == outcomename)]
             outcomename <- toupper(outcomename)
+            conditions <- colnames(data)[-which(colnames(data) == outcomename)]
             data <- data[, c(conditions, outcomename)]
         }
-        
         
         pims <- FALSE
         if (is.data.frame(setms)) {
@@ -361,7 +374,6 @@ function(setms, outcome, data, neg.out=FALSE, relation = "necessity", ...) {
     rownames(incl.cov) <- colnames(mins)
     colnames(incl.cov) <- c("incl", "PRI", "cov.r", "cov.u")
     
-    
     pmins <- apply(mins, 2, pmin, outcome)
     primins <- apply(mins, 2, function(x) pmin(x, 1 - outcome, outcome))
     
@@ -395,6 +407,7 @@ function(setms, outcome, data, neg.out=FALSE, relation = "necessity", ...) {
         }
     }
     
+    
     # solution incl, pri and cov
     sol.incl <- sum(inclusions)/sum(maxmins)
     sol.pri <- (sum(inclusions) - sum(prisol))/(sum(maxmins) - sum(prisol))
@@ -404,7 +417,7 @@ function(setms, outcome, data, neg.out=FALSE, relation = "necessity", ...) {
     result.list <- list(incl.cov=as.data.frame(incl.cov), relation=relation)
     
     if (!pims & via.eqmcc) {
-        result.list$sol.incl.cov <- c(sol.incl, sol.pri, sum.cov)
+        result.list$sol.incl.cov <- c(incl=sol.incl, PRI=sol.pri, cov=sum.cov)
         result.list$pims <- as.data.frame(mins)
     }
     
@@ -412,8 +425,12 @@ function(setms, outcome, data, neg.out=FALSE, relation = "necessity", ...) {
         return(result.list)
     }
     
+    # showc is not a formal argument, therefore is it initiated as FALSE
+    showc <- FALSE
+    
     if ("showc" %in% names(other.args)) {
         if (other.args$showc) {
+            showc <- other.args$showc
             result.list$incl.cov <- cbind(result.list$incl.cov, cases = other.args$cases, stringsAsFactors=FALSE)
         }
     }
@@ -428,9 +445,10 @@ function(setms, outcome, data, neg.out=FALSE, relation = "necessity", ...) {
                                       mins=mins[, solution.list[[i]], drop=FALSE],
                                       vo = outcome, so = sum.outcome, pims=pims)
         }
-        return(structure(list(overall=result.list, individual=individual, essential=other.args$essential, pims=as.data.frame(mins), relation=relation), class="pof"))
+        return(structure(list(overall=result.list, individual=individual, essential=other.args$essential, pims=as.data.frame(mins), relation=relation, opts=list(show.cases = showc)), class="pof"))
     }
     else {
+        result.list$opts <- list(show.cases = showc)
         return(structure(result.list, class="pof"))
     }
 }
