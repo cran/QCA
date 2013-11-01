@@ -2,66 +2,76 @@
 
 \alias{factorize}
 
-\title{Factorize a Boolean Sum of Products}
+\title{Factorize Set-Theoretic Expressions}
 
 \description{
-This function finds all combinations of factorizing or factorized literals in a Boolean sum of products.
+This function finds all possibilities for factorizing a set-theoretic expression.
 }
 
 \usage{
-factorize(bool.sum, prod.split = "", sort.factorizing = FALSE, 
+factorize(expression, prod.split = "", sort.factorizing = FALSE, 
           sort.factorized = FALSE)
 }
 
 \arguments{
-  \item{bool.sum}{An object containting either the list of solutions, or a single character solution.}
-  \item{prod.split}{The separator of the literals within a Boolean product.}
-  \item{sort.factorizing}{Logical, sort results beginning with largest number of factorizing literals.}
-  \item{sort.factorized}{Logical, sort results beginning with largest number of factorized literals.}
+  \item{expression}{A string representing a set-theoretic expression or a solution 
+        object of class "qca".}
+  \item{prod.split}{The intersection (product) operator (if any).}
+  \item{sort.factorizing}{Logical, sort results beginning with largest number of 
+        factorizing sets.}
+  \item{sort.factorized}{Logical, sort results beginning with largest number of 
+        factorized sets.}
 }
 
 \details{
-In Boolean algebra, the multiplication (intersection) operator \eqn{*} is distributive over the addition 
-(union) operator \eqn{+} such that for any three Boolean terms \eqn{a}, \eqn{b} and \eqn{c}, the following 
-law holds: \eqn{(a*b) + (a*c) = a*(b + c)} (Hohn, 1966: 12; South, 1974: 12). The \code{factorize()} 
-function finds all possible terms \eqn{a} for any Boolean sum of products. Solutions can be sorted in 
-decreasing order by the number of factorizing literals or in decreasing order by the number of 
-factorized literals. 
+In set theory, the intersection operator "*" is distributive over the union 
+operator "+" such that for any three sets \eqn{a}, \eqn{b} and \eqn{c}, the 
+following law holds: \eqn{(a*b) + (a*c) = a*(b + c)}{(a*b) + (a*c) = a*(b + c)} 
+(Hohn 1966, pp.78-80; South 1974, p.12). The \code{factorize()} function finds 
+all possible sets \eqn{a}{a} for any set-theoretic expression. Factorized 
+versions of the initial expression(s) can be sorted in decreasing order by the 
+number of factorizing sets or in decreasing order by the number of factorized sets. 
+}
+
+\value{A list with the following components:\cr
+  \item{initial}{The initial expression.}
+  \item{factored}{The factorizations of the initial expression.}
 }
 
 \references{
-F. E. Hohn. \emph{Applied Boolean Algebra: An Elementary Introduction}. 2nd ed., Macmillan, New York, 1966.
+Hohn, Franz E. 1966. \emph{Applied Boolean Algebra: An Elementary Introduction}. 
+2nd ed. New York: Macmillan.
 
-G. F. South. \emph{Boolean Algebra and Its Uses}. Van Nostrand Reinhold, New York, 1974.
+South, G. F. 1974. \emph{Boolean Algebra and Its Uses}. New York: Van Nostrand Reinhold.
 }
 
 \seealso{\code{\link{eqmcc}}}
 
 \examples{
-# factorize any Boolean sum of products;
-# if single letters are used, prod.split is not needed
+# factorize a union of intersections;
+# if single letters are used, argument "prod.split" is not needed
 factorize("AB + AC")
 
+# but "prod.split" is needed in these cases
 factorize("one*TWO*four + one*THREE + THREE*four", prod.split = "*")
 factorize("~ONE*TWO*~FOUR + ~ONE*THREE + THREE*~FOUR", prod.split = "*")
 factorize("one&TWO&four + one&THREE + THREE&four", prod.split = "&")
 
-# factorize a QCA solution object directly
-data(HarKem)
-sol <- eqmcc(HarKem, outcome = "PB", conditions = c("C", "F", "T", "V"), 
-  include = c("?", "C"))
-factorize(sol)
+# factorize solution objects directly
+data(d.HK)
+HK.sol <- eqmcc(d.HK, outcome = "PB", conditions = c("C", "F", "T", "V"), 
+  include = c("?"))
+factorize(HK.sol)
 
-data(Emme)
-sol <- eqmcc(Emme, outcome = "JSR", incl.cut1 = 0.9)
-factorize(sol)
+data(d.Emm)
+Emm.sol <- eqmcc(d.Emm, outcome = "JSR", incl.cut1 = 0.9)
+factorize(Emm.sol)
 
-# sort by largest number of factoring literals
-factorize(sol, sort.factorizing = TRUE)
+# sort by the largest number of factoring sets
+factorize(Emm.sol, sort.factorizing = TRUE)
 
-# sort by largest number of factorized literals
-factorize(sol, sort.factorized = TRUE)
-
+# sort by the largest number of factorized sets
+factorize(Emm.sol, sort.factorized = TRUE)
 }
 
 \keyword{functions}

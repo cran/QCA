@@ -5,8 +5,8 @@
 \title{Create Configuration and Implicant Matrices}
 
 \description{
-This function creates configuration and implicant matrices. Note that it is mainly used internally. Proper truth tables 
-should be created with \code{truthTable}. Proper implicant matrices should be created with \code{allExpressions}.
+This function creates configuration and implicant matrices. It is mainly 
+used for internal and demonstration purposes.
 }
 
 \usage{
@@ -14,46 +14,49 @@ createMatrix(noflevels, logical = FALSE)
 }
 
 \arguments{
-  \item{noflevels}{The number of levels for each condition.}
-  \item{logical}{Logical, return the matrix in logical values (only binary-level crisp data).}
+  \item{noflevels}{The number of levels (values) for each condition variable.}
+  \item{logical}{Logical, return the matrix in logical values (only bivalent data).}
 }
 
 \details{
-Configuration matrices contain all unique Boolean products of \eqn{k} literals that can be formed from \eqn{k} conditions. 
-The total number of configurations is given by the product of the number of condition levels. \code{createMatrix()} should 
-be among the fastest functions to create truth table structures, optimising ideas inspired from the base R function 
-\code{expand.grid()}.\cr
+Configuration matrices contain all unique and complete intersections that can 
+be formed from all values of \eqn{k} variables. The total number of configurations
+\eqn{d}{d} is given by 
+\eqn{d = \prod_{j = 1}^{k}{p_{j}}}{d = \prod_{j = 1}^{k}{p_{j}}}, 
+where \eqn{p_{j}}{p_{j}} is the number of values for condition variable 
+\eqn{j} and \eqn{k} is the total number of condition variables. A 
+configuration matrix is an essential part of a truth table.
 
-The implicant matrix consists of all configurations and their supersets, including the empty set. The formula for the number 
-of implicants is \eqn{\prod_{j = 1}^{k}{p_j + 1}}, where \eqn{p_j} is the number of levels for condition \eqn{j} and \eqn{k} 
-is the number of conditions.
+An implicant matrix consists of all truth table configurations and their 
+supersets, including the empty set (Dusa 2007, 2010). The number of implicants 
+\eqn{q}{q} is given by 
+\eqn{q = \prod_{j = 1}^{k}{(p_{j} + 1)}}{q = \prod_{j = 1}^{k}{(p_{j} + 1)}}.
+For demonstration purposes, implicant matrices should be created by the 
+function \code{allExpressions()}.
 }
 
 \references{
-A. Dusa. A Mathematical Approach to the Boolean Minimization Problem.
-\emph{Quality & Quantity}, 44(1):99-113, 2010.
+Dusa, Adrian. 2007. \emph{Enhancing Quine-McCluskey}. COMPASSS: WP 2007-49. 
+Available from: http://www.compasss.org/wpseries/Dusa2007b.pdf.
 
-A. Dusa. \emph{Enhancing Quine-McCluskey}. WP 2007-49, COMPASSS, 2007.\cr
-URL: http://www.compasss.org/wpseries/Dusa2007b.pdf.
-
-C. C. Ragin. \emph{The Comparative Method: Moving beyond Qualitative and Quantitative Strategies}. 
-University of California Press, Berkeley, 1987.
+Dusa, Adrian. 2010. A Mathematical Approach to the Boolean Minimization Problem. 
+\emph{Quality & Quantity} 44 (1):99-113.
 }
 
-\seealso{\code{\link{allExpressions} \link{truthTable}}}
+\seealso{\code{\link{allExpressions}}, \code{\link{truthTable}}}
 
 \examples{
-# create a configuration matrix with 3 binary-level conditions
+# a configuration matrix with three bivalent condition variables
 noflevels <- rep(2, 3)
 createMatrix(noflevels)
 
 # with logical values
 createMatrix(noflevels, logical = TRUE)
 
-# its implicant matrix, where "-1" stands for an eliminated condition
+# its implicant matrix ("-1" stands for an eliminated value)
 createMatrix(noflevels + 1) - 1
 
-# create a configuration matrix, where the second condition has three levels 
+# a configuration matrix (the second variable has three values) 
 noflevels <- c(2, 3, 2)
 createMatrix(noflevels)
 

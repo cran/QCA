@@ -1,32 +1,99 @@
 `eqmcc` <-
-function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
-         incl.cut1 = 1, incl.cut0 = 1, explain = "1", include = c(""), all.sol = FALSE,
-         omit = c(), direxp = c(), rowdom = TRUE, details = FALSE, show.cases = FALSE,
-         use.tilde = FALSE, use.letters = FALSE) {
+function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), 
+      relation = "suf", n.cut = 1, incl.cut1 = 1, incl.cut0 = 1, 
+      explain = c("1"), include = c(""), row.dom = FALSE, all.sol = FALSE, 
+      omit = c(), dir.exp = c(), details = FALSE, show.cases = FALSE, 
+      use.tilde = FALSE, use.letters = FALSE, inf.test = c(""), ...) {
+    
+    m2 <- FALSE
+    
+    other.args <- list(...)
+    
+    if ("rowdom" %in% names(other.args)) {
+        row.dom <- other.args$rowdom
+    }
+    
+    PRI <- FALSE
+    if ("direxp" %in% names(other.args)) {
+        dir.exp <- other.args$direxp
+    }
+    
+    if ("PRI" %in% names(other.args)) {
+        if (is.logical(other.args$PRI)) {
+            PRI <- other.args$PRI[1] # [1] just to make sure only the first value is taken, should someone by mistake provide a vector
+        }
+    }
     
     print.truth.table <- details & !is.tt(data)
+    
     if (all(include == "")) {
-        include <- explain
+        if (!is.null(dir.exp)) {
+            cat("\n")
+            stop("Directional expectations were specified, without including the remainders.\n\n", call. = FALSE)
+        }
+        else {
+            include <- explain
+        }
     }
     
     if (!is.tt(data)) {
+        
+        if (length(outcome) > 1) {
+            
+            return(eqmccLoop(data=data, outcome=outcome, neg.out=neg.out, conditions=conditions, n.cut=n.cut,
+                      incl.cut1=incl.cut1, incl.cut0 = incl.cut0, explain=explain, include=include, row.dom=row.dom,
+                      all.sol = all.sol, omit=omit, dir.exp = dir.exp, details=details, show.cases=show.cases,
+                      use.tilde=use.tilde, use.letters=use.letters, inf.test=inf.test, relation=relation, ...=...))
+        }
+        
+        outcome.copy <- outcome
+        indata <- data # important before altering the outcome, if multi-value
+        
+        if (grepl("[{]", outcome)) { # there is a "{" sign in the outcome's name
+            outcome <- unlist(strsplit(outcome, split = ""))
+            outcome.value <- as.numeric(outcome[which(outcome == "{") + 1])
+            outcome <- paste(outcome[seq(1, which(outcome == "{") - 1)], collapse="")
+            
+            if (!any(unique(data[, outcome]) == outcome.value)) {
+                cat("\n")
+                stop(paste("The value {", outcome.value, "} does not exist in the outcome.\n\n", sep=""), call. = FALSE)
+            }
+            data[, outcome] <- ifelse(data[, outcome] == outcome.value, 1, 0)
+        }
+        
         if (all(conditions == c(""))) {
-            conditions <- names(data)[-which(names(data)==outcome)]
+            conditions <- names(data)[-which(names(data) == outcome)]
         }
         
         data <- data[, c(conditions, outcome)]
-        verify.qca(data, outcome, conditions, explain, include, use.letters, direxp)
         
-        indata <- data
+        # dir.exp should now be a list, in the same order as the conditions' names
+        verify.qca(data, outcome, conditions, explain, include, use.letters)
+        
+        dir.exp <- verify.dir.exp(data, outcome, conditions, dir.exp)
+        if (!is.null(dir.exp)) {
+            names(dir.exp) <- toupper(names(dir.exp))
+        }
+        
+        complete <- FALSE
+        if ("complete" %in% names(other.args)) {
+            complete <- other.args$complete
+        }
+        
         tt <- truthTable(data=data, outcome=outcome, conditions=conditions, show.cases=show.cases, n.cut=n.cut,
-                         incl.cut1=incl.cut1, incl.cut0=incl.cut0, use.letters=use.letters, neg.out=neg.out)
+                         incl.cut1=incl.cut1, incl.cut0=incl.cut0, use.letters=use.letters, neg.out=neg.out, complete=complete)
+        
+        
+        tt$initial.data <- indata
+        indata <- data # data is already altered in outcome value, if initially multi-value
         
         recdata <- tt$recoded.data
         conditions <- toupper(conditions)
         outcome <- toupper(outcome)
         names(indata) <- c(conditions, outcome)
+        
     }
-    else {
+    else { # data already is a tt
         chexplain <- c(0, 1)[which(0:1 %in% explain)]
         chinclude <- c(0, 1)[which(0:1 %in% include)]
         if (length(chinclude) > 0) {
@@ -36,6 +103,13 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
                 stop(paste("You cannot include ", chinclude, " since you want to explain ", chexplain, ".\n\n", sep=""), call. = FALSE)
             }
         }
+    
+         # check if explain has both 1 and 0
+        if (length(chexplain) == 2) {
+            cat("\n")
+            stop("You cannot explain both 0 and 1.\n\n", call. = FALSE)
+        }
+        
         tt <- data
         indata <- tt$initial.data
         recdata <- tt$recoded.data
@@ -45,14 +119,15 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
             missings <- which(tt$tt$OUT == "?")
             tt$tt <- tt$tt[-missings, ]
         }
-        if (!is.null(direxp)) {
-            if (length(direxp) != length(conditions)) {
-                cat("\n")
-                stop("Number of expectations does not match number of conditions.\n\n", call. = FALSE)
-            }
+        
+        dir.exp <- verify.dir.exp(indata, outcome, conditions, dir.exp)
+        if (!is.null(dir.exp)) {
+            names(dir.exp) <- toupper(names(dir.exp))
         }
+        
         neg.out <- tt$neg.out
     }
+    
     
     getSolution <- function() {
         
@@ -62,13 +137,17 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         PI.sort <- sortVector(PI, collapse=collapse)
         
         expressions <- expressions[match(sortVector(PI.sort, collapse=collapse), PI), , drop=FALSE]
+        rownames(expressions) <- PI.sort
         
          # create the prime implicants chart
         mtrx <- createChart(expressions, inputt)
+        
         reduced <- list(expressions = expressions, mtrx = mtrx)
         
-        if (rowdom) {
-            reduced <- rowDominance2(mtrx, expressions)
+        if (row.dom) {
+            reduced.rows <- rowDominance(mtrx)
+            reduced$mtrx <- mtrx[reduced.rows, ]
+            reduced$expressions <- expressions[reduced.rows, ]
         }
         
         PI.red <- writePrimeimp(reduced$expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde)
@@ -78,11 +157,13 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         
         rownames(mtrx) <- PI.red.sort
         colnames(mtrx) <- initial
+        
         sol.matrix <- solveChart(mtrx, all.sol = all.sol)
         
         sol.matrix <- matrix(rownames(mtrx)[sol.matrix], nrow=nrow(sol.matrix))
         
         all.PIs <- sortVector(unique(as.vector(sol.matrix[!is.na(sol.matrix)])), collapse=collapse)
+        
         # mtrx <- mtrx[rownames(mtrx) %in% all.PIs, , drop=FALSE]
         reduced$expressions <- reduced$expressions[sortVector(rownames(reduced$expressions)[rownames(reduced$expressions) %in% all.PIs], collapse=collapse), , drop=FALSE]
         
@@ -90,7 +171,7 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         
         solution.list <- writeSolution(sol.matrix, mtrx)
         
-        return(list(mtrx=mtrx, reduced=reduced, all.PIs=all.PIs, solution.list=solution.list))
+        return(list(mtrx=mtrx, reduced=reduced, expressions=expressions, all.PIs=all.PIs, solution.list=solution.list))
     }   
     
     val.outcome <- indata[, toupper(names(indata)) == outcome]
@@ -245,75 +326,113 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
     mbase <- rev(c(1, cumprod(rev(noflevels + 1))))[-1]
     
     if (incl.rem) {
-        
-        expressions <- sort(setdiff(findSupersets(noflevels + 1, expl.matrix), findSupersets(noflevels + 1, excl.matrix)))
-        expressions <- .Call("removeRedundants", expressions, noflevels, mbase, PACKAGE="QCA")
+        if (m2) {
+            nofconditions <- length(conditions)
+            ttdata <- rbind(expl.matrix - 1, excl.matrix - 1)
+            ttdata <- as.data.frame(cbind(ttdata, OUT = c(rep(1, nrow(expl.matrix)), rep(0, nrow(excl.matrix)))))
+            colnames(ttdata)[ncol(ttdata)] <- outcome
+            rownames(ttdata) <- seq(nrow(ttdata))
+            valents <- lapply(ttdata[, conditions], function(x) sort(unique(x)))
+            realnoflevels <- unlist(lapply(valents, length))
+            
+            gb <- vector(mode="list", length=nofconditions)
+            names(gb) <- conditions
+            for (i in seq(nofconditions)) {
+                gb[[i]] <- vector(mode="list", length=realnoflevels[i])
+                names(gb[[i]]) <- valents[[i]]
+                for (j in seq(length(valents[[i]]))) {
+                    gb[[i]][[j]] <- vector(mode="list", length=2)
+                    gb[[i]][[j]][[1]] <- which(ttdata[, i] == valents[[i]][j] & ttdata[, outcome] == 1)
+                    gb[[i]][[j]][[2]] <- which(ttdata[, i] == valents[[i]][j] & ttdata[, outcome] == 0)
+                }
+            }
+            
+            valents <- lapply(valents, function(x) x + 1) # +1 to raise the valents in the implicant matrix
+            realnoflevels <- realnoflevels + 1            # +1 same reason
+            
+            t1g <- seq(nrow(expl.matrix))
+            t1b <- seq(nrow(excl.matrix)) + nrow(expl.matrix)
+            
+            mvector <- c(rev(cumprod(rev(realnoflevels))), 1)[-1]
+            
+            expressions <- .Call("m2", gb, valents, mvector, mbase, t1g, t1b, realnoflevels)
+            expressions <- .Call("removeRedundants", expressions, noflevels, mbase, PACKAGE="QCA")
+            
+        }
+        else {
+            expressions <- sort(setdiff(findSupersets(noflevels + 1, expl.matrix), findSupersets(noflevels + 1, excl.matrix)))
+            expressions <- .Call("removeRedundants", expressions, noflevels, mbase, PACKAGE="QCA")
+        }
         
         expressions <- getRow(noflevels + 1, expressions)
         
         colnames(expressions) <- colnames(inputt)
         
         p.sol <- getSolution()
-        
     }
     
     output$PIs <- p.sol$all.PIs
-    if (incl.rem) {
-        output$PIchart$p.sol <- structure(list(p.sol$mtrx), class="pic")
-    }
-    else {
-        output$PIchart$c.sol <- structure(list(p.sol$mtrx), class="pic")
-    }
-    output$primes <- p.sol$expressions
+    output$PIchart <- structure(list(p.sol$mtrx), class="pic")
+    output$primes <- p.sol$reduced$expressions
     output$solution <- p.sol$solution.list[[1]]
     output$essential <- p.sol$solution.list[[2]]
     
-    if (details) {
-        
+    
+    # produce inclusion and coverage even if not specifically required, the printing function will deal with it
+    # same with show cases
+    # if (details) {
+            
         expr.cases <- rep(NA, nrow(p.sol$reduced$expressions))
-        if (show.cases) {
+        # if (show.cases) {
             
             tt.rows <- createString(inputt - 1, collapse=collapse, uplow, use.tilde)
             
             mtrxlines <- demoChart(rownames(p.sol$reduced$expressions), tt.rows, ifelse((use.letters & uplow) | (alreadyletters & uplow), "", "*"))
+            
             for (l in seq(length(expr.cases))) {
                 expr.cases[l] <- paste(inputcases[mtrxlines[l, ]], collapse="; ")
             }
-        }
-        
-        
+        # }
         
         if (length(p.sol$solution.list[[1]]) == 1) {
-            listIC <- pof(p.sol$reduced$expressions - 1, outcome, indata, showc=show.cases, cases=expr.cases, neg.out=neg.out,
+            
+            listIC <- pof(p.sol$reduced$expressions - 1, outcome, indata, showc=TRUE, cases=expr.cases, neg.out=neg.out,
                           relation = "sufficiency", via.eqmcc=TRUE)
+            listIC$opts$show.cases <- show.cases
         }
         else {
-            listIC <- pof(p.sol$reduced$expressions - 1, outcome, indata, showc=show.cases, cases=expr.cases, neg.out=neg.out,
+            
+            listIC <- pof(p.sol$reduced$expressions - 1, outcome, indata, showc=TRUE, cases=expr.cases, neg.out=neg.out,
                           relation = "sufficiency", via.eqmcc=TRUE, solution.list=output$solution, essential=output$essential)
+            listIC$opts$show.cases <- show.cases
         }
         
-        
-        if (incl.rem) {
-            output$pims$p.sol <- listIC$pims
-        }
-        else {
-            output$pims$c.sol <- listIC$pims
-        }
+        output$pims <- listIC$pims
         
         listIC$pims <- NULL
         output$IC <- listIC
-    }
+    
+    # }
     
     output$numbers <- c(OUT1=nofcases1, OUT0=nofcases0, OUTC=nofcasesC, Total=nofcases1 + nofcases0 + nofcasesC)
     
-    output$opts$warn1conf <- ifelse(nrow(expl.matrix) == 1 & !incl.rem, TRUE, FALSE)
+    # output$opts$warn1conf <- ifelse(nrow(expl.matrix) == 1 & !incl.rem, TRUE, FALSE)
     mtrx <- p.sol$mtrx[p.sol$all.PIs, , drop=FALSE]
     
     output$inputcases <- inputcases
+    
+    output$opts$explain <- explain
+    output$opts$neg.out <- neg.out
     output$opts$details <- details
     output$opts$show.cases <- show.cases
     output$opts$use.letters <- use.letters
     output$opts$collapse <- collapse
+    
+    if (PRI) {
+        output$opts$PRI <- other.args$PRI[1]
+    }
+    
+    # print(p.sol$reduced$expressions)
     
     output$SA <- lapply(p.sol$solution.list[[1]], function(x) {
         p.expressions <- p.sol$reduced$expressions[x, , drop=FALSE]
@@ -352,88 +471,191 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
             }
         }
     })
+    
+    
     prettyNums <- formatC(seq(length(p.sol$solution.list[[1]])), digits = nchar(length(p.sol$solution.list[[1]])) - 1, flag = 0)
     names(output$SA) <- paste("S", prettyNums, sep="")
     
-    
-    if (all(!is.null(direxp)) & all(include != c(""))) {
-        i.sol <- output$pims$i.sol <- vector("list", length(c.sol$solution.list[[1]])*length(p.sol$solution.list[[1]]))
+    if (!is.null(dir.exp) & all(include != c(""))) {
+        
+        i.sol <- vector("list", length(c.sol$solution.list[[1]])*length(p.sol$solution.list[[1]]))
         index <- 1
+        
         for (c.s in seq(length(c.sol$solution.list[[1]]))) {
+            
             c.expressions <- c.sol$reduced$expressions[c.sol$solution.list[[1]][[c.s]], , drop=FALSE]
             
             for (p.s in seq(length(p.sol$solution.list[[1]]))) {
                 
-                constraint <- p.sol$reduced$expressions[p.sol$solution.list[[1]][[p.s]], , drop=FALSE]
+                p.expressions <- p.sol$reduced$expressions[p.sol$solution.list[[1]][[p.s]], , drop=FALSE]
                 
-                names(i.sol)[index] <- names(output$pims$i.sol)[index] <- paste("C", c.s, "P", p.s, sep="")
+                # return(list(c.expressions=c.expressions, p.expressions=p.expressions, noflevels=noflevels, dir.exp=dir.exp, conditions=conditions))
                 
-                cntfs <- subcols <- sexpr <- matrix(ncol=length(conditions), nrow=0)
-                colnames(cntfs) <- colnames(inputt)
-                direxp <- gsub("dc", -1, direxp)
-                for (cons in seq(nrow(constraint))) {
-                    for (i in seq(nrow(c.expressions))) {
-                        subset.columns <- logical(length(direxp))
-                        cons.index <- constraint[cons, ]
-                        check.cons <- c.expressions[i, cons.index >= 1] == cons.index[cons.index >= 1]
+                dir.exp.matrix <- matrix(matrix(ncol=length(conditions), nrow=0))
+                
+                for (i in seq(nrow(c.expressions))) {
+                    comp <- c.expressions[i, ]
+                    
+                    for (j in seq(nrow(p.expressions))) {
+                        pars <- p.expressions[j, ]
                         
-                        if (all(check.cons)) {
-                            subset.columns[cons.index >= 1] <- check.cons
+                        dir.exp.temp <- rep(-1, length(pars))
+                        equals <- comp[pars > 0] == pars[pars > 0]
+                        
+                        
+                        #if (p.s == 2) {
+                        #    eq <- rep("", length(comp))
+                        #    eq[pars > 0] <- equals
+                        #    eq[eq == "TRUE"] <- "T"
+                        #    eq[eq == "FALSE"] <- "F"
+                        #    print(rbind(comp, pars, eq))
+                        #    cat("\n")
+                        #}
+                        
+                        if (all(equals) > 0) {
+                            #if (p.s == 2) {
+                            #    print("subset!")
+                            #}
+                            res <- lapply(dir.exp, function(x) return(-1))
+                            equals <- which(pars > 0)
+                            for (k in equals) {
+                                res[[k]] <- sort(drop(as.numeric(pars[k] - 1)))
+                            }
                             
-                            if (any(cons.index < 1)) {
-                                for (drxp in seq(length(direxp))[cons.index < 1]) {
-                                    subset.columns[drxp] <- subset.columns[drxp] | ((c.expressions[i, drxp] - 1) %in% unlist(strsplit(direxp[drxp], ";")))
-                                    subset.columns[direxp == -1] <- TRUE
+                            dir.exp.temp[equals] <- c.expressions[i, equals] - 1
+                            notequals <- setdiff(which(comp > 0), equals)
+                            if (length(notequals) > 0) {
+                                for (k in notequals) {
+                                    
+                                    ###### !!!!!!!!!!!!!!!!!!
+                                    dir.exp.k <- unique(c(names(dir.exp[[conditions[k]]])[dir.exp[[conditions[k]]] == 1], c.expressions[i, k] - 1))
+                                    ###### !!!!!!!!!!!!!!!!!!
+                                    
+                                    
+                                    if (length(dir.exp.k) != noflevels[k]) {
+                                        equals <- sort(c(equals, k))
+                                        res[[k]] <- sort(drop(as.numeric(dir.exp.k)))
+                                    }
                                 }
                             }
                             
-                            if (any(subset.columns)) {
-                                cexpr.sub <- c.expressions[i, subset.columns] - 1
-                                SArows <- apply(output$SA[[p.s]], 1, function(x) {
-                                    x <- x[subset.columns]
-                                    all(x[cexpr.sub >= 0] == cexpr.sub[cexpr.sub >= 0])
-                                })
-                                subSA <- output$SA[[p.s]][SArows, , drop=FALSE]
-                                cntfs <- rbind(cntfs, subSA[!rownames(subSA) %in% rownames(cntfs), , drop=FALSE])
+                            #if (p.s == 2) {
+                            #    print(expand.grid(res))
+                            #}
+                            
+                            dir.exp.matrix <- rbind(dir.exp.matrix, expand.grid(res))
+                            
+                        }
+                        else {
+                            #if (p.s == 2) {
+                            #    print("not a subset!")
+                            #}
+                        }
+                        
+                        #if (p.s == 2) {
+                        #    cat("\n\n\n")
+                        #}
+                        
+                    }
+                }
+                
+                #if (p.s == 2) {
+                #    print(dir.exp.matrix)
+                #}
+                
+                constraint <- p.sol$reduced$expressions[p.sol$solution.list[[1]][[p.s]], , drop=FALSE]
+                
+                names(i.sol)[index] <- paste("C", c.s, "P", p.s, sep="")
+                
+                EC <- subcols <- sexpr <- matrix(ncol=length(conditions), nrow=0)
+                colnames(EC) <- colnames(inputt)
+                
+                for (dir.exp.i in seq(nrow(dir.exp.matrix))) {
+                    dir.exp.x <- dir.exp.matrix[dir.exp.i, ]
+                    subset.columns <- dir.exp.x >= 0
+                    
+                    if (!is.null(output$SA[[p.s]])) { # bug fix 06.08.2013 Ljubljana
+                        SArows <- apply(output$SA[[p.s]], 1, function(x) {
+                            return(all(x[dir.exp.x >= 0] == dir.exp.x[dir.exp.x >= 0]))
+                        })
+                        
+                        subSA <- output$SA[[p.s]][SArows, , drop=FALSE]
+                        EC <- rbind(EC, subSA[setdiff(rownames(subSA), rownames(EC)), , drop=FALSE])
+                    } 
+                }
+                
+                i.sol[[index]]$EC <- EC[order(as.numeric(rownames(EC))), , drop = FALSE]
+                i.sol[[index]]$DC <- output$SA[[p.s]][setdiff(rownames(output$SA[[p.s]]), rownames(EC)), , drop=FALSE]
+                i.sol[[index]]$NSEC <- matrix(ncol = ncol(EC), nrow = 0)
+                colnames(i.sol[[index]]$NSEC) <- colnames(EC)
+                
+                # print(i.sol[[index]]$EC)
+                
+                nsecs <- TRUE
+                
+                while (nsecs) {
+                    expl.matrix.i.sol <- unique(rbind(expl.matrix, i.sol[[index]]$EC + 1))
+                    
+                    tomit <- logical(nrow(expl.matrix.i.sol))
+                    if (is.matrix(omit)) {
+                        cnoflevels <- noflevels
+                        for (i in seq(ncol(omit))) {
+                            if (any(omit[, i] < 0)) {
+                                omit[, i][omit[, i] < 0] <- noflevels[i]
+                                cnoflevels[i] <- noflevels[i] + 1
                             }
                         }
+                        tomit <- rownames(expl.matrix) %in% (drop(rev(c(1, cumprod(rev(cnoflevels))))[-1] %*% t(omit)) + 1)
                     }
-                }
-                
-                i.sol[[index]]$cntfs <- cntfs[order(as.numeric(rownames(cntfs))), ]
-                
-                expl.matrix.i.sol <- unique(rbind(expl.matrix, i.sol[[index]]$cntfs + 1))
-                
-                tomit <- logical(nrow(expl.matrix.i.sol))
-                if (is.matrix(omit)) {
-                    cnoflevels <- noflevels
-                    for (i in seq(ncol(omit))) {
-                        if (any(omit[, i] < 0)) {
-                            omit[, i][omit[, i] < 0] <- noflevels[i]
-                            cnoflevels[i] <- noflevels[i] + 1
+                    else if (is.vector(omit)) {
+                        if (is.numeric(omit)) {
+                            tomit <- rownames(expl.matrix) %in% as.character(omit)
                         }
                     }
-                    tomit <- rownames(expl.matrix) %in% (drop(rev(c(1, cumprod(rev(cnoflevels))))[-1] %*% t(omit)) + 1)
-                }
-                else if (is.vector(omit)) {
-                    if (is.numeric(omit)) {
-                        tomit <- rownames(expl.matrix) %in% as.character(omit)
+                    
+                    expl.matrix.i.sol <- expl.matrix.i.sol[!tomit, , drop=FALSE]
+                    
+                    expressions <- minExpressions(expl.matrix.i.sol)
+                    
+                    i.sol.index <- getSolution()
+                    
+                    i.sol.index$expressions <- i.sol.index$expressions[rowSums(i.sol.index$mtrx) > 0, ]
+                    
+                    if (nrow(i.sol[[index]]$EC) > 0) {
+                        nsec <- !vector(length = nrow(i.sol[[index]]$EC))
+                        
+                        for (i in seq(nrow(i.sol.index$expressions))) {
+                            i.sol.PI <- i.sol.index$expressions[i, ]
+                            for (j in seq(length(nsec))) {
+                                j.EC <- i.sol[[index]]$EC[j, ]
+                                
+                                if (all(i.sol.PI[i.sol.PI > 0] == (j.EC[i.sol.PI > 0] + 1))) {
+                                    nsec[j] <- FALSE
+                                }
+                            }
+                        }
+                        
+                        nsecs <- any(nsec)
+                    }
+                    else {
+                        nsecs <- FALSE
+                    }
+                    
+                    if (nsecs) {
+                        i.sol[[index]]$NSEC <- rbind(i.sol[[index]]$NSEC, i.sol[[index]]$EC[which(nsec), , drop = FALSE])
+                        i.sol[[index]]$EC <- i.sol[[index]]$EC[-which(nsec), , drop = FALSE]
                     }
                 }
                 
-                expl.matrix.i.sol <- expl.matrix.i.sol[!tomit, , drop=FALSE]
-                
-                expressions <- minExpressions(expl.matrix.i.sol)
-                
-                i.sol.index <- getSolution()
-                output$PIchart$i.sol[[names(i.sol)[index]]] <- structure(list(i.sol.index$mtrx), class="pic")
+                i.sol[[index]]$PIchart <- structure(list(i.sol.index$mtrx), class="pic")
                 i.sol[[index]]$c.sol <- c.sol$solution.list[[1]][[c.s]]
                 i.sol[[index]]$p.sol <- p.sol$solution.list[[1]][[p.s]]
                 i.sol[[index]]$solution <- i.sol.index$solution.list[[1]]
                 i.sol[[index]]$essential <- i.sol.index$solution.list[[2]]
+                i.sol[[index]]$primes <- i.sol.index$reduced$expressions
                 
                 expr.cases <- rep(NA, nrow(i.sol.index$reduced$expressions))
-                if (show.cases) {
+                # if (show.cases) {
                     
                     tt.rows <- createString(inputt - 1, collapse=collapse, uplow, use.tilde)
                     
@@ -441,23 +663,43 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
                     for (l in seq(length(expr.cases))) {
                         expr.cases[l] <- paste(inputcases[mtrxlines[l, ]], collapse="; ")
                     }
-                }
+                # }
                 
                 if (length(i.sol.index$solution.list[[1]]) == 1) {
-                    i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, outcome, indata, showc=show.cases,
+                    i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, outcome, indata, showc=TRUE,
                                              cases=expr.cases, relation = "sufficiency", neg.out=neg.out, via.eqmcc = TRUE)
+                    
+                    i.sol[[index]]$IC$opts$show.cases <- show.cases
                 }
                 else {
-                    i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, outcome, indata, showc=show.cases,
+                    i.sol[[index]]$IC <- pof(i.sol.index$reduced$expressions - 1, outcome, indata, showc=TRUE,
                                              cases=expr.cases, relation = "sufficiency", neg.out=neg.out, via.eqmcc = TRUE,
                                              solution.list=i.sol.index$solution.list[[1]], essential=i.sol.index$solution.list[[2]])
+                    i.sol[[index]]$IC$opts$show.cases <- show.cases
                 }
-                output$pims$i.sol[[index]] <- i.sol[[index]]$IC$pims
+                i.sol[[index]]$pims <- i.sol[[index]]$IC$pims
                 i.sol[[index]]$IC$pims <- NULL
                 index <- index + 1
             }
         }
         output$i.sol <- i.sol
     }
+    
+    # transform the SAs and the easy counterfactuals in data frames
+    
+    output$SA <- lapply(output$SA, as.data.frame)
+    
+    if (any(names(output) == "i.sol")) {
+        for (i in seq(length(output$i.sol))) {
+            output$i.sol[[i]]$EC <- as.data.frame(output$i.sol[[i]]$EC)
+        }
+    }
+    
+    if (!is.tt(data)) {
+        output$tt$outcome <- outcome.copy
+    }
+    
+    output$relation <- relation
+    
     return(structure(output, class="qca"))
 }

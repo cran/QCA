@@ -1,8 +1,17 @@
 `superSubset` <-
-function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "necessity",
-         incl.cut = 1, cov.cut = 0, use.tilde = FALSE, use.letters = FALSE) {
+function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "nec",
+         incl.cut = 1, cov.cut = 0, use.tilde = FALSE, use.letters = FALSE, ...) {
     
     memcare <- FALSE # to be updated with a future version
+    
+    other.args <- list(...)
+    
+    PRI <- FALSE
+    if ("PRI" %in% names(other.args)) {
+        if (is.logical(other.args$PRI)) {
+            PRI <- other.args$PRI[1] # [1] just to make sure only the first value is taken, should someone by mistake provide a vector
+        }
+    }
     
     incl.cut <- incl.cut - .Machine$double.eps ^ 0.5
     if (cov.cut > 0) {
@@ -13,14 +22,34 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "ne
         conditions <- names(data)[-which(names(data) == outcome)]
     }
     
+    if (grepl("[{]", outcome)) { # there is a "{" sign in the outcome's name
+        outcome <- unlist(strsplit(outcome, split = ""))
+        outcome.value <- as.numeric(outcome[which(outcome == "{") + 1])
+        outcome <- paste(outcome[seq(1, which(outcome == "{") - 1)], collapse="")
+        
+        if (!any(unique(data[, outcome]) == outcome.value)) {
+            cat("\n")
+            stop(paste("The value {", outcome.value, "} does not exist in the outcome.\n\n", sep=""), call. = FALSE)
+        }
+        data[, outcome] <- ifelse(data[, outcome] == outcome.value, 1, 0)
+    }
+    
+    
     verify.data(data, outcome, conditions)
     
-    if (!relation %in% c("necessity", "sufficiency", "nec", "suf", "necsuf")) {
+    if (!relation %in% c("necessity", "sufficiency", "nec", "suf", "sufnec", "necsuf")) {
         stop("\nThe relationship should be either \"necessity\", \"sufficiency\" or \"necsuf\".\n\n", call. = FALSE)
     }
     
     relationcopy <- relation
-    if (relation == "necsuf") {
+    if (relation == "sufnec" | relation == "necsuf") {
+        cov.cut <- incl.cut
+    }
+    
+    if (relation == "sufnec") {
+        relation <- "sufficiency"
+    }
+    else if (relation == "necsuf") {
         relation <- "necessity"
     }
     
@@ -114,7 +143,8 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "ne
         lexprnec <- length(exprnec)
         
         if (lexprnec + lexpressions == 0) {
-            stop("\nThere are no combinations that match given criteria.\n\n", call. = FALSE)
+            cat("\n")
+            stop(paste("\nThere are no combinations with incl.cut = ", round(incl.cut, 3), " and cov.cut = ", round(cov.cut, 3), "\n\n", sep=""), call. = FALSE)
         }
         
         if (lexprnec > 0) {
@@ -150,7 +180,8 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "ne
     }
     
     if (lexprnec + lexpressions == 0) { # there is no combination which exceeds incl.cut
-        stop("\nThere are no combinations that match given criteria.\n\n", call. = FALSE)
+        cat("\n")
+        stop(paste("\nThere are no combinations with incl.cut = ", round(incl.cut, 3), " and cov.cut = ", round(cov.cut, 3), "\n\n", sep=""), call. = FALSE)
     }
     
     
@@ -179,11 +210,18 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "ne
     rownames(mins) <- rownames(data)
     mins <- as.data.frame(mins)
     
-    if (relationcopy == "necsuf") {
+    if (relationcopy == "sufnec") {
+        colnames(result) <- c("inclS", "PRI", "inclN")
+    }
+    else if (relationcopy == "necsuf") {
         colnames(result) <- c("inclN", "PRI", "inclS")
     }
     
-    return(structure(list(incl.cov=result, coms=mins, use.letters=use.letters, letters=replacements), class="ss"))
+    out.list <- list(incl.cov=result, coms=mins, use.letters=use.letters, letters=replacements)
+    if (PRI) {
+        out.list$PRI <- PRI
+    }
+    return(structure(out.list, class="ss"))
 }
 
 

@@ -1,14 +1,18 @@
 `demoChart` <-
-function(rows, columns, splitmethod="") {
-    if (splitmethod != "") splitmethod <- paste("\\", splitmethod, sep="")
-    mtrx <- t(sapply(rows, function(x) {
-        y <- unlist(strsplit(x, splitmethod))
-        sapply(columns, function(idcol) {
-            all(sapply(y, function(z) z %in% unlist(strsplit(idcol, splitmethod))))
+function(primes = c(""), configs = c(""), prod.split="") {
+    if (prod.split != "") prod.split <- paste("\\", prod.split, sep="")
+    mtrx <- t(sapply(primes, function(x) {
+        y <- unlist(strsplit(x, prod.split))
+        sapply(configs, function(idcol) {
+            all(sapply(y, function(z) z %in% unlist(strsplit(idcol, prod.split))))
             })
         }))
-    colnames(mtrx) <- columns
-    rownames(mtrx) <- rows
-    return(mtrx)
+        
+    if (nrow(mtrx) == length(configs) & ncol(mtrx) == length(primes)) {
+        mtrx <- t(mtrx)
     }
+    colnames(mtrx) <- configs
+    rownames(mtrx) <- primes
+    return(mtrx)
+}
 
