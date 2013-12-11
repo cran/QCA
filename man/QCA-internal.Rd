@@ -7,6 +7,7 @@
 \alias{eqmccLoop}
 \alias{fuzzyand}
 \alias{fuzzyor}
+\alias{getSolution}
 \alias{prettyString}
 \alias{prettyTable}
 \alias{print.aE}

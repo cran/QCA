@@ -60,7 +60,7 @@ SEXP removeRedundants(SEXP rowno, SEXP noflevels, SEXP mbase) {
                     }
                 }
                 
-                if (i < length(mbase)) {
+                if (i < lmbase) {
                     SET_VECTOR_ELT(usage, 4, temp1 = allocVector(INTSXP, lungime));
                     pointer_temp1 = INTEGER(temp1);
                     

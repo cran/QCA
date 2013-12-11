@@ -209,6 +209,7 @@ head(d.RS)
 
 # tQCA truth table with "don't care" values
 truthTable(d.RS, outcome = "REC")
+
 }
 
 \keyword{functions}

@@ -267,6 +267,15 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), n.cut = 1,
     
     x$outcome <- outcome.copy
     
+    PRI <- FALSE
+    if ("PRI" %in% names(other.args)) {
+        if (is.logical(other.args$PRI)) {
+            PRI <- other.args$PRI[1]
+        }
+    }
+    
+    x$PRI <- PRI
+    
     return(structure(x, class="tt"))
 }
 

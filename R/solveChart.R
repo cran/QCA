@@ -19,10 +19,11 @@ function(chart, row.dom = FALSE, all.sol = FALSE) {
     output <- list()
     
     if (all(dim(chart) > 1)) {
-         ## solution provided by Gabor Grothendieck
+         ## initial solution provided by Gabor Grothendieck
          ## the function lp (from package lpSolve) finds a (guaranteed) minimum solution
          # k will be the minimum number of prime implicants necessary to cover all columns
         k <- ceiling(sum(lp("min", rep(1, nrow(chart)), t(chart), ">=", 1)$solution))
+        # cat(paste("k: ", k, "\n"))
         
          # Stop if the matrix with all possible combinations of k PIs has over 2GB of memory
         if ((mem <- nrow(chart)*choose(nrow(chart), k)*8/1024^3) > 2) {
@@ -31,59 +32,31 @@ function(chart, row.dom = FALSE, all.sol = FALSE) {
                              k, "PIs out of", nrow(chart), "minimised PIs.\n\n"), call. = FALSE)
         }
         
-         # create a matrix with all possible combinations of k prime implicants
-        combos <- combn(nrow(chart), k)
-        
-         # sol.matrix will be a subset of the chart matrix with all minimum solutions
-        output <- combos[, apply(combos, 2, function(idx) all(colSums(chart[idx, , drop=FALSE]) > 0)), drop=FALSE]
-        
         if (all.sol & k < nrow(chart)) {
             
-            output.all <- list()
-            output.all[[1]] <- output
+            output <- .Call("allSol", k, chart*1, PACKAGE="QCA")
             
-            for (i in seq(k + 1, nrow(chart))) {
-                combos <- combn(nrow(chart), i)
-                
-                combos <- combos[, apply(combos, 2, function(idx) all(colSums(chart[idx, , drop=FALSE]) > 0)), drop=FALSE]
-                
-                ## it is basically impossible to already be a solution, since "k + 1" is used
-                
-                for (j in seq(length(output.all))) {
-                    already.sol <- apply(combos, 2, function(idx) {
-                        any(apply(output.all[[j]], 2, function(outx) {
-                            all(is.element(outx[!is.na(outx)], idx))
-                        }))
-                    })
-                    
-                    combos <- combos[, !already.sol, drop = FALSE]
-                }
-                  
-                if (ncol(combos) > 0) {
-                    output.all[[length(output.all) + 1]] <- combos
-                }
-            }
+            output[output == 0] <- NA
             
+        }
+        else {
             
-            if (length(output.all) > 1) {
-                max.nrows <- max(unlist(lapply(output.all, nrow)))
-                output.all <- lapply(output.all, function(x) {
-                    apply(x, 2, function(y) {c(y, rep(NA, max.nrows - length(y)))})
-                })
-                
-                output <- output.all[[1]]
-                
-                for (i in seq(2, length(output.all))) {
-                    output <- cbind(output, output.all[[i]])
-                }
-            }
+             # create a matrix with all possible combinations of k prime implicants
+            combos <- combn(nrow(chart), k)
             
+             # sol.matrix will be a subset of the chart matrix with all minimum solutions
+            output <- combos[, as.logical(.Call("solveChart", t(combos) - 1, chart*1, PACKAGE="QCA")[[1]]), drop=FALSE]
         }
     }
     else {
         output <- matrix(seq(nrow(chart)))
-    }
+        
+        if (ncol(chart) == 1) {
+            output <- t(output)
+        }
+    } 
     
+    # just in case row dominance was applied
     return(matrix(row.numbers[output], nrow=nrow(output)))
 }
 
