@@ -65,9 +65,10 @@ returned by \code{truthTable()}) or a suitable data set. Suitable data sets have
 the following structure: values of 0 and 1 for bivalent crisp set variables, 
 values between 0 and 1 for bivalent fuzzy set variables, and values beginning with 
 0 at increments of 1 for multivalent crisp set variables. The placeholder "-" 
-indicates a "don't care" value in auxiliary conditions that specify temporal order 
-between other substantive conditions in tQCA. These values lead to the exclusion 
-of the auxiliary condition from the computation of parameters of fit.
+indicates a "don't care" value in auxiliary condition variables that specify 
+temporal order between other substantive condition variables in tQCA. These values 
+lead to the exclusion of the auxiliary condition variable from the computation of 
+parameters of fit.
 
 The value/s to the argument \code{outcome} can be specified in the notation for 
 multivalent crisp set variables using curly brackets or traditional notation for 
@@ -98,7 +99,9 @@ If \code{relation = "suf"} (default), sufficiency relations are identified as
 indicated by a right arrow (\code{=>}). If the solution also proves to be 
 necessary, this will be indicated by a double arrow (\code{<=>}). If 
 \code{relation = "sufnec"}, solutions must be both sufficient and necessary to 
-be identified. 
+be identified. The argument \code{incl.cut1} then acts as the cut-off for
+the sufficiency inclusion of a configuration as well as the necessity inclusion 
+of the final solution.
 
 Configurations that contain fewer than \code{n.cut} cases with membership scores 
 above 0.5 are coded as logical remainders (\code{OUT = "?"}). If the number of 
@@ -124,19 +127,25 @@ All combinations allowed separately for \code{explain} are also allowed for
 The logical argument \code{row.dom} controls the application of the principle of
 row dominance. An inessential prime implicant \eqn{P_{1}}{P_{1}} dominates another 
 \eqn{P_{2}}{P_{2}} if all configurations covered by \eqn{P_{2}}{P_{2}} are also 
-covered by \eqn{P_{1}}{P_{1}}, but they are not interchangeable. If row dominance 
-is applied, certain ambiguities in the data will be invisible. The argument is 
-primarily intended for demonstration purposes. For more details on the application 
-of row dominance in other QCA software, see Thiem and Dusa (2013).
+covered by \eqn{P_{1}}{P_{1}}, but they are not interchangeable (cf. McCluskey 
+1956, p. 1425). Given a minimum number of prime implicants to complete a solution,
+the complexity of each prime implicant is disregarded. Users should be aware that 
+if row dominance is applied, certain ambiguities in the data will be invisible. 
+The argument is therefore primarily intended for demonstration purposes only. For 
+more details on the application of row dominance in other QCA software, see Thiem 
+and Dusa (2013).
 
 The argument \code{all.sol} solves the prime implicant chart by deriving all 
-non-redundant solutions, irrespective of prime implicant or solution complexity. 
-If \code{all.sol = TRUE} is used in conjunction with \code{row.dom = FALSE}, all 
-ambiguities in the data will be revealed.
+non-redundant solutions, irrespective of individual prime implicant or overall 
+solution complexity. If \code{all.sol = TRUE} is used in conjunction with 
+\code{row.dom = FALSE}, all ambiguities in the data will be revealed. Extreme 
+ambiguities may indicate inappropriate data.
 
-The argument \code{omit} can be used to omit any configuration from the 
-minimization process. It accepts a vector of row numbers from the truth table 
-or a matrix of configurations.
+The argument \code{omit} can be used to omit any configuration (positive, 
+negative or remainder) from the minimization process. It accepts a vector of row 
+numbers from the truth table or a matrix of configurations of the same order of
+conditions as passed to truthTable() (if eqmcc() is passed a truth table object) 
+or as specified in the argument \code{conditions}.
 
 The \code{dir.exp} argument specifies directional expectations for separating
 easy from difficult counterfactuals in simplifying assumptions. For bivalent 
@@ -212,6 +221,9 @@ Hartmann, Christof, and Joerg Kemmerzell. 2010. Understanding Variations in Part
 Bans in Africa. 
 \emph{Democratization} 17 (4):642-65.
 
+McCluskey, Edward J. 1956. Minimization of Boolean Functions. 
+\emph{Bell Systems Technical Journal} 35 (6):1417-44.
+
 Krook, Mona Lena. 2010. Women's Representation in Parliament: A Qualitative 
 Comparative Analysis. 
 \emph{Political Studies} 58 (5):886-908.
@@ -267,12 +279,16 @@ head(d.Emm)
 
 # parsimonious solution with details
 eqmcc(d.Emm, outcome = "JSR", incl.cut1 = 0.9, include = "?", 
-  details = TRUE, PRI = TRUE)
+  details = TRUE)
 
 # intermediate solution
 Emm.si <- eqmcc(d.Emm, outcome = "JSR", incl.cut1 = 0.9, 
   include = "?", dir.exp = c(1,1,1,1,1,0), details = TRUE)
 Emm.si
+
+# are the prime implicants also sufficient for the negation of the outcome?
+pof(Emm.si$i.sol$C1P1$pims, outcome = "JSR", d.Emm, neg.out = TRUE,
+  relation = "suf")
 
 # check PI chart for intermediate solution;
 # C1P1: first conservative and first parsimonious solution
@@ -355,7 +371,7 @@ data(d.SA)
 head(d.SA)
 
 # directional expectation of FED{0} leads to non-simplifying
-# easy counterfactual 
+# easy counterfactual
 SA.si <- eqmcc(d.SA, outcome = "ACC", conditions = names(d.SA)[1:5],
   include = "?", dir.exp = c(0,1,0,1,1), details = TRUE)
 SA.si
@@ -372,8 +388,9 @@ head(d.RS)
 # from parameters of fit
 eqmcc(d.RS, outcome = "REC", details = TRUE, show.cases = TRUE)
 
-# mimic Coincidence Analysis (CNA); data from Baumgartner (2009)
-#---------------------------------------------------------------
+# QCA path model ("causal chain" in CNA); data from Baumgartner (2009);
+# note that CNA chains and QCA path models are not always equal
+#--------------------------------------------------------------
 d.Bau <- data.frame(U = c(1,1,1,1,0,0,0,0), D = c(1,1,0,0,1,1,0,0), 
   L = c(rep(1,6),0,0), G = rep(c(1,0), 4), E = c(rep(1,7),0), 
   row.names = letters[1:8])

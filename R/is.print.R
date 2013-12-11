@@ -21,6 +21,15 @@ function(x) {
 
 `print.tt` <-
 function(x, ...) {
+    
+    other.args <- list(...)
+    PRI <- x$PRI
+    if ("PRI" %in% names(other.args)) {
+        if (is.logical(other.args$PRI)) {
+            PRI <- other.args$PRI[1] # [1] just to make sure only the first value is taken, should someone by mistake provide a vector
+        }
+    }
+    
     if (nrow(x$tt) > 1024) {
         cat("\n")
         cat(paste("Warning: The truth table is too large (", nrow(x$tt), " rows). ",
@@ -39,14 +48,19 @@ function(x, ...) {
             }
         }
         
-        x$tt$PRI <- NULL # get rid of the PRI column, not print it on the screen
         
         inclusion <- x$tt[, "incl"]
-        # pri <- x$tt[, "PRI"]
         missincl <- x$tt[, "incl"] == "-"
-        # misspri <- x$tt[, "PRI"] == "-"
         x$tt[!missincl, "incl"] <- formatC(as.numeric(inclusion[!missincl]), digits=3, format="f")
-        # x$tt[!misspri, "PRI"] <- formatC(as.numeric(pri[!misspri]), digits=3, format="f")
+        
+        if (PRI) {
+            pri <- x$tt[, "PRI"]
+            misspri <- x$tt[, "PRI"] == "-"
+            x$tt[!misspri, "PRI"] <- formatC(as.numeric(pri[!misspri]), digits=3, format="f")
+        }
+        else {
+            x$tt$PRI <- NULL # get rid of the PRI column, not print it on the screen
+        }
         
         if (any(names(x$tt) == "pval1")) {
             x$tt[, "pval1"] <- formatC(as.numeric(x$tt[, "pval1"]), digits=3, format="f")
@@ -57,9 +71,11 @@ function(x, ...) {
             x$tt[missincl, "incl"] <- "  -"
         }
         
-        # if (any(misspri)) {
-        #     x$tt[misspri, "PRI"] <- "  -"
-        # }
+        if (PRI) {
+            if (any(misspri)) {
+                x$tt[misspri, "PRI"] <- "  -"
+            }
+        }
         
         cat("  OUT: outcome value\n")
         cat("    n: number of cases in configuration\n")
@@ -167,7 +183,7 @@ function(x, ...) {
     }
     
     if (x$opts$print.truth.table) {
-        print.tt(x$tt)
+        print.tt(x$tt, PRI=PRI)
     }
     else {
         nofconditions <- length(x$tt$noflevels)

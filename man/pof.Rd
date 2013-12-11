@@ -15,7 +15,7 @@ pof(setms, outcome, data, neg.out = FALSE, relation = "nec", ...)
 \arguments{
   \item{setms}{A data frame of set membership scores, or a matrix of implicants, 
         or a vector of implicant matrix line numbers.}
-  \item{outcome}{A vector of outcome sets.}
+  \item{outcome}{The name of the outcome set.}
   \item{data}{The working data set.}
   \item{neg.out}{Logical, use negation of outcome set.}
   \item{relation}{The set relation between the set membership scores and the outcome, 
@@ -125,6 +125,7 @@ pof(x$A, x$O)
 
 # for multiple columns from that data frame
 pof(x[, 1:2], outcome = "O", x)
+
 }
 
 \keyword{functions}

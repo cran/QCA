@@ -1,2 +1,5 @@
 - function deMorgan(): negate set-theoretic expressions with multivalent variables
 - inference-statistical tests for fuzzy sets
+- add argument to eqmcc for specifying temporal order
+- sensitivity diagnostics
+- minimization for multiple outcomes that are not conditions

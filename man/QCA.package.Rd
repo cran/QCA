@@ -29,10 +29,11 @@ substantially lower memory consumption than QMC (Dusa 2007, 2010). Since version
 1.0-4, the compilation of major parts of the code in the C language has increased 
 the speed of some core functions such as \code{\link{superSubset}}. Since version 
 1.1-0, \code{\link{eqmcc}} has been made more flexible: besides the previous 
-possibility to relax row dominance (Thiem and Dusa 2013a), Coincidence Analysis 
-(Baumgartner 2009a, b) can now be mimicked and multivalent outcomes are allowed. 
-In addition, truth tables for csQCA and mvQCA can now be coded on the basis of 
-inference-statistical tests. For more details, see the package's change log file.
+possibility to relax row dominance (Thiem and Dusa 2013a), QCA path models can now
+be identified (equivalent of "causal chains" in Coincidence Analysis 
+(Baumgartner 2009a, b)), multivalent outcomes are allowed, and truth tables for 
+csQCA and mvQCA can now be coded on the basis of inference-statistical tests 
+(currently only exact binomial). For more details, see the package's change log file.
 
 Several data sets from various areas of research have also been integrated in 
 order to facilitate familiarization with the package's functionality. Areas 
@@ -45,17 +46,17 @@ currently covered are education (\code{\link{d.SS}}), environmental sciences
 How to make the most of the package's capabilities is demonstrated in detail by 
 Thiem and Dusa (2013b) with examples from political science (note that data sets 
 have been renamed). The general reference for the QCA package is Thiem and Dusa 
-(2013c). Later versions of the package than those used in these publications may 
-feature different functions, arguments or values, but backward compatibility is 
-ensured.
+(2013c). For full publication information, use command \code{citation("QCA")}. 
+Later versions of the package than those used in these publications may feature 
+different functions, arguments or values, but backward compatibility is ensured.
 }
 
 \details{
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 1.1-0\cr
-    Date:    \tab 2013-10-31\cr
+    Version: \tab 1.1-1\cr
+    Date:    \tab 2013-12-11\cr
     License: \tab GPL (>= 2)\cr
     }
 }
@@ -122,8 +123,6 @@ A User's Guide}. New York: Springer.
 Thiem, Alrik, and Adrian Dusa. 2013c. QCA: A Package for Qualitative Comparative 
 Analysis. 
 \emph{The R Journal} 5 (1):87-97.
-
-
 }
 
 \keyword{package}

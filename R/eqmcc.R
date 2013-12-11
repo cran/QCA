@@ -20,7 +20,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
     
     if ("PRI" %in% names(other.args)) {
         if (is.logical(other.args$PRI)) {
-            PRI <- other.args$PRI[1] # [1] just to make sure only the first value is taken, should someone by mistake provide a vector
+            PRI <- other.args$PRI[1] # [1] just to make sure only the first value is taken, should someone incorrectly provide a vector
         }
     }
     
@@ -70,18 +70,13 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         # dir.exp should now be a list, in the same order as the conditions' names
         verify.qca(data, outcome, conditions, explain, include, use.letters)
         
-        dir.exp <- verify.dir.exp(data, outcome, conditions, dir.exp)
-        if (!is.null(dir.exp)) {
-            names(dir.exp) <- toupper(names(dir.exp))
-        }
-        
         complete <- FALSE
         if ("complete" %in% names(other.args)) {
             complete <- other.args$complete
         }
         
         tt <- truthTable(data=data, outcome=outcome, conditions=conditions, show.cases=show.cases, n.cut=n.cut,
-                         incl.cut1=incl.cut1, incl.cut0=incl.cut0, use.letters=use.letters, neg.out=neg.out, complete=complete)
+                         incl.cut1=incl.cut1, incl.cut0=incl.cut0, use.letters=use.letters, neg.out=neg.out, complete=complete, PRI=PRI)
         
         
         tt$initial.data <- indata
@@ -91,6 +86,11 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         conditions <- toupper(conditions)
         outcome <- toupper(outcome)
         names(indata) <- c(conditions, outcome)
+        
+        dir.exp <- verify.dir.exp(recdata, outcome, conditions, dir.exp)
+        if (!is.null(dir.exp)) {
+            names(dir.exp) <- toupper(names(dir.exp))
+        }
         
     }
     else { # data already is a tt
@@ -120,59 +120,13 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
             tt$tt <- tt$tt[-missings, ]
         }
         
-        dir.exp <- verify.dir.exp(indata, outcome, conditions, dir.exp)
+        neg.out <- tt$neg.out
+        
+        dir.exp <- verify.dir.exp(recdata, outcome, conditions, dir.exp)
         if (!is.null(dir.exp)) {
             names(dir.exp) <- toupper(names(dir.exp))
         }
-        
-        neg.out <- tt$neg.out
     }
-    
-    
-    getSolution <- function() {
-        
-        PI <- writePrimeimp(expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde)
-        rownames(expressions) <- PI
-        
-        PI.sort <- sortVector(PI, collapse=collapse)
-        
-        expressions <- expressions[match(sortVector(PI.sort, collapse=collapse), PI), , drop=FALSE]
-        rownames(expressions) <- PI.sort
-        
-         # create the prime implicants chart
-        mtrx <- createChart(expressions, inputt)
-        
-        reduced <- list(expressions = expressions, mtrx = mtrx)
-        
-        if (row.dom) {
-            reduced.rows <- rowDominance(mtrx)
-            reduced$mtrx <- mtrx[reduced.rows, ]
-            reduced$expressions <- expressions[reduced.rows, ]
-        }
-        
-        PI.red <- writePrimeimp(reduced$expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde)
-        PI.red.sort <- sortVector(PI.red, collapse=collapse)
-        
-        mtrx <- reduced$mtrx[match(PI.red.sort, PI.red), , drop=FALSE]
-        
-        rownames(mtrx) <- PI.red.sort
-        colnames(mtrx) <- initial
-        
-        sol.matrix <- solveChart(mtrx, all.sol = all.sol)
-        
-        sol.matrix <- matrix(rownames(mtrx)[sol.matrix], nrow=nrow(sol.matrix))
-        
-        all.PIs <- sortVector(unique(as.vector(sol.matrix[!is.na(sol.matrix)])), collapse=collapse)
-        
-        # mtrx <- mtrx[rownames(mtrx) %in% all.PIs, , drop=FALSE]
-        reduced$expressions <- reduced$expressions[sortVector(rownames(reduced$expressions)[rownames(reduced$expressions) %in% all.PIs], collapse=collapse), , drop=FALSE]
-        
-        all.PIs <- all.PIs[all.PIs %in% rownames(mtrx)]
-        
-        solution.list <- writeSolution(sol.matrix, mtrx)
-        
-        return(list(mtrx=mtrx, reduced=reduced, expressions=expressions, all.PIs=all.PIs, solution.list=solution.list))
-    }   
     
     val.outcome <- indata[, toupper(names(indata)) == outcome]
     sum.outcome <- sum(val.outcome)
@@ -321,7 +275,8 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
     
     expressions <- minExpressions(expressions)
     
-    c.sol <- p.sol <- getSolution()
+    # return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, all.sol=all.sol))
+    c.sol <- p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, all.sol=all.sol)
     
     mbase <- rev(c(1, cumprod(rev(noflevels + 1))))[-1]
     
@@ -368,7 +323,9 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         
         colnames(expressions) <- colnames(inputt)
         
-        p.sol <- getSolution()
+        # return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, all.sol=all.sol))
+        
+        p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, all.sol=all.sol)
     }
     
     output$PIs <- p.sol$all.PIs
@@ -481,11 +438,17 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         i.sol <- vector("list", length(c.sol$solution.list[[1]])*length(p.sol$solution.list[[1]]))
         index <- 1
         
+        # cat(paste("c.s total:", length(c.sol$solution.list[[1]]), "\n"))
+        # cat(paste("p.s total:", length(p.sol$solution.list[[1]]), "\n"))
+        
         for (c.s in seq(length(c.sol$solution.list[[1]]))) {
+            
             
             c.expressions <- c.sol$reduced$expressions[c.sol$solution.list[[1]][[c.s]], , drop=FALSE]
             
             for (p.s in seq(length(p.sol$solution.list[[1]]))) {
+                
+                # print(p.s)
                 
                 p.expressions <- p.sol$reduced$expressions[p.sol$solution.list[[1]][[p.s]], , drop=FALSE]
                 
@@ -617,7 +580,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
                     
                     expressions <- minExpressions(expl.matrix.i.sol)
                     
-                    i.sol.index <- getSolution()
+                    i.sol.index <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, all.sol=all.sol)
                     
                     i.sol.index$expressions <- i.sol.index$expressions[rowSums(i.sol.index$mtrx) > 0, ]
                     

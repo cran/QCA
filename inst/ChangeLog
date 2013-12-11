@@ -1,6 +1,12 @@
+Version 1.1-1
+    o Improved: speed for resolution of PI chart 
+    o Fixed: an error message was generated when fuzzy sets were not normalized
+    o Fixed: prime implicants were joined together for single-column PI charts 
+      by function solveChart() instead of being identified as alternative solutions 
+    o Fixed: PRI column did not print in truth tables when argument PRI = TRUE
+
 Version 1.1-0
-    o New: functionality for analyzing complex dependencies in data via function 
-      eqmcc()
+    o New: functionality for analyzing path models with function eqmcc()
     o New: function deMorgan() computes negations of set expressions    
     o New: functionality for multivalent outcome sets
     o New: inference-statistical tests for truth table configurations 
