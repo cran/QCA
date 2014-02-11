@@ -75,8 +75,8 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
             complete <- other.args$complete
         }
         
-        tt <- truthTable(data=data, outcome=outcome, conditions=conditions, show.cases=show.cases, n.cut=n.cut,
-                         incl.cut1=incl.cut1, incl.cut0=incl.cut0, use.letters=use.letters, neg.out=neg.out, complete=complete, PRI=PRI)
+        tt <- truthTable(data=data, outcome=outcome, conditions=conditions, show.cases=show.cases, n.cut=n.cut, incl.cut1=incl.cut1,
+                         incl.cut0=incl.cut0, use.letters=use.letters, neg.out=neg.out, complete=complete, PRI=PRI)
         
         
         tt$initial.data <- indata
@@ -326,6 +326,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         # return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, all.sol=all.sol))
         
         p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, all.sol=all.sol)
+        
     }
     
     output$PIs <- p.sol$all.PIs

@@ -19,7 +19,7 @@ This data frame contains 30 rows (cases) and the following 9 columns (variables)
 
 \tabular{rlll}{
 [ , 1] \tab \bold{AU}  \tab outcome:   \tab local autonomy                                                 \cr
-       \tab            \tab            \tab ("1" always, "0" never                                         \cr
+       \tab            \tab            \tab ("1" always, "0" never)                                         \cr
 [ , 2] \tab \bold{EM}  \tab condition: \tab local communal involvement through direct employment           \cr   
        \tab            \tab            \tab ("1" 100 percent, "0" 0 percent)                               \cr
 [ , 3] \tab \bold{SP}  \tab condition: \tab local direct spending                                          \cr   

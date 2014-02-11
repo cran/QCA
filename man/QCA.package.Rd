@@ -55,8 +55,8 @@ different functions, arguments or values, but backward compatibility is ensured.
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 1.1-1\cr
-    Date:    \tab 2013-12-11\cr
+    Version: \tab 1.1-2\cr
+    Date:    \tab 2014-02-11\cr
     License: \tab GPL (>= 2)\cr
     }
 }

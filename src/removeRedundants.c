@@ -5,7 +5,7 @@
 SEXP removeRedundants(SEXP rowno, SEXP noflevels, SEXP mbase) {
     
     int *pointer_next, *pointer_final, *pointer_temp1, *pointer_temp2, *pointer_rowno, *pointer_noflevels, *pointer_mbase;
-    int previous, lmbase, ltemp2, lrowno, lmbasei, i, j, k, ck, rn, finalength, lungime, flag2, flag1, templung;
+    int previous, lmbase, ltemp2, lrowno, lmbasei, i, j, k, rn, finalength, lungime, flag2, flag1, templung;
     SEXP next, final, temp1, temp2;
     
     SEXP usage = PROTECT(allocVector(VECSXP, 7));

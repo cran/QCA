@@ -30,7 +30,13 @@ function(expressions, collapse, uplow, use.tilde, inputt, row.dom, initial, all.
     rownames(mtrx) <- PI.red.sort
     colnames(mtrx) <- initial
     
-    # return(list(mtrx=mtrx, all.sol=all.sol))
+    # other.args <- list(...)
+    # if ("bla" %in% names(other.args)) {
+        # return(list(mtrx=mtrx, all.sol=all.sol))
+        # return(list(RE=reduced$expressions, AP = all.PIs))
+        # print(sortVector(rownames(reduced$expressions)[rownames(reduced$expressions) %in% all.PIs], collapse=collapse))
+        
+    # }
     
     sol.matrix <- solveChart(mtrx, all.sol = all.sol)
     
@@ -38,12 +44,9 @@ function(expressions, collapse, uplow, use.tilde, inputt, row.dom, initial, all.
     
     all.PIs <- sortVector(unique(as.vector(sol.matrix[!is.na(sol.matrix)])), collapse=collapse)
     
-    # mtrx <- mtrx[rownames(mtrx) %in% all.PIs, , drop=FALSE]
     reduced$expressions <- reduced$expressions[sortVector(rownames(reduced$expressions)[rownames(reduced$expressions) %in% all.PIs], collapse=collapse), , drop=FALSE]
     
     all.PIs <- all.PIs[all.PIs %in% rownames(mtrx)]
-    
-    # return(list(sol.matrix = sol.matrix, mtrx = mtrx))
     
     solution.list <- writeSolution(sol.matrix, mtrx)
     

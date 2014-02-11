@@ -176,6 +176,19 @@ function(expression, prod.split="", sort.factorizing=FALSE, sort.factorized=FALS
         }
     }
     
+    
+    getNonChars <- function(x) {
+        # split by "+", incluging the trimming of the white space
+        x <- gsub("^[[:space:]]+|[[:space:]]+$", "", unlist(strsplit(x, "\\+")))
+        z <- vector(mode="list", length=length(x))
+        for (i in seq(length(x))) {
+            z[[i]] <- strsplit(gsub("[[:alnum:]]", "", x[i]), "+")[[1]]
+        }
+        z <- gsub("\\~", "", unique(unlist(z)))
+        
+        return(z[-which(z == "")])
+    }
+    
     collapse <- prod.split
     if (prod.split != "") prod.split <- paste("\\", prod.split, sep="")
     
@@ -233,6 +246,26 @@ function(expression, prod.split="", sort.factorizing=FALSE, sort.factorized=FALS
     else if (is.character(expression) & length(expression) == 1) {
         trimst <- function(string) gsub("^[[:space:]]+|[[:space:]]+$", "", string)
         trimmed.str <- trimst(unlist(strsplit(expression, "\\+")))
+        
+        
+        
+        if (prod.split != "") {
+            if (!grepl(prod.split, expression)) {
+                cat("\n")
+                stop("The product operator \"", prod.split, "\" was not found.\n\n", call. = FALSE)
+            }
+        }
+        else {
+            nonchars <- getNonChars(trimmed.str)
+            if (length(nonchars) > 0) {
+                if (length(nonchars) > 1) {
+                    cat("\n")
+                    stop(paste("Multiple non alphanumeric characters found: \"", paste(nonchars, collapse=""), "\".\n\n", sep=""), call. = FALSE)
+                }
+                collapse <- nonchars
+                prod.split <- paste("\\", nonchars, sep="")
+            }
+        }
         
         if (length(trimmed.str) == 1) {
             result <- list(expression)

@@ -43,9 +43,12 @@ Available from: http://www.compasss.org/wpseries/Dusa2007b.pdf.
 
 Dusa, Adrian. 2010. A Mathematical Approach to the Boolean Minimization Problem. 
 \emph{Quality & Quantity} 44 (1):99-113.
+
+Quine, Willard V. 1952. The Problem of Simplifying Truth Functions.
+\emph{American Mathematical Monthly} 59 (8):521-31.
 }
 
-\seealso{\code{\link{findSupersets}}}
+\seealso{\code{\link{createMatrix}}, \code{\link{findSupersets}}, \code{\link{getRow}}}
 
 \examples{
 # three variables with two levels (values) each
@@ -65,6 +68,16 @@ getRow(noflevels = noflevels + 1, row.no = rows) - 1
 # stopping at row 20
 getRow(noflevels = noflevels + 1, 
   row.no = findSubsets(noflevels + 1, 2, 20)) - 1
+
+# reconstruct configurations from prime implicants;
+# example of "developed formula" from Quine (1952, p. 524)
+x <- data.frame(createMatrix(rep(3, 4)), row.names = 1:81)
+x[x[,1] == 0 & x[,2] == 0 & x[,3] == 2 & x[,4] == 1,]
+x[x[,1] == 2 & x[,2] == 2 & x[,3] == 2 & x[,4] == 0,]
+levels <- rep(3, 4)
+rows <- c(8, 79)
+imp <- getRow(levels, findSubsets(levels, rows)) - 1
+imp
 }
 
 \keyword{functions}

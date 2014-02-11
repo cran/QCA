@@ -43,7 +43,7 @@ Dusa, Adrian. 2010. A Mathematical Approach to the Boolean Minimization Problem.
 \emph{Quality & Quantity} 44 (1):99-113.
 }
 
-\seealso{\code{\link{getRow}}, \code{\link{findSubsets}}}
+\seealso{\code{\link{findSubsets}}, \code{\link{getRow}}}
 
 \examples{
 # three variables with two levels (values) each

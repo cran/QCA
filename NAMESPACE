@@ -46,3 +46,4 @@ export(allExpressions,
     verify.tt,
     writePrimeimp,
     writeSolution)
+import(lpSolve)
