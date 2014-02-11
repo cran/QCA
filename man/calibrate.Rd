@@ -64,11 +64,11 @@ for full set inclusion, \code{thIN2} the second (right) threshold for full set
 inclusion, \code{thCR2} the second (right) threshold for set crossover, and 
 \code{thEX2} the second (right) threshold for full set exclusion.
 
-If \code{thEX1} \eqn{<} \code{thCR1} \eqn{<} \code{thIN1} \eqn{\leq} \code{thIN2} 
+If \code{thEX1} \eqn{<} \code{thCR1} \eqn{<} \code{thIN1} \eqn{\le} \code{thIN2}
 \eqn{<} \code{thCR2} \eqn{<} \code{thEX2}, then the membership function is first
 increasing from \code{thEX1} to \code{thIN1}, then flat between \code{thIN1} and 
 \code{thIN2}, and finally decreasing from \code{thIN2} to \code{thEX2}. In contrast, 
-if \code{thIN1} \eqn{<} \code{thCR1} \eqn{<} \code{thEX1} \eqn{\leq} \code{thEX2} 
+if \code{thIN1} \eqn{<} \code{thCR1} \eqn{<} \code{thEX1} \eqn{\le} \code{thEX2}
 \eqn{<} \code{thCR2} \eqn{<} \code{thIN2}, then the membership function is first 
 decreasing from \code{thIN1} to \code{thEX1}, then flat between \code{thEX1} and 
 \code{thEX2}, and finally increasing from \code{thEX2} to \code{thIN2}.
@@ -119,9 +119,12 @@ calibrate(x, thresholds = c(th[2], th[4]))
 plot(x, calibrate(x, type = "fuzzy", thresholds = c(th[1], th[3], th[5])), 
   ylab = "Fuzzy Set Membership")
 
-# fuzzy-set calibration (positive end-point concept, logistic)
+# fuzzy-set calibration (positive and corresponding negative
+# end-point concept, logistic)
 plot(x, calibrate(x, type = "fuzzy", thresholds = c(th[1], th[3], th[5]), 
   logistic = TRUE, idm = 0.99), ylab = "Fuzzy Set Membership")
+points(x, calibrate(x, type = "fuzzy", thresholds = c(th[5], th[3], th[1]),
+  logistic = TRUE, idm = 0.99))
 
 # fuzzy-set calibration (positive end-point concept, ECDF)
 plot(x, calibrate(x, type = "fuzzy", thresholds = c(th[1], th[3], th[5]), 

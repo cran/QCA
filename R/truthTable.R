@@ -31,6 +31,8 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), n.cut = 1,
         conditions <- names(data)[-which(names(data) == outcome)]
     }
     
+    data <- data[, c(conditions, outcome)]
+    
     if (!via.pof) {
         verify.tt(data, outcome, conditions, complete, show.cases, incl.cut1, incl.cut0, inf.test)
     }
@@ -45,7 +47,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), n.cut = 1,
     outcome <- toupper(outcome)
     
     initial.data <- initial.data[, c(conditions, outcome)]
-    data <- data[, c(conditions, outcome)]
+    
     
     if (neg.out) {
         data[, outcome] <- 1 - data[, outcome]

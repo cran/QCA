@@ -38,18 +38,31 @@ function (x, type="crisp", thresholds = NA, include = TRUE, logistic = FALSE,
         }
          # needed because sometimes thresholds values inherit names, e.g. from being calculated with quantile() 
         thresholds <- as.vector(thresholds)
+        
         if (length(thresholds) == 3) {
             thEX <- thresholds[1]
             thCR <- thresholds[2]
             thIN <- thresholds[3]
             if (logistic) {
+                if (thresholds[1] > thresholds[3]) {
+                    thEX <- thresholds[3]
+                    thIN <- thresholds[1]
+                }
+                
                 y <- (x < thCR) + 1
-                return(1/(1 + exp(-((x - thCR) * (c(1, -1)[y]*log(idm/(1 - idm))/(c(thIN, thEX)[y] - thCR))))))
+                result <- 1/(1 + exp(-((x - thCR) * (c(1, -1)[y]*log(idm/(1 - idm))/(c(thIN, thEX)[y] - thCR)))))
+                
+                if (thresholds[1] > thresholds[3]) {
+                    return(1 - result)
+                }
+                else {
+                    return(result)
+                }
             }
             else {
                 if (any(table(c(thEX, thCR, thIN)) > 1)) {
                     cat("\n")
-                    stop("Some thresholds equal, that should not be equal.\n\n", call. = FALSE)
+                    warning("Some thresholds equal, that should not be equal.\n\n", call. = FALSE)
                 }
                 increasing <- TRUE
                 if (thIN < thCR & thCR < thEX) {

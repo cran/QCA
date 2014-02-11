@@ -5,7 +5,7 @@
 
 SEXP allSol(SEXP k, SEXP mtrx) {
     
-    int *p_k, *p_mtrx, *p_work, *p_output, *p_temp1, *p_temp2, *p_rn, i, j, lengthtemp1, lungime, lmbasej, x, y, mtrxrows, mtrxcols, colpos, base2count, totalrows, totalcount, flag;
+    int *p_k, *p_mtrx, *p_work, *p_output, *p_temp1, *p_temp2, *p_rn, i, j, lengthtemp1, lungime, lmbasej, x, y, mtrxrows, mtrxcols, base2count, totalrows, totalcount, flag;
     SEXP temp1, temp2;
     
     SEXP root = PROTECT(allocVector(VECSXP, 7));

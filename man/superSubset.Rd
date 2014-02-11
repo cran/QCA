@@ -42,12 +42,12 @@ following paragraphs describe the theoretical idea.
 
 If \code{relation = "nec"} (default), the function finds (combinations of) 
 conditions that are supersets of (necessary for) the outcome. It starts with an 
-initiation set, which is comprised of the \eqn{2k}{2k} simple condition sets as 
-well as their negations. This set is expanded by incrementally forming 
-set-theoretic intersections of a higher order as long as \code{incl.cut} and 
-\code{cov.cut} are still met (the former always takes precedence over the latter). 
-If suitable intersections exist, they will be returned, together with all their 
-lower-order components.
+initiation set, which is comprised of all \eqn{\sum_{j = 1}^{k}{p_{j}}} simple 
+condition sets. This set is expanded by incrementally forming set-theoretic 
+intersections of a higher order as long as \code{incl.cut} and \code{cov.cut} 
+are still met (the former always takes precedence over the latter). If suitable
+intersections exist, they will be returned, together with all their lower-order
+components.
 
 If none of the simple conditions or their negations in the initiation set passes 
 \code{incl.cut}, set-theoretic unions instead of intersections are formed until 

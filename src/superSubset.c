@@ -127,7 +127,7 @@ SEXP superSubset(SEXP x, SEXP y, SEXP fuz, SEXP vo, SEXP nec) {
 SEXP superSubsetMem(SEXP x, SEXP noflevels, SEXP mbase, SEXP fuz, SEXP vo, SEXP nec) { 
     int i, j, k, index;
     double *px, *pincovpri, *pvo, min, max, so = 0.0, sumx_min, sumx_max, sumpmin_min, sumpmin_max, prisum_min, prisum_max, temp1, temp2;
-    int xrows, xcols, yrows, *pnoflevels, *pmbase, lmbase,  *pfuz, *pnec;
+    int xrows, xcols, yrows, *pnoflevels, *pmbase,  *pfuz, *pnec;
     
     SEXP usage = PROTECT(allocVector(VECSXP, 6));
     SET_VECTOR_ELT(usage, 0, x = coerceVector(x, REALSXP));
@@ -151,8 +151,6 @@ SEXP superSubsetMem(SEXP x, SEXP noflevels, SEXP mbase, SEXP fuz, SEXP vo, SEXP 
         yrows = yrows * (pnoflevels[i] + 1);
     }
     yrows = yrows - 1;
-    
-    lmbase = length(mbase) - 1;
     
     
     xrows = nrows(x);
