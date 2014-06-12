@@ -24,8 +24,8 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "ne
     
     if (grepl("[{]", outcome)) { # there is a "{" sign in the outcome's name
         outcome <- unlist(strsplit(outcome, split = ""))
-        outcome.value <- as.numeric(outcome[which(outcome == "{") + 1])
-        outcome <- paste(outcome[seq(1, which(outcome == "{") - 1)], collapse="")
+        outcome.value <- as.numeric(outcome[which(outcome == "{") + 1L])
+        outcome <- paste(outcome[seq(1, which(outcome == "{") - 1L)], collapse="")
         
         if (!any(unique(data[, outcome]) == outcome.value)) {
             cat("\n")
@@ -84,16 +84,16 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "ne
         collapse <- ifelse(!uplow | use.tilde, "*", "")
     }
     
-    noflevels <- apply(data[, conditions], 2, max) + 1
+    noflevels <- apply(data[, conditions], 2, max) + 1L
     noflevels[fc] <- 2
-    mbase <- c(rev(cumprod(rev(noflevels + 1))), 1)[-1]
+    mbase <- c(rev(cumprod(rev(noflevels + 1L))), 1)[-1]
     
     
     if (memcare) {
         CMatrix <- .Call("superSubsetMem", as.matrix(data[, conditions]), noflevels, mbase, as.numeric(fc), data[, outcome], relation == "necessity", PACKAGE="QCA")
     }
     else {
-        nk <- createMatrix(noflevels + 1)
+        nk <- createMatrix(noflevels + 1L)
         colnames(nk) <- conditions
         nk <- nk[-1, ] # first row is always empty
         
@@ -102,7 +102,7 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "ne
     
     
     # to modify this, attributing colnames copies the object and uses too much memory
-    expressions <- colnames(CMatrix) <- seq_len(ncol(CMatrix)) + 1 # plus 1 because the first row of the nk matrix was deleted
+    expressions <- colnames(CMatrix) <- seq_len(ncol(CMatrix)) + 1L # plus 1 because the first row of the nk matrix was deleted
     lincl <- ifelse(relation %in% c("necessity", "nec"), 2, 1)
     
     expressions <- expressions[CMatrix[lincl, ] >= incl.cut & CMatrix[3 - lincl, ] >= cov.cut]
@@ -115,7 +115,7 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "ne
             expressions <- .Call("removeRedundants", expressions, noflevels, mbase, PACKAGE="QCA")
         }
         
-        result.matrix <- getRow(noflevels + 1, expressions)
+        result.matrix <- getRow(noflevels + 1L, expressions)
         rownames(result.matrix) <- expressions
         colnames(result.matrix) <- conditions
         result.matrix <- sortMatrix(result.matrix)
@@ -133,7 +133,7 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), relation = "ne
     
     lexprnec <- 0
     if (relation  %in% c("necessity", "nec")) {
-        exprnec <- seq_len(ncol(CMatrix)) + 1
+        exprnec <- seq_len(ncol(CMatrix)) + 1L
         
         exprnec <- exprnec[CMatrix[4, ] >= incl.cut & CMatrix[3, ] >= cov.cut]
         

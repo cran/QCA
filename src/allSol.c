@@ -1,14 +1,19 @@
 # include <R.h>
 # include <Rinternals.h>
+# include <Rmath.h>
 # include <R_ext/Rdynload.h>
 
 
 SEXP allSol(SEXP k, SEXP mtrx) {
     
-    int *p_k, *p_mtrx, *p_work, *p_output, *p_temp1, *p_temp2, *p_rn, i, j, lengthtemp1, lungime, lmbasej, x, y, mtrxrows, mtrxcols, base2count, totalrows, totalcount, flag;
-    SEXP temp1, temp2;
+    SEXP root, temp1, temp2;
+    int *p_k, *p_mtrx, *p_output, lmbasej, x, y, mtrxrows, mtrxcols, base2count, totalcount, flag;
+    int *p_work, i, j, *p_temp1, *p_temp2, lungime, lengthtemp1, *p_rn; // long long int if possible
     
-    SEXP root = PROTECT(allocVector(VECSXP, 7));
+    // SEXP     Rf_allocVector(SEXPTYPE, R_xlen_t);
+    
+    PROTECT(root = Rf_allocVector(VECSXP, 7));
+    
     SET_VECTOR_ELT(root, 0, k = coerceVector(k, INTSXP));
     SET_VECTOR_ELT(root, 1, mtrx = coerceVector(mtrx, INTSXP));
     p_k = INTEGER(k);
@@ -19,16 +24,20 @@ SEXP allSol(SEXP k, SEXP mtrx) {
     
     int colsums[mtrxcols];
     
-    //Rprintf("mtrxrows: %d\n", mtrxrows);
+    // Rprintf("mtrxrows: %d\n", mtrxrows);
     
-    // urmatorul cod imi calculeaza puterile lui 2, gen 4 2 1 pentru trei variabile
-    int power[mtrxrows];
+    // urmatorul cod imi calculeaza puterile lui 2, ex. pentru trei variable 4 2 1
+    long long int power[mtrxrows];
     power[mtrxrows - 1] = 1;
+    //Rprintf("power: %lld", power[mtrxrows - 1]);
     for (j = 1; j < mtrxrows; j++) {
-        power[mtrxrows - j - 1] = 2*power[mtrxrows - j];
+        power[mtrxrows - j - 1] = R_pow_di(2, j);
+        //Rprintf(", %lld", power[mtrxrows - j - 1]);
     }
     
-    totalrows = power[0]*2;
+    
+    long long int totalrows = power[0]*2;
+    //Rprintf("\ntotalrows: %lld\n", totalrows);
     
     SEXP work = SET_VECTOR_ELT(root, 2, allocVector(INTSXP, totalrows));
     p_work = INTEGER(work);
@@ -42,7 +51,7 @@ SEXP allSol(SEXP k, SEXP mtrx) {
         
     int base2row[mtrxrows];
     
-    //Rprintf("totalrows: %d\n", totalrows);
+    // Rprintf("totalrows: %d\n", totalrows);
     
     // from i = 1, because the first element in any base 2 combination is always zero
     for (i = 1; i < totalrows; i++) {
@@ -286,4 +295,5 @@ SEXP allSol(SEXP k, SEXP mtrx) {
     
     UNPROTECT(1);
     return(output);
+    //return(R_NilValue);
 }

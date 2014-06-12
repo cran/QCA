@@ -7,9 +7,9 @@
 SEXP m2(SEXP goodbad, SEXP valents, SEXP mvector, SEXP mbase, SEXP t1g, SEXP t1b, SEXP rnofl) {
     
     int *pmvector, *pmbase, *pt1g, *pt1b, *prnofl;
-    SEXP t1gc, t1bc, t2g, t2b, temp, gbi, final, tempfinal, cr, tobj, tl; // cr is current.row; tobj is a temporary object
+    SEXP t1gc, t1bc, t2g, t2b, temp, final, tempfinal, cr, tobj, tl; // cr is current.row; tobj is a temporary object
     int i, j, k, ln, nofconditions, lt1c, lt2, newl, counter, tcounter; //ln is line.number
-    int *pt1gc, *pt1bc, *pt2g, *pt2b, *ptemp, *pgbi, *pfinal, *ptempfinal, *pcr, *ptobj, *ptl;
+    int *pt1gc, *pt1bc, *pt2g, *pt2b, *ptemp, *pfinal, *ptempfinal, *pcr, *ptobj, *ptl;
     
     
     PROTECT(goodbad);

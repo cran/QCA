@@ -1,6 +1,7 @@
 \name{deMorgan}
 
 \alias{deMorgan}
+\alias{is.deMorgan}
 
 \title{Negate Set-Theoretic Expressions using DeMorgan's Laws}
 
@@ -11,6 +12,8 @@ DeMorgan laws.
 
 \usage{
 deMorgan(expression, prod.split = "", use.tilde = FALSE)
+
+is.deMorgan(x)
 }
 
 \arguments{
@@ -18,6 +21,7 @@ deMorgan(expression, prod.split = "", use.tilde = FALSE)
                     object of class "qca".}
   \item{prod.split}{The intersection (product) operator (if any).}
   \item{use.tilde}{Logical, use tilde for negation with bivalent variables.}
+  \item{x}{An object of class "deMorgan".}
 }
 
 \details{

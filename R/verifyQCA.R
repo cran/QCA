@@ -136,27 +136,7 @@ function(data, outcome = "", conditions = c(""), complete = FALSE, show.cases = 
         stop("Uncalibrated data.\nFuzzy sets should have values bound to the interval [0 , 1] and all other values should be crisp.\n\n", call. = FALSE)
     }
     
-    if (all(inf.test != "")) {
-        if (inf.test[1] != "binom") {
-            cat("\n")
-            stop("For the moment only \"binom\"ial testing for crisp data is allowed.\n\n", call. = FALSE)
-        }
-        else {
-            fuzzy <- apply(data, 2, function(x) any(x %% 1 > 0))
-            if (any(fuzzy)) {
-                cat("\n")
-                stop("The binomial test only works with crisp data.\n\n", call. = FALSE)
-            }
-        }
-        
-        if (length(inf.test) > 1) {
-            alpha <- as.numeric(inf.test[2])
-            if (is.na(alpha) | alpha < 0 | alpha > 1) {
-                cat("\n")
-                stop("The second value of inf.test should be a number between 0 and 1.\n\n", call. = FALSE)
-            }
-        }
-    }
+    verify.inf.test(inf.test, data)
 }
 
 
@@ -415,5 +395,32 @@ function(data, outcome = "", conditions = c("")) {
     
     invisible(return(list(mvoutcome = mvoutcome, outcome = outcome, outcome.value = outcome.value, conditions = conditions)))
     
+}
+
+
+
+
+`verify.inf.test` <- function(inf.test, data) {
+    if (all(inf.test != "")) {
+        if (inf.test[1] != "binom") {
+            cat("\n")
+            stop("For the moment only \"binom\"ial testing for crisp data is allowed.\n\n", call. = FALSE)
+        }
+        else {
+            fuzzy <- apply(data, 2, function(x) any(x %% 1 > 0))
+            if (any(fuzzy)) {
+                cat("\n")
+                stop("The binomial test only works with crisp data.\n\n", call. = FALSE)
+            }
+        }
+        
+        if (length(inf.test) > 1) {
+            alpha <- as.numeric(inf.test[2])
+            if (is.na(alpha) | alpha < 0 | alpha > 1) {
+                cat("\n")
+                stop("The second value of inf.test should be a number between 0 and 1.\n\n", call. = FALSE)
+            }
+        }
+    }
 }
 

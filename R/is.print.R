@@ -12,6 +12,13 @@ function(x) {
 
 
 
+`is.pof` <-
+function(x) {
+    inherits(x, "pof")
+}
+
+
+
 `is.deMorgan` <-
 function(x) {
     inherits(x, "deMorgan")
@@ -251,7 +258,7 @@ function(x, ...) {
                 
                 for (sol in seq(length(x$i.sol[[i]]$solution))) {
                     prettyNums <- formatC(seq(length(x$i.sol[[i]]$solution)), digits = nchar(length(x$i.sol[[i]]$solution)) - 1, flag = 0)
-                    preamble <- paste("S", prettyNums[sol], ": ", sep="")
+                    preamble <- paste("M", prettyNums[sol], ": ", sep="")
                     preamble <- paste(preamble, paste(rep(" ", 7 - nchar(preamble)), collapse=""), sep="")
                     cat(preamble)
                     
@@ -302,7 +309,7 @@ function(x, ...) {
             
             if (valid.solution) {
                 sufnec <- paste(ifelse(sufnec, "<", ""), "=>", sep="")
-                cat(paste("S1: ", prettyString(x$solution[[1]], getOption("width") - 4, 4, "+", sufnec, outcome), sep=""))
+                cat(paste("M1: ", prettyString(x$solution[[1]], getOption("width") - 4, 4, "+", sufnec, outcome), sep=""))
                 if (x$opts$details) {
                     cat("\n")
                 }
@@ -333,7 +340,7 @@ function(x, ...) {
                 sufnec.char <- rep("", length(sufnec))
                 
                 for (i in seq(length(x$solution))) {
-                    cat(paste("S", prettyNums[i], ": ", sep=""))
+                    cat(paste("M", prettyNums[i], ": ", sep=""))
                     xsol <- x$solution[[i]]
                     sufnec.char[i] <- paste(ifelse(sufnec[i], "<", ""), "=>", sep="")
                     if (length(x$essential) > 0) {
@@ -469,7 +476,7 @@ function(x, ...) {
         
         for (i in seq(ind.len)) {
             incl.cov <- cbind(incl.cov, "     ", stringsAsFactors=FALSE)
-            colnames(incl.cov)[ncol(incl.cov)] <- format(ifelse(ind.len < line.length, paste("(S", i, ")", sep=""), paste("S", i, sep="")), width=5)
+            colnames(incl.cov)[ncol(incl.cov)] <- format(ifelse(ind.len < line.length, paste("(M", i, ")", sep=""), paste("M", i, sep="")), width=5)
             if (length(x$individual[[i]]$incl.cov$cov.u) > 0) {
                 incl.cov[rownames(x$individual[[i]]$incl.cov), ncol(incl.cov)] <- formatC(x$individual[[i]]$incl.cov$cov.u, digits=3, format="f")
             }
@@ -480,7 +487,7 @@ function(x, ...) {
                                nrow=length(x$individual), ncol=3, byrow=TRUE)
         
         
-        rownames(sol.incl.cov) <- paste("S", seq(length(x$individual)), sep="")
+        rownames(sol.incl.cov) <- paste("M", seq(length(x$individual)), sep="")
         
         if (!PRI) {
             sol.incl.cov <- sol.incl.cov[, -2, drop=FALSE]
@@ -508,8 +515,9 @@ function(x, ...) {
         prettyNums <- format(seq(nrow.incl.cov))
         incl.cov[incl.cov == "  NA"] <- "     "
         colnames(incl.cov) <- format(colnames(incl.cov))
+        
         if (x$opts$show.cases) {
-            max.nchar.cases <- max(nchar(incl.cov$cases))
+            max.nchar.cases <- max(5, max(nchar(incl.cov$cases))) # 5 is the number of chars from column name "cases"
             cases.column <- TRUE
             incl.cov.cases <- incl.cov$cases
             incl.cov$cases <- NULL
@@ -518,15 +526,17 @@ function(x, ...) {
             incl.cov$cases <- NULL
         }
         
+        
         for (i in seq(ncol(incl.cov))) {
             NAs <- is.na(incl.cov[, i])
             incl.cov[!NAs, i] <- formatC(incl.cov[!NAs, i], digits=3, format="f")
             incl.cov[NAs, i] <- "  -  "
         }
         
+        
         if ("sol.incl.cov" %in% names(x)) {
             sol.incl.cov <- t(as.matrix(x$sol.incl.cov))
-            rownames(sol.incl.cov) <- "S1"
+            rownames(sol.incl.cov) <- "M1"
             sol.exists <- TRUE
             if (!PRI) {
                 sol.incl.cov <- sol.incl.cov[ , -grep("PRI", colnames(sol.incl.cov)), drop=FALSE]
@@ -549,7 +559,8 @@ function(x, ...) {
     }
     
     if (x$relation %in% c("necessity", "nec")) {
-        incl.cov <- incl.cov[, seq(1, 2 + any(grepl("PRI", colnames(incl.cov)))), drop = FALSE]
+        # incl.cov <- incl.cov[, seq(1, 2 + any(grepl("PRI", colnames(incl.cov)))), drop = FALSE]
+        incl.cov <- incl.cov[, -which(colnames(incl.cov) == "cov.u"), drop = FALSE]
     }
     
     rownames(incl.cov) <- format(rownames(incl.cov), width=max(2, nchar.rownames))
@@ -558,7 +569,7 @@ function(x, ...) {
         sol.incl.cov <- formatC(sol.incl.cov, digits=3, format="f")
     }
     
-    incl.cov[incl.cov == "  NA"] <- " -"
+    incl.cov[incl.cov == "  NA"] <- "  -  "
     
     max.chars <- 1
     if (x$relation %in% c("sufficiency", "suf")) {
@@ -580,7 +591,7 @@ function(x, ...) {
          # then compare again the max.chars with a "normal" length of a line
         if (nchar(sep.row) < line.length) {
             
-            if (ncol(incl.cov) > (3 + any(grepl("PRI", colnames(incl.cov))))) {
+            if (ncol(incl.cov) > (3 + any(grepl("PRI", colnames(incl.cov)))) & length(intersect(colnames(incl.cov), "pval1")) == 0) {
                 cat(first.printed.row, "\n")
             }
             else {
@@ -915,7 +926,7 @@ function(x, ...) {
         }
     }
     else {
-        prettyNumsSol <- paste("S", formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0), sep="")
+        prettyNumsSol <- paste("M", formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0), sep="")
         for (i in seq(length(x))) {
             xprint(x[i], num=prettyNumsSol[i])
         }

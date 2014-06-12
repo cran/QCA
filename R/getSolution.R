@@ -1,5 +1,5 @@
 `getSolution` <-
-function(expressions, collapse, uplow, use.tilde, inputt, row.dom, initial, all.sol) {
+function(expressions, collapse, uplow, use.tilde, inputt, row.dom, initial, min.dis) {
         
     PI <- writePrimeimp(expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde)
     rownames(expressions) <- PI
@@ -17,8 +17,8 @@ function(expressions, collapse, uplow, use.tilde, inputt, row.dom, initial, all.
     if (row.dom) {
         reduced.rows <- rowDominance(mtrx)
         if (length(reduced.rows) > 0) {
-            reduced$mtrx <- mtrx[reduced.rows, ]
-            reduced$expressions <- expressions[reduced.rows, ]
+            reduced$mtrx <- mtrx[reduced.rows, , drop=FALSE]
+            reduced$expressions <- expressions[reduced.rows, , drop=FALSE]
         }
     }
     
@@ -32,13 +32,13 @@ function(expressions, collapse, uplow, use.tilde, inputt, row.dom, initial, all.
     
     # other.args <- list(...)
     # if ("bla" %in% names(other.args)) {
-        # return(list(mtrx=mtrx, all.sol=all.sol))
+        # return(list(mtrx=mtrx, min.dis=min.dis))
         # return(list(RE=reduced$expressions, AP = all.PIs))
         # print(sortVector(rownames(reduced$expressions)[rownames(reduced$expressions) %in% all.PIs], collapse=collapse))
         
     # }
     
-    sol.matrix <- solveChart(mtrx, all.sol = all.sol)
+    sol.matrix <- solveChart(mtrx, min.dis = min.dis)
     
     sol.matrix <- matrix(rownames(mtrx)[sol.matrix], nrow=nrow(sol.matrix))
     

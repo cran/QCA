@@ -1,9 +1,9 @@
 `eqmcc` <-
 function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), 
       relation = "suf", n.cut = 1, incl.cut1 = 1, incl.cut0 = 1, 
-      explain = c("1"), include = c(""), row.dom = FALSE, all.sol = FALSE, 
+      explain = c("1"), include = c(""), row.dom = FALSE, min.dis = TRUE, 
       omit = c(), dir.exp = c(), details = FALSE, show.cases = FALSE, 
-      use.tilde = FALSE, use.letters = FALSE, inf.test = c(""), ...) {
+      inf.test = c(""), use.tilde = FALSE, use.letters = FALSE, ...) {
     
     m2 <- FALSE
     
@@ -11,6 +11,12 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
     
     if ("rowdom" %in% names(other.args)) {
         row.dom <- other.args$rowdom
+    }
+    
+    if ("all.sol" %in% names(other.args)) {
+        if (is.logical(other.args$all.sol)) {
+            min.dis <- !other.args$all.sol
+        }
     }
     
     PRI <- FALSE
@@ -42,7 +48,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
             
             return(eqmccLoop(data=data, outcome=outcome, neg.out=neg.out, conditions=conditions, n.cut=n.cut,
                       incl.cut1=incl.cut1, incl.cut0 = incl.cut0, explain=explain, include=include, row.dom=row.dom,
-                      all.sol = all.sol, omit=omit, dir.exp = dir.exp, details=details, show.cases=show.cases,
+                      min.dis = min.dis, omit=omit, dir.exp = dir.exp, details=details, show.cases=show.cases,
                       use.tilde=use.tilde, use.letters=use.letters, inf.test=inf.test, relation=relation, ...=...))
         }
         
@@ -113,8 +119,10 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         tt <- data
         indata <- tt$initial.data
         recdata <- tt$recoded.data
-        conditions <- names(recdata)[seq(length(tt$noflevels))]
-        outcome <- names(recdata)[ncol(recdata)]
+        conditions <- colnames(recdata)[seq(length(tt$noflevels))]
+        outcome <- colnames(recdata)[ncol(recdata)]
+        
+        
         if (any(tt$tt$OUT == "?")) {
             missings <- which(tt$tt$OUT == "?")
             tt$tt <- tt$tt[-missings, ]
@@ -128,11 +136,9 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         }
     }
     
-    val.outcome <- indata[, toupper(names(indata)) == outcome]
-    sum.outcome <- sum(val.outcome)
+    
     uplow <- TRUE
     noflevels <- tt$noflevels
-    
      # check if the column names are not already letters
     alreadyletters <- sum(nchar(colnames(recdata)[-ncol(recdata)])) == ncol(recdata) - 1
     
@@ -275,8 +281,8 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
     
     expressions <- minExpressions(expressions)
     
-    # return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, all.sol=all.sol))
-    c.sol <- p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, all.sol=all.sol)
+    # return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, min.dis=min.dis))
+    c.sol <- p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis)
     
     mbase <- rev(c(1, cumprod(rev(noflevels + 1))))[-1]
     
@@ -323,9 +329,9 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         
         colnames(expressions) <- colnames(inputt)
         
-        # return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, all.sol=all.sol))
+        # return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis))
         
-        p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, all.sol=all.sol)
+        p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis)
         
     }
     
@@ -334,7 +340,6 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
     output$primes <- p.sol$reduced$expressions
     output$solution <- p.sol$solution.list[[1]]
     output$essential <- p.sol$solution.list[[2]]
-    
     
     # produce inclusion and coverage even if not specifically required, the printing function will deal with it
     # same with show cases
@@ -354,13 +359,13 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         
         if (length(p.sol$solution.list[[1]]) == 1) {
             
-            listIC <- pof(p.sol$reduced$expressions - 1, outcome, indata, showc=TRUE, cases=expr.cases, neg.out=neg.out,
+            listIC <- pof(p.sol$reduced$expressions - 1, tt$outcome, indata, showc=TRUE, cases=expr.cases, neg.out=neg.out,
                           relation = "sufficiency", via.eqmcc=TRUE)
             listIC$opts$show.cases <- show.cases
         }
         else {
             
-            listIC <- pof(p.sol$reduced$expressions - 1, outcome, indata, showc=TRUE, cases=expr.cases, neg.out=neg.out,
+            listIC <- pof(p.sol$reduced$expressions - 1, tt$outcome, indata, showc=TRUE, cases=expr.cases, neg.out=neg.out,
                           relation = "sufficiency", via.eqmcc=TRUE, solution.list=output$solution, essential=output$essential)
             listIC$opts$show.cases <- show.cases
         }
@@ -371,6 +376,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         output$IC <- listIC
     
     # }
+    
     
     output$numbers <- c(OUT1=nofcases1, OUT0=nofcases0, OUTC=nofcasesC, Total=nofcases1 + nofcases0 + nofcasesC)
     
@@ -581,7 +587,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
                     
                     expressions <- minExpressions(expl.matrix.i.sol)
                     
-                    i.sol.index <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, all.sol=all.sol)
+                    i.sol.index <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis)
                     
                     i.sol.index$expressions <- i.sol.index$expressions[rowSums(i.sol.index$mtrx) > 0, ]
                     

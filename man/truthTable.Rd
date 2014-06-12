@@ -5,10 +5,10 @@
 \title{Create a Truth Table}
 
 \description{
-This function creates truth tables from any kind of common input data. For crisp 
-set variables, cases are assigned directly to their respective configuration. For 
-fuzzy set variables, the function first finds the configuration in which a case 
-has membership above 0.5 before assigning it.
+This function creates truth tables from any kind of common input data. For
+crisp-set variables, cases are assigned directly to their respective configuration.
+For fuzzy-set variables, the function first finds the one configuration of which
+a case is more a member than not before assigning it.
 }
 
 \usage{
@@ -21,11 +21,11 @@ is.tt(x)
 }
 
 \arguments{
-  \item{data}{A data set of bivalent crisp or fuzzy set variables or multivalent 
-        crisp set variables.}
-  \item{outcome}{The name of the outcome set.}
-  \item{neg.out}{Logical, use negation of outcome set.}
-  \item{conditions}{A vector of condition sets.}
+  \item{data}{A data set of bivalent crisp-set or fuzzy-set variables or multivalent
+        crisp-set variables.}
+  \item{outcome}{The name of the outcome.}
+  \item{neg.out}{Logical, use negation of \code{outcome}.}
+  \item{conditions}{A vector of condition variables.}
   \item{n.cut}{The minimum number of cases with set membership score above 0.5 
         for an output function value of "0", "1" or "C".}
   \item{incl.cut1}{The minimum sufficiency inclusion score for an output function 
@@ -79,16 +79,18 @@ The \code{sort.by} argument orders all configurations by their inclusion scores
 If the conditions are already named with single letters, the argument 
 \code{use.letters} will have no effect.
 
-The argument \code{inf.test} provides functionality for basing output function 
-value codings on inference-statistical tests of the observed configurations for 
-(bivalent and multivalent) crisp set variables. It requires a vector of length 
-two, comprising the test (currently only exact binomial: \code{"binom"}) and a 
-significance level. If the empirical inclusion score of a configuration is not 
-significantly lower than \code{incl.cut1}, it will be coded positive 
-(\code{OUT = "1"}). If it is significantly lower than \code{incl.cut1} but 
-significantly higher than \code{incl.cut0}, it will be coded as a contradiction 
-(\code{OUT = "C"}). If it is not significantly higher than \code{incl.cut0}, it 
-will be coded negative (\code{OUT = "0"}).
+The argument \code{inf.test} provides functionality for basing output function
+value codings on inference-statistical tests. Currently, only an exact binomial
+test (\code{"binom"}) is available, which requires the data to contain only
+bivalent or multivalent crisp set variables. The argument requires a vector of
+length two, comprising the test and a critical significance level. If the
+empirical inclusion score of a configuration is not significantly lower than the
+upper critical inclusion cut-off \code{incl.cut1}, it will be coded positive
+(\code{OUT = "1"}). If it is significantly lower than \code{incl.cut1} but still
+significantly higher than the the lower critical inclusion cut-off
+\code{incl.cut0}, it will be coded as a contradiction (\code{OUT = "C"}). If it
+is not significantly higher than \code{incl.cut0}, it will be coded negative
+(\code{OUT = "0"}).
 
 For backward compatibility, the logical argument \code{PRI} returns PRI 
 (proportional reduction in inconsistency) scores (see Schneider and Wagemann 

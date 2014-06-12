@@ -1,3 +1,24 @@
+Version 1.1-3
+    o New: number of PIs processable by solveChart() now limited (maximum integer 
+      number that can be treated by the machine)
+    o New: three data sets added (d.AS, d.HMN, d.Kil)
+    o Improved: documentation for various functions
+    o Changed: argument "all.sol" in function eqmcc() renamed to "min.dis" and set
+      to FALSE by default
+    o Changed: argument "inf.test" in eqmcc() placed before "use.tilde" 
+    o Renamed: in output from various functions prefix "S" (solution) renamed to 
+      "M" (model)
+    o Fixed: argument "neg.out" with curly bracket notation in argument "outcome"
+      to function eqmcc() not operative
+    o Fixed: matrix dimensions dropped in function getSolution()
+    o Fixed: case names assigned to incorrect PIs in function 
+      demoChart() under some conditions (thanks to M. Vink)
+
+Version 1.1-2
+    o Fixed: missing data triggered an error message in function truthTable()
+    o Fixed: calibration of negative end-point concepts with logistic function
+      produced incorrect set membership scores (thanks to C. Schneider)
+
 Version 1.1-1
     o Improved: speed for resolution of PI chart 
     o Fixed: an error message was generated when fuzzy sets were not normalized

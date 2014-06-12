@@ -40,6 +40,8 @@ SEXP truthTable(SEXP x, SEXP y, SEXP fuz, SEXP vo) {
     }
     */
     
+    so = 0;
+    
     // sum of the outcome variable
     for (i = 0; i < length(vo); i++) {
         so += p_vo[i];
@@ -164,7 +166,7 @@ SEXP truthTableMem(SEXP x, SEXP noflevels, SEXP mbase, SEXP fuz, SEXP vo) {
     // yrows = nrows(y);
     xcols = ncols(x);
     
-    
+    so = 0;
     
     
     

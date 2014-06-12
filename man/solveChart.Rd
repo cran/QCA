@@ -10,15 +10,17 @@ by eliminating redundant prime implicants.
 }
 
 \usage{
-solveChart(chart, row.dom = FALSE, all.sol = FALSE)
+solveChart(chart, row.dom = FALSE, min.dis = TRUE, ...)
 }
 
 \arguments{
   \item{chart}{A prime implicant chart.}
-  \item{row.dom}{Logical, apply row dominance to eliminate dominated inessential
-        prime implicants.}
-  \item{all.sol}{Logical, derive all possible (non-overlapping) solutions, 
-        irrespective of complexity.}
+  \item{row.dom}{Logical, impose row dominance as constraint on solution to
+        eliminate dominated inessential prime implicants.}
+  \item{min.dis}{Logical, impose minimal disjunctivity as constraint on solution
+        to eliminate models with more prime implicants than the model(s) with
+        the fewest prime implicants.}
+  \item{...}{Other arguments (for backward compatibility).}
 }
 
 \details{
@@ -56,7 +58,7 @@ solveChart(chart)
 # all non-overlapping solutions: 
 # first or third PI: A + c
 # second or third or fourth PI: B + c + D
-solveChart(chart, all.sol = TRUE)
+solveChart(chart, min.dis = TRUE)
 
 # a more complex example
 PI <- c("AB", "BC", "Ac", "aC", "abd", "bcd")

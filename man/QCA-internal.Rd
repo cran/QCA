@@ -1,5 +1,6 @@
 \name{QCA-internal}
 
+\alias{.onAttach}
 \alias{base3rows}
 \alias{createChart}
 \alias{createString}
@@ -25,6 +26,7 @@
 \alias{verify.data}
 \alias{verify.dir.exp}
 \alias{verify.expl}
+\alias{verify.inf.test}
 \alias{verify.qca}
 \alias{verify.mqca}
 \alias{verify.tt}

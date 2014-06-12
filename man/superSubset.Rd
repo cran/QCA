@@ -5,9 +5,8 @@
 
 \description{
 This function finds all combinations of conditions among all possible combinations 
-that optimize the fulfilment of the specified criteria set for a superset 
-(necessity) or subset (sufficiency) relation to the outcome with respect to their 
-complexity.
+that optimize the fulfilment of the specified criteria for a superset (necessity)
+or subset (sufficiency) relation to the outcome with respect to their complexity.
 }
 
 \usage{
@@ -17,17 +16,18 @@ superSubset(data, outcome = "", neg.out = FALSE, conditions = c(""),
 }
 
 \arguments{
-  \item{data}{A data set of bivalent crisp or fuzzy set variables or multivalent 
-        crisp set variables.}
-  \item{outcome}{The name of the outcome set.}
-  \item{neg.out}{Logical, use negation of outcome set.}
-  \item{conditions}{A vector of condition sets.}
-  \item{relation}{The set relation of the conditions to the outcome, either "nec", 
-        "suf", "necsuf" or "sufnec".}
+  \item{data}{A data set of bivalent crisp-set or fuzzy-set variables or multivalent
+        crisp-set variables.}
+  \item{outcome}{The name of the outcome.}
+  \item{neg.out}{Logical, use negation of \code{outcome}.}
+  \item{conditions}{A vector of condition variables.}
+  \item{relation}{The set relation to \code{outcome}, either \code{"nec"},
+        \code{"suf"}, \code{"necsuf"} or \code{"sufnec"}.}
   \item{incl.cut}{The minimal inclusion score of the set relation.}
   \item{cov.cut}{The minimal coverage score of the set relation.}
   \item{use.tilde}{Logical, use tilde for negation with bivalent variables.}
-  \item{use.letters}{Logical, use letters instead of set names.}
+  \item{use.letters}{Logical, use simple letters instead of original variable
+        names.}
   \item{...}{Other arguments for backward compatibility.}
 }
 

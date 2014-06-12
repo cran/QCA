@@ -1,7 +1,7 @@
 `eqmccLoop` <-
 function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
          incl.cut1 = 1, incl.cut0 = 1, explain = c("1"), include = c(""), row.dom = FALSE,
-         all.sol = FALSE, omit = c(), dir.exp = c(), details = FALSE, show.cases = FALSE,
+         min.dis = FALSE, omit = c(), dir.exp = c(), details = FALSE, show.cases = FALSE,
          use.tilde = FALSE, use.letters = FALSE, inf.test = c(""), relation = "suf", ...) {
     
     check.object <- verify.mqca(data, outcome, conditions)
@@ -19,7 +19,7 @@ function(data, outcome = "", neg.out = FALSE, conditions = c(""), n.cut = 1,
         
         eqmcc.list[[i]] <- eqmcc(data, outcome = outcome[i], conditions = conditions, n.cut=n.cut, incl.cut1 = incl.cut1,
                                  incl.cut0 = incl.cut0, neg.out=neg.out, explain = explain, include = include,
-                                 row.dom = row.dom, all.sol = all.sol, relation = relation, show.cases = show.cases, ... = ...)
+                                 row.dom = row.dom, min.dis = min.dis, relation = relation, show.cases = show.cases, ... = ...)
     }
     
     return(structure(eqmcc.list, class="mqca"))

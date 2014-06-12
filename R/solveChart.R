@@ -1,11 +1,20 @@
 `solveChart` <-
-function(chart, row.dom = FALSE, all.sol = FALSE) {
+function(chart, row.dom = FALSE, min.dis = TRUE, ...) {
+    
     if (!is.logical(chart)) {
         cat("\n")
         stop("Use a T/F matrix. See demoChart's output.\n\n", call. = FALSE)
     }
     
-    if (all.sol) {
+    other.args <- list(...)
+    
+    if ("all.sol" %in% names(other.args)) {
+        if (is.logical(other.args$all.sol)) {
+            min.dis <- !other.args$all.sol
+        }
+    }
+    
+    if (!min.dis) {
         row.dom <- FALSE
     }
     
@@ -32,7 +41,13 @@ function(chart, row.dom = FALSE, all.sol = FALSE) {
                              k, "PIs out of", nrow(chart), "minimised PIs.\n\n"), call. = FALSE)
         }
         
-        if (all.sol & k < nrow(chart)) {
+        if (!min.dis & k < nrow(chart)) {
+            
+            # if (2^nrow(chart)*2 > .Machine$integer.max) {
+            if (nrow(chart) > 29) { # in order to prevent cases where integer.max is larger than 32-bit
+                cat("\n")
+                stop("The PI chart is too large to compute all solutions.\n\n", call. = FALSE)
+            }
             
             output <- .Call("allSol", k, chart*1, PACKAGE="QCA")
             

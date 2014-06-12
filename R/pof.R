@@ -1,5 +1,7 @@
 `pof` <-
-function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
+function(setms, outcome, data, neg.out=FALSE, relation = "nec",
+         inf.test = "", incl.cut1 = 0.75, incl.cut0 = 0.5, ...) {
+    
     funargs <- as.list(match.call())
     
     other.args <- list(...)
@@ -17,14 +19,13 @@ function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
     }
     else {
         outcomename <- ""
-    
+        
         if (all(is.character(outcome)) & length(outcome) == 1) {
             if (missing(data)) {
                 cat("\n")
                 stop("The data argument is missing, with no default.\n\n", call. = FALSE)
             }
             else {
-                
                 if (grepl("[{]", outcome)) { # there is a "{" sign in the outcome's name
                     outcome <- unlist(strsplit(outcome, split = ""))
                     outcome.value <- as.numeric(outcome[which(outcome == "{") + 1])
@@ -62,7 +63,6 @@ function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
             stop("The outcome should be either a column name in the data or a vector of values.\n\n", call. = FALSE)
         }
         
-        
         if (!(relation %in% c("necessity", "sufficiency", "suf", "nec"))) {
             cat("\n")
             stop("The relationship should be either \"necessity\" or \"sufficiency\".\n\n", call. = FALSE)
@@ -91,6 +91,7 @@ function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
         }
         
         pims <- FALSE
+        
         if (is.data.frame(setms)) {
             if (missing(outcome)) {
                 cat("\n")
@@ -332,6 +333,7 @@ function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
         
         if (pims) {
             mins <- setms
+            
             if (is.vector(setms)) {
                 length.expr <- 1
             }
@@ -348,7 +350,7 @@ function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
             length.expr <- nrow(setms)
             
             mins <- apply(setms, 1, function(e) {
-                apply(data[, conditions], 1, function(v) {
+                apply(data[, conditions, drop=FALSE], 1, function(v) {
                     
                     if (any(ox <- e[fc] == 1)) {
                         v[fc][ox] <- 1 - v[fc][ox]
@@ -362,6 +364,11 @@ function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
                     return(min(v[e != 0]))
                 })
             })
+            
+            if (!is.matrix(mins)) { ## bug fix 10.03.2014, if the data contains a single combination, mins is not a matrix but a vector
+                mins <- t(as.matrix(mins))
+                rownames(mins) <- rownames(data)
+            }
         }
     }
     
@@ -380,6 +387,15 @@ function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
     if (relation %in% c("necessity", "nec")) {
         primins <- apply(mins, 2, function(x) pmin(x, 1 - x, outcome))
     }
+    
+    if (!is.matrix(pmins)) { ## bug fix 10.03.2014, if the data contains a single combination, pmins is not a matrix but a vector
+        pmins <- t(as.matrix(pmins))
+        rownames(pmins) <- rownames(mins)
+                ## probably the very same thing happens to primins
+        primins <- t(as.matrix(primins))
+        rownames(primins) <- rownames(mins)
+    }
+    
     
     incl.cov[, 1] <- colSums(pmins)/colSums(mins)
     incl.cov[, 2] <- (colSums(pmins) - colSums(primins))/(colSums(mins) - colSums(primins))
@@ -414,7 +430,7 @@ function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
     sum.cov <- sum(inclusions)/sum.outcome
     
     
-    result.list <- list(incl.cov=as.data.frame(incl.cov), relation=relation)
+    result.list <- list(incl.cov=as.data.frame(incl.cov, stringsAsFactors = FALSE), relation=relation)
     
     if (!pims & via.eqmcc) {
         result.list$sol.incl.cov <- c(incl=sol.incl, PRI=sol.pri, cov=sum.cov)
@@ -427,6 +443,51 @@ function(setms, outcome, data, neg.out=FALSE, relation = "nec", ...) {
     
     # showc is not a formal argument, therefore is it initiated as FALSE
     showc <- FALSE
+    
+    if (all(inf.test != "")) {
+        verify.inf.test(inf.test, data)
+    }
+    
+    if (inf.test[1] == "binom") {
+        
+        statistical.testing <- TRUE
+        
+        if ("incl.cut1" %in% names(other.args)) {
+            incl.cut1 <- as.numeric(other.args$incl.cut1)
+        }
+        
+        if ("incl.cut0" %in% names(other.args)) {
+            incl.cut0 <- as.numeric(other.args$incl.cut0)
+        }
+        
+        if (length(inf.test) > 1) {
+            alpha <- as.numeric(inf.test[2]) # already checked if a number between 0 and 1
+        }
+        else {
+            alpha <- 0.05
+        }
+        
+        incl.cov <- as.data.frame(incl.cov, stringsAsFactors = FALSE)
+        
+        if (relation  %in% c("necessity", "nec")) {
+            nofcases <- rep(sum.outcome, ncol(mins))
+        }
+        else {
+            nofcases <- colSums(mins)
+        }
+        
+        success <- as.vector(round(nofcases * as.numeric(incl.cov[, "incl"])))
+        
+        incl.cov$pval0 <- incl.cov$pval1 <- 0
+        
+        for (i in seq(length(success))) {
+            incl.cov[i, "pval1"] <- binom.test(success[i], nofcases[i], p = incl.cut1, alternative = "less")$p.value
+            incl.cov[i, "pval0"] <- binom.test(success[i], nofcases[i], p = incl.cut0, alternative = "greater")$p.value
+        }
+        
+        result.list$incl.cov <- incl.cov
+    }
+    
     
     if ("showc" %in% names(other.args)) {
         if (other.args$showc) {

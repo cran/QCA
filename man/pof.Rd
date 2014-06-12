@@ -1,6 +1,7 @@
 \name{pof}
 
 \alias{pof}
+\alias{is.pof}
 
 \title{Compute Set-Relational Parameters of Fit}
 
@@ -9,18 +10,28 @@ This function computes inclusion (consistency) and coverage scores.
 }
 
 \usage{
-pof(setms, outcome, data, neg.out = FALSE, relation = "nec", ...)
+pof(setms, outcome, data, neg.out = FALSE, relation = "nec",
+    inf.test = "", incl.cut1 = 0.75, incl.cut0 = 0.5, ...)
+
+is.pof(x)
 }
 
 \arguments{
   \item{setms}{A data frame of set membership scores, or a matrix of implicants, 
         or a vector of implicant matrix line numbers.}
-  \item{outcome}{The name of the outcome set.}
+  \item{outcome}{The name of the outcome.}
   \item{data}{The working data set.}
-  \item{neg.out}{Logical, use negation of outcome set.}
-  \item{relation}{The set relation between the set membership scores and the outcome, 
-        either "nec" or "suf".}
+  \item{neg.out}{Logical, use negation of \code{outcome}.}
+  \item{relation}{The set relation to \code{outcome}, either \code{"nec"} or
+        \code{"suf"}.}
+  \item{inf.test}{The inference-statistical test to be performed (currently only
+        \code{"binom"} for bivalent and multivalent crisp-set variables).}
+  \item{incl.cut1}{The upper inclusion cut-off against which the
+        empirical inclusion score is tested if \code{inf.test = "binom"}.}
+  \item{incl.cut0}{The lower inclusion cut-off against which the
+        empirical inclusion score is tested if \code{inf.test = "binom"}.}
   \item{...}{Other arguments (not used in this function).}
+  \item{x}{An object of class "pof".}
 }
 
 \details{
@@ -40,6 +51,17 @@ The logical argument \code{neg.out} controls whether \code{outcome} is to be
 explained or its negation. If \code{outcome} is from a multivalent variable, 
 \code{neg.out = TRUE} has the effect that the union of all remaining values 
 becomes the new outcome to be explained.
+
+The argument \code{inf.test} provides functionality for adjudicating between
+rival hypotheses on the basis of inference-statistical tests. Currently, only an
+exact binomial test (\code{"binom"}) is available, which requires the data to
+contain only bivalent or multivalent crisp set variables. Two one-tailed tests
+are performed. The null hypothesis with respect to \code{incl.cut1} is that the
+empirical inclusion score of each element in \code{setms} is not lower than the
+upper critical inclusion cut-off provided in \code{incl.cut1}. The null hypothesis
+with respect to \code{incl.cut0} is that the empirical inclusion score of each
+element in \code{setms} is not higher than the lower critical inclusion cut-off
+provided in \code{incl.cut0}.
 }
 
 \references{
@@ -60,6 +82,7 @@ Comparative Analysis.
 data(d.Kro)
 head(d.Kro)
 
+# first also compute negations
 x.1 <- d.Kro[, 1:5]
 x.2 <- 1 - x.1
 names(x.2) <- tolower(names(x.1))
@@ -76,6 +99,13 @@ pof(x, outcome = "WNP", d.Kro, relation = "suf")
 
 # for the negated outcome
 pof(x, outcome = "WNP", d.Kro, neg.out = TRUE, relation = "suf")
+
+# exact binomial tests of sufficiency and necessity inclusion
+pof(x.1, outcome = "WNP", d.Kro, relation = "suf", inf.test = "binom",
+  incl.cut1 = 0.75, incl.cut0 = 0.5)
+
+pof(x.1, outcome = "WNP", d.Kro, inf.test = "binom", incl.cut1 = 0.75,
+  incl.cut0 = 0.5)
 
 # fsQCA using Emmenegger (2011)
 #------------------------------

@@ -117,6 +117,12 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), n.cut = 1,
     }
     
     colnames(inclpri[[1]]) <- seq_len(ncol(inclpri[[1]]))
+    
+    if ("SCTT" %in% names(other.args)) {
+        copyinclpri <- inclpri
+    }
+    
+    
     line.data <- inclpri[[2]]
     
     preserve <- inclpri[[1]][3, ] >= n.cut
@@ -185,7 +191,8 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), n.cut = 1,
     tt <- cbind(tt, incl="-", PRI="-")
     tt$incl <- as.character(tt$incl)
     tt$PRI <- as.character(tt$PRI)
-    inclpri <- inclpri[, which(colnames(inclpri) %in% rownames(tt))]
+    inclpri <- inclpri[, which(colnames(inclpri) %in% rownames(tt)), drop = FALSE]
+    
     tt[colnames(inclpri), "incl"] <- inclpri[1, ]
     tt[colnames(inclpri), "PRI"] <- inclpri[2, ]
     
@@ -277,6 +284,12 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), n.cut = 1,
     }
     
     x$PRI <- PRI
+    
+    
+    if ("SCTT" %in% names(other.args)) {
+        x$SCTT <- copyinclpri
+    }
+    
     
     return(structure(x, class="tt"))
 }
