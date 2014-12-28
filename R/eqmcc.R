@@ -7,6 +7,8 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
     
     m2 <- FALSE
     
+    metacall <- match.call()
+    
     other.args <- list(...)
     
     if ("rowdom" %in% names(other.args)) {
@@ -55,6 +57,10 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         outcome.copy <- outcome
         indata <- data # important before altering the outcome, if multi-value
         
+        names(data) <- toupper(names(data))
+        conditions <- toupper(conditions)
+        outcome <- toupper(outcome)
+        
         if (grepl("[{]", outcome)) { # there is a "{" sign in the outcome's name
             outcome <- unlist(strsplit(outcome, split = ""))
             outcome.value <- as.numeric(outcome[which(outcome == "{") + 1])
@@ -97,7 +103,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         if (!is.null(dir.exp)) {
             names(dir.exp) <- toupper(names(dir.exp))
         }
-        
+        rowsNotMissing <- which(tt$tt$OUT != "?")
     }
     else { # data already is a tt
         chexplain <- c(0, 1)[which(0:1 %in% explain)]
@@ -122,7 +128,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         conditions <- colnames(recdata)[seq(length(tt$noflevels))]
         outcome <- colnames(recdata)[ncol(recdata)]
         
-        
+        rowsNotMissing <- which(tt$tt$OUT != "?")
         if (any(tt$tt$OUT == "?")) {
             missings <- which(tt$tt$OUT == "?")
             tt$tt <- tt$tt[-missings, ]
@@ -162,10 +168,16 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
     excl.matrix <- matrix(as.numeric(excl.matrix), ncol=length(noflevels)) + 1
     
     subset.tt <- tt$tt[, "OUT"] %in% explain
+    
+    if (all(!subset.tt)) {
+        cat("\n")
+        stop(paste("None of the values in OUT is explained. Please check the truth table.\n\n", sep=""), call. = FALSE)
+    }
+    
     inputt <- as.matrix(tt$tt[subset.tt, seq(length(noflevels))])
     rownms <- rownames(inputt)
     inputt <- matrix(as.numeric(inputt), ncol=length(noflevels)) + 1
-    inputcases <- tt$cases[tt$cases != ""][subset.tt]
+    inputcases <- tt$cases[rowsNotMissing][subset.tt]
     
     nofcases1 <- sum(tt$tt$n[tt$tt$OUT == 1])
     nofcases0 <- sum(tt$tt$n[tt$tt$OUT == 0])
@@ -281,8 +293,8 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
     
     expressions <- minExpressions(expressions)
     
-    # return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, min.dis=min.dis))
-    c.sol <- p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis)
+    #                 return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis, ...=...))
+    c.sol <- p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis, ...=...)
     
     mbase <- rev(c(1, cumprod(rev(noflevels + 1))))[-1]
     
@@ -293,30 +305,30 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
             ttdata <- as.data.frame(cbind(ttdata, OUT = c(rep(1, nrow(expl.matrix)), rep(0, nrow(excl.matrix)))))
             colnames(ttdata)[ncol(ttdata)] <- outcome
             rownames(ttdata) <- seq(nrow(ttdata))
-            valents <- lapply(ttdata[, conditions], function(x) sort(unique(x)))
-            realnoflevels <- unlist(lapply(valents, length))
+            values <- lapply(ttdata[, conditions], function(x) sort(unique(x)))
+            realnoflevels <- unlist(lapply(values, length))
             
             gb <- vector(mode="list", length=nofconditions)
             names(gb) <- conditions
             for (i in seq(nofconditions)) {
                 gb[[i]] <- vector(mode="list", length=realnoflevels[i])
-                names(gb[[i]]) <- valents[[i]]
-                for (j in seq(length(valents[[i]]))) {
+                names(gb[[i]]) <- values[[i]]
+                for (j in seq(length(values[[i]]))) {
                     gb[[i]][[j]] <- vector(mode="list", length=2)
-                    gb[[i]][[j]][[1]] <- which(ttdata[, i] == valents[[i]][j] & ttdata[, outcome] == 1)
-                    gb[[i]][[j]][[2]] <- which(ttdata[, i] == valents[[i]][j] & ttdata[, outcome] == 0)
+                    gb[[i]][[j]][[1]] <- which(ttdata[, i] == values[[i]][j] & ttdata[, outcome] == 1)
+                    gb[[i]][[j]][[2]] <- which(ttdata[, i] == values[[i]][j] & ttdata[, outcome] == 0)
                 }
             }
             
-            valents <- lapply(valents, function(x) x + 1) # +1 to raise the valents in the implicant matrix
-            realnoflevels <- realnoflevels + 1            # +1 same reason
+            values <- lapply(values, "+", 1)     # +1 to raise the values in the implicant matrix
+            realnoflevels <- realnoflevels + 1   # +1 same reason
             
             t1g <- seq(nrow(expl.matrix))
             t1b <- seq(nrow(excl.matrix)) + nrow(expl.matrix)
             
             mvector <- c(rev(cumprod(rev(realnoflevels))), 1)[-1]
             
-            expressions <- .Call("m2", gb, valents, mvector, mbase, t1g, t1b, realnoflevels)
+            expressions <- .Call("m2", gb, values, mvector, mbase, t1g, t1b, realnoflevels)
             expressions <- .Call("removeRedundants", expressions, noflevels, mbase, PACKAGE="QCA")
             
         }
@@ -329,9 +341,9 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
         
         colnames(expressions) <- colnames(inputt)
         
-        # return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis))
+        #        return(list(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis, ...=...))
         
-        p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis)
+        p.sol <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis, ...=...)
         
     }
     
@@ -438,7 +450,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
     
     
     prettyNums <- formatC(seq(length(p.sol$solution.list[[1]])), digits = nchar(length(p.sol$solution.list[[1]])) - 1, flag = 0)
-    names(output$SA) <- paste("S", prettyNums, sep="")
+    names(output$SA) <- paste("M", prettyNums, sep="")
     
     if (!is.null(dir.exp) & all(include != c(""))) {
         
@@ -587,7 +599,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
                     
                     expressions <- minExpressions(expl.matrix.i.sol)
                     
-                    i.sol.index <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis)
+                    i.sol.index <- getSolution(expressions=expressions, collapse=collapse, uplow=uplow, use.tilde=use.tilde, inputt=inputt, row.dom=row.dom, initial=initial, min.dis=min.dis, ...=...)
                     
                     i.sol.index$expressions <- i.sol.index$expressions[rowSums(i.sol.index$mtrx) > 0, ]
                     
@@ -630,6 +642,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
                     tt.rows <- createString(inputt - 1, collapse=collapse, uplow, use.tilde)
                     
                     mtrxlines <- demoChart(rownames(i.sol.index$reduced$expressions), tt.rows, ifelse((use.letters & uplow) | (alreadyletters & uplow), "", "*"))
+                    
                     for (l in seq(length(expr.cases))) {
                         expr.cases[l] <- paste(inputcases[mtrxlines[l, ]], collapse="; ")
                     }
@@ -670,6 +683,7 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""),
     }
     
     output$relation <- relation
+    output$call <- metacall
     
     return(structure(output, class="qca"))
 }

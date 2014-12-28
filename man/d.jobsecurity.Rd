@@ -1,8 +1,8 @@
-\name{d.Emm}
+\name{d.jobsecurity}
 
 \docType{data}
 
-\alias{d.Emm}
+\alias{d.jobsecurity}
 
 \title{Job Security Regulations in Western Democracies}
 
@@ -11,7 +11,7 @@ This data set is from Emmenegger (2011), who analyzes the determinants of
 high job security regulations in Western democracies using fsQCA. 
 }
 
-\usage{data(d.Emm)}
+\usage{data(d.jobsecurity)}
 
 \format{
 This data frame contains 19 rows (cases) and the following 7 columns (variables):
@@ -33,9 +33,9 @@ The row names are the official International Organization for Standardization
 }
 
 \source{
-Emmenegger, Patrick. 2011. Job Security Regulations in Western Democracies: A 
-Fuzzy Set Analysis. 
-\emph{European Journal of Political Research} 50 (3):336-64.
+Emmenegger, Patrick. 2011. \dQuote{Job Security Regulations in Western Democracies: 
+A Fuzzy Set Analysis.} \emph{European Journal of Political Research} 50 (3):336-64.
+DOI: \href{http://dx.doi.org/10.1111/j.1475-6765.2010.01933.x}{10.1111/j.1475-6765.2010.01933.x}.
 }
 
 \keyword{datasets}

@@ -12,6 +12,10 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), n.cut = 1,
         complete <- FALSE
     }
     
+    names(data) <- toupper(names(data))
+    conditions <- toupper(conditions)
+    outcome <- toupper(outcome)
+    
     outcome.copy <- outcome
     
     initial.data <- data
@@ -31,11 +35,11 @@ function(data, outcome = c(""), neg.out = FALSE, conditions = c(""), n.cut = 1,
         conditions <- names(data)[-which(names(data) == outcome)]
     }
     
-    data <- data[, c(conditions, outcome)]
-    
     if (!via.pof) {
         verify.tt(data, outcome, conditions, complete, show.cases, incl.cut1, incl.cut0, inf.test)
     }
+    
+    data <- data[, c(conditions, outcome)]
     
     if (incl.cut0 > incl.cut1) {
         incl.cut0 <- incl.cut1

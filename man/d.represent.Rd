@@ -1,8 +1,8 @@
-\name{d.Kro}
+\name{d.represent}
 
 \docType{data}
 
-\alias{d.Kro}
+\alias{d.represent}
 
 \title{Women's Representation in Western Democratic Parliaments}
 
@@ -11,7 +11,7 @@ This data is from Krook (2010), who analyzes the determinants of high women's
 representation in Western-democratic parliaments using csQCA.
 }
 
-\usage{data(d.Kro)}
+\usage{data(d.represent)}
 
 \format{
 This data frame contains 22 rows (cases) and the following 6 columns (variables):
@@ -38,9 +38,9 @@ specified in ISO 3166-1-alpha-2.
 }
 
 \source{
-Krook, Mona Lena. 2010. Women's Representation in Parliament: A Qualitative 
-Comparative Analysis 
-\emph{Political Studies} 58 (5):886-908.
+Krook, Mona Lena. 2010. \dQuote{Women's Representation in Parliament: A Qualitative 
+Comparative Analysis.} \emph{Political Studies} 58 (5):886-908.
+DOI: \href{http://dx.doi.org/10.1111/j.1467-9248.2010.00833.x}{10.1111/j.1467-9248.2010.00833.x}.
 }
 
 

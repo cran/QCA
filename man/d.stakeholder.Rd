@@ -1,8 +1,8 @@
-\name{d.CZH}
+\name{d.stakeholder}
 
 \docType{data}
 
-\alias{d.CZH}
+\alias{d.stakeholder}
 
 \title{Decoupling in Response to Stakeholder Pressures}
 
@@ -11,7 +11,7 @@ This data set is from Crilly, Zollo and Hansen (2012), who analyze the determina
 of firms' responses to institutional pressures using fsQCA. 
 }
 
-\usage{data(d.CZH)}
+\usage{data(d.stakeholder)}
 
 \format{
 This data frame contains 17 rows (cases) and the following 5 columns (variables):
@@ -26,9 +26,10 @@ This data frame contains 17 rows (cases) and the following 5 columns (variables)
 }
 
 \source{
-Crilly, Donal, Maurizio Zollo, and Morten T. Hansen. 2012. Faking It or Muddling 
-Through? Understanding Decoupling in Response to Stakeholder Pressures. 
+Crilly, Donal, Maurizio Zollo, and Morten T. Hansen. 2012. \dQuote{Faking It or 
+Muddling Through? Understanding Decoupling in Response to Stakeholder Pressures.} 
 \emph{Academy of Management Journal} 55 (6):1429-48.
+DOI: \href{http://dx.doi.org/10.5465/amj.2010.0697}{10.5465/amj.2010.0697}.
 }
 
 \keyword{datasets}

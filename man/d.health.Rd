@@ -1,8 +1,8 @@
-\name{d.BWB}
+\name{d.health}
 
 \docType{data}
 
-\alias{d.BWB}
+\alias{d.health}
 
 \title{Trends in Narrowing Health Inequalities in England}
 
@@ -12,7 +12,7 @@ of varying progress with tackling health inequalities with respect to cancers an
 cardiovascular disease among a group of 27 local authority areas in England. 
 }
 
-\usage{data(d.BWB)}
+\usage{data(d.health)}
 
 \format{
 This data frame contains 27 rows (cases) and the following 18 columns (variables):
@@ -58,9 +58,10 @@ This data frame contains 27 rows (cases) and the following 18 columns (variables
 }
 
 \source{
-Blackman, Tim, Jonathan Wistow, and David Byrne. 2011. A Qualitative Comparative 
-Analysis of Factors Associated with Trends in Narrowing Health Inequalities in England. 
-\emph{Social Science & Medicine} 72 (12):1965-74.
+Blackman, Tim, Jonathan Wistow, and David Byrne. 2011. \dQuote{A Qualitative 
+Comparative Analysis of Factors Associated with Trends in Narrowing Health 
+Inequalities in England.} \emph{Social Science & Medicine} 72 (12):1965-74.
+DOI: \href{http://dx.doi.org/10.1016/j.socscimed.2011.04.003}{10.1016/j.socscimed.2011.04.003}.
 }
 
 \keyword{datasets}

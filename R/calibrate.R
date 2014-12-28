@@ -4,15 +4,18 @@ function (x, type="crisp", thresholds = NA, include = TRUE, logistic = FALSE,
     if (!is.numeric(x)) {
         cat("\n")
         stop("x is not numeric.\n\n", call. = FALSE)
-    }    
+    }
+    
     if (!(type %in% c("crisp", "fuzzy"))) {
         cat("\n")
         stop("Unknown calibration type.\n\n", call. = FALSE)
     }
+    
     if (all(is.na(thresholds))) {
         cat("\n")
         stop("Threshold value(s) not specified.\n\n", call. = FALSE)
     }
+    
     if (type == "crisp") {
         xrange <- range(x, na.rm=TRUE)
         if (any(as.numeric(unclass(cut(thresholds, breaks=c(-Inf, xrange, Inf)))) != 2)) {
@@ -28,14 +31,17 @@ function (x, type="crisp", thresholds = NA, include = TRUE, logistic = FALSE,
             check.vector[is.na(check.vector)] <- FALSE
             return(check.vector)
         }
+        
         if (!(length(thresholds) %in% c(3, 6))) {
             cat("\n")
             stop("For fuzzy data, thresholds should be of type:\n\"c(thEX, thCR, thIN)\"\nor\n\"c(thEX1, thCR1, thIN1, thIN2, thCR2, thEX2)\".\n\n", call. = FALSE)
         }
+        
         if (idm <= 0.5 | idm >= 1) {
             cat("\n")
             stop("The inclusion degree of membership has to be bigger than 0.5 and less than 1.\n\n", call. = FALSE)
         }
+        
          # needed because sometimes thresholds values inherit names, e.g. from being calculated with quantile() 
         thresholds <- as.vector(thresholds)
         
@@ -50,6 +56,8 @@ function (x, type="crisp", thresholds = NA, include = TRUE, logistic = FALSE,
                 }
                 
                 y <- (x < thCR) + 1
+                # y is the index of the position in the vector {-1, 1}
+                
                 result <- 1/(1 + exp(-((x - thCR) * (c(1, -1)[y]*log(idm/(1 - idm))/(c(thIN, thEX)[y] - thCR)))))
                 
                 if (thresholds[1] > thresholds[3]) {
@@ -64,7 +72,9 @@ function (x, type="crisp", thresholds = NA, include = TRUE, logistic = FALSE,
                     cat("\n")
                     warning("Some thresholds equal, that should not be equal.\n\n", call. = FALSE)
                 }
+                
                 increasing <- TRUE
+                
                 if (thIN < thCR & thCR < thEX) {
                     increasing <- FALSE
                 }      
@@ -133,18 +143,22 @@ function (x, type="crisp", thresholds = NA, include = TRUE, logistic = FALSE,
                 cat("\n")
                 stop("First crossover threshold not between first exclusion and inclusion thresholds.\n\n", call. = FALSE)
             }
+            
             if (thCR2 < min(thEX2, thIN2) | thCR2 > max(thEX2, thIN2)) {
                 cat("\n")
                 stop("Second crossover threshold not between second exclusion and inclusion thresholds.\n\n", call. = FALSE)
             }
+            
             if (any(table(c(thEX1, thCR1, thIN1)) > 1) | any(table(c(thIN2, thCR2, thEX2)) > 1) | thCR1 == thCR2) {
                 cat("\n")
                 stop("Some thresholds equal, that should not be equal.\n\n", call. = FALSE)
-            }    
+            }  
+            
             increasing <- TRUE
             if (thIN1 < thCR1 & thCR1 < thEX1 & thEX1 <= thEX2 & thEX2 < thCR2 & thCR2 < thIN2) {
                 increasing <- FALSE
             }
+            
             if (increasing) {
                 if (thEX1 == thEX2) {
                     cat("\n")

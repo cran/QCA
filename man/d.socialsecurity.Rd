@@ -1,8 +1,8 @@
-\name{d.HMN}
+\name{d.socialsecurity}
 
 \docType{data}
 
-\alias{d.HMN}
+\alias{d.socialsecurity}
 
 \title{The Emergence of the Social Security State}
 
@@ -12,7 +12,7 @@ social security programs in 15 industrializing countries during the period
 1880-1930 using csQCA.
 }
 
-\usage{data(d.HMN)}
+\usage{data(d.socialsecurity)}
 
 \format{
 This data frame contains 30 rows (cases) and the following 6 columns (variables):
@@ -28,8 +28,9 @@ This data frame contains 30 rows (cases) and the following 6 columns (variables)
 }
 
 \source{
-Hicks, Alexander, Joya Misra, and Tang N. Ng. 1995. The Programmatic Emergence
-of the Social Security State. \emph{American Sociological Review} 60 (3):329-49.
+Hicks, Alexander, Joya Misra, and Tang N. Ng. 1995. \dQuote{The Programmatic 
+Emergence of the Social Security State.} 
+\emph{American Sociological Review} 60 (3):329-49.
 }
 
 \keyword{datasets}

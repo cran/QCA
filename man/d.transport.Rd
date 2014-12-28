@@ -1,8 +1,8 @@
-\name{d.SA}
+\name{d.transport}
 
 \docType{data}
 
-\alias{d.SA}
+\alias{d.transport}
 
 \title{Determinants of High Transport Project Acceptance}
 
@@ -11,7 +11,7 @@ This data set is from Sager and Andereggen (2012), who analyze the determinants
 of high transport project acceptance in Switzerland using mvQCA. 
 }
 
-\usage{data(d.SA)}
+\usage{data(d.transport)}
 
 \format{
 This data frame contains 21 rows (cases) and the following 10 columns (variables):
@@ -41,9 +41,10 @@ This data frame contains 21 rows (cases) and the following 10 columns (variables
 }
 
 \source{
-Sager, Fritz, and Celine Andereggen. 2012. Dealing With Complex Causality in 
-Realist Synthesis: The Promise of Qualitative Comparative Analysis. 
+Sager, Fritz, and Celine Andereggen. 2012. \dQuote{Dealing With Complex Causality 
+in Realist Synthesis: The Promise of Qualitative Comparative Analysis.} 
 \emph{American Journal of Evaluation} 33 (1):60-78.
+DOI: \href{http://dx.doi.org/10.1177/1098214011411574}{10.1177/1098214011411574}.
 }
 
 \keyword{datasets}

@@ -144,7 +144,7 @@ returned. Note that in some cases, the deactivation of both \code{row.dom} and
 \code{min.dis} may lead to the identification of so many models that they cannot
 be returned. Users should also be aware that \emph{for purposes of causal data
 analysis, neither} \code{row.dom} \emph{nor} \code{min.dis} \emph{should be
-operative}.
+operative} (Thiem 2014b).
 
 The argument \code{omit} can be used to omit any configuration (positive, 
 negative or remainder) from the minimization process. It accepts a vector of row 
@@ -162,7 +162,7 @@ function value, while a dash, "-", indicates that one or the other condition doe
 so. For multivalent variables, multiple values have to be enclosed by double
 quotes and separated by a semicolon (see mvQCA example using Hartmann and Kemmerzell
 (2010) below). In some situations, directional expectations in mvQCA generate easy
-counterfactuals that do not contribute to parsimony (Thiem 2014). These so-called
+counterfactuals that do not contribute to parsimony (Thiem 2014a). These so-called
 non-simplifying easy counterfactuals will not be part of the solution (see mvQCA
 example using Sager and Andereggen (2012) below).
 
@@ -216,34 +216,39 @@ the condition variables with single letters in alphabetical order.
 }
 
 \references{
-Baumgartner, Michael. 2009. Inferring Causal Complexity. 
+Baumgartner, Michael. 2009. \dQuote{Inferring Causal Complexity.} 
 \emph{Sociological Methods & Research} 38 (1):71-101.
+DOI: \href{http://dx.doi.org/10.1177/0049124109339369}{10.1177/0049124109339369}.
 
-Emmenegger, Patrick. 2011. Job Security Regulations in Western Democracies: A 
-Fuzzy Set Analysis. 
-\emph{European Journal of Political Research} 50 (3):336-64.
+Emmenegger, Patrick. 2011. \dQuote{Job Security Regulations in Western Democracies: 
+A Fuzzy Set Analysis.} \emph{European Journal of Political Research} 50 (3):336-64.
+DOI: \href{http://dx.doi.org/10.1111/j.1475-6765.2010.01933.x}{10.1111/j.1475-6765.2010.01933.x}.
 
-Hartmann, Christof, and Joerg Kemmerzell. 2010. Understanding Variations in Party 
-Bans in Africa. 
-\emph{Democratization} 17 (4):642-65.
+Hartmann, Christof, and Joerg Kemmerzell. 2010. \dQuote{Understanding Variations 
+in Party Bans in Africa.} \emph{Democratization} 17 (4):642-65.
+DOI: \href{http://dx.doi.org/10.1080/13510347.2010.491189}{10.1080/13510347.2010.491189}.
 
-McCluskey, Edward J. 1956. Minimization of Boolean Functions. 
+McCluskey, Edward J. 1956. \dQuote{Minimization of Boolean Functions.} 
 \emph{Bell Systems Technical Journal} 35 (6):1417-44.
 
 McCluskey, Edward J. 1965. \emph{Introduction to the Theory of Switching Circuits}.
 Princeton: Princeton University Press.
 
-Krook, Mona Lena. 2010. Women's Representation in Parliament: A Qualitative 
-Comparative Analysis. 
-\emph{Political Studies} 58 (5):886-908.
+Krook, Mona Lena. 2010. \dQuote{Women's Representation in Parliament: A Qualitative 
+Comparative Analysis.} \emph{Political Studies} 58 (5):886-908.
+DOI: \href{http://dx.doi.org/10.1111/j.1467-9248.2010.00833.x}{10.1111/j.1467-9248.2010.00833.x}.
 
-Ragin, Charles C., and Sarah Ilene Strand. 2008. Using Qualitative Comparative 
-Analysis to Study Causal Order: Comment on Caren and Panofsky (2005). 
+Ragin, Charles C., and Sarah Ilene Strand. 2008. \dQuote{Using Qualitative Comparative 
+Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).} 
 \emph{Sociological Methods & Research} 36 (4):431-41.
 
-Thiem, Alrik. 2014. Parameters of Fit and Intermediate Solutions in Multi-Value
-Qualitative Comparative Analysis. \emph{Quality & Quantity}
-DOI:10.1007/s11135-014-0015-x.
+Thiem, Alrik. 2014a. \dQuote{Parameters of Fit and Intermediate Solutions in Multi-Value
+Qualitative Comparative Analysis.} \emph{Quality & Quantity}.
+DOI: \href{http://dx.doi.org/10.1007/s11135-014-0015-x}{10.1007/s11135-014-0015-x}.
+
+Thiem, Alrik. 2014b. \dQuote{Navigating the Complexities of Qualitative Comparative 
+Analysis: Case Numbers, Necessity Relations, and Model Ambiguities.} \emph{Evaluation Review}. 
+DOI: \href{http://dx.doi.org/10.1177/0193841x14550863}{10.1177/0193841x14550863}.
 }
 
 \seealso{\code{\link{truthTable}}, \code{\link{factorize}}}
@@ -251,19 +256,18 @@ DOI:10.1007/s11135-014-0015-x.
 \examples{
 # csQCA using Krook (2010)
 #-------------------------
-data(d.Kro)
-head(d.Kro)
+data(d.represent)
+head(d.represent)
 
 # conservative solution
-eqmcc(d.Kro, outcome = "WNP")
+eqmcc(d.represent, outcome = "WNP")
 
 # negated outcome, conservative solution
-eqmcc(d.Kro, outcome = "WNP", neg.out = TRUE)
+eqmcc(d.represent, outcome = "WNP", neg.out = TRUE)
 
 # parsimonious solution with details and case names
-Kro.sp <- eqmcc(d.Kro, outcome = "WNP", include = "?", 
-  details = TRUE, show.cases = TRUE)
-Kro.sp
+(Kro.sp <- eqmcc(d.represent, outcome = "WNP", include = "?", 
+                 details = TRUE, show.cases = TRUE))
 
 # check PI chart
 Kro.sp$PIchart
@@ -272,32 +276,30 @@ Kro.sp$PIchart
 Kro.sp$SA
 
 # minimized expressions for SAs using fake outcome (FO)
-for(i in 1:2){
-  print(eqmcc(cbind(Kro.sp$SA[[i]], FO = 1), outcome = "FO"))
-}  
-  
+for(i in 1:2) {
+    print(eqmcc(cbind(Kro.sp$SA[[i]], FO = 1), outcome = "FO"))
+}
+
 # conservative solution with truth table object
-Kro.tt <- truthTable(d.Kro, outcome = "WNP")
-Kro.sc <- eqmcc(Kro.tt)
-Kro.sc
+Kro.tt <- truthTable(d.represent, outcome = "WNP")
+(Kro.sc <- eqmcc(Kro.tt))
 
 # fsQCA using Emmenegger (2011)
 #------------------------------
-data(d.Emm)
-head(d.Emm)
+data(d.jobsecurity)
+head(d.jobsecurity)
 
 # parsimonious solution with details
-eqmcc(d.Emm, outcome = "JSR", incl.cut1 = 0.9, include = "?", 
-  details = TRUE)
+eqmcc(d.jobsecurity, outcome = "JSR", incl.cut1 = 0.9, include = "?", 
+      details = TRUE)
 
 # intermediate solution
-Emm.si <- eqmcc(d.Emm, outcome = "JSR", incl.cut1 = 0.9, 
-  include = "?", dir.exp = c(1,1,1,1,1,0), details = TRUE)
-Emm.si
+(Emm.si <- eqmcc(d.jobsecurity, outcome = "JSR", incl.cut1 = 0.9, 
+                 include = "?", dir.exp = c(1,1,1,1,1,0), details = TRUE))
 
 # are the prime implicants also sufficient for the negation of the outcome?
-pof(Emm.si$i.sol$C1P1$pims, outcome = "JSR", d.Emm, neg.out = TRUE,
-  relation = "suf")
+pof(Emm.si$i.sol$C1P1$pims, outcome = "JSR", d.jobsecurity, neg.out = TRUE,
+    relation = "suf")
 
 # check PI chart for intermediate solution;
 # C1P1: first conservative and first parsimonious solution
@@ -318,30 +320,29 @@ eqmcc(cbind(Emm.si$i.sol$C1P1$EC, FO = 1), outcome = "FO")
 PIsc <- Emm.si$i.sol$C1P1$pims
 par(mfrow = c(2, 2))
 for(i in 1:4){
- plot(PIsc[, i], d.Emm$JSR, pch = 19, ylab = "JSR",
-  xlab = names(PIsc)[i], xlim = c(0, 1), ylim = c(0, 1),
-  main = paste("Prime Implicant", print(i)))
- mtext(paste(
-  "Inclusion = ", round(Emm.si$i.sol$C1P1$IC$incl.cov$incl[i], 3),
-  "; Coverage = ", round(Emm.si$i.sol$C1P1$IC$incl.cov$cov.r[i], 3)), 
-  cex = 0.7, line = 0.4)
- abline(h = 0.5, lty = 2, col = gray(0.5))
- abline(v = 0.5, lty = 2, col = gray(0.5))
- abline(0, 1)
+    plot(PIsc[, i], d.jobsecurity$JSR, pch = 19, ylab = "JSR",
+         xlab = names(PIsc)[i], xlim = c(0, 1), ylim = c(0, 1),
+         main = paste("Prime Implicant", print(i)))
+    mtext(paste(
+         "Inclusion = ", round(Emm.si$i.sol$C1P1$IC$incl.cov$incl[i], 3),
+         "; Coverage = ", round(Emm.si$i.sol$C1P1$IC$incl.cov$cov.r[i], 3)), 
+    cex = 0.7, line = 0.4)
+    abline(h = 0.5, lty = 2, col = gray(0.5))
+    abline(v = 0.5, lty = 2, col = gray(0.5))
+    abline(0, 1)
 }
 
 # mvQCA using Hartmann and Kemmerzell (2010)
 #-------------------------------------------
-data(d.HK)
-head(d.HK)
+data(d.partybans)
+head(d.partybans)
 
 # create vector of condition variables
 conds <- c("C", "F", "T", "V")
 
 # parsimonious solution, with contradictions included
-HK.sp <- eqmcc(d.HK, outcome = "PB{1}", conditions = conds,
-  incl.cut0 = 0.4, include = c("?", "C"), details = TRUE)
-HK.sp
+(HK.sp <- eqmcc(d.partybans, outcome = "PB{1}", conditions = conds,
+                incl.cut0 = 0.4, include = c("?", "C"), details = TRUE))
 
 # Venn diagram of solution S1;
 # first extract PI membership scores
@@ -349,72 +350,68 @@ PIms <- HK.sp$pims
 
 require(VennDiagram)
 vennHK.suf <- venn.diagram(
- x = list(
-  "PB{1}" = which(d.HK$PB == 1),
-  "C{0,1}" = which(PIms[, 1] == 1 | PIms[, 2] == 1),
-  "T{2}" = which(PIms[, 4] == 1),
-  "T{1}*V{0}" = which(PIms[, 5] == 1)),
- filename = NULL,
- cex = 2.5, cat.cex = 2, cat.pos = c(180, 180, 0, 0),
- cat.dist = c(0.4, 0.4, 0.12, 0.12),
- fill = gray(c(0.3, 0.5, 0.7, 0.9))
+    x = list(
+        "PB{1}" = which(d.partybans$PB == 1),
+        "C{0,1}" = which(PIms[, 1] == 1 | PIms[, 2] == 1),
+        "T{2}" = which(PIms[, 4] == 1),
+        "T{1}*V{0}" = which(PIms[, 5] == 1)),
+    filename = NULL,
+    cex = 2.5, cat.cex = 2, cat.pos = c(180, 180, 0, 0),
+    cat.dist = c(0.4, 0.4, 0.12, 0.12),
+    fill = gray(c(0.3, 0.5, 0.7, 0.9))
 )
 grid.draw(vennHK.suf)
 
 # which are the two countries in T{2} but not PB{1}?
-rownames(d.HK[d.HK$T == 2 & d.HK$PB != 1, ])
+rownames(d.partybans[d.partybans$T == 2 & d.partybans$PB != 1, ])
 
 # minimize contradictions (only one contradiction)
-eqmcc(d.HK, outcome = "PB{1}", conditions = conds, incl.cut0 = 0.4,
-  explain = "C")
+eqmcc(d.partybans, outcome = "PB{1}", conditions = conds, incl.cut0 = 0.4,
+      explain = "C")
 
 # intermediate solution with directional expectations:
 # C{1}, F{1,2}, T{2}, V contribute to OUT = 1
-HK.si <- eqmcc(d.HK, outcome = "PB{1}", conditions = conds,
-  include = "?", dir.exp = c(1, "1;2", 2, 1), details = TRUE)
-HK.si
+(HK.si <- eqmcc(d.partybans, outcome = "PB{1}", conditions = conds,
+                include = "?", dir.exp = c(1, "1;2", 2, 1), details = TRUE))
 
 # mvQCA using Sager and Andereggen (2012)
 #----------------------------------------
-data(d.SA)
-head(d.SA)
+data(d.transport)
+head(d.transport)
 
 # directional expectation of FED{0} leads to non-simplifying
 # easy counterfactual (see Thiem 2014 for more details)
-SA.si <- eqmcc(d.SA, outcome = "ACC{1}", conditions = names(d.SA)[1:5],
-  include = "?", dir.exp = c(0,1,0,1,1), details = TRUE)
-SA.si
+(SA.si <- eqmcc(d.transport, outcome = "ACC{1}", conditions = names(d.transport)[1:5],
+                include = "?", dir.exp = c(0,1,0,1,1), details = TRUE))
 
 SA.si$i.sol$C1P1$NSEC
 
 # tQCA using Ragin and Strand (2008)
 #-----------------------------------
-data(d.RS)
-head(d.RS)
+data(d.graduate)
+head(d.graduate)
 
 # conservative solution with details and case names;
 # auxiliary temporal order condition "EBA" automatically excluded 
 # from parameters of fit
-eqmcc(d.RS, outcome = "REC", details = TRUE, show.cases = TRUE)
+eqmcc(d.graduate, outcome = "REC", details = TRUE, show.cases = TRUE)
 
 # QCA path models ("causal chain" in CNA); data from Baumgartner (2009);
 # note that CNA and QCA results are not always equal because CNA applies a
 # different concept of the truth table that does not take each configuration's
 # inclusion score into consideration before minimization
 #-----------------------------------------------------------------------------
-d.Bau <- data.frame(
-  U = c(1,1,1,1,0,0,0,0), D = c(1,1,0,0,1,1,0,0),
-  L = c(1,1,1,1,1,1,0,0), G = c(1,0,1,0,1,0,1,0),
-  E = c(1,1,1,1,1,1,1,0),
-  row.names = letters[1:8])
+d.Bau <- data.frame(U = c(1,1,1,1,0,0,0,0), D = c(1,1,0,0,1,1,0,0),
+                    L = c(1,1,1,1,1,1,0,0), G = c(1,0,1,0,1,0,1,0),
+                    E = c(1,1,1,1,1,1,1,0),
+                    row.names = letters[1:8])
 head(d.Bau)
 
 # with multiple outcomes, no solution details are printed;
 # "causal-chain structure": (D + U <=> L) * (G + L <=> E)
 # "common-cause structure": (D + U <=> L) * (G + D + U <=> E)
-Bau.cna <- eqmcc(d.Bau, outcome = names(d.Bau), relation = "sufnec", 
-  include = "?", min.dis = FALSE)
-Bau.cna
+(Bau.cna <- eqmcc(d.Bau, outcome = names(d.Bau), relation = "sufnec", 
+                  include = "?", min.dis = FALSE))
 
 # get the truth table, solution details and case names for outcome "E"
 print(Bau.cna$E, details = TRUE, show.cases = TRUE)
@@ -424,20 +421,18 @@ print(Bau.cna$E, details = TRUE, show.cases = TRUE)
 d.mmv <- data.frame(A = c(2,0,0,1,1,1,2,2), B = c(2,2,2,2,1,1,0,0), 
                     C = c(0,1,0,0,0,2,1,0), D = c(2,1,2,2,3,1,3,0), 
                     E = c(3,2,3,3,0,1,3,2), 
-  row.names = letters[1:8])
+                    row.names = letters[1:8])
 head(d.mmv)
 
-mmv.s <- eqmcc(d.mmv, outcome = c("D{2}", "E{3}"))
-mmv.s
+(mmv.s <- eqmcc(d.mmv, outcome = c("D{2}", "E{3}")))
 
 # use quotes with curly-bracket notation to access solution component
 print(mmv.s$"E{3}", details = TRUE, show.cases = TRUE)
 
 # negation of outcome from multivalent variable is disjunction of all other
 # values; high level of ambiguity (18 models)
-mmv.s <- eqmcc(d.mmv, outcome = "E{3}", neg.out = TRUE, include = "?",
- min.dis = FALSE)
-mmv.s
+(mmv.s <- eqmcc(d.mmv, outcome = "E{3}", neg.out = TRUE, include = "?",
+                min.dis = FALSE))
 
 }
 

@@ -1,8 +1,8 @@
-\name{d.AS}
+\name{d.napoleon}
 
 \docType{data}
 
-\alias{d.AS}
+\alias{d.napoleon}
 
 \title{Reception of the Code Napoleon in Germany}
 
@@ -11,7 +11,7 @@ This data set is from Arvind and Stirton (2010), who analyze the reception of th
 Code Napoleon in Germany using fsQCA.
 }
 
-\usage{data(d.AS)}
+\usage{data(d.napoleon)}
 
 \format{
 This data frame contains 14 rows (cases) and the following 8 columns (variables):
@@ -29,9 +29,10 @@ This data frame contains 14 rows (cases) and the following 8 columns (variables)
 }
 
 \source{
-Arvind, T. T., and Lindsay Stirton. 2010. Explaining the Reception of the Code
-Napoleon in Germany: A Fuzzy-Set Qualitative Comparative Analysis."
-\emph{Legal Studies} 30 (1):1-29.
+Arvind, Thiruvallore T., and Lindsay Stirton. 2010. \dQuote{Explaining the 
+Reception of the Code Napoleon in Germany: A Fuzzy-Set Qualitative Comparative 
+Analysis.} \emph{Legal Studies} 30 (1):1-29.
+DOI: \href{http://dx.doi.org/10.1111/j.1748-121X.2009.00150.x}{10.1111/j.1748-121X.2009.00150.x}.
 }
 
 \keyword{datasets}

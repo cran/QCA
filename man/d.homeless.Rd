@@ -1,8 +1,8 @@
-\name{d.CS}
+\name{d.homeless}
 
 \docType{data}
 
-\alias{d.CS}
+\alias{d.homeless}
 
 \title{Outcomes of Homeless Social Movement Organizations}
 
@@ -11,7 +11,7 @@ This data set is from Cress and Snow (2000), who analyze the determinants of
 the outcomes attained by homeless social movement organizations using csQCA. 
 }
 
-\usage{data(d.CS)}
+\usage{data(d.homeless)}
 
 \format{
 This data frame contains 15 rows (cases) and the following 10 columns (variables):
@@ -31,8 +31,8 @@ This data frame contains 15 rows (cases) and the following 10 columns (variables
 }
 
 \source{
-Cress, Daniel M., and David A. Snow. 2000. The Outcomes of Homeless Mobilization: 
-The Influence of Organization, Disruption, Political Mediation, and Framing. 
+Cress, Daniel M., and David A. Snow. 2000. \dQuote{The Outcomes of Homeless Mobilization: 
+The Influence of Organization, Disruption, Political Mediation, and Framing.} 
 \emph{American Journal of Sociology} 105 (4):1063-104.
 }
 

@@ -61,9 +61,9 @@ deMorgan("A*C + B*~C", prod.split = "*")
 deMorgan("A&C + B&~C", prod.split = "&")
 
 # use solution object of class "qca" returned by eqmcc() function; 
-# even with multiple solutions
-data(d.Kro)
-Kro.sol <- eqmcc(d.Kro, outcome = "WNP", include = "?")
+# even with multiple models
+data(d.represent)
+Kro.sol <- eqmcc(d.represent, outcome = "WNP", include = "?")
 deMorgan(Kro.sol)
 }
 
