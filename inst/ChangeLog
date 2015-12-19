@@ -1,3 +1,6 @@
+Version 2.0
+    o All code moved to package QCAGUI
+    
 Version 1.1-4
     o Improved: documentation now includes Digital Object Identifier (DOI) links 
       to cited references or direct URL
