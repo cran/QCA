@@ -1,5 +1,2 @@
 export(.onAttach)
-import(lpSolve)
-import(shiny)
-importFrom("utils", "packageDescription", "combn")
-importFrom("stats", "binom.test", "cutree", "dist", "hclust", "na.omit")
+importFrom("utils", "packageDescription")

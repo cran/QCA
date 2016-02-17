@@ -7,11 +7,11 @@
 \docType{package}
 
 \title{
-Starting with version 2.0, the package QCA acts as an aggregator for the various packages dealing with Qualitative Comparative Analysis. For the moment, it is a gateway to the QCAGUI package, but more related packages are expected to be loaded at runtime.
+Starting with version 2.0, the package QCA intends to act as an aggregator for the various packages dealing with Qualitative Comparative Analysis. For the moment, it is a gateway to package QCAGUI, but more related packages are expected to be loaded at runtime.
 }
 
 \description{
-NOTE: the entire namspace and code has been moved to package \pkg{QCAGUI}.
+NOTE: the entire namespace and code has been moved to package \pkg{QCAGUI}.
 
 For details, see:
 
@@ -22,8 +22,8 @@ For details, see:
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 2.0\cr
-    Date:    \tab 2015-12-03\cr
+    Version: \tab 2.1\cr
+    Date:    \tab 2016-02-16\cr
     License: \tab GPL (>= 2)\cr
     }
 }
