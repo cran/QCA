@@ -1,2 +1,52 @@
-export(.onAttach)
-importFrom("utils", "packageDescription")
+useDynLib(QCA)
+export(.onAttach,
+    
+    asNumeric,
+    possibleNumeric,
+    
+    trimst,
+    trimstars,
+    nec,
+    suf,
+    splitstr,
+    getName,
+    getBigList,
+    splitMainComponents,
+    splitBrackets,
+    removeSingleStars,
+    splitPluses,
+    splitStars,
+    splitTildas,
+    solveBrackets,
+    simplifyList,
+    negateValues,
+    removeDuplicates,
+    factor.function,
+    getNonChars,
+    splitProducts,
+    insideBrackets,
+    outsideBrackets,
+    curlyBrackets,
+    roundBrackets,
+    
+    createString,
+    getSolution,
+    prettyString,
+    rowDominance,
+    sortMatrix,
+    sortVector,
+    writePrimeimp,
+    writeSolution,
+    
+    callAllSol,
+    callFindSubsets,
+    callRemoveRedundants,
+    callSolveChart,
+    callSuperSubsetMem,
+    callSuperSubset,
+    callTruthTable
+)
+import(QCAGUI)
+import(venn)
+importFrom("stats", "na.omit")
+importFrom("utils", "packageDescription", "combn")
