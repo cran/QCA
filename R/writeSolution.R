@@ -1,5 +1,4 @@
- # function to create a list which will contain the solution(s) and the essential prime implicants
-
+ 
 `writeSolution` <- 
 function(sol, pic) {
     solution <- output <- list()

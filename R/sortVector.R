@@ -1,5 +1,4 @@
- ## function to sort a vector of strings according to their length
-
+ 
 `sortVector` <- 
 function(x, collapse = "") {
     

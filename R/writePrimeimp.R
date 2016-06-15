@@ -1,6 +1,4 @@
- ## when the matrix cannot be further minimized, this function writes the prime implicants
- ## as the name of the conditions (columns), collapsed together in a single string
-
+ 
 `writePrimeimp` <- 
 function(idx, collapse="*", uplow=FALSE, use.tilde=FALSE) {
     

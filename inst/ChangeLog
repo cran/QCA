@@ -1,3 +1,7 @@
+Version 2.3
+    o Improved: splitting strings now possible using "+" and "-" to signal
+      "increasing" or "decreasing", when using sort.by in function truthTable()
+    
 Version 2.2
     o Sync with package QCAGUI version 2.2
     o All inner, core functions are now part of this package, and used by the

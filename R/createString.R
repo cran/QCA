@@ -1,8 +1,6 @@
 `createString` <-
 function(mydata, collapse="*", uplow=FALSE, use.tilde=FALSE) {
     
-    requireNamespace("QCA")
-    
     mydata <- changemydata <- as.matrix(mydata)
     conditions <- colnames(mydata)
     if (uplow) {

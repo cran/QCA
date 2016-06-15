@@ -9,7 +9,6 @@ function(expressions, collapse, uplow, use.tilde, inputt, row.dom, initial, all.
     expressions <- expressions[match(sortVector(PI.sort, collapse=collapse), PI), , drop=FALSE]
     rownames(expressions) <- PI.sort
     
-     # create the prime implicants chart
     mtrx <- QCAGUI::makeChart(expressions, inputt)
     
     reduced <- list(expressions = expressions, mtrx = mtrx)
