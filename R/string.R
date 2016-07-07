@@ -867,7 +867,7 @@ splitProducts <- function(x, prod.split) {
 }
 
 insideBrackets <- function(x, invert = FALSE) {
-    gsub("\\{|\\}", "", regmatches(x, gregexpr("\\{[[:alnum:]|,]+\\}", x), invert=invert)[[1]])
+    gsub("\\{|\\}", "", regmatches(x, gregexpr("\\{.*\\}", x), invert=invert)[[1]])
 }
 
 outsideBrackets <- function(x) {

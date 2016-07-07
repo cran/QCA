@@ -31,8 +31,8 @@ All user level functions, including the Graphical User Interface are visible in 
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 2.3\cr
-    Date:    \tab 2016-06-14\cr
+    Version: \tab 2.4\cr
+    Date:    \tab 2016-07-07\cr
     License: \tab GPL (>= 2)\cr
     }
 }

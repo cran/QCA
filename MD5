@@ -1,4 +1,4 @@
-afd8c49f8d843d9af6b999828498def4 *DESCRIPTION
+11b1b6e7796bb12566b2451df1f50876 *DESCRIPTION
 cb6c76abd7f4f537b86a1126811c741a *NAMESPACE
 2f7bd432b0c303a2dfb2ffe583722db8 *R/createString.R
 5b658a74f04be4517217a6e4a062ce73 *R/getSolution.R
@@ -9,13 +9,13 @@ e89fb99c8eb91cc754afacd3b493b14e *R/rowDominance.R
 5dc1f95ad47977da64ef6bc6eef93fde *R/sortMatrix.R
 342ecc5c1683a18c5a35e5a7cb748377 *R/sortVector.R
 679a9f1902207557e1eca1e6e23e05ef *R/specifics.R
-1d8eb079e06167a2a86823a4e47aa177 *R/string.R
+1454d58c9e1f578a38a2f0cca63e24c9 *R/string.R
 afdc80ea1df45fc6c4c29245cc2c0e07 *R/writePrimeimp.R
 8eca63344d47780b61666d2cc9c91683 *R/writeSolution.R
 97961891b7ab9809422dcaa05a953aa5 *README.md
 990d75963244e2a0b4b74ed73620d0fc *inst/ChangeLog
 b2e8dbc55a6e833b20380f15d981c744 *man/QCA-internal.Rd
-bfd8f962bacb0e934c8102a380f67394 *man/QCA.package.Rd
+5d51865f3d6eef346798e36f6930a350 *man/QCA.package.Rd
 661200c1efc3336ba43261298302a731 *man/writeSolution.Rd
 8486c80d83f018ace74ddd9c0ba4c8bb *src/allSol.c
 6bdc1ee131f75bc6b775cc82440c4c2f *src/findSubsets.c
