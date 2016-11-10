@@ -1,0 +1,3 @@
+- function deMorgan(): negate set-theoretic expressions with multivalent variables
+- inference-statistical tests for fuzzy sets (check paper by Bear Braumoeller and Eliason and Stryker)
+- add argument to eqmcc for specifying temporal order

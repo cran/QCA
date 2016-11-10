@@ -1,6 +1,5 @@
 `sortMatrix` <- 
 function(submatrix) {
-    
     if (all(is.na(submatrix)) | all(!is.na(submatrix)) | !is.matrix(submatrix)) {
         submatrix
         }
@@ -15,4 +14,3 @@ function(submatrix) {
         submatrix
         }
     }
-

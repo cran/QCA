@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>PI chart functions: makeChart, solveChart. QCA 2.5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Adrian Dusa
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">QCA 2.5</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Create and solve a prime implicants chart</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+<pre><div>makeChart(primes = "", configs = "", snames = "")</div>
+<div>solveChart(chart, row.dom = FALSE, all.sol = FALSE, ...)</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>primes</dt>
+      <dd>A string containing prime implicants, separated by commas, or a
+        matrix of implicants.</dd>
+      <dt>configs</dt>
+      <dd>A string containing  causal configurations, separated by commas,
+        or a matrix of causal configurations in the implicants space.</dd>
+      <dt>snames</dt>
+      <dd>A string containing the sets' names, separated by commas.</dd>
+      <dt>chart</dt>
+      <dd>A logical matrix (as the PI chart).</dd>
+      <dt>row.dom</dt>
+      <dd>Logical, apply row dominance to eliminate redundant prime implicants.</dd>
+      <dt>all.sol</dt>
+      <dd>Derive all possible solutions, irrespective of the number of PIs.</dd>
+      <dt>...</dt>
+      <dd>Other arguments (mainly for backwards compatibility).</dd>
+    </dl>
+    
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>These functions help creating a demo for a prime implicant chart, and also
+show how to solve it using a minimum number of prime implicants.</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>A PI chart, in this package, is a logical matrix (with TRUE/FALSE values), containing
+the prime implicants on the rows and the starting configurations of causal conditions,
+on the columns, like the one produced by <b><code>makeChart()</code></b>. It is useful to
+determine visually which prime implicant (if any) is essential.</p>
+  
+      <p>When <b><code>primes</code></b> and <b><code>configs</code></b> are character, the individual sets
+are identified using the function <b><code>translate()</code></b>, using the SOP - Sum Of
+Products form, which needs the set names in the absence of any other information. If
+products are formed using the standard <b><code>*</code></b> operator, specifying the set names
+is not mandatory.</p>
+  
+      <p>When <b><code>primes</code></b> and <b><code>configs</code></b> are matrices, they have to be specified
+at implicants level, where the value <b><code>0</code></b> is interpreted as a minimized literal.</p>
+  
+      <p>The chart is subsequently processed algorithmically by <b><code>solveChart()</code></b> to further
+reduce the reduntant prime implicants. It applies a linear programming function from
+package <span class = "pkg">lpSolve</span>, to find the absolute minimal number <code>M</code> of rows (prime
+implicants) necessary to cover all columns, then searches through all possible combinations
+of <code>M</code> rows, to find those which actually cover the columns.</p>
+  
+      <p>Since all possible combinations grow exponentially with the number of prime implicants
+resulted from the Quine-McCluskey minimization procedure, this function tries hard to
+reduce this number by first eliminating the redundant prime implicants.</p>
+  
+      <p>When set to <b><code>TRUE</code></b>, the argument <b><code>row.dom</code></b> does something like this by
+eliminating the dominated rows (those which cover a smaller number of columns than
+another, dominant prime implicant).</p>
+  
+    </div>
+
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+For <b><code>makeChart</code></b>: a logical matrix.</p>
+  
+      <p>For <b><code>solveChart</code></b>: a matrix containing all possible combinations of PI chart rows
+necessary to cover all its columns.
+</dl></p>
+  
+    </div>
+
+    <div class="References">
+      <h2>References</h2>
+
+      <p>Quine, W.V. (1952) <em>The Problem of Simplifying Truth Functions</em>,
+The American Mathematical Monthly, vol.59, no.8. (Oct., 1952), pp.521-531.</p>
+  
+      <p>Ragin, Charles C. (1987) <em>The Comparative Method. Moving beyond qualitative and
+quantitative strategies</em>, Berkeley: University of California Press</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>
+# non-standard products, it needs the set names
+chart &lt;- makeChart(&quot;A, B, c&quot;, &quot;ABC, Abc, AbC, aBc&quot;, snames =  &quot;A,B,C&quot;)
+prettyTable(chart)
+</div>
+<div class='output'>  ABC Abc AbC aBc
+A  x   x   x   - 
+B  x   -   -   x 
+c  -   x   -   x 
+</div>
+<div class='input'>#   ABC Abc AbC aBc
+# A  x   x   x   - 
+# B  x   -   -   x 
+# c  -   x   -   x 
+
+solveChart(chart)
+</div>
+<div class='output'>     [,1] [,2]
+[1,]    1    1
+[2,]    2    3
+</div>
+<div class='input'># first and second rows (A + B)
+# and first and third rows (A + c)
+# A is an essential prime implicant
+#      A + B  A + c
+#      [,1]   [,2]
+# [1,]    1      1
+# [2,]    2      3
+
+
+# Quine&#39;s example, page 528
+rows &lt;- c(&quot;AB, BC, Ac, aC, abd, bcd&quot;)
+cols &lt;- c(&quot;ABCD, ABCd, ABcD, ABcd, AbcD, Abcd, aBCD, aBCd, abCD, abCd, abcd&quot;)
+
+prettyTable(chart &lt;- makeChart(rows, cols, &quot;A,B,C,D&quot;))
+</div>
+<div class='output'>    ABCD ABCd ABcD ABcd AbcD Abcd aBCD aBCd abCD abCd abcd
+AB   x    x    x    x    -    -    -    -    -    -    -  
+BC   x    x    -    -    -    -    x    x    -    -    -  
+Ac   -    -    x    x    x    x    -    -    -    -    -  
+aC   -    -    -    -    -    -    x    x    x    x    -  
+abd  -    -    -    -    -    -    -    -    -    x    x  
+bcd  -    -    -    -    -    x    -    -    -    -    x  
+</div>
+<div class='input'>#     ABCD ABCd ABcD ABcd AbcD Abcd aBCD aBCd abCD abCd abcd
+# AB   x    x    x    x    -    -    -    -    -    -    -  
+# BC   x    x    -    -    -    -    x    x    -    -    -  
+# Ac   -    -    x    x    x    x    -    -    -    -    -  
+# aC   -    -    -    -    -    -    x    x    x    x    -  
+# abd  -    -    -    -    -    -    -    -    -    x    x  
+# bcd  -    -    -    -    -    x    -    -    -    -    x 
+
+solveChart(chart)
+</div>
+<div class='output'>     [,1] [,2] [,3] [,4]
+[1,]    1    1    2    2
+[2,]    3    3    3    3
+[3,]    4    4    4    4
+[4,]    5    6    5    6
+</div>
+<div class='input'>#      [,1] [,2] [,3] [,4]
+# [1,]    1    1    2    2
+# [2,]    3    3    3    3
+# [3,]    4    4    4    4
+# [4,]    5    6    5    6
+
+
+# using DNF standard product sign
+rows &lt;- c(&quot;EF, ~GH, IJ&quot;)
+cols &lt;- c(&quot;~EF*~GH*IJ, EF*GH*~IJ, ~EF*GH*IJ, EF*~GH*~IJ&quot;)
+prettyTable(chart &lt;- makeChart(rows, cols))
+</div>
+<div class='output'>    ~EF*~GH*IJ EF*GH*~IJ ~EF*GH*IJ EF*~GH*~IJ
+EF      -          x         -         x     
+~GH     x          -         -         x     
+IJ      x          -         x         -     
+</div>
+<div class='input'>#     ~EF*~GH*IJ EF*GH*~IJ ~EF*GH*IJ EF*~GH*~IJ
+# EF      -          x         -         x     
+# ~GH     x          -         -         x     
+# IJ      x          -         x         -     
+
+solveChart(chart)
+</div>
+<div class='output'>     [,1]
+[1,]    1
+[2,]    3
+</div>
+<div class='input'># ~GH is redundant
+#     EF + IJ
+#      [,1]
+# [1,]    1
+# [2,]    3
+
+
+# using implicant matrices
+primes &lt;- matrix(c(2,2,1,0,2,2,0,2,2,2), nrow = 2)
+configs &lt;- matrix(c(2,2,2,1,1,2,2,2,2,1,2,2,2,2,2), nrow = 3)
+colnames(primes) &lt;- colnames(configs) &lt;- LETTERS[1:5]
+
+# the prime implicants: AbCE and ACDE
+primes
+</div>
+<div class='output'>     A B C D E
+[1,] 2 1 2 0 2
+[2,] 2 0 2 2 2
+</div>
+<div class='input'>#      A B C D E
+# [1,] 2 1 2 0 2
+# [2,] 2 0 2 2 2
+
+# the initial causal combinations: AbCdE, AbCDE and ABCDE
+configs
+</div>
+<div class='output'>     A B C D E
+[1,] 2 1 2 1 2
+[2,] 2 1 2 2 2
+[3,] 2 2 2 2 2
+</div>
+<div class='input'>#      A B C D E
+# [1,] 2 1 2 1 2
+# [2,] 2 1 2 2 2
+# [3,] 2 2 2 2 2
+
+chartLC &lt;- makeChart(primes, configs)
+prettyTable(chartLC)
+</div>
+<div class='output'>     AbCdE AbCDE ABCDE
+AbCE   x     x     -  
+ACDE   -     x     x  
+</div>
+<div class='input'>#      AbCdE AbCDE ABCDE
+# AbCE   x     x     -  
+# ACDE   -     x     x   
+</div></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>makeChart</li><li>solveChart</li>
+    </ul>
+    <ul>
+      <li>functions</li>
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Adrian Dusa
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

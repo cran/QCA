@@ -1,0 +1,201 @@
+\name{pof}
+
+\alias{pof}
+
+\title{Calculate parameters of fit}
+
+\description{
+This function returns inclusion (consistency), coverage, PRI and optionally
+the relevance of necessity scores.
+}
+
+\usage{
+pof(setms, outcome, data, relation = "nec", inf.test = "",
+    incl.cut = c(0.75, 0.5), ...)
+}
+
+\arguments{
+  \item{setms}{A data frame of (calibrated) set memberships, or a matrix of implicants, 
+        or a vector of row numbers from the implicant matrix, or a string expression}
+  \item{outcome}{The name of the outcome column from a calibrated data frame, or
+        the actual numerical column from the data frame, representing the outcome.}
+  \item{data}{The calibrated data frame, in case the \bold{\code{outcome}} is a name.}
+  \item{relation}{The set relation to \bold{\code{outcome}}, either necessity
+        (\bold{\code{"nec"}}) or sufficiency (\bold{\code{"suf"}})}
+  \item{inf.test}{Specifies the statistical inference test to be performed (currently 
+       only \bold{\code{"binom"}}) and the critical significance level. It can be either
+       a vector of length 2, or a single string containing both, separated by a comma.}
+  \item{incl.cut}{The inclusion cutoff(s): either a single value for the presence of the
+        output, or a vector of length 2, the second for the absence of the output.}
+  \item{...}{Other arguments (mainly for backward compatibility).}
+}
+
+\details{
+This is one of the most flexible functions in the \pkg{QCA} package. Depending on
+particular situations, its arguments can be provided in various formats which are
+automatically recognized and treated accordingly.
+
+When specified as a data frame, the argument \bold{\code{setms}} contains any kind
+of set membership scores:
+
+- calibrated causal conditions from the original data,
+
+- membership scores from the resulting combinations (component \bold{\code{coms}})
+of function \bold{\code{superSubset()}},
+
+- prime implicant membership scores (component \bold{\code{pims}}) from function
+\bold{\code{eqmcc()}},
+
+- any other, custom created combinations of set memberships.
+
+When specified as a matrix, \bold{\code{setms}} contains the crisp causal combinations
+similar to those found in the truth table. If some of the causal conditions have
+been minimized, they can be replaced by the numerical value \bold{\code{-1}} (see
+examples section). The number of columns in the matrix should be equal to the number
+of causal conditions in the original \bold{\code{data}}.
+
+More generally, \bold{\code{setms}} can be a numerical vector of line numbers from the
+implicant matrix (see function \bold{\code{createMatrix()}}), which are automatically
+transformed into their corresponding set membership scores. 
+
+Starting with version 2.1, \bold{\code{setms}} can also be a string expression,
+written in sum of products (SOP) form.
+
+For all situation when \bold{\code{setms}} is something else than a data frame, it
+requires the original \bold{\code{data}} to generate the set memberships.
+
+If a string, the argument \bold{\code{outcome}} is the name of the column from the
+original \bold{\code{data}}, to be explained (it is a good practice advice to provide
+using upper case letters, although it will nevertheless be converted to upper case
+letters, by default).
+
+If the outcome column is multi-value, the argument \bold{\code{outcome}} should use
+the standard curly-bracket notation \bold{\code{X{value}}}. Multiple values are
+allowed, separated by a comma (for example \bold{\code{X{1,2}}}). Negation of the
+outcome can also be performed using the tilde \bold{\code{~}} operator, for example
+\bold{\code{~X{1,2}}}, which is interpreted as: "all values in X except 1 and 2" and
+it becomes the new outcome to be explained.
+
+The argument \bold{\code{outcome}} can also be a numerical vector of set membership
+values, either directly from the original data frame, or a recoded version (if
+originally multi-value).
+
+The argument \bold{\code{inf.test}} provides the possibility to perform statistical
+inference tests, comparing the calculated inclusion score with a pair of thresholds
+(\bold{\code{ic1}} and \bold{\code{ic0}}) specified in the argument \bold{\code{incl.cut}}.
+Currently, it can only perform binomial tests (\bold{\code{"binom"}}), which means that
+data should only be provided as binary crisp (not multivalue, not fuzzy).
+
+If the critical significance level is not provided, the default level of \bold{\code{0.05}}
+is taken.
+
+The resulting object will contain the calculated p-values (pval1 and pval0) from two
+separate, one-tailed tests with the alternative hypothesis that the true inclusion
+score is:\cr
+- greater than \bold{\code{ic1}} (the inclusion cutoff for an output value of 1)\cr
+- greater than \bold{\code{ic0}} (the inclusion cutoff for an output value of 0)
+
+It should be noted that statistical tests are performing well only when the number
+of cases is large, otherwise they are usually not significant.
+
+For the necessity relation, the standard measures of inclusion and coverage are
+supplemented with the RoN (Relevance of Necessity) measure, as suggested by
+Schneider & Wagemann's (2012).
+
+Starting with version 2.0, this function also accepts and recognize negation of both
+\bold{\code{setms}} and \bold{\code{outcome}} using the Boolean subtraction from 1.
+If the names of the conditions are provided via an optional (undocumented) argument
+\bold{\code{conditions}}, the colnames of the \bold{\code{setms}} object are negated
+using \bold{\code{deMorgan()}}.
+
+Starting with version 2.1, the logical argument \bold{\code{neg.out}} is deprecated,
+but backwards compatible. \bold{\code{neg.out = TRUE}} and a tilde \bold{\code{~}} in
+the outcome name  don't cancel each other out, either one (or even both) signaling if
+the \bold{\code{outcome}} should be negated.
+
+When argument \bold{\code{setms}} is a SOP expression, it is the only place where the
+everything (including the \bold{\code{outcome}}) can be negated using lower case letters,
+with or without a tilde. Lower case letters and a tilde does cancel each other out, for
+example \bold{\code{~X}} is interpreted as \bold{\code{x}}, while \bold{\code{~x}} is
+interpreted as \bold{\code{X}}.
+
+}
+
+\author{
+Adrian Dusa
+}
+
+\references{
+Cebotari, V.; Vink, M.P. (2013) \dQuote{A Configurational Analysis of Ethnic
+Protest in Europe}. \emph{International Journal of Comparative Sociology}
+vol.54, no.4, pp.298-324.
+
+Schneider, C. and Wagemann, C. (2012) \emph{Set-Theoretic Metods for the Social Sciences.
+A Guide to Qualitative Comparative Analysis}. Cambridge: Cambridge University Press.
+}
+
+\seealso{\code{\link{eqmcc}}, \code{\link{superSubset}}, \code{\link{translate}}}
+
+\examples{
+
+# -----
+# Cebotari & Vink (2013) fuzzy data
+data(CVF) 
+
+conds <- CVF[, 1:5]
+PROTEST <- CVF$PROTEST
+
+# parameters of fit (default is necessity)
+pof(conds, PROTEST)
+
+# parameters of fit negating the conditions
+pof(1 - conds, PROTEST)
+
+# negating the outcome
+pof(conds, 1 - PROTEST)
+
+# parameters of fit for sufficiency
+pof(conds, PROTEST, relation = "suf")
+
+# also negating the outcome
+pof(conds, 1 - PROTEST, relation = "suf")
+
+
+# -----
+# standard analysis of necessity
+# using the "coms" component from superSubset()
+nCVF <- superSubset(CVF, outcome = "PROTEST", incl.cut = 0.90, cov.cut = 0.6)
+
+# also checking their necessity inclusion score in the negated outcome
+pof(nCVF$coms, 1 - PROTEST)
+
+
+# -----
+# standard analysis of sufficiency
+# using the "pims" component from eqmcc()
+
+# conservative solution
+cCVF <- eqmcc(CVF, "PROTEST", incl.cut = 0.8, details = TRUE)
+
+# verify if their negations are also sufficient for the outcome
+pof(1 - cCVF$pims, PROTEST)
+
+
+# -----
+# using a POS expression, translated using the function translate()
+
+# notice that lower case letters means absence a causal condition
+pof("natpride + GEOCON => PROTEST", data = CVF)
+
+# same for the negation of the outcome
+pof("natpride + GEOCON => ~PROTEST", data = CVF)
+
+# same using lower letters for the negation
+pof("natpride + GEOCON => protest", data = CVF)
+
+# necessity is indicated by the reverse arrow
+pof("natpride + GEOCON <= PROTEST", data = CVF)
+
+}
+
+\keyword{functions}

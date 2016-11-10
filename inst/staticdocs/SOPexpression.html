@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<title>translate, compute, findRows, sop. QCA 2.5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="
+Adrian Dusa
+">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+<link href="css/highlight.css" rel="stylesheet">
+<link href="css/staticdocs.css" rel="stylesheet">
+
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+  </head>
+
+  <body>
+    <div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">QCA 2.5</a>
+      <div class="nav">
+        <ul class="nav">
+          <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="container">
+      <header>
+        
+      </header>
+      
+      <h1>Functions to interpret a SOP expression</h1>
+
+<div class="row">
+  <div class="span8">
+    <h2>Usage</h2>
+<pre><div>translate(expression = "", snames = "", noflevels, data, ...)</div>
+<div>compute(expression = "", data, separate = FALSE)</div>
+<div>findRows(expression = "", ttobj, remainders = FALSE)</div>
+<div>sop(expression = "", snames = "")</div></pre>
+    
+    <h2>Arguments</h2>
+    <dl>
+      <dt>expression</dt>
+      <dd>String: a QCA expression written in sum of products form.</dd>
+      <dt>snames</dt>
+      <dd>A string containing the sets' names, separated by commas.</dd>
+      <dt>noflevels</dt>
+      <dd>Numerical vector containing the number of levels for each set.</dd>
+      <dt>data</dt>
+      <dd>A dataset with binary cs, mv and fs data.</dd>
+      <dt>separate</dt>
+      <dd>Logical, perform computations on individual, separate paths.</dd>
+      <dt>ttobj</dt>
+      <dd>A truth table, an object of class "tt".</dd>
+      <dt>remainders</dt>
+      <dd>Logical, find remainders only.</dd>
+      <dt>...</dt>
+      <dd>Other arguments, mainly for backwards compatibility.</dd>
+    </dl>
+    
+    <div class="Description">
+      <h2>Description</h2>
+
+      <p>These functions interpret an expression written in a SOP (sum of products) form,
+for both crisp and multivalue QCA. The function <b><code>translate()</code></b> translates
+the expression into a standard (canonical) SOP form using a matrix of implicants, while
+<b><code>compute()</code></b> uses the first to compute the scores based on a particular
+dataset.</p>
+
+      <p>The function <b><code>findRows()</code></b> takes a QCA expression written in SOP
+form, and applies it on a truth table to find all rows that match the pattern in the
+expression.</p>
+  
+      <p>For crisp sets notation, upper case letters are considered the presence of that causal
+condition, and lower case letters are considered the absence of the respective causal
+condition. Tilde is recognized as a negation, even in combination with upper/lower letters.</p>
+  
+      <p>Functions similar to <b><code>translate()</code></b> and <b><code>compute()</code></b>
+have initially been written by Jirka Lewandowski (2015) but the actual code in these functions
+has been completely re-written to integrate it with the package QCA, and expanded with more
+extensive functionality (see details and examples below).</p>
+  
+      <p>The function <b><code>sop()</code></b> transforms any expression (most notably
+a POS product of sums) into a sum of products, minimizing it to the simplest equivalent
+logical expression.</p>
+  
+    </div>
+
+    <div class="Details">
+      <h2>Details</h2>
+
+      <p>A SOP ("sum of products") is also known as a DNF ("disjunctive normal form"), or in other
+words a "union of intersections", for example <b><code>A*D + B*c</code></b>.</p>
+  
+      <p>The same expression can be written in multivalue notation: <b><code>A{1}*D{1} + B{1}*C{0}</code></b>.
+Both types of expressions are valid, and yield the same result on the same dataset.</p>
+  
+      <p>For multivalue notation, causal conditions are expected as upper case letters, and they will be
+converted to upper case by default. Expressions can contain multiple values to translate, separated
+by a comma. If B was a multivalue causal condition, an expression could be:
+<b><code>A{1} + B{1,2}*C{0}</code></b>.</p>
+  
+      <p>In this example, all values in B equal to either 1 or 2 will be converted to 1, and the
+rest of the (multi)values will be converted to 0.</p>
+  
+      <p>The function automatically detects the use of tilde "~" as a negation for a particular
+causal condition. <b><code>~A</code></b> does two things: it identifies the presence of causal
+condition <b><code>A</code></b> (because it was specified as upper case) and it recognizes that it
+must be negated, because of the  tilde. It works even combined with lower case names:
+<b><code>~a</code></b>, which is interpreted as <b><code>A</code></b>.</p>
+  
+      <p>To negate a multivalue condition using a tilde, the number of levels should be supplied
+(see examples below). Improvements in version 2.5 allow for intersections
+between multiple levels of the same condition. For a causal condition with 3 levels (0, 1 and 2)
+the following expression <b><code>~A{0,2}*A{1,2}</code></b> is equivalent with <b><code>A{1}</code></b>,
+while <b><code>A{0}*A{1}</code></b> results in the empty set.</p>
+
+      <p>The number of levels, as well as the set names can be automatically detected from a dataset via
+the argument <b><code>data</code></b>. Arguments <b><code>snames</code></b> and <b><code>noflevels</code></b> have
+precedence over <b><code>data</code></b>, when specified.</p>
+
+      <p>The use of the product operator <b><code>*</code></b> is redundant when causal snames' names are single
+letters (for example <b><code>AD + Bc</code></b>), and is also redundant for multivalue data, where 
+product terms can be separated by using the curly brackets notation.</p>
+
+      <p>When causal snames are binary and their names have multiple letters (for example
+<b><code>AA + CC*bb</code></b>), the use of the product operator <b><code>*</code></b> is preferable but the
+function manages to translate an expression even without it (<b><code>AA + CCbb</code></b>) by searching
+deep in the space of the conditions' names, at the cost of slowing down for a high number of causal
+conditions. For this reason, an arbitrary limit of 7 causal <b><code>snames</code></b> is imposed, to write an
+expression with.</p>
+  
+    </div>
+
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+For the function <b><code>translate()</code></b>, a matrix containing the implicants on the
+rows and the set names on the columns, with the following codes:
+<br>
+<table>
+    <tr>
+        <td>&nbsp;0 </td>
+        <td> absence of a causal condition</td>
+    </tr>
+    <tr>
+        <td>&nbsp;1 </td>
+        <td> presence of a causal condition</td>
+    </tr>
+    <tr>
+        <td>-1 </td>
+        <td> causal condition was eliminated</td>
+    </tr>
+</table>
+<br>
+The matrix was also assigned a class "translate", to avoid printing the -1 codes. The mode
+of this matrix is character, to allow printing multiple levels in the same cell, such as "1,2"
+</dl></p>
+  
+    </div>
+
+    <div class="References">
+      <h2>References</h2>
+
+      <p>Jirka Lewandowski (2015) QCAtools: Helper functions for QCA in R. R package version 0.1</p>
+  
+    </div>
+    
+    <h2 id="examples">Examples</h2>
+    <pre class="examples"><div class='input'>
+translate(&quot;A + B*C&quot;)
+</div>
+<div class='output'>
+      A  B  C 
+A     1       
+B*C      1  1 
+
+</div>
+<div class='input'>
+# same thing in multivalue notation
+translate(&quot;A{1} + B{1}*C{1}&quot;)
+</div>
+<div class='output'>
+            A  B  C 
+A{1}        1       
+B{1}*C{1}      1  1 
+
+</div>
+<div class='input'>
+# using upper/lower letters
+translate(&quot;A + b*C&quot;)
+</div>
+<div class='output'>
+      A  B  C 
+A     1       
+b*C      0  1 
+
+</div>
+<div class='input'>
+# the negation with tilde is recognised
+translate(&quot;~A + b*C&quot;)
+</div>
+<div class='output'>
+      A  B  C 
+~A    0       
+b*C      0  1 
+
+</div>
+<div class='input'>
+# even in combination of upper/lower letters
+translate(&quot;~A + ~b*C&quot;)
+</div>
+<div class='output'>
+       A  B  C 
+~A     0       
+~b*C      1  1 
+
+</div>
+<div class='input'>
+# and even for multivalue variables
+# in multivalue notation, the product sign * is redundant
+translate(&quot;C{1} + T{2} + T{1}V{0} + C{0}&quot;)
+</div>
+<div class='output'>
+           C  T  V 
+C{1}       1       
+T{2}          1    
+T{1}V{0}      1  0 
+C{0}       0       
+
+</div>
+<div class='input'>
+# negation of multivalue sets requires the number of levels
+translate(&quot;~A{1} + ~B{0}*C{1}&quot;, noflevels = c(2, 2, 2))
+</div>
+<div class='output'>
+             A  B  C 
+~A{1}        0       
+~B{0}*C{1}      1  1 
+
+</div>
+<div class='input'>
+# multiple values can be specified
+translate(&quot;C{1} + T{1,2} + T{1}V{0} + C{0}&quot;)
+</div>
+<div class='output'>
+           C  T    V 
+C{1}       1       
+T{1,2}        1,2    
+T{1}V{0}      1    0 
+C{0}       0       
+
+</div>
+<div class='input'>
+# or even negated
+translate(&quot;C{1} + ~T{1,2} + T{1}V{0} + C{0}&quot;, snames = &quot;C, T, V&quot;, noflevels = c(2,3,2))
+</div>
+<div class='output'>
+           C  T  V 
+C{1}       1       
+~T{1,2}       0    
+T{1}V{0}      1  0 
+C{0}       0       
+
+</div>
+<div class='input'>
+
+
+# if the expression does not contain the product sign *
+# snames are required to complete the translation 
+translate(&quot;AB + cD&quot;, snames = &quot;A, B, C, D&quot;)
+</div>
+<div class='output'>
+     A  B  C  D 
+AB   1  1       
+cD         0  1 
+
+</div>
+<div class='input'>
+
+
+# otherwise snames are not required
+translate(&quot;PER*FECT + str*ing&quot;)
+</div>
+<div class='output'>
+           FECT ING PER STR
+PER*FECT    1        1     
+str*ing          0       0 
+
+</div>
+<div class='input'>
+# snames are required
+translate(&quot;PERFECT + string&quot;, snames = &quot;PER, FECT, STR, ING&quot;)
+</div>
+<div class='output'>
+          PER FECT STR ING
+PERFECT    1   1          
+string              0   0 
+
+</div>
+
+<div class='input'>
+# it works even with overlapping columns
+# SU overlaps with SUB in SUBER, but the result is still correct
+translate(&quot;SUBER + subset&quot;, &quot;SU, BER, SUB, SET&quot;)
+</div>
+<div class='output'>
+         SU BER SUB SET
+SUBER    1   1         
+subset           0   0 
+
+</div>
+<div class='input'>
+
+# error because combinations of condition names clash (not run)
+translate(&quot;SUPER + subset&quot;, &quot;SUP, ER, SU, PER, SUB, SET&quot;)
+
+
+# to print _all_ codes from the standard output matrix
+(obj &lt;- translate(&quot;A + b*C&quot;))
+</div>
+<div class='output'>
+      A  B  C 
+A     1       
+b*C      0  1 
+
+</div>
+<div class='input'>
+
+print(obj, original = TRUE) # also prints the -1 code
+</div>
+<div class='output'>
+       A  B  C
+A      1 -1 -1
+b*C   -1  0  1
+
+</div>
+
+<div class='input'>
+
+
+
+# for compute()
+data(CVF)
+compute(&quot;natpride + GEOCON&quot;, data = CVF)
+</div>
+<div class='output'>
+ [1] 0.95 0.35 0.35 0.78 0.40 0.78 0.78 0.78 0.78 0.17 0.78 0.35 0.95 0.95 0.71
+[16] 0.95 0.78 0.35 0.95 0.49 0.95 0.95 0.95 0.95 0.95 0.95 0.95 0.95 0.95
+</div>
+<div class='input'>
+
+data(CVF)
+compute(&quot;natpride + GEOCON&quot;, data = CVF, separate = TRUE)
+</div>
+<div class='output'>   natpride GEOCON
+1      0.23   0.95
+2      0.12   0.35
+3      0.09   0.35
+4      0.20   0.78
+5      0.40   0.35
+6      0.34   0.78
+7      0.04   0.78
+8      0.13   0.78
+9      0.30   0.78
+10     0.17   0.05
+11     0.46   0.78
+12     0.07   0.35
+13     0.14   0.95
+14     0.25   0.95
+15     0.71   0.35
+16     0.75   0.95
+17     0.13   0.78
+18     0.05   0.35
+19     0.40   0.95
+20     0.49   0.35
+21     0.38   0.95
+22     0.62   0.95
+23     0.14   0.95
+24     0.25   0.95
+25     0.12   0.95
+26     0.94   0.95
+27     0.66   0.95
+28     0.57   0.95
+29     0.59   0.95
+</div>
+<div class='input'>
+
+
+
+# for findRows()
+data(LC)
+ttLC &lt;- truthTable(LC, &quot;SURV&quot;)
+
+findRows(&quot;DEV*ind*STB&quot;, ttLC)
+</div>
+<div class='output'>
+[1] 18 22 26 30
+</div>
+<div class='input'>
+findRows(&quot;DEV*ind*STB&quot;, ttLC, remainders = TRUE)
+</div>
+<div class='output'>
+[1] 18 26 30
+</div>
+
+<div class='input'>
+
+
+# for sop()
+sop("(A + B)(A + ~B)")
+</div>
+<div class='output'>
+[1] "A"
+</div>
+
+<div class='input'>
+# to force a certain order of the set names
+sop("(URB + LIT*~DEV)(~LIT + ~DEV)", snames = "DEV, URB, LIT")
+</div>
+<div class='output'>
+[1] "URB*~LIT + ~DEV*URB + ~DEV*LIT"
+</div>
+
+<div class='input'>
+# multilevel conditions can also be specified (and negated)
+sop("(A{1} + ~B{0})(B{1} + C{0})", snames = "A, B, C", noflevels = c(2, 3, 2))
+</div>
+<div class='output'>
+[1] "A{1}*C{0} + B{1} + B{1,2}*C{0}"
+</div>
+
+<div class='input'></div></pre>
+  </div>
+  <div class="span4">
+    <!-- <ul>
+      <li>translate</li><li>compute</li><li>findRows</li><li>sop</li>
+    </ul>
+    <ul>
+      <li>functions</li>
+    </ul> -->
+      
+    
+    <h2>Author</h2>
+    
+Adrian Dusa
+
+    
+  </div>
+</div>
+      
+      <footer>
+      <p class="pull-right"><a href="#">Back to top</a></p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

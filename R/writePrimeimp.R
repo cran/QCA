@@ -1,13 +1,9 @@
- 
 `writePrimeimp` <- 
 function(idx, collapse="*", uplow=FALSE, use.tilde=FALSE) {
-    
     if (use.tilde) {
         uplow <- FALSE
     }
-    
     idx <- as.data.frame(idx)
-    
     for (i in seq(ncol(idx))) {
         if (uplow) {
             conditions <- c(tolower(colnames(idx)[i]), toupper(colnames(idx)[i]))
@@ -20,9 +16,7 @@ function(idx, collapse="*", uplow=FALSE, use.tilde=FALSE) {
         }
         idx[idx[, i] != 0, i] <- conditions[idx[idx[, i] != 0, i]]
     }
-    
     return(apply(idx, 1, function(x) {
         paste(x[x != 0], collapse=collapse)
     }))
 }
-
