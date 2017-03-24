@@ -187,7 +187,7 @@ function(expression, snames = "", noflevels, pos = FALSE, tilde, ...) {
         }
     }
     else if (is(expression, "deMorgan")) {
-        collapse <- ifelse(any(grepl("\\*", unname(unlist(expression)))), "*", "")
+        collapse <- ifelse(any(grepl("[*]", unname(unlist(expression)))), "*", "")
         getsnames <- FALSE
         if (identical(snames, "")) {
             if (any(attributes(expression) == "snames")) {
@@ -203,7 +203,7 @@ function(expression, snames = "", noflevels, pos = FALSE, tilde, ...) {
             }))
             if (getsnames) {
                 snames <- sort(unique(toupper(gsub("[^A-Za-z]", "",
-                          unlist(strsplit(unname(unlist(lapply(expression, "[[", 2))), split=ifelse(collapse == "", "", "\\*")))))))
+                          unlist(strsplit(unname(unlist(lapply(expression, "[[", 2))), split=ifelse(collapse == "", "", "[*]")))))))
             }
         }
         else {
@@ -216,33 +216,39 @@ function(expression, snames = "", noflevels, pos = FALSE, tilde, ...) {
                 snames <- sort(unique(toupper(gsub("[^A-Za-z]", "",
                           unlist(strsplit(unname(unlist(lapply(expression, function(x) {
                               lapply(x, "[[", 2)
-                          }))), split=ifelse(collapse == "", "", "\\*")))))))
+                          }))), split=ifelse(collapse == "", "", "[*]")))))))
             }
             names(result) <- "i.sol"
             names(result$i.sol) <- paste(names(result$i.sol), "N", sep="")
         }
     }
     else if (is.character(expression)) {
-        collapse <- ifelse(any(grepl("\\*", expression)), "*", "")
+        collapse <- ifelse(any(grepl("[*]", expression)), "*", "")
         result <- list(list(as.list(expression)))
         if (identical(snames, "")) {
             snames <- sort(unique(toupper(gsub("[^A-Za-z]", "",
                           unlist(strsplit(unlist(strsplit(
-                          gsub("[[:space:]]", "", expression), split = "\\+")),
-                          split = ifelse(collapse == "", "", "\\*")))))))
+                          gsub("[[:space:]]", "", expression), split = "[+]")),
+                          split = ifelse(collapse == "", "", "[*]")))))))
         }
     }
-    mv <- any(grepl("\\{", unlist(result)))
+    mv <- any(grepl("[{]", unlist(result)))
     if (missing(tilde)) {
         tilde <- any(grepl("~", unlist(result)))
     }
+    mnofl <- missing(noflevels)
     result[[1]] <- lapply(result[[1]], function(x) {
         y <- lapply(x, function(x) {
-            trnlt <- translate(x, snames = snames, noflevels = noflevels)
+            if (mnofl) {
+                trnlt <- translate(x, snames = snames)
+            }
+            else {
+                trnlt <- translate(x, snames = snames, noflevels = noflevels)
+            }
             getSol(lapply(
                 names(unlist(getFacts(trnlt))),
                 function(x) {
-                    unlist(strsplit(x, split = "\\."))
+                    unlist(strsplit(x, split = "[.]"))
                 }
             ), collapse = collapse, pos = pos)
         })

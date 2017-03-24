@@ -8,7 +8,7 @@ function(x, file = "", ...) {
         Call[["caseid"]] <- NULL
     }
     if (!missing(x)) {
-        if (is.data.frame(x)) {
+        if (is.data.frame(x) | is.matrix(x)) {
             if (any(rownames(x) != seq(nrow(x)))) {
                 if (all(colnames(x) != caseid)) {
                     x <- cbind("cases" = rownames(x), x)

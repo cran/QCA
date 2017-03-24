@@ -14,7 +14,8 @@ or supersets, of a (prime) implicant or an initial causal configuration.
 
 \usage{
 superSubset(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
-    cov.cut = 0, use.tilde = FALSE, use.letters = FALSE, ...)
+    cov.cut = 0, ron.cut = 0, pri.cut = 0, use.tilde = FALSE, use.letters = FALSE,
+    depth = NULL, ...)
 
 findSubsets(noflevels, input, stop, ...)
 
@@ -31,6 +32,8 @@ findSupersets(noflevels, input, ...)
         \bold{\code{"suf"}}, \bold{\code{"necsuf"}} or \bold{\code{"sufnec"}}.}
   \item{incl.cut}{The minimal inclusion score of the set relation.}
   \item{cov.cut}{The minimal coverage score of the set relation.}
+  \item{ron.cut}{The minimal score for the RoN - relevance of necessity.}
+  \item{pri.cut}{The minimal score for the PRI - proportional reduction in inconsistency.}
   \item{use.tilde}{Logical, use tilde for negation with bivalent variables.}
   \item{use.letters}{Logical, use simple letters instead of original variable
         names.}
@@ -39,6 +42,7 @@ findSupersets(noflevels, input, ...)
   \item{input}{A vector of row numbers where the (prime) implicants are located, or a 
         matrix of configurations (only for supersets).}
   \item{stop}{The maximum line number (subset) to stop at, and return}
+  \item{depth}{Integer, an upper number of causal conditions to form expressions with.}
   \item{...}{Other arguments, mainly for backward compatibility.}
 }
 
@@ -113,6 +117,10 @@ Functions \bold{\code{findSubsets()}} and \bold{\code{findSupersets()}} find:
 - all possible supersets of an implicant or initial causal combination
 
 in the implicant matrix.
+
+The argument \bold{\code{depth}} can be used to impose an upper number of causal conditions
+to form expressions with. By default, it is set to a maximum, but otherwise the
+computation time is higher when this number is larger.
 }
 
 \author{

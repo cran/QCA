@@ -131,13 +131,13 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
                     expression <- unlist(strsplit(expression, split = "=>"))
                     if (length(expression) > 1) {
                         relation <- "suf"
-                        outcome <- trimst(expression[2])
-                        expression <- trimst(expression[1])
+                        outcome <- trimstr(expression[2])
+                        expression <- trimstr(expression[1])
                     }
                 }
                 else {
-                    outcome <- trimst(expression[2])
-                    expression <- trimst(expression[1])
+                    outcome <- trimstr(expression[2])
+                    expression <- trimstr(expression[1])
                 }
                 if (identical(outcome, "")) {
                     cat("\n")

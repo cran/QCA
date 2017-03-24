@@ -32,8 +32,8 @@ SEXP truthTable(SEXP x, SEXP y, SEXP fuz, SEXP vo) {
         for (i = 0; i < xrows; i++) { 
             min = 1000;
             for (j = 0; j < xcols; j++) { 
-                copyline[j] = p_x[i + xrows * j];
-                index = k + yrows * j;
+                copyline[j] = p_x[j * xrows + i];
+                index = j * yrows + k;
                 if (p_fuz[j] == 1) { 
                     if (p_y[index] == 0) {
                         copyline[j] = 1 - copyline[j];

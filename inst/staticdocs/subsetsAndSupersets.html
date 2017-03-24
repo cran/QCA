@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>superSubset, findSubsets, findSupersets. QCA 2.5</title>
+<title>superSubset, findSubsets, findSupersets. QCA 2.6</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.5</a>
+      <a class="brand" href="#">QCA 2.6</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -55,7 +55,8 @@ Adrian Dusa
   <div class="span8">
     <h2>Usage</h2>
 <pre><div>superSubset(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
-            cov.cut = 0, use.tilde = FALSE, use.letters = FALSE, ...)</div>
+            cov.cut = 0, ron.cut = 0, pri.cut = 0, use.tilde = FALSE, use.letters = FALSE,
+            depth = NULL, ...)</div>
 <div>findSubsets(noflevels, input, stop)</div>
 <div>findSupersets(noflevels, input)</div></pre>
     
@@ -76,6 +77,10 @@ Adrian Dusa
       <dd>The minimal inclusion score of the set relation.</dd>
       <dt>cov.cut</dt>
       <dd>The minimal coverage score of the set relation.</dd>
+      <dt>ron.cut</dt>
+      <dd>The minimal score for the RoN - relevance of necessity.</dd>
+      <dt>pri.cut</dt>
+      <dd>The minimal score for the PRI - proportional reduction in inconsistency.</dd>
       <dt>use.tilde</dt>
       <dd>Logical, use tilde for negation with bivalent variables.</dd>
       <dt>use.letters</dt>
@@ -89,6 +94,8 @@ Adrian Dusa
         matrix of configurations (only for supersets).</dd>
       <dt>stop</dt>
       <dd>The maximum line number (subset) to stop at, and return</dd>
+      <dt>depth</dt>
+      <dd>Integer, an upper number of causal conditions to form expressions with.</dd>
       <dt>...</dt>
       <dd>Other arguments, mainly for backward compatibility.</dd>
     </dl>
@@ -175,7 +182,10 @@ same time a superset of some initial causal combinations.</p>
       <p>- all possible supersets of an implicant or initial causal combination</p>
   
       <p>in the implicant matrix.</p>
-  
+    
+      <p>The argument <b><code>depth</code></b> can be used to impose an upper number of causal
+conditions to form expressions with. By default, it is set to a maximum, but otherwise the
+computation time is higher when this number is larger.</p>
     </div>
 
     <div class="Value">

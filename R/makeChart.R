@@ -2,7 +2,7 @@
 function(primes = "", configs = "", snames = "") {
     prmat <- is.matrix(primes)
     comat <- is.matrix(configs)
-    if (prmat + comat  == 2) {
+    if (prmat & comat) {
         if (!(is.numeric(primes) & is.numeric(configs))) {
             cat("\n")
             stop(simpleError("Matrices have to be numeric.\n\n"))
@@ -28,12 +28,11 @@ function(primes = "", configs = "", snames = "") {
         else {
             mtrx <- t(mtrx)
         }
-        collapse = ifelse(all(nchar(colnames(primes)) == 1) & all(nchar(colnames(configs)) == 1), "", "*")
-        rownames(mtrx) <- writePrimeimp(primes, collapse = collapse,  uplow = all(primes < 3) | all(configs < 3))
-        colnames(mtrx) <- writePrimeimp(configs, collapse = collapse, uplow = all(primes < 3) | all(configs < 3))
+        rownames(mtrx) <- writePrimeimp(primes, collapse = "*",  uplow = all(primes < 3) | all(configs < 3))
+        colnames(mtrx) <- writePrimeimp(configs, collapse = "*", uplow = all(primes < 3) | all(configs < 3))
         return(mtrx)
     }
-    else if (prmat + comat  == 0) {
+    else if (!prmat & !comat) {
         tconfigs <- translate(configs, snames, tomatrix = FALSE)
         if (identical(snames, "")) {
             snames <- names(tconfigs[[1]])

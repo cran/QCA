@@ -3,6 +3,9 @@ function(expression, snames = "", noflevels, use.tilde = FALSE) {
     if (class(expression) == "deMorgan") {
         expression <- paste(expression[[1]][[2]], collapse = " + ")
     }
+    if (!missing(noflevels)) {
+        noflevels <- splitstr(noflevels)
+    }
     if (is(expression, "qca")) {
         result <- deMorganLoop(expression)
         attr(result, "snames") <- expression$tt$options$conditions
@@ -22,11 +25,11 @@ function(expression, snames = "", noflevels, use.tilde = FALSE) {
         }
         snoflevels <- lapply(noflevels, function(x) seq(x) - 1)
         negated <- paste(apply(trexp, 1, function(x) {
-            wx <- which(x >= 0)
+            wx <- which(x != -1) 
             x <- x[wx]
             nms <- names(x)
             x <- sapply(seq_along(x), function(i) {
-                paste(setdiff(snoflevels[wx][[i]], x[i]), collapse = ",")
+                paste(setdiff(snoflevels[wx][[i]], splitstr(x[i])), collapse = ",")
             })
             if (mv) {
                 return(paste("(", paste(nms, "{", x, "}", sep = "", collapse = " + "), ")", sep = ""))

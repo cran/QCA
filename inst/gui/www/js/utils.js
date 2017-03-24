@@ -220,7 +220,12 @@ Raphael.fn.radio = function(x, y, whichChecked, labels, vertspace, horspace, lbs
     return(rd);
 }
 function isNumeric(n) {
-    return !/^(NaN|-?Infinity)$/.test(+n);
+    if (n.length == 0) {
+        return false;
+    }
+    else {
+        return !/^(NaN|-?Infinity)$/.test(+n);
+    }
 }
 function copy(obj, exclude) {
     if (null == obj || "object" != typeof obj) return obj;

@@ -1,5 +1,8 @@
 `translate` <-
 function(expression = "", snames = "", noflevels, data, ...) {
+    if (!missing(noflevels)) {
+        noflevels <- splitstr(noflevels)
+    }
     if (identical(expression, "")) {
         cat("\n")
         stop(simpleError("Empty expression.\n\n"))
@@ -36,7 +39,7 @@ function(expression = "", snames = "", noflevels, data, ...) {
         }
         return(x)
     }))
-    pporig <- trimst(unlist(strsplit(expression, split="[+]")))
+    pporig <- trimstr(unlist(strsplit(expression, split="[+]")))
     multivalue <- any(grepl("[{|}]", expression))
     expression <- gsub("[[:space:]]", "", expression)
     if (multivalue) {

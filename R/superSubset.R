@@ -1,6 +1,7 @@
 `superSubset` <-
 function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
-    cov.cut = 0, use.tilde = FALSE, use.letters = FALSE, ...) {
+    cov.cut = 0, ron.cut = 0, pri.cut = 0, use.tilde = FALSE, use.letters = FALSE,
+    depth = NULL, ...) {
     memcare <- FALSE 
     other.args <- list(...)
     colnames(data) <- toupper(colnames(data))
@@ -35,7 +36,8 @@ function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
     conditions <- toupper(conditions)
     verify.data(data, outcome, conditions)
     if (!(nec(relation) | suf(relation) | relation %in% c("sufnec", "necsuf"))) {
-        stop(simpleError("\nThe relationship should be \"necessity\", \"sufficiency\", \"sufnec\" or \"necsuf\".\n\n"))
+        cat("\n")
+        stop(simpleError("The relationship should be \"necessity\", \"sufficiency\", \"sufnec\" or \"necsuf\".\n\n"))
     }
     relationcopy <- relation
     if (relation %in% c("sufnec", "necsuf")) {
@@ -71,99 +73,65 @@ function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
     noflevels <- apply(data[, conditions], 2, max) + 1L
     noflevels[fc] <- 2
     mbase <- c(rev(cumprod(rev(noflevels + 1L))), 1)[-1]
-    noflevels[noflevels == 1] <- 2
-    if (memcare) {
-        CMatrix <- .Call("superSubsetMem", as.matrix(data[, conditions]), noflevels, mbase, as.numeric(fc), data[, outcome], as.numeric(nec(relation)), PACKAGE="QCA")
+    noflevels[noflevels == 1] <- 2 
+    if (is.null(depth)) {
+        depth <- nofconditions
     }
-    else {
-        nk <- createMatrix(noflevels + 1L)
-        nk <- nk[-1, ] 
-        CMatrix <- .Call("superSubset", as.matrix(data[, conditions]), nk, as.numeric(fc), data[, outcome], as.numeric(nec(relation)), PACKAGE="QCA")
-    }
-    colnames(CMatrix) <- expressions <- seq_len(ncol(CMatrix)) + 1L
-    lincl <- ifelse(nec(relation), 2, 1)
-    expressions <- expressions[CMatrix[lincl, ] >= incl.cut & CMatrix[3 - lincl, ] >= cov.cut]
+    CMatrix <- .Call("superSubset",
+                     as.matrix(data[, conditions]),
+                     noflevels,
+                     as.numeric(fc),
+                     data[, outcome],
+                     as.numeric(nec(relation)),
+                     incl.cut,
+                     cov.cut,
+                     depth, PACKAGE = "QCA")
+    colnames(CMatrix[[1]]) <- c("incl", ifelse(nec(relation), "RoN", "PRI"), "cov.r")
+    colnames(CMatrix[[2]]) <- c("incl", ifelse(nec(relation), "RoN", "PRI"), "cov.r")
     prev.result <- FALSE
-    lexpressions <- length(expressions)
+    lexpressions <- nrow(CMatrix[[1]])
     if (lexpressions > 0) {
-        if (suf(relation)) {
-            expressions <- .Call("removeRedundants", expressions, noflevels, mbase, PACKAGE="QCA")
-        }
-        result.matrix <- getRow(noflevels + 1L, expressions)
-        rownames(result.matrix) <- expressions
+        result.matrix <- CMatrix[[3]]
+        rownames(result.matrix) <- expressions <- seq(lexpressions)
         colnames(result.matrix) <- conditions
-        result.matrix <- sortMatrix(result.matrix)
-        sum.zeros <- apply(result.matrix, 1, function(idx) sum(idx == 0))
-        result.matrix <- result.matrix[order(sum.zeros, decreasing=TRUE), , drop=FALSE]
-        row_names <- writePrimeimp(result.matrix, collapse=collapse, uplow=uplow, use.tilde=use.tilde)
         prev.result <- TRUE
-        result <- data.frame(incl  = CMatrix[lincl, rownames(result.matrix)],
-             PRI   = CMatrix[5, rownames(result.matrix)],
-             cov.r = CMatrix[3 - lincl, rownames(result.matrix)],
-             stringsAsFactors=FALSE,
-             row.names=row_names)
+        row_names <- writePrimeimp(result.matrix, collapse=collapse, uplow=uplow, use.tilde=use.tilde)
+        rownames(CMatrix[[1]]) <- row_names
+        result <- as.data.frame(CMatrix[[1]])
+        mins <- CMatrix[[5]]
     }
     lexprnec <- 0
     if (nec(relation)) {
-        exprnec <- seq_len(ncol(CMatrix)) + 1L
-        exprnec <- exprnec[CMatrix[4, ] >= incl.cut & CMatrix[3, ] >= cov.cut]
-        exprnec <- .Call("removeRedundants", exprnec, noflevels, mbase, PACKAGE="QCA")
-        exprnec <- setdiff(exprnec, expressions)
-        lexprnec <- length(exprnec)
+        lexprnec <- nrow(CMatrix[[2]])
         if (lexprnec + lexpressions == 0) {
             cat("\n")
             stop(simpleError(paste("\nThere are no combinations with incl.cut = ", round(incl.cut, 3), " and cov.cut = ", round(cov.cut, 3), "\n\n", sep="")))
         }
         if (lexprnec > 0) {
-            result.matrix2 <- getRow(noflevels + 1, exprnec)
-            rownames(result.matrix2) <- exprnec
+            result.matrix2 <- CMatrix[[4]]
+            rownames(result.matrix2) <- seq(lexprnec) + lexpressions
             colnames(result.matrix2) <- conditions
-            result.matrix2 <- sortMatrix(result.matrix2)
-            sum.zeros <- apply(result.matrix2, 1, function(idx) sum(idx == 0))
-            result.matrix2 <- result.matrix2[order(sum.zeros, decreasing=TRUE), , drop=FALSE]
             row_names2 <- writePrimeimp(result.matrix2, collapse="+", uplow=uplow, use.tilde=use.tilde)
+            rownames(CMatrix[[2]]) <- row_names2
+            mins2 <- CMatrix[[6]]
             if (prev.result) {
-                result <- rbind(result, data.frame(incl  = CMatrix[4, rownames(result.matrix2)],
-                    PRI   = CMatrix[6, rownames(result.matrix2)],
-                    cov.r = CMatrix[3, rownames(result.matrix2)],
-                    stringsAsFactors=FALSE,
-                    row.names=row_names2))
+                result <- rbind(result, as.data.frame(CMatrix[[2]]))
                 row_names <- c(row_names, row_names2)
                 result.matrix <- rbind(result.matrix, result.matrix2)
+                mins <- cbind(mins, mins2)
             }
             else {
-                result <- data.frame(incl = CMatrix[4, rownames(result.matrix2)],
-                    PRI = CMatrix[6, rownames(result.matrix2)],
-                    cov.r = CMatrix[3, rownames(result.matrix2)],
-                    stringsAsFactors=FALSE,
-                    row.names=row_names2)
+                result <- as.data.frame(CMatrix[[2]])
+                expressions <- seq(lexprnec)
                 row_names <- row_names2
                 result.matrix <- result.matrix2
+                mins <- mins2
             }
         }
     }
     if (lexprnec + lexpressions == 0) {
         cat("\n")
-        stop(simpleError(paste("\nThere are no combinations with incl.cut = ", round(incl.cut, 3), " and cov.cut = ", round(cov.cut, 3), "\n\n", sep="")))
-    }
-    mins <- matrix(NA, nrow=nrow(data), ncol=nrow(result.matrix))
-    for (i in seq(nrow(result.matrix))) {
-        mins[, i] <- apply(data[, conditions], 1, function(v) {
-            e <- result.matrix[i, , drop=FALSE]
-            if (any(ox <- e[fc] == 1)) {
-                v[fc][ox] <- 1 - v[fc][ox]
-            }
-            if (length(cp <- v[!fc]) > 0) {
-                v[!fc][e[!fc] != cp + 1] <- 0
-                v[!fc][e[!fc] == cp + 1] <- 1
-            }
-            if (rownames(e) %in% expressions) {
-                return(min(v[e != 0]))
-            }
-            else {
-                return(max(v[e != 0]))
-            }
-        })
+        stop(simpleError(paste("There are no combinations with incl.cut = ", round(incl.cut, 3), " and cov.cut = ", round(cov.cut, 3), "\n\n", sep="")))
     }
     colnames(mins) <- rownames(result)
     rownames(mins) <- rownames(data)
@@ -175,8 +143,16 @@ function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
         colnames(result) <- c("inclN", "PRI", "inclS")
     }
     if (nec(relation)) {
-        colnames(result)[2] <- "RoN"
-        result[, 2] <- pof(mins, data[, outcome])$incl.cov[, 2]
+        tokeep <- result[, "RoN"] >= ron.cut
+    }
+    else {
+        tokeep <- result[, "PRI"] >= pri.cut
+    }
+    result <- result[tokeep, , drop = FALSE]
+    mins <- mins[, tokeep, drop = FALSE]
+    if (nrow(result) == 0) {
+        cat("\n")
+        stop(simpleError(paste("There are no combinations with", ifelse(nec(relation), paste("ron.cut =", round(ron.cut, 3)), paste("pri.cut =", round(pri.cut, 3))), "\n\n")))
     }
     out.list <- list(incl.cov=result, coms=mins, use.letters=use.letters)
     if (use.letters & !alreadyletters) {

@@ -1,8 +1,11 @@
-`trimst` <- function(x) {
-    gsub("^[[:space:]]+|[[:space:]]+$", "", x)
-}
-`trimstars` <- function(x) {
-    gsub("^\\*+|\\*+$", "", x)
+`trimstr` <- function(x, what = " ", side = "both") {
+    what <- ifelse(what == " ", "[[:space:]]", ifelse(what == "*", "\\*", what))
+    pattern <- switch(side,
+    both = paste("^", what, "+|", what, "+$", sep = ""),
+    left = paste("^", what, "+", sep = ""),
+    right = paste(what, "+$", sep = "")
+    )
+    gsub(pattern, "", x)
 }
 `nec` <- function(x) {
     !is.na(charmatch(x, "necessity"))
@@ -665,7 +668,7 @@ splitBrackets2 <- function(big.list) {
     big.list <- as.vector(unlist(big.list))
     result <- vector(mode="list", length = length(big.list))
     for (i in seq(length(big.list))) {
-        result[[i]] <- trimstars(unlist(strsplit(unlist(strsplit(big.list[i], split="\\(")), split="\\)")))
+        result[[i]] <- trimstr(unlist(strsplit(unlist(strsplit(big.list[i], split="\\(")), split="\\)")), "*")
     }
     names(result) <- big.list
     return(result)
@@ -702,7 +705,7 @@ outsideBrackets <- function(x, type = "{") {
     }
     tml <- typematrix[tml, 1:2]
     pattern <- paste("\\", tml, sep = "", collapse = "[[:alnum:]|,]*")
-    unlist(strsplit(gsub("\\s+", " ", trimst(gsub(pattern, " ", x))), split=" "))
+    unlist(strsplit(gsub("\\s+", " ", trimstr(gsub(pattern, " ", x))), split=" "))
 }
 curlyBrackets <- function(x, outside = FALSE) {
     x <- paste(x, collapse="+")

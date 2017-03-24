@@ -316,8 +316,8 @@ function(data, outcome = "", conditions = "",  relation = "suf", n.cut = 1,
             for (k in indices) {
                 if (is.null(SA)) {
                     SA <- drop(mbase %*% pr) + sum(mbase[!pr])
+                    tempSA <- SA
                 }
-                tempSA <- SA
                 for (lev in seq(noflevels[k] - 1)) {
                     tempSA <- c(tempSA, SA + mbase[k]*lev)
                 }

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>Implicant matrix functions: allExpressions, createMatrix, getRow. QCA 2.5</title>
+<title>Implicant matrix functions: allExpressions, createMatrix, getRow. QCA 2.6</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.5</a>
+      <a class="brand" href="#">QCA 2.6</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -54,24 +54,28 @@ Adrian Dusa
 <div class="row">
   <div class="span8">
     <h2>Usage</h2>
-<pre><div>allExpressions(noflevels, raw = FALSE, arrange = FALSE)</div>
-<div>createMatrix(noflevels)</div>
+<pre><div>allExpressions(noflevels, arrange = FALSE, depth = NULL, raw = FALSE, ...)</div>
+<div>createMatrix(noflevels, ...)</div>
 <div>getRow(noflevels, row.no, zerobased = FALSE)</div></pre>
     
     <h2>Arguments</h2>
     <dl>
       <dt>noflevels</dt>
       <dd>The number of levels (values) for each causal condition.</dd>
-      <dt>raw</dt>
-      <dd>Logical, if TRUE it returns the matrix indicating which conditions have
-             been minimized, using <b><code>-1</code></b>.</dd>
       <dt>arrange</dt>
       <dd>Logical, if TRUE the program tries hard to arrange the result matrix
        for visual inspection.</dd>
+      <dt>depth</dt>
+      <dd>Integer, an upper number of causal conditions to form expressions with.</dd>
+      <dt>raw</dt>
+      <dd>Logical, if TRUE it returns the matrix indicating which conditions have
+             been minimized, using <b><code>-1</code></b>.</dd>
       <dt>row.no</dt>
       <dd>A vector, the desired row numbers.</dd>
       <dt>zerobased</dt>
       <dd>Logical, the first row number is zero.</dd>
+      <dt>...</dt>
+      <dd>Other arguments.</dd>
     </dl>
     
     <div class="Description">
@@ -122,8 +126,13 @@ and prime implicants, displayed in the original values form using the code <b><c
 point the minimized literals, while the other functions use the code <b><code>0</code></b>, all other
 values being incremented with 1.</p>
   
-      <p>The function <b><code>createMatrix()</code></b>  creates a base matrix for truth tables and implicant
+      <p>The function <b><code>createMatrix()</code></b> creates a base matrix for truth tables and implicant
 matrices.</p>
+  
+      <p>When the argument <b><code>arrange</code></b> is activated, the output is arranged in the
+increasing order of the number of conditions which form conjunctions, up to the maximum number
+specified by the argument <b><code>depth</code></b> (which if <b><code>NULL</code></b> it is
+considered equal to the number of columns in the matrix).</p>
   
       <p>The function <b><code>getRow()</code></b> takes the number of a row in the truth table or implicant matrix
 (in its decimal form), and transforms it into its binary (or multi-base) representation,

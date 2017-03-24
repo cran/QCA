@@ -268,7 +268,7 @@ tryCatchWEM <- function(expr) {
 }
 continue <- lapply(c("ls(", "'ls"), function(x) {
     x <- unlist(strsplit(unlist(strsplit(tryCatch(eval(parse(text = x)), error = identity)$message, "\n"))[1], ":"))
-    return(trimst(x[length(x)]))
+    return(trimstr(x[length(x)]))
 })
 evalparse <- function(foo) {
     forbidden <- "dev.new\\(|plot.new\\(|plot.window\\(|X11\\(|quartz\\(|dev.set\\(|windows\\("

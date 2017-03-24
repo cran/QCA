@@ -220,7 +220,7 @@ var settings = {
         },
         reset: function(x) {
             if (commobj[x] === void 0) {
-                commobj[x] = {};
+                commobj[x] = new Object;
             }
             commobj[x] = {
                 "counter": (commobj[x].counter === void 0)?0:commobj[x].counter,
@@ -423,8 +423,10 @@ var settings = {
         title:     "Venn diagram",
         position:  {my: "left top", at: "left+240px top+33px", of: window, collision: "flip"},
         resizable: true,
-        width:     430, 
-        height:    500
+        width:     430,
+        height:    500,
+        minWidth:  430,
+        minHeight: 500
     },
     saveRplot: {
         name:       "saveRplot",
@@ -717,6 +719,7 @@ Shiny.addCustomMessageHandler("Rcommand",
             refresh_cols("all");
         }
         if (object.hasOwnProperty("poinths") && $("#calibrate").length) {
+            console.log(object.poinths);
             if (commobj["calibrate"].dataset == object.poinths.dataset && commobj["calibrate"].x == object.poinths.x) {
                 poinths.vals = copy(object.poinths.vals);
                 poinths.prettyx = copy(object.poinths.prettyx);
@@ -1948,14 +1951,20 @@ function update_data() {
                     tobe.inlineTextEditing.stopEditing(tasta);
                     tocompare = tobe.attr("text");
                     if (temp != tocompare) {
-                        if (!isNaN(tocompare) && tocompare !== "") {
-                            tocompare = 1*tocompare;
+                        if (tocompare.length == 0) {
+                            tocompare = "NA";
+                        }
+                        else {
+                            if (!isNumeric(tocompare)) {
+                                tocompare = "\"" + tocompare + "\"";
+                            }
                         }
                         papers["data_editor"]["body"].rect(70*(coords.mouseX + coords.Xshift), 20*(coords.mouseY + coords.Yshift), 70, 20)
                         .attr({fill: "#ffffff", stroke: "none"});
                         sat(papers["data_editor"]["body"].text(5 + 70*(coords.mouseX + coords.Xshift), 10 + 20*(coords.mouseY + coords.Yshift), tocompare));
                         activeSquare();
-                        string_command = dataset + "[\"" + info["data"][dataset].rownames[coords.mouseY + coords.Yshift] + "\", \"" + info["data"][dataset].colnames[coords.mX + coords.Xshift] + "\"] <- " + ((tocompare == "")?"NA":((isNumeric(tocompare)?tocompare:("\"" + tocompare + "\""))));
+                        string_command = dataset + "[\"" + info["data"][dataset].rownames[coords.mouseY + coords.Yshift] + "\", \"" + info["data"][dataset].colnames[coords.mX + coords.Xshift] + "\"] <- " + tocompare;
+                        console.log(string_command);
                         Rcommand.command = string_command; 
                         talkToR();
                     }
@@ -3008,14 +3017,6 @@ if ($("#calibrate").length) {
         commobj.calibrate.logistic = logistic.isChecked;
         if (logistic.isChecked) {
             sbell.moveTo(0);
-            idm.show();
-            ecdf.uncheck();
-            commobj.calibrate.ecdf = false;
-            changeLabels();
-            thsets[3].hide();
-            thsets[4].hide();
-            thsets[5].hide();
-            changeLabels();
             for (var i = 0; i < 3; i++) {
                 commobj.calibrate.thresholds[i] = ths[i].attr("text");
                 commobj.calibrate.thnames[i] = thlabels.sub(i);
@@ -3148,47 +3149,42 @@ if ($("#calibrate").length) {
                     }
                     ths[me.i].attr({"text": finaltext});
                     commobj.calibrate.thresholds[me.i] = finaltext;
+                    var sort = false;
                     if (paper.crfuz == 0) {
-                        for (var i = commobj.calibrate.nth; i < 6; i++) {
-                            commobj.calibrate.thresholds[i] = "";
+                        for (var j = commobj.calibrate.nth; j < 6; j++) {
+                            commobj.calibrate.thresholds[j] = "";
                         }
+                        sort = true;
                     }
-                    var thcop = sortArray(copy(commobj.calibrate.thresholds, exclude = [void 0]));
-                    commobj.calibrate.thresholds = ["", "", "", "", "", ""];
-                    commobj.calibrate.thscopycrp = ["", "", "", "", "", ""];
-                    var pos = 0;
-                    for (var j = 0; j < 6; j++) {
-                        ths[j].attr({"text": ""});
-                        if (thcop[j] != "") {
-                            commobj.calibrate.thresholds[pos] = thcop[j];
-                            if (paper.crfuz == 0) { 
-                                commobj.calibrate.thscopycrp[pos] = thcop[j];
+                    else {
+                        var filled = 0;
+                        for (var j = 0; j < 6; j++) {
+                            if (commobj.calibrate.thresholds[j] != "") {
+                                filled += 1;
                             }
-                            else { 
-                                if (sbell.whichChecked == 1) {
-                                    commobj.calibrate.thscopyfuzb[pos] = thcop[j];
-                                }
-                                else {
-                                    commobj.calibrate.thscopyfuzs[pos] = thcop[j];
-                                }
-                            }
-                            ths[pos].attr({"text": thcop[j]});
-                            pos += 1;
+                        }
+                        sort = (sbell.whichChecked == 1)?(filled == 6):(filled == 3);
+                    }
+                    if (sort) {
+                        commobj.calibrate.thresholds = sortArray(commobj.calibrate.thresholds);
+                        for (var j = 0; j < 6; j++) {
+                            ths[j].attr({"text": commobj.calibrate.thresholds[j]});
                         }
                     }
                     if (paper.crfuz == 0) { 
+                        commobj.calibrate.thscopycrp = copy(commobj.calibrate.thresholds);
                         paper.findth.uncheck();
                         commobj.calibrate.findth = false;
                         drawPointsAndThresholds();
                     }
                     else { 
                         if (sbell.whichChecked == 1) {
-                            commobj.calibrate.thscopyfuzb[me.i] = finaltext;
                             commobj.calibrate.thnames[me.i] = thlabels.sub(me.i) + ((me.i < 3)?1:2);
+                            commobj.calibrate.thscopyfuzb = copy(commobj.calibrate.thresholds);
                         }
                         else {
-                            commobj.calibrate.thscopyfuzs[me.i] = finaltext;
                             commobj.calibrate.thnames[me.i] = thlabels.sub(me.i);
+                            commobj.calibrate.thscopyfuzs = copy(commobj.calibrate.thresholds);
                         }
                         showFuzzy();
                     }
@@ -3289,6 +3285,8 @@ if ($("#calibrate").length) {
     function showFuzzy() {
         var bell = sbell.whichChecked == 1;
         commobj.calibrate.end = !bell;
+        logistic.showIt();
+        ecdf.showIt();
         if (bell) {
             thsets[3].show();
             thsets[4].show();
@@ -3304,11 +3302,10 @@ if ($("#calibrate").length) {
             thsets[3].hide();
             thsets[4].hide();
             thsets[5].hide();
-            logistic.showIt();
-            ecdf.showIt();
             if (logistic.isChecked) {
                 idm.show();
                 abset.hide();
+                ecdf.uncheck();
             }
             else {
                 idm.hide();
@@ -3981,7 +3978,7 @@ function draw_venn(paper) {
         }
     }
     function hoverVenn_OUT() {
-        if (this.txt != "") {
+        if (this.txt != "" && txt != void 0) {
             glow.remove();
             txt.remove();
             txtfundal.remove();
@@ -5832,12 +5829,34 @@ function dragMove(slider) {
 function dragStop(slider) {
     return function() {
         if (this.id == "thsetter") {
-            commobj.calibrate.thresholds = sortArray(commobj.calibrate.thresholds);
-            var value;
-            for (var i = 0; i < 6; i++) {
-                value = commobj.calibrate.thresholds[i];
-                if (value != "") {
-                    ths[i].attr({"text": value});
+            var paper = papers["calibrate"]["main"];
+            var crisp = commobj.calibrate.type == "crisp";
+            var bell = !commobj.calibrate.end;
+            var sort = crisp;
+            if (commobj.calibrate.type == "fuzzy") {
+                var filled = 0;
+                for (var j = 0; j < 6; j++) {
+                    if (commobj.calibrate.thresholds[j] != "") {
+                        filled += 1;
+                    }
+                }
+                sort = sort || (bell)?(filled == 6):(filled == 3);
+            }
+            if (sort) {
+                commobj.calibrate.thresholds = sortArray(commobj.calibrate.thresholds);
+                for (var j = 0; j < 6; j++) {
+                    ths[j].attr({"text": commobj.calibrate.thresholds[j]});
+                }
+            }
+            if (crisp) {
+                commobj.calibrate.thscopycrp = copy(commobj.calibrate.thresholds);
+            }
+            else { 
+                if (bell) {
+                    commobj.calibrate.thscopyfuzb = copy(commobj.calibrate.thresholds);
+                }
+                else {
+                    commobj.calibrate.thscopyfuzs = copy(commobj.calibrate.thresholds);
                 }
             }
             if (commobj.calibrate.type == "crisp" || (commobj.calibrate.type == "fuzzy" && !checkfuzzy())) {
@@ -6267,18 +6286,26 @@ $("#menu_venn").click(function() {
         draw_venn(papers["venn"]["main"]);
         $("#venn").resizable({
             resize: function() {
+                if ($(this).height() < settings["venn"].minHeight) {
+                    $(this).height(settings["venn"].minHeight);
+                }
+                if ($(this).width() < settings["venn"].minWidth) {
+                    $(this).width(settings["venn"].minWidth);
+                }
                 var paper = papers["venn"]["main"];
                 paper.hover = false;
-                $("#venn").height($("#venn").width() + 70);
-                $(paper.canvas).width($("#venn").width());
-                $(paper.canvas).height($("#venn").height() - 20);
+                $(this).height($(this).width() + 70);
+                $("#venn_main").width($(this).width());
+                $("#venn_main").height($(this).height() - 20);
+                $(paper.canvas).width($(this).width());
+                $(paper.canvas).height($(this).height() - 20);
             },
             stop: function() {
                 var paper = papers["venn"]["main"];
-                $(paper.canvas).width($("#venn").width() - 50);
-                $(paper.canvas).height($("#venn").height() - 70);
-                $(paper.canvas).width($("#venn").width());
-                $(paper.canvas).height($("#venn").height() - 20);
+                $(paper.canvas).width($(this).width() - 50);
+                $(paper.canvas).height($(this).height() - 70);
+                $(paper.canvas).width($(this).width());
+                $(paper.canvas).height($(this).height() - 20);
                 paper.scale = (Math.min($(paper.canvas).width() - 20, $(paper.canvas).height() - 70))/1000;
                 draw_venn(paper);
                 paper.hover = true;
@@ -6304,7 +6331,7 @@ $("#menu_about").click(function() {
     if (!$("#about").length) {
         createDialog(settings["about"]);
         var messages = [
-            "R package: QCA, version 2.5",
+            "R package: QCA, version 2.6",
             "",
             "Author: Adrian Dușa (dusa.adrian@unibuc.ro)",
             "Former coauthors:",

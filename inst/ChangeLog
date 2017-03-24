@@ -1,3 +1,18 @@
+Version 2.6
+    o Improved: function superSubset() is now many orders of magnitude faster
+    o New: argument "depth" added to functions superSubset() and allExpressions()
+    o New: functions createMatrix() and allExpressions() are now able to produce
+      all possible combinations up to certain length of conjunctions via "depth"
+    o Fixed a couple of minor bugs in the web interface
+    o New: arguments "ron.cut" and "pri.cut" added to function superSubset()
+      (thanks to Carsten Schneider for the suggestion)
+    o New: component "minmat" to the truth table object
+      (thanks to Markus Siewert for the suggestion)
+    o Changed: function plot1() renamed to Xplot()
+    o Fixed: a couple of minor bugs in the user interface behavior
+    o Fixed: a couple of minor bugs in functions translate() and deMorgan()
+      when feeding multivalue conditions with multiple levels
+      
 Version 2.5
     o Packages QCA and QCAGUI merged back in a single package.
     o New in GUI: redesigned dialog for the calibrate menu, which now contains
@@ -9,7 +24,7 @@ Version 2.5
     o New: function plot1() to examine the distribution of values for a single
       causal condition (typically for calibration purposes)
     o Improved: SOP expressions now allow the negation of multivalue conditions, as
-      well as intersections of multiple levels of the same causal condition.
+      well as unions of multiple levels for the same causal condition.
     o Improved: deMorgan() now allows negating multivalue expression, providing a new
       argument called "noflevels"
     o Improved: treatment of commands in the GUI console

@@ -221,6 +221,13 @@ The argument \bold{\code{use.letters}} controls using the original names of the 
 conditions, or replace them by single letters in alphabetical order. If the
 causal conditions are already named with single letters, the original letters
 will be used.
+
+Starting with version 2.6, the package employes a different search algorithm based on
+consistency cubes, considering all possible combinations of causal conditions and all
+possible combinations of their respective levels. The structure of the input dataset
+(number of causal conditions, number of levels, number of unique rows in the truth table)
+has a direct implication on the search time, as all of those characteristics become
+entry parameters when calculating all possible combinations.
 }
 
 \value{

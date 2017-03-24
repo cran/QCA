@@ -41,8 +41,8 @@ function(x, rules, ...) {
          rules <- unlist(strsplit(rules, split=";"))
     }
     rulsplit <- strsplit(rules, split="=")
-    oldval <- unlist(lapply(lapply(rulsplit, trimst), "[", 1))
-    newval <- unlist(lapply(lapply(rulsplit, trimst), "[", 2))
+    oldval <- unlist(lapply(lapply(rulsplit, trimstr), "[", 1))
+    newval <- unlist(lapply(lapply(rulsplit, trimstr), "[", 2))
     temp <- rep(NA, length(x))
     elsecopy <- oldval == "else" & newval == "copy"
     if (any(elsecopy)) {
@@ -61,9 +61,9 @@ function(x, rules, ...) {
         newval <- c(newval[-whichelse], newval[whichelse])
     }
     oldval <- lapply(lapply(lapply(oldval, strsplit, split=","), "[[", 1), function(y) {
-        lapply(strsplit(y, split=":"), trimst)
+        lapply(strsplit(y, split=":"), trimstr)
     })
-    newval <- trimst(rep(newval, unlist(lapply(oldval, length))))
+    newval <- trimstr(rep(newval, unlist(lapply(oldval, length))))
     if (any(unlist(lapply(oldval, function(y) lapply(y, length))) > 2)) {
         cat("\n")
         stop(simpleError("Too many : sequence operators.\n\n"))

@@ -22,19 +22,25 @@ understood by quantitative researchers).
 The Quine-McCluskey minimization algorithm implemented in this package is
 mathematically exact, as described by Dusa (2007), Dusa (2010) and Dusa and Thiem (2015).
 It returns the relevant prime implicants for both \dfn{csQCA} (binary crisp sets QCA)
-and also for \dfn{mvQCA} (multi-value QCA, as of version 0.6-0).
+and also for \dfn{mvQCA} (multi-value QCA).
 
 Starting with version 0.4-5 the package \pkg{QCA} gained a new function called
 \code{\link{eqmcc}} (from \dfn{"e"nhanced Quine-McCluskey}) that finds exact solutions
-with a substantially lower memory consumption.
+with a substantially lower memory consumption. The multi-value extension of the
+\code{\link{eqmcc}} function was implemented in version 0.6-0.
 
-Since version 1.0-0, the package \bold{\pkg{QCA}} welcomed a second co-author Alrik Thiem
-(up to version 1.1-3), responsible with the manual testing and documentation of
-functions, while Adrian Dusa was responsible with all of the software development.
+Between versions 1.0-0 and up to version 1.1-3, the package welcomed a second co-author
+Alrik Thiem, responsible with the manual testing and documentation of functions,
+while the main author Adrian Dusa was responsible with all of the software development.
 The package gained new functionality by employing \dfn{fsQCA} (fuzzy-set QCA) and also
 other types of QCA like \dfn{tsQCA} (temporal QCA), see Caren and Panofsky (2005),
 Ragin and Strand (2008). The package is also able to obtain the causal chains similar
 to those from the package \bold{\pkg{cna}} (see Ambuehl et all 2015).
+
+The author of this package is grateful for the effort of the former coauthor, Alrik Thiem,
+given his responsibilities of testing and documenting the functions. Although the current
+documentation is completely re-written, it owes a great deal of impact from the previous
+versions.
 
 The results of the \bold{\pkg{QCA}} package are very consistent with (and sometimes even
 better than) the results of the other software packages for QCA, most notably
@@ -48,20 +54,16 @@ systems, the current GUI was designed to work into a webpage. It uses a combinat
 CSS, jQuery for the user interface, a custom development framework using vector graphics
 based on the Raphael library, and extensive Javascript code to bind these altogether. A
 first version of this user interface was presented by Dusa (2007), but users should be aware
-the current version is much more advanced.
-
-The author of this package is grateful for the effort of the former coauthor, Alrik Thiem,
-given his responsibilities of testing and documenting the functions. Although the current
-documentation is completely re-written, it owes a great deal of impact from the previous
-versions.
+the current version is much more advanced. Starting with version 2.5, the user interface
+gained a web-based command console to offer a complete experience of available functionality.
 }
 
 \details{
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 2.5\cr
-    Date:    \tab 2016-11-09\cr
+    Version: \tab 2.6\cr
+    Date:    \tab 2017-03-24\cr
     License: \tab GPL (>= 2)\cr
     }
 }

@@ -168,7 +168,8 @@ An object of class \dQuote{tt}, a list containing the following components:
 \bold{recoded.data} \tab The crisp version of the \bold{\code{initial.data}}, if fuzzy.\cr
 \bold{cases} \tab The cases for each observed causal configuration.\cr
 \bold{options} \tab The command options used.\cr
-\bold{rowsorder} \tab The order of the rows after sorting, if using \bold{\code{sort.by}}.
+\bold{rowsorder} \tab The order of the rows after sorting, if using \bold{\code{sort.by}}.\cr
+\bold{minmat} \tab A membership scores matrix of cases in the observed truth table combinations.
 }
 
 For reasons related to compatibility with other packages, the \bold{\code{options}}

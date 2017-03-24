@@ -1,4 +1,4 @@
-`plot1` <- function(x, jitter = FALSE, at = NULL, ...) {
+`Xplot` <- function(x, jitter = FALSE, at = NULL, ...) {
     other.args <- list(...)
     funargs <- unlist(lapply(match.call(), deparse)[-1])
     xname <- getName(funargs[1])

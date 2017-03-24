@@ -1,4 +1,18 @@
 `getNoflevels` <- function(data, conditions = "", outcome = "") {
+    if (identical(conditions, "") & identical(outcome, "")) {
+        if (is.null(colnames(data))) {
+            colnames(data) <- c(LETTERS[ncol(data) - 1], "OUT")
+            conditions <- LETTERS[ncol(data) - 1]
+            outcome <- "OUT"
+        }
+        else {
+            conditions <- colnames(data)[-ncol(data)]
+            outcome <- colnames(data)[ncol(data)]   
+        }
+    }
+    if (is.matrix(data)) {
+        data <- as.data.frame(data)
+    }
     if (identical(conditions, "")) {
         conditions <- setdiff(names(data), outcome)
     }

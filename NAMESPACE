@@ -1,4 +1,4 @@
-useDynLib(QCA)
+useDynLib(QCA, .registration = TRUE)
 export(.onAttach,
     allExpressions,
     asNumeric,
@@ -21,7 +21,6 @@ export(.onAttach,
     getNoflevels,
     intersection,
     makeChart,
-    plot1,
     pof,
     prettyTable,
     print.aE,
@@ -50,12 +49,12 @@ export(.onAttach,
     verify.mqca,
     verify.multivalue,
     verify.tt,
+    Xplot,
     XYplot,
     
     possibleNumeric,
     
-    trimst,
-    trimstars,
+    trimstr,
     nec,
     suf,
     splitstr,
@@ -117,3 +116,4 @@ S3method(print, "qca")
 S3method(print, "sS")
 S3method(print, "translate")
 S3method(print, "tt")
+

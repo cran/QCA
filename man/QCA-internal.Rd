@@ -60,8 +60,7 @@
 \alias{asNumeric}
 \alias{possibleNumeric}
 
-\alias{trimst}
-\alias{trimstars}
+\alias{trimstr}
 \alias{nec}
 \alias{suf}
 \alias{splitstr}

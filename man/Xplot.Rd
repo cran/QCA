@@ -1,16 +1,16 @@
-\name{plot1}
+\name{Xplot}
 
-\alias{plot1}
+\alias{Xplot}
 
 \title{Display the distribution of points for a single condition}
 
 \description{
 This function creates a plot for a single vector of numerical values, arranging them
-horizontally from minimum to maximum.
+horizontally (on the X axis) from minimum to maximum.
 }
 
 \usage{
-plot1(x, jitter = FALSE, at = NULL, ...)
+Xplot(x, jitter = FALSE, at = NULL, ...)
 }
 
 \arguments{
@@ -56,16 +56,16 @@ Adrian Dusa
 data(LR)
 
 # plot the DEV (level of developent) causal condition
-plot1(LR$DEV)
+Xplot(LR$DEV)
 
 # jitter the points vertically
-plot1(LR$DEV, jitter = TRUE)
+Xplot(LR$DEV, jitter = TRUE)
 
 # make the x axis large enough to accommodate all values
-plot1(LR$DEV, jitter = TRUE, at = pretty(LR$DEV))
+Xplot(LR$DEV, jitter = TRUE, at = pretty(LR$DEV))
 
 # clip plotting between the range of min and max
-plot1(LR$DEV, jitter = TRUE, at = range(LR$DEV))
+Xplot(LR$DEV, jitter = TRUE, at = range(LR$DEV))
 }
 
 
