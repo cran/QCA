@@ -17,15 +17,13 @@ runGUI(x)
 }
 
 \details{
-This function is nothing but a wrapper to the \bold{\code{runApp()}} function in package
-\pkg{shiny}.
-It locates the \bold{\code{gui}} directory in the path where the QCA package has been
-installed, and runs it.
+This function is a wrapper to the \bold{\code{\link[shiny]{runApp}()}} function in package
+\pkg{shiny}. If \bold{\code{x}} is not provided, it automatically locates the \bold{\code{gui}}
+directory in the path where the QCA package has been installed, and runs it.
 
-Since version 2.2, the user interface gained an interactive R console in the webpage. Commands are
+The user interface has an interactive R console in the webpage. Commands are
 parsed and evaluated into a dedicated environment, with efforts to capture errors and
-warnings. Preliminary tests are encouraging, but users should be aware this is not a
-real console and bugs are likely to appear in this stage of development.
+warnings.
 }
 
 \author{

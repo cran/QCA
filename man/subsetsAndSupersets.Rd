@@ -13,73 +13,81 @@ or supersets, of a (prime) implicant or an initial causal configuration.
 }
 
 \usage{
-superSubset(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
-    cov.cut = 0, ron.cut = 0, pri.cut = 0, use.tilde = FALSE, use.letters = FALSE,
-    depth = NULL, ...)
+superSubset(data, outcome = "", conditions = "", relation = "necessity",
+    incl.cut = 1, cov.cut = 0, ron.cut = 0, pri.cut = 0, use.tilde = FALSE,
+    use.letters = FALSE, depth = NULL, add = NULL, ...)
 
-findSubsets(noflevels, input, stop, ...)
+findSubsets(input, noflevels, stop, ...)
 
-findSupersets(noflevels, input, ...)
+findSupersets(input, noflevels, ...)
 }
 
 \arguments{
   \item{data}{A data frame with crisp (binary and multi-value) or fuzzy
         causal conditions}
   \item{outcome}{The name of the outcome.}
-  \item{conditions}{A string containing the condition variables' names,
+  \item{conditions}{A string containing the conditions' names,
         separated by commas.}
-  \item{relation}{The set relation to \bold{\code{outcome}}, either \bold{\code{"nec"}},
-        \bold{\code{"suf"}}, \bold{\code{"necsuf"}} or \bold{\code{"sufnec"}}.}
+  \item{relation}{The set relation to \bold{\code{outcome}}, either
+        \bold{\code{"necessity"}}, \bold{\code{"sufficiency"}},
+        \bold{\code{"necsuf"}} or \bold{\code{"sufnec"}}. Partial
+        words like \bold{\code{"suf"}} are accepted.}
   \item{incl.cut}{The minimal inclusion score of the set relation.}
   \item{cov.cut}{The minimal coverage score of the set relation.}
-  \item{ron.cut}{The minimal score for the RoN - relevance of necessity.}
-  \item{pri.cut}{The minimal score for the PRI - proportional reduction in inconsistency.}
+  \item{ron.cut}{The minimal score for the \bold{\code{RoN}} - relevance of necessity.}
+  \item{pri.cut}{The minimal score for the \bold{\code{PRI}} - proportional reduction in
+        inconsistency.}
   \item{use.tilde}{Logical, use tilde for negation with bivalent variables.}
-  \item{use.letters}{Logical, use simple letters instead of original variable
+  \item{use.letters}{Logical, use simple letters instead of original conditions'
         names.}
-  \item{noflevels}{A vector containing the number of levels for each causal condition
-        plus 1 (all subsets are located in the higher dimension, implicant matrix)}
+  \item{noflevels}{A vector containing the number of levels for each causal
+        condition plus 1 (all subsets are located in the higher dimension, implicant
+        matrix)}
   \item{input}{A vector of row numbers where the (prime) implicants are located, or a 
         matrix of configurations (only for supersets).}
   \item{stop}{The maximum line number (subset) to stop at, and return}
   \item{depth}{Integer, an upper number of causal conditions to form expressions with.}
+  \item{add}{A function, or a list containing functions, to add more parameters of fit.}
   \item{...}{Other arguments, mainly for backward compatibility.}
 }
 
 \details{
-The function \bold{\code{superSubset()}} finds a list of implicants that satisfy some
-restrictions referring to the inclusion and coverage with respect to the outcome, under
-given assumptions of necessity and/or sufficiency.
+The function \bold{\code{\link{superSubset}()}} finds a list of implicants that satisfy
+some restrictions referring to the inclusion and coverage with respect to the outcome,
+under given assumptions of necessity and/or sufficiency.
 
-Ragin (2000) posits that under the necessity relation, instances of the outcome constitute
-a subset of the instances of the cause(s). Conversely, under the sufficiency relation,
-instances of the outcome constitute a superset of the instances of the cause(s).
+Ragin (2000) posits that under the necessity relation, instances of the outcome
+constitute a subset of the instances of the cause(s). Conversely, under the
+sufficiency relation, instances of the outcome constitute a superset of the instances
+of the cause(s).
 
-When \bold{\code{relation = "nec"}} the function finds all implicants which are supersets
-of the  outcome, then eliminates the redundant ones and returns the surviving (minimal)
-supersets, provided they pass the inclusion and coverage thresholds. If none of the
-surviving supersets pass these thresholds, the function will find unions of causal
-conditions, instead of set intersections.
+When \bold{\code{relation = "necessity"}} the function finds all implicants which are
+supersets of the  outcome, then eliminates the redundant ones and returns the
+surviving (minimal) supersets, provided they pass the inclusion and coverage
+thresholds. If none of the surviving supersets pass these thresholds, the function
+will find disjunctions of causal conditions, instead of conjunctions.
 
-When \bold{\code{relation = "suf"}} finds all implicants which are subsets of the outcome,
-and similarly eliminates the redundant ones and return the surviving (minimal) subsets.
+When \bold{\code{relation = "sufficiency"}} it finds all implicants which are subsets
+of the outcome, and similarly eliminates the redundant ones and return the surviving
+(minimal) subsets.
 
 When \bold{\code{relation = "necsuf"}}, the relation is interpreted as necessity, and
 \bold{\code{cov.cut}} is automatically set equal to the inclusion cutoff
 \bold{\code{incl.cut}}. The same automatic equality is made for
 \bold{\code{relation = "sufnec"}}, when relation is interpreted as sufficiency.
 
-The argument \bold{\code{outcome}} specifies the name of the outcome, and if multi-value
-the argument can also specify the level to explain, using curly brackets notation.
+The argument \bold{\code{outcome}} specifies the name of the outcome, and if
+multi-value the argument can also specify the level to explain, using curly brackets
+notation.
 
 Outcomes can be negated using a tilde operator \bold{\code{~X}}. The logical argument
-\bold{\code{neg.out}} is now deprecated, but still backwards compatible. Replaced by the tilde
-in front of the outcome name, it controls whether \bold{\code{outcome}} is to be
-explained or its negation. If \bold{\code{outcome}} is from a multivalent variable, it
-has the effect that the disjunction of all remaining values becomes the new outcome to
-be explained. \bold{\code{neg.out = TRUE}} and a tilde \bold{\code{~}} in the outcome name don't
-cancel each other out, either one (or even both) signaling if the \bold{\code{outcome}}
-should be negated.
+\bold{\code{neg.out}} is now deprecated, but still backwards compatible. Replaced by
+the tilde in front of the outcome name, it controls whether \bold{\code{outcome}} is
+to be explained or its negation. If \bold{\code{outcome}} is from a multivalent
+variable, it has the effect that the disjunction of all remaining values becomes the
+new outcome to be explained. \bold{\code{neg.out = TRUE}} and a tilde \bold{\code{~}}
+in the outcome name don't cancel each other out, either one (or even both) signaling
+if the \bold{\code{outcome}} should be negated.
 
 If the argument \bold{\code{conditions}} is not specified, all other columns in
 \bold{\code{data}} are used.
@@ -88,21 +96,23 @@ Along with the standard measures of inclusion and coverage, the function also re
 \bold{\code{PRI}} for sufficiency and \bold{\code{RoN}} (relevance of necessity, see
 Schneider & Wagemann, 2012) for the necessity relation.
 
-A subset is a combination (an intersection) of causal conditions, with respect to a larger
-(super)set, which is another (but more parsimonious) combination of causal conditions.
+A subset is a conjunction (an intersection) of causal conditions, with respect to a
+larger (super)set, which is another (but more parsimonious) conjunction of causal
+conditions.
 
-All subsets of a given set can be found in the so called \dQuote{implicant matrix}, which is
-a \eqn{n^k} space, understood as all possible combinations of values in any combination of
-bases \eqn{n}, each causal condition having three or more levels (Dusa, 2007, 2010).
+All subsets of a given set can be found in the so called \dQuote{implicant matrix},
+which is a \eqn{n^k} space, understood as all possible combinations of values in any
+combination of bases \eqn{n}, each causal condition having three or more levels
+(Dusa, 2007, 2010).
 
-For binary causal conditions (values 0 and 1), there are three levels in the
-implicant matrix:
+For every two levels of a binary causal conditions (values 0 and 1), there are three
+levels in the implicants matrix:
 
-0 to mark a minimized literal
-
-1 to replace the value of 0 in the original binary condition
-
-2 to replace the value of 1 in the original binary condition
+\tabular{rl}{
+     0 \tab to mark a minimized literal\cr
+     1 \tab to replace the value of 0 in the original binary condition\cr
+    -1 \tab to replace the value of 1 in the original binary condition
+}
 
 A prime implicant is a superset of an initial combination of causal conditions, and 
 the reverse is also true: the initial combination is a subset of a prime implicant.
@@ -110,17 +120,23 @@ the reverse is also true: the initial combination is a subset of a prime implica
 Any normal implicant (not prime) is a subset of a prime implicant, and in the
 same time a superset of some initial causal combinations.
 
-Functions \bold{\code{findSubsets()}} and \bold{\code{findSupersets()}} find:
+Functions \bold{\code{\link{findSubsets}()}} and \bold{\code{\link{findSupersets}()}} find:
 
-- all possible such subsets for a given (prime) implicant, or
-
-- all possible supersets of an implicant or initial causal combination
+\tabular{rl}{
+  \tab - all possible such subsets for a given (prime) implicant, or\cr
+  \tab - all possible supersets of an implicant or initial causal combination
+}
 
 in the implicant matrix.
 
-The argument \bold{\code{depth}} can be used to impose an upper number of causal conditions
-to form expressions with. By default, it is set to a maximum, but otherwise the
-computation time is higher when this number is larger.
+The argument \bold{\code{depth}} can be used to impose an upper number of causal
+conditions to form expressions with, it is the complexity level where the search is
+stopped. Depth is set to a maximum by default, and the algorithm will always stop at
+the maximum complexity level where no new, non-redundant prime implicants are found.
+Reducing the depth below that maximum will also reduce computation time.
+
+For examples on how to add more parameters of fit via argument \bold{\code{add}}, see
+the function \bold{\code{\link{pof}()}}.
 }
 
 \author{
@@ -128,15 +144,16 @@ Adrian Dusa
 }
 
 \value{
-The result of the \bold{\code{superSubset()}} function is an object of class "ss", which is a list
-with the following components:
+The result of the \bold{\code{\link{superSubset}()}} function is an object of class "ss",
+which is a list with the following components:
 
-\tabular{rl}{
-\bold{incl.cov} \tab {A data frame with the parameters of fit.}\cr
-\bold{coms} \tab {A data frame with the (m)embersip (s)cores of the resulting (co)mbinations.}
-}
-For \bold{\code{findSubsets()}} and \bold{\code{findSupersets()}}, a vector with the row numbers corresponding
-to all possible subsets, or supersets, of a (prime) implicant.
+\item{incl.cov}{A data frame with the parameters of fit.}
+\item{coms}{A data frame with the (m)embersip (s)cores of the resulting
+      (co)mbinations.}
+
+For \bold{\code{\link{findSubsets}()}} and \bold{\code{\link{findSupersets}()}}, a vector with the
+row numbers corresponding to all possible subsets, or supersets, of a (prime)
+implicant.
 }
 
 \references{
@@ -146,10 +163,10 @@ vol.54, no.4, pp.298-324.
 
 Cebotari, Victor; Vink, Maarten Peter (2015) \emph{Replication Data for: A
 configurational analysis of ethnic protest in Europe}, Harvard Dataverse, V2,
-DOI: \url{http://dx.doi.org/10.7910/DVN/PT2IB9}
+DOI: \href{http://dx.doi.org/10.7910/DVN/PT2IB9}{10.7910/DVN/PT2IB9}
 
-Dusa, Adrian (2007) \emph{Enhancing Quine-McCluskey}. COMPASSS: Working Paper 
-2007-49. URL: \url{http://www.compasss.org/wpseries/Dusa2007b.pdf}.
+Dusa, A. (2007) \emph{Enhancing Quine-McCluskey}. 
+\href{http://www.compasss.org/wpseries/Dusa2007b.pdf}{WP 2007-49, COMPASSS}.
 
 Dusa, Adrian (2010) \dQuote{A Mathematical Approach to the Boolean Minimization 
 Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113.
@@ -165,7 +182,7 @@ Cambridge: Cambridge University Press.
 \seealso{\code{\link{createMatrix}}, \code{\link{getRow}}}
 
 \examples{
-
+    
 # Lipset binary crisp sets
 data(LC)
 ssLC <- superSubset(LC, "SURV")
@@ -176,11 +193,9 @@ x = list("SURV" = which(LC$SURV == 1),
          "LIT" = which(ssLC$coms[, 2] == 1))
 venn(x, cexil = 0.7)
 
-
 # Lipset multi-value sets
 data(LM)
 superSubset(LM, "SURV")
-
 
 # Cebotari & Vink (2013) fuzzy data
 data(CVF)
@@ -195,7 +210,6 @@ ssCVF$coms$GEOCON
 # same restrictions, for the negation of the outcome
 superSubset(CVF, outcome = "~PROTEST", incl.cut = 0.90, cov.cut = 0.6)
 
-
 # to find supersets or supersets, a hypothetical example using
 # three binary causal conditions, having two levels each: 0 and 1
 noflevels <- c(2, 2, 2)
@@ -203,11 +217,11 @@ noflevels <- c(2, 2, 2)
 # second row of the implicant matrix: 0 0 1
 # which in the "normal" base is:      - - 0
 # the prime implicant being: ~C
-(sub <- findSubsets(noflevels + 1, input = 2))
+(sub <- findSubsets(input = 2, noflevels + 1))
 #  5  8 11 14 17 20 23 26 
 
 
-getRow(noflevels + 1, sub)
+getRow(sub, noflevels + 1)
 
 # implicant matrix   normal values
 #      A  B  C    |       A  B  C       
@@ -222,28 +236,32 @@ getRow(noflevels + 1, sub)
 
 
 # stopping at maximum row number 20
-findSubsets(noflevels + 1, input = 2, stop = 20)
+findSubsets(input = 2, noflevels + 1, stop = 20)
 #  5  8 11 14 17 20
 
 
+# -----
 # for supersets
-findSupersets(noflevels + 1, input = 14)
+findSupersets(input = 14, noflevels + 1)
 #  2  4  5 10 11 13 14
 
-findSupersets(noflevels + 1, input = 17)
+findSupersets(input = 17, noflevels + 1)
 #  2  7  8 10 11 16 17
 
 # input as a matrix
-(im <- getRow(noflevels + 1, c(14, 17)))
+(im <- getRow(c(14, 17), noflevels + 1))
 
 # implicant matrix   normal values
 #  14  1  1  1    |   14  0  0  0       abc
 #  17  1  2  1    |   17  0  1  0       aBc
 
-(sup <- findSupersets(noflevels + 1, input = im))
+
+sup <- findSupersets(input = im, noflevels + 1)
+sup
 #  2  4  5  7  8 10 11 13 14 16 17
 
-getRow(noflevels + 1, sup)
+
+getRow(sup, noflevels + 1)
 
 # implicant matrix   normal values
 #      A  B  C    |       A  B  C       

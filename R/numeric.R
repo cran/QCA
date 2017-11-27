@@ -6,3 +6,9 @@ function(x) {
 function(x) {
     return(suppressWarnings(as.numeric(as.character(x))))
 }
+`agteb` <- function(a, b) {
+    all(a > b | abs(a - b) <= .Machine$double.eps^0.5)
+}
+`alteb` <- function(a, b) {
+    all(a < b | abs(a - b) <= .Machine$double.eps^0.5)
+}

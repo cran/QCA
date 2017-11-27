@@ -2,6 +2,7 @@ library(shiny)
 library(QCA)
 library(tools)
 library(fastdigest)
+library(venn)
 setwd(Sys.getenv("userwd"))
 options(help_type = "html")
 listFiles <- function(dirpath, filetype = "*") {
@@ -107,6 +108,7 @@ infobjs <- function(env, objs, scrollvh) {
                 if (x$options$use.letters) {
                     cnds <- LETTERS[seq(length(cnds))]
                 }
+                x$options$outcome <- list(notilde(x$options$outcome))
                 if (length(x$options$incl.cut) == 1) {
                     x$options$incl.cut <- list(x$options$incl.cut)
                 }
@@ -273,7 +275,7 @@ continue <- lapply(c("ls(", "'ls"), function(x) {
 evalparse <- function(foo) {
     forbidden <- "dev.new\\(|plot.new\\(|plot.window\\(|X11\\(|quartz\\(|dev.set\\(|windows\\("
     evaluateit <- list()
-    tocheck <- rep(c("\n", "±@$%$@±"), each = 3)
+    tocheck <- rep(c("\n", "@$%$@"), each = 3)
     names(tocheck) <- c("output", "view", "message", "warning", "error", "library")
     if (any(ggplot <- grep("ggplot\\(|qplot\\(|quickplot\\(", foo))) {
         foo[ggplot] <- paste("SOME__BIG__NAME <-", foo[ggplot])
@@ -306,8 +308,9 @@ evalparse <- function(foo) {
     }
     evaluateit <- vector(mode = "list", length = parsem_length)
     recall <- vector(mode = "list", length = parsem_length)
-    for (i in seq(length(parsem))) {
-        sourcebreak <- FALSE
+    noerror <- TRUE
+    i <- 1
+    while (i <= length(parsem) & noerror) {
         evaluateit[[i]] <- list()
         if (grepl(forbidden, gsub(" ", "", parsem[i]))) {
             evaluateit[[i]][["error"]] <- " Opening multiple graphics devices is not supported."
@@ -332,6 +335,38 @@ evalparse <- function(foo) {
                 parsesplit <- parsesplit[seq(which(errors)[1])]
             }
             else {
+                ptfep <- function(x) {
+                    x <- unlist(strsplit(x, split = ""))
+                    what <- unlist(strsplit("eval(parse(text=", split = ""))
+                    counter <- length(what)
+                    while (counter > 0) {
+                        if (x[1] == " ") {
+                            x <- x[-1]
+                        }
+                        else {
+                            if (x[1] == what[1]) {
+                                x <- x[-1]
+                                if (what[1] == "(") {
+                                    x <- x[-length(x)]
+                                }
+                                what <- what[-1]
+                                counter <- counter - 1
+                            }
+                        }
+                    }
+                    x <- trimstr(paste(x, collapse = ""))
+                    x <- gsub("^\\\"", "", x)
+                    x <- gsub("\\\"$", "", x)
+                    x <- gsub("\\\\\"", "\"", x)
+                    x <- trimstr(x)
+                    if (grepl("^eval\\(parse\\(text=", gsub(" ", "", x))) {
+                        return(Recall(x))
+                    }
+                    else {
+                        x <- gsub("\\\\\"", "\"", x)
+                        return(x)
+                    }
+                }
                 parsesplit <- as.character(parse(text = parsem[i]))
             }
             if (length(parsesplit) > 1) {
@@ -378,7 +413,7 @@ evalparse <- function(foo) {
                                 errmsg <- paste(errmsg, collapse = "\n")
                             }
                             recall[[i]] <- list(error = errmsg)
-                            sourcebreak <- TRUE
+                            noerror <- FALSE
                         }
                         else {
                             recall[[i]] <- Recall(sourcefile)
@@ -390,6 +425,9 @@ evalparse <- function(foo) {
                                 }
                             }
                             recall[[i]] <- temp
+                            if (any(names(temp) == "error")) {
+                                noerror <- FALSE
+                            }
                         }
                     }
                     else {
@@ -430,6 +468,9 @@ evalparse <- function(foo) {
                             if (any(names(temp) == "warning")) {
                                 temp$warning <- paste(paste("In", parsem[i], ":"), temp$warning, sep = "\n  ")
                             }
+                            if (any(names(temp) == "error")) {
+                                temp$error <- paste("Error in", comnd, ":\n ", temp$error)
+                            }
                             evaluateit[[i]] <- temp
                         }
                     }
@@ -460,6 +501,9 @@ evalparse <- function(foo) {
                         replayPlot(grafic)
                         dev.off()
                     }
+                }
+                else {
+                    noerror <- FALSE
                 }
             }
         }
@@ -501,9 +545,6 @@ evalparse <- function(foo) {
                     }
                     errmsg <- paste(errmsg, collapse = "\n")
                 }
-                else {
-                    errmsg <- paste("Error:", errmsg)
-                }
                 evaluateit[[i]][["error"]] <- errmsg
             }
             if (length(evaluateit[[i]][["output"]]) == 0) {
@@ -522,7 +563,7 @@ evalparse <- function(foo) {
                 }
             }
         }
-        if (sourcebreak) break
+        i <- i + 1
     }
     return(evaluateit)
 }
@@ -562,19 +603,21 @@ getXasp <- function(x, type = "default") {
 getXYplot <- function(foo) {
     X <- ev[[foo$dataset]][, foo$x]
     Y <- ev[[foo$dataset]][, foo$y]
-    rpofsuf <- list(pof(    X,     Y, rel = "suf"),
-                    pof(1 - X,     Y, rel = "suf"),
-                    pof(    X, 1 - Y, rel = "suf"),
-                    pof(1 - X, 1 - Y, rel = "suf"))
+    notX <- 1 - X
+    notY <- 1 - Y
+    rpofsuf <- list(pof(   X,    Y, rel = "suf"),
+                    pof(notX,    Y, rel = "suf"),
+                    pof(   X, notY, rel = "suf"),
+                    pof(notX, notY, rel = "suf"))
     rpofsuf <- lapply(rpofsuf, function(x) {
-        formatC(c(x$incl.cov$incl, x$incl.cov$cov.r, x$incl.cov$PRI), format="f", digits = 3)
+        formatC(c(x$incl.cov$inclS, x$incl.cov$covS, x$incl.cov$PRI), format="f", digits = 3)
     })
-    rpofnec <- list(pof(    X,     Y), 
-                    pof(1 - X,     Y),
-                    pof(    X, 1 - Y),
-                    pof(1 - X, 1 - Y))
+    rpofnec <- list(pof(   X,    Y), 
+                    pof(notX,    Y),
+                    pof(   X, notY),
+                    pof(notX, notY))
     rpofnec <- lapply(rpofnec, function(x) {
-        formatC(c(x$incl.cov$incl, x$incl.cov$cov.r, x$incl.cov$RoN), format="f", digits = 3)
+        formatC(c(x$incl.cov$inclN, x$incl.cov$covN, x$incl.cov$RoN), format="f", digits = 3)
     })
     return(list(rownames(ev[[foo$dataset]]), ev[[foo$dataset]][, foo$x], ev[[foo$dataset]][, foo$y], rpofsuf, rpofnec))
 }
@@ -924,7 +967,7 @@ shinyServer(function(input, output, session) {
             }
             lib <- unlist(lapply(tosend$evaluate, function(x) {
                 if (any(names(x) == "library")) {
-                    return(unlist(strsplit(x$library, split = "±@$%$@±")))
+                    return(unlist(strsplit(x$library, split = "\\@\\$\\%\\$\\@")))
                 }
             }))
             libcar <- "car" %in% lib
@@ -933,7 +976,7 @@ shinyServer(function(input, output, session) {
             }
             tosend$evaluate <- lapply(tosend$evaluate, function(x) {
                 if (any(names(x) == "warning")) {
-                    x$warning <- unlist(strsplit(x$warning, split = "±@$%$@±"))
+                    x$warning <- unlist(strsplit(x$warning, split = "\\@\\$\\%\\$\\@"))
                     if (length(x$warning) == 1) {
                         warningstack <<- unlist(x$warning)
                         x$warning <- list(paste("Warning message:", x$warning, sep = "\n"))
@@ -1087,15 +1130,6 @@ shinyServer(function(input, output, session) {
         }
     })
     observe({
-        foo <- input$quit
-        if (!is.null(foo)) {
-            if (file.exists(svgfile)) {
-                file.remove(svgfile)
-            }
-            stopApp()
-        }
-    })
-    observe({
         foo <- input$plotsize
         if (!is.null(foo)) {
             if (!identical(grafic, emptyplot)) {
@@ -1108,6 +1142,15 @@ shinyServer(function(input, output, session) {
             else {
                 session$sendCustomMessage(type = "resizePlot", FALSE)
             }
+        }
+    })
+    observe({
+        foo <- input$quit
+        if (!is.null(foo)) {
+            if (file.exists(svgfile)) {
+                file.remove(svgfile)
+            }
+            stopApp()
         }
     })
     session$sendCustomMessage(type = "fullinfo", list(infobjs = infobjs(ev, ls(ev)), console = NULL))

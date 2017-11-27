@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>Index. QCA 2.6</title>
+<title>Index. QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="">
 
@@ -32,7 +32,7 @@
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -91,16 +91,16 @@ a given phenomenon.</p>
         <code><a href="calibrate.html">calibrate</a></code><br />Calibrate raw data to crisp or fuzzy sets</li>
             
       <li>
-        <code><a href="deMorgan.html">deMorgan</a></code><br />Negate Boolean expressions</li>
-            
-      <li>
-        <code><a href="eqmcc.html">eqmcc</a></code><br />QCA minimization using the enhanced Quine-McCluskey algorithm</li>
+        <code><a href="causalChain.html">causalChain</a></code><br />Perform CNA - coincidence analysis using QCA</li>
             
       <li>
         <code><a href="export.html">export</a></code><br />Export a dataframe to a file or a connection</li>
             
       <li>
         <code><a href="factorize.html">factorize</a></code><br />Factorize Boolean expressions</li>
+            
+      <li>
+        <code><a href="findRows.html">findRows</a></code><br />Find untenable configurations</li>
             
       <li>
         <code><a href="findTh.html">findTh</a></code><br />Find calibration thresholds</li>
@@ -112,16 +112,25 @@ a given phenomenon.</p>
         <code><a href="implicantMatrixFunctions.html">Implicant matrix functions: allExpressions, createMatrix, getRow</a></code><br />Functions Related to the Implicant Matrix</li>
             
       <li>
-        <code><a href="SOPexpression.html">Interpret SOP expression: translate, compute, findRows, sop</a></code><br />Functions to interpret a SOP expression</li>
+        <code><a href="SOPexpression.html">Interpret SOP expression: translate, compute, sop</a></code><br />Functions to interpret a SOP expression</li>
             
       <li>
         <code><a href="intersection.html">intersection</a></code><br />Intersect two expressions</li>
+      
+      <li>
+        <code><a href="minimize.html">minimize</a></code><br />QCA minimization using the enhanced Quine-McCluskey algorithm</li>
+      
+      <li>
+        <code><a href="modelFit.html">modelFit</a></code><br />Theory evaluation</li>
+      
+      <li>
+        <code><a href="negate.html">negate</a></code><br />Negate Boolean expressions</li>
             
       <li>
-        <code><a href="chartFunctions.html">PI chart functions: makeChart, solveChart</a></code><br />Create and solve a prime implicants chart</li>
+        <code><a href="chartFunctions.html">PI chart functions: makeChart, findmin, solveChart</a></code><br />Create and solve a prime implicants chart</li>
             
       <li>
-        <code><a href="pof.html">pof</a></code><br />Calculate parameters of fit</li>
+        <code><a href="pof.html">pof</a></code><br />Parameters of fit</li>
            
       <li>
         <code><a href="recode.html">recode</a></code><br />Recode a variable</li>
@@ -171,19 +180,19 @@ a given phenomenon.</p>
         
     <h2>Dependencies</h2>
     <ul>
-      <li><strong>Imports</strong>: methods, lpSolve, shiny, venn (>= 1.2), fastdigest</li>
+      <li><strong>Imports</strong>: methods, shiny, venn (>= 1.2), fastdigest</li>
     </ul>
     
     <h2>Authors</h2>
     <ul>
       <li><a href="mailto:dusa.adrian@unibuc.ro">Adrian Dusa</a> [aut, cre, cph]</li>
-      <li>Alrik Thiem [aut, from version 1.0-0 to version 1.1-3]</li>
       <li>jQuery Foundation [cph]</li>
       <li>jQuery contributors [ctb, cph]</li>
       <li>Vasil Dinkov [ctb, cph]</li>
       <li>Dmitry Baranovskiy [ctb, cph]</li>
       <li>Emmanuel Quentin [ctb, cph]</li>
       <li>Jimmy Breck-McKye [ctb, cph]</li>
+      <li>Alrik Thiem [aut, from version 1.0-0 to version 1.1-3]</li>
     </ul>
 
   </div>

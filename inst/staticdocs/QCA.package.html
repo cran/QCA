@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>QCA 2.6</title>
+<title>QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 
@@ -42,7 +42,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -74,41 +74,36 @@ Ragin (2000, 2008). QCA is a bridge between the qualitative and quantitative res
 making use of the qualitative procedures in a systematic, algorithmic way (therefore increasing the
 &#147;confidence&#148; in the results, as understood by quantitative researchers).</p>
   
-      <p>The Quine-McCluskey minimization algorithm implemented in this package is mathematically
-exact, as described by Dusa (2007), Dusa (2010) and Dusa and Thiem (2015). It returns the relevant
-prime implicants for both <dfn>csQCA</dfn> (binary crisp sets QCA) and also for <dfn>mvQCA</dfn>
-(multi-value QCA, as of version 0.6-0).</p>
+      <p>The Quine-McCluskey minimization algorithms implemented in this package are mathematically
+exact, as described by Dusa (2007b), Dusa (2010), Dusa and Thiem (2015) and Dusa (2017). They all return
+the same, relevant set of prime implicants for <dfn>csQCA</dfn> (binary crisp sets QCA), <dfn>mvQCA</dfn>
+(multi-value QCA) and <dfn>fsQCA</dfn> (fuzzy-sets QCA).</p>
   
-      <p>Starting with version 0.4-5 the package <span class = "pkg">QCA</span> gained a new function
-called <code><a href='eqmcc.html'>eqmcc</a></code> (from <dfn>"e"nhanced Quine-McCluskey</dfn>) that
-finds exact solutions with a substantially lower memory consumption.</p>
+      <p>Between versions 1.0-0 and up to version 1.1-3, the package welcomed a second co-author
+Alrik Thiem, responsible with the manual testing and documentation of functions, while the main author
+Adrian Dusa developed this software.The package gained new functionality by employing and also other types
+of QCA like <dfn>tsQCA</dfn> (temporal QCA), see Caren and Panofsky (2005), Ragin and Strand (2008), and
+more recently also causal chains similar to those from the package <b><span class = "pkg">cna</span></b>
+(see Ambuehl et all 2015).</p>
   
-      <p>Since version 1.0-0, the package <b><span class = "pkg">QCA</span></b> welcomed a second
-co-author Alrik Thiem (up to version 1.1-3), responsible with the manual testing and documentation of
-functions, while Adrian Dusa was responsible with all of the software development. The package gained
-new functionality by employing <dfn>fsQCA</dfn> (fuzzy-set QCA) and also other types of QCA like
-<dfn>tsQCA</dfn> (temporal QCA), see Caren and Panofsky (2005), Ragin and Strand (2008).
-The package is also able to obtain the causal chains similar to those from the package
-<b><span class = "pkg">cna</span></b> (see Ambuehl et all 2015).</p>
-  
-      <p>The results of the <b><span class = "pkg">QCA</span></b> package are very consistent with
+      <p>The results of the <b><span class = "pkg">QCA</span></b> package are consistent with
 (and sometimes even better than) the results of the other software packages for QCA, most notably
 <b><span class = "pkg">fs/QCA</span></b> by Ragin and Davey (2014) and <b><span class = "pkg">Tosmana</span></b>
 by Cronqvist and Berg-Schlosser (2009). A comparison of several such software is provided by Thiem and
 Dusa (2013).</p>
   
-      <p>From version 2.0, this package uses a new graphical user interface based on the package
+    <p>From version 2.0, this package uses a new graphical user interface based on the package
 <b><span class = "pkg">shiny</span></b>. In order to avoid developing different interfaces for different
 operating systems, the current GUI was designed to work into a webpage. It uses a combination of HTML,
 CSS, jQuery for the user interface, a custom development framework using vector graphics based on the
 Raphael library, and extensive Javascript code to bind these altogether. A first version of this user
-interface was presented by Dusa (2007), but users should be aware the current version is much more
-advanced.</p>
-  
-      <p>The author of this package is grateful for the effort of the former coauthor of the
-<b><span class = "pkg">QCA</span></b> package, Alrik Thiem, given his responsibilities of testing and
-documenting the functions. Although the current documentation is completely re-written, it owes a
-great deal of impact from the previous versions.</p>
+interface was presented by Dusa (2007a), but users should be aware the current version is much more
+advanced. Starting with version 2.5, the user interface gained a web-based command console to offer a
+complete experience of available functionality. </p>
+
+    <p>Version 3.0 brings major improvements and additions, most notably the implementation of a new
+minimization algorithm called CCubes (Consistency Cubes), that is hundreds of times faster than the
+previous eQMC.</p>
   
     </div>
 
@@ -123,10 +118,10 @@ great deal of impact from the previous versions.</p>
 </tr><tr><td> Package</td>
 </tr><tr><td>
     Version: </td>
-</tr><tr><td> 2.5</td>
+</tr><tr><td> 3.0 </td>
 </tr><tr><td>
     Date:    </td>
-</tr><tr><td> 2016-05-05</td>
+</tr><tr><td> 2017-11-27 </td>
 </tr><tr><td>
     License: </td>
 </tr><tr><td> GPL (>= 2)</td>
@@ -156,7 +151,12 @@ URL: <a href = 'http://www.compasss.org/wpseries/Dusa2007b.pdf'>http://www.compa
   
       <p>Dusa, A. (2010) &#147;A Mathematical Approach to the Boolean Minimization 
 Problem.&#148; <em>Quality & Quantity</em> vol.44, no.1, pp.99-113.</p>
-  
+
+      <p>Dusa, A. (2017) &#147;Consistency Cubes: A Fast, Efficient Method for Boolean
+Minimization.&#148; unpublished working paper on
+<a href = 'https://www.researchgate.net/profile/Adrian_Dusa'>ResearchGate</a>, DOI:
+<a href = 'http://dx.doi.org/10.13140/RG.2.2.36359.19361/4'>RG.2.2.36359.19361/4</a></p>
+
       <p>Dusa, A.; Thiem, A. (2015) &#147;Enhancing the Minimization of Boolean and
 Multivalue Output Functions With eQMC&#148; <em>Journal of Mathematical Sociology</em>
 vol.39, no.2, pp.92-108.</p>

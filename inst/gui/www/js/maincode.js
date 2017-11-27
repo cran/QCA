@@ -65,7 +65,7 @@ if (windowHeight < 600) {
 }
 var string_command = "";
 var dirfilevisit = false;
-var eqmcc2R, tt2R, calib2R;
+var minimize2R, tt2R, calib2R;
 var colclicks = new Object;
 var current_command = "";
 var objname = "";
@@ -152,12 +152,12 @@ var settings = {
         title:     "Import from text file",
         position:  {my: "left top", at: "left+5px top+33px", of: window, collision: "flip"},
         resizable: false,
-        width:     680,
+        width:     645,
         height:    433,
         inside:    {
-            path: {border: true, left: 270, top:  62, width: 400, height:  40},
-            dirs: {border: true, left: 264, top:  80, width: 400, height: 300},
-            cols: {border: true, left:  14, top: 260, width: 235, height: 120}
+            path: {border: true, left: 260, top:  62, width: 375, height:  40},
+            dirs: {border: true, left: 254, top:  80, width: 375, height: 300},
+            cols: {border: true, left:  14, top: 260, width: 225, height: 120}
         },
         reset: function(x) {
             x = (x == "import")?"read_table":x;
@@ -182,12 +182,12 @@ var settings = {
         title:     "Export to text file",
         position:  {my: "left top", at: "left+5px top+33px", of: window, collision: "flip"},
         resizable: false,
-        width:     655,
+        width:     600,
         height:    375,
         inside: {
             dataset: {border: true, left:  18, top: 238, width: 195, height:  80},
-            path:    {border: true, left: 240, top:  60, width: 400, height:  40},
-            dirs:    {border: true, left: 240, top:  78, width: 400, height: 240}
+            path:    {border: true, left: 230, top:  60, width: 355, height:  40},
+            dirs:    {border: true, left: 230, top:  78, width: 355, height: 240}
         },
         reset: function(x) {
             if (commobj[x] === void 0) {
@@ -300,6 +300,32 @@ var settings = {
             };
         }
     },
+    findRows: {
+        name:      "findRows",
+        title:     "Find incoherent configurations",
+        position:  {my: "left top", at: "left+170px top+33px", of: window, collision: "flip"},
+        resizable: false,
+        width:     464,
+        height:    222,
+        inside: {
+            tt: {border: true, left:  14, top:  47, width: 138, height: 120}
+        },
+        reset: function(x) {
+            if (commobj[x] === void 0) {
+                commobj[x] = {};
+            }
+            commobj[x] = {
+                "counter": (commobj[x].counter === void 0)?0:commobj[x].counter,
+                "objname": "", 
+                "nameit": false,
+                "obj": "",
+                "expression": "",
+                "remainders": true,
+                "type": [false, true, false, false],
+                "remainders": true
+            };
+        }
+    },
     tt: {
         name:      "tt",
         title:     "Truth table",
@@ -329,6 +355,7 @@ var settings = {
                 "ic0": "",
                 "complete": false,
                 "show_cases": false,
+                "dcc": false,
                 "sort_by": {"out": true, "incl": true, "n": true},
                 "sort_sel": {"out": false, "incl": false, "n": false},
                 "decreasing": true,
@@ -338,18 +365,18 @@ var settings = {
             };
         }
     },
-    eqmcc: {
-        name:       "eqmcc",
+    minimize: {
+        name:       "minimize",
         title:      "Quine-McCluskey minimization",
         position:   {my: "left top", at: "left+170px top+33px", of: window, collision: "flip"},
         resizable:  false,
         width:      464,
-        height:     442,
+        height:     467,
         inside: {
             dataset:    {border: true, left:  14, top:  47, width: 138, height: 120},
             outcome:    {border: true, left: 162, top:  47, width: 138, height: 120, dependency: "dataset"},
             conditions: {border: true, left: 310, top:  47, width: 138, height: 120, dependency: "dataset"},
-            direxp:     {border: true, left:  14, top: 315, width: 120, height:  82}
+            direxp:     {border: true, left:  14, top: 290, width: 130, height: 102}
         },
         reset: function(x) {
             if (commobj[x] === void 0) {
@@ -363,23 +390,25 @@ var settings = {
                 "outcome": new Array(),
                 "conditions": new Array(),
                 "neg_out": false,
-                "relation": "suf",
                 "n_cut": "1",
                 "ic1": "1",
-                "ic0": "",
-                "explain": ["1"],
-                "include": new Array(),
+                "ic0": "",  
+                "include": ["", ""],
+                "exclude": "",
                 "row_dom": false,
                 "all_sol": false,
-                "omit": "",
                 "dir_exp": new Array(),
                 "details": false,
                 "show_cases": false,
                 "inf_test": "",
+                "min_pin": true,
                 "use_tilde": false,
+                "pi_cons": "0",
+                "sol_cons": "0",
+                "sol_cov": "1",
                 "use_letters": false,
                 "PRI": true,
-                "source": "data" 
+                "source": "tt" 
             };
         }
     },
@@ -541,8 +570,8 @@ Shiny.addCustomMessageHandler("fullinfo",
     function(object) {
         responseR = true;
             info = object.infobjs;
-            if ($("#eqmcc").length) {
-                refresh_cols("eqmcc");
+            if ($("#minimize").length) {
+                refresh_cols("minimize");
                 checkeqtt();
                 filldirexp();
             }
@@ -719,7 +748,6 @@ Shiny.addCustomMessageHandler("Rcommand",
             refresh_cols("all");
         }
         if (object.hasOwnProperty("poinths") && $("#calibrate").length) {
-            console.log(object.poinths);
             if (commobj["calibrate"].dataset == object.poinths.dataset && commobj["calibrate"].x == object.poinths.x) {
                 poinths.vals = copy(object.poinths.vals);
                 poinths.prettyx = copy(object.poinths.prettyx);
@@ -729,9 +757,12 @@ Shiny.addCustomMessageHandler("Rcommand",
                 drawPointsAndThresholds();
             }
         }
-        if ($("#eqmcc").length) {
+        if ($("#minimize").length) {
             checkeqtt();
             filldirexp();
+        }
+        if ($("#findRows").length) {
+            refresh_cols("findRows");
         }
         if ($("#data_editor").length) {
             print_data(); 
@@ -1063,9 +1094,6 @@ function console_command(type) {
                         string_command += conditions[i] + ((i == conditions.length - 1)?"\"":", ");
                     }
                 }
-                if (commobj.tt.n_cut != "1") {
-                    string_command += ", n.cut = " + commobj.tt.n_cut;
-                }
                 if (commobj.tt.ic1 != "1") {
                     if (commobj.tt.ic0 == "") {
                         string_command += ", incl.cut = " + commobj.tt.ic1;
@@ -1074,11 +1102,20 @@ function console_command(type) {
                         string_command += ", incl.cut = \"" + commobj.tt.ic1 + ", " + commobj.tt.ic0 + "\"";
                     }
                 }
+                if (commobj.tt.n_cut != "1") {
+                    string_command += ", n.cut = " + commobj.tt.n_cut;
+                }
                 if (commobj.tt.complete) {
                     string_command += ", complete = TRUE";
                 }
+                if (commobj.tt.use_letters) {
+                    string_command += ", use.letters = TRUE";
+                }
                 if (commobj.tt.show_cases) {
                     string_command += ", show.cases = TRUE";
+                }
+                if (commobj.tt.show_cases && commobj.tt.dcc) {
+                    string_command += ", dcc = TRUE";
                 }
                 var sorts = getTrueKeys(commobj.tt.sort_sel);
                 if (sorts.length > 0) {
@@ -1088,9 +1125,6 @@ function console_command(type) {
                                           ((commobj.tt.sort_by[sorts[i]])?"":"+") +
                                           ((i == sorts.length - 1)?"\"":", ");
                     }
-                }
-                if (commobj.tt.use_letters) {
-                    string_command += ", use.letters = TRUE";
                 }
                 string_command += ")";
             }
@@ -1201,102 +1235,160 @@ function console_command(type) {
                 }
             }
         }
+        if (type == "findRows") {
+            var countchecked = 0;
+            for (var i = 0; i < 4; i++) {
+                countchecked += commobj.findRows.type[i];
+            }
+            if (commobj.findRows.obj != "" && countchecked > 0) {
+                if (commobj.findRows.objname !== "") {
+                    string_command += commobj.findRows.objname + " <- ";
+                }
+                string_command += "findRows(";
+                if (commobj.findRows.type[0] || commobj.findRows.type[1]) {
+                    if (commobj.findRows.expression != "") {
+                        string_command += ", expression = \"" + commobj.findRows.expression + "\", " + commobj.findRows.obj;
+                    }
+                }
+                else {
+                    string_command += "obj = " + commobj.findRows.obj;
+                }
+                if (!commobj.findRows.remainders) {
+                    string_command += ", remainders = FALSE";
+                }
+                if (commobj.findRows.type[0]) {
+                    string_command += ", type = 0";
+                }
+                else {
+                    countchecked = 0;
+                    for (var i = 1; i < 4; i++) {
+                        countchecked += commobj.findRows.type[i];
+                    }
+                    if (countchecked == 1) {
+                        for (var i = 2; i < 4; i++) {
+                            if (commobj.findRows.type[i]) {
+                                string_command += ", type = ";
+                                string_command += i;
+                            }
+                        }
+                    }
+                    else {
+                        string_command += ", type = c(";
+                        var first = true;
+                        for (var i = 1; i < 4; i++) {
+                            if (commobj.findRows.type[i]) {
+                                if (first) {
+                                    string_command += i;
+                                    first = false;
+                                }
+                                else {
+                                    string_command += ", " + i;
+                                }
+                            }
+                        }
+                        string_command += ")";
+                    }
+                }
+                string_command += ")";
+            }
+        }
         if (info["data"] !== null || info["tt"] !== null) {
-            if (type == "eqmcc") {
+            if (type == "minimize") {
                 var outcome = new Array();
                 var conditions = new Array();
-                if (colclicks.eqmcc !== void 0) {
-                    if (colclicks.eqmcc.outcome !== void 0) {
-                        outcome = getTrueKeys(colclicks.eqmcc.outcome);
+                if (colclicks.minimize !== void 0) {
+                    if (colclicks.minimize.outcome !== void 0) {
+                        outcome = getTrueKeys(colclicks.minimize.outcome);
                     }
-                    if (colclicks.eqmcc.conditions !== void 0) {
-                        conditions = getTrueKeys(colclicks.eqmcc.conditions);
+                    if (colclicks.minimize.conditions !== void 0) {
+                        conditions = getTrueKeys(colclicks.minimize.conditions);
                     }
                 }
-                if (commobj.eqmcc.objname !== "") {
-                    string_command += commobj.eqmcc.objname + " <- ";
+                if (commobj.minimize.objname !== "") {
+                    string_command += commobj.minimize.objname + " <- ";
                 }
-                string_command += "eqmcc(" + commobj.eqmcc.dataset;
-                if (outcome.length > 0 && commobj.eqmcc.source == "data") {
+                string_command += "minimize(" + commobj.minimize.dataset;
+                if (outcome.length > 0 && commobj.minimize.source == "data") {
                     string_command += ", outcome = \"";
-                    if (commobj.eqmcc.neg_out && outcome.length == 1) {
+                    if (commobj.minimize.neg_out && outcome.length == 1) {
                         string_command += "~";
                     }
                     for (var i = 0; i < outcome.length; i++) {
                         string_command += outcome[i] + ((i == outcome.length - 1)?"\"":", ");
                     }
                 }
-                if (conditions.length > 0 && commobj.eqmcc.source == "data") {
+                if (conditions.length > 0 && commobj.minimize.source == "data") {
                     string_command += ", conditions = \"";
                     for (var i = 0; i < conditions.length; i++) {
                         string_command += conditions[i] + ((i == conditions.length - 1)?"\"":", ");
                     }
                 }
-                if (commobj.eqmcc.relation != "suf") {
-                    string_command += ", relation = \"sufnec\"";
+                if (commobj.minimize.show_cases) {
+                    string_command += ", show.cases = TRUE";
                 }
-                if (commobj.eqmcc.n_cut != "1") {
-                    string_command += ", n.cut = " + commobj.eqmcc.n_cut;
+                if (commobj.minimize.use_letters) {
+                    string_command += ", use.letters = TRUE";
                 }
-                if (commobj.eqmcc.ic1 != "1") {
-                    if (commobj.eqmcc.ic0 == "") {
-                        string_command += ", incl.cut = " + commobj.eqmcc.ic1;
+                if (commobj.minimize.n_cut != "1") {
+                    string_command += ", n.cut = " + commobj.minimize.n_cut;
+                }
+                if (commobj.minimize.ic1 != "1") {
+                    if (commobj.minimize.ic0 == "") {
+                        string_command += ", incl.cut = " + commobj.minimize.ic1;
                     }
                     else {
-                        string_command += ", incl.cut = \"" + commobj.eqmcc.ic1 + ", " + commobj.eqmcc.ic0 + "\"";
+                        string_command += ", incl.cut = \"" + commobj.minimize.ic1 + ", " + commobj.minimize.ic0 + "\"";
                     }
                 }
-                if (commobj.eqmcc.explain.length > 0) {
-                    if (commobj.eqmcc.explain.length == 1) {
-                        if (commobj.eqmcc.explain[0] != "1") {
-                            string_command += ", explain = \"" + commobj.eqmcc.explain + "\"";
-                        }
-                    }
-                    else {
-                        string_command += ", explain = \"";
-                        for (var i = 0; i < commobj.eqmcc.explain.length; i++) {
-                            string_command += commobj.eqmcc.explain[i] + ((i == commobj.eqmcc.explain.length - 1)?"\"":", ");
-                        }
-                    }
-                }
-                if (commobj.eqmcc.include.length > 0) {
+                if (commobj.minimize.include[0] != "" || commobj.minimize.include[1] != "") {
                     string_command += ", include = \"";
-                    for (var i = 0; i < commobj.eqmcc.include.length; i++) {
-                        string_command += commobj.eqmcc.include[i] + ((i == commobj.eqmcc.include.length - 1)?"\"":", ");
-                    }
+                    string_command += commobj.minimize.include[0] + (
+                        (commobj.minimize.include[1] != "") ? (
+                            ((commobj.minimize.include[0] != "") ? ", " : "") +
+                        commobj.minimize.include[1]) : "");
+                    string_command += "\"";
                 }
-                if (commobj.eqmcc.row_dom) {
-                    string_command += ", row.dom = TRUE";
+                if (commobj.minimize.exclude != "") {
+                    string_command += ", exclude = " + commobj.minimize.exclude;
                 }
-                if (commobj.eqmcc.all_sol) {
-                    string_command += ", all.sol = TRUE";
-                }
-                if (commobj.eqmcc.dir_exp.length > 0) {
+                if (commobj.minimize.dir_exp.length > 0) {
                     var alldash = true;
-                    for (var i = 0; i < commobj.eqmcc.dir_exp.length; i++) {
-                        if (commobj.eqmcc.dir_exp[i] != "-") {
+                    for (var i = 0; i < commobj.minimize.dir_exp.length; i++) {
+                        if (commobj.minimize.dir_exp[i] != "") {
                             alldash = false;
                         }
                     }
                     if (!alldash) {
                         string_command += ", dir.exp = \"";
-                        for (var i = 0; i < commobj.eqmcc.dir_exp.length; i++) {
-                            string_command += commobj.eqmcc.dir_exp[i] + ((i < commobj.eqmcc.dir_exp.length - 1)?",":"");
+                        for (var i = 0; i < commobj.minimize.dir_exp.length; i++) {
+                            string_command += commobj.minimize.dir_exp[i] + ((i < commobj.minimize.dir_exp.length - 1)?",":"");
                         }
                         string_command += "\"";
                     }
                 }
-                if (commobj.eqmcc.details) {
+                if (commobj.minimize.details) {
                     string_command += ", details = TRUE";
                 }
-                if (commobj.eqmcc.show_cases) {
-                    string_command += ", show.cases = TRUE";
-                }
-                if (commobj.eqmcc.use_tilde) {
+                if (commobj.minimize.use_tilde) {
                     string_command += ", use.tilde = TRUE";
                 }
-                if (commobj.eqmcc.use_letters) {
-                    string_command += ", use.letters = TRUE";
+                if (commobj.minimize.pi_cons != "0") {
+                    string_command += ", pi.cons = " + commobj.minimize.pi_cons;
+                }
+                if (commobj.minimize.sol_cons != "0") {
+                    string_command += ", sol.cons = " + commobj.minimize.sol_cons;
+                }
+                if (commobj.minimize.sol_cov != "1") {
+                    string_command += ", sol.cov = " + commobj.minimize.sol_cov;
+                }
+                if (!commobj.minimize.min_pin) {
+                    string_command += ", min.pin = FALSE";
+                }
+                if (commobj.minimize.row_dom) {
+                    string_command += ", row.dom = TRUE";
+                }
+                if (commobj.minimize.all_sol) {
+                    string_command += ", all.sol = TRUE";
                 }
                 string_command += ")";
             }
@@ -1323,23 +1415,25 @@ function click_col(dialog, identifier, col, others = true) {
     commobj[dialog][identifier] = col;
 }
 function checkeqtt() {
-    if ($("#eqmcc").length) {
-        if (commobj.eqmcc.source == "data") {
-            papers["eqmcc"]["main"].frequency.attr({"text": commobj.eqmcc.n_cut});
-            papers["eqmcc"]["main"].inclcut1.attr({"text": commobj.eqmcc.ic1});
-            papers["eqmcc"]["main"].inclcut0.attr({"text": commobj.eqmcc.ic0});
-            papers["eqmcc"]["main"].neg_out.refresh(commobj.eqmcc.neg_out);
-            papers["eqmcc"]["main"].use_letters.refresh(commobj.eqmcc.use_letters);
+    if ($("#minimize").length) {
+        if (commobj.minimize.source == "data") {
+            papers["minimize"]["main"].frequency.attr({"text": commobj.minimize.n_cut});
+            papers["minimize"]["main"].ic1.attr({"text": commobj.minimize.ic1});
+            papers["minimize"]["main"].ic0.attr({"text": commobj.minimize.ic0});
+            papers["minimize"]["main"].neg_out.refresh(commobj.minimize.neg_out);
+            papers["minimize"]["main"].show_cases.refresh(commobj.minimize.show_cases);
+            papers["minimize"]["main"].use_letters.refresh(commobj.minimize.use_letters);
         }
-        else if (commobj.eqmcc.source == "tt" && commobj.eqmcc.dataset != "") {
-            if (info["tt"][commobj.eqmcc.dataset] !== void 0) {
-                papers["eqmcc"]["main"].neg_out.refresh(info["tt"][commobj.eqmcc.dataset].options["neg.out"]);
-                papers["eqmcc"]["main"].use_letters.refresh(info["tt"][commobj.eqmcc.dataset].options["use.letters"]);
-                papers["eqmcc"]["main"].frequency.attr({"text": info["tt"][commobj.eqmcc.dataset].options["n.cut"]});
-                papers["eqmcc"]["main"].inclcut1.attr({"text": info["tt"][commobj.eqmcc.dataset].options["incl.cut"][0]});
-                papers["eqmcc"]["main"].inclcut0.attr({"text": ""});
-                if (info["tt"][commobj.eqmcc.dataset].options["incl.cut"].length == 2) {
-                    papers["eqmcc"]["main"].inclcut0.attr({"text": info["tt"][commobj.eqmcc.dataset].options["incl.cut"][1]});
+        else if (commobj.minimize.source == "tt" && commobj.minimize.dataset != "") {
+            if (info["tt"][commobj.minimize.dataset] !== void 0) {
+                papers["minimize"]["main"].neg_out.refresh(info["tt"][commobj.minimize.dataset].options["neg.out"]);
+                papers["minimize"]["main"].show_cases.refresh(info["tt"][commobj.minimize.dataset].options["show.cases"]);
+                papers["minimize"]["main"].use_letters.refresh(info["tt"][commobj.minimize.dataset].options["use.letters"]);
+                papers["minimize"]["main"].frequency.attr({"text": info["tt"][commobj.minimize.dataset].options["n.cut"]});
+                papers["minimize"]["main"].ic1.attr({"text": info["tt"][commobj.minimize.dataset].options["incl.cut"][0]});
+                papers["minimize"]["main"].ic0.attr({"text": ""});
+                if (info["tt"][commobj.minimize.dataset].options["incl.cut"].length == 2) {
+                    papers["minimize"]["main"].ic0.attr({"text": info["tt"][commobj.minimize.dataset].options["incl.cut"][1]});
                 }
             }
         }
@@ -1349,7 +1443,7 @@ function print_cols(dialog, identifier, options) {
     var selection = options.selection;
     var cols = options.cols;
     var selectable = options.selectable;
-    var objtype = (dialog == "eqmcc")?(commobj["eqmcc"].source):"data";
+    var objtype = (dialog == "minimize")?(commobj["minimize"].source):"data";
     var paper = papers[dialog][identifier];
     paper.clear();
     var numerics, calibrated;
@@ -1357,7 +1451,7 @@ function print_cols(dialog, identifier, options) {
         if (["package", "pkgdata", "dataset", "tt", "qmc"].indexOf(identifier) >= 0) {
             cols = sortArray(options.cols);
         }
-        if (dialog !== "load" && commobj[dialog] !== void 0) {
+        if (dialog !== "load" && dialog !== "findRows" && commobj[dialog] !== void 0) {
             if (commobj[dialog].dataset != "") {
                 numerics = info[objtype][commobj[dialog].dataset].numerics;
                 calibrated = info[objtype][commobj[dialog].dataset].calibrated; 
@@ -1382,7 +1476,7 @@ function print_cols(dialog, identifier, options) {
                 }
             }
         }
-        if (dialog == "eqmcc" && commobj["eqmcc"].source == "tt") {
+        if (dialog == "minimize" && commobj["minimize"].source == "tt") {
             if (identifier != "dataset") {
                 var ocheck = getTrueKeys(colclicks[dialog][identifier]);
                 if (ocheck.length > 0) {
@@ -1422,6 +1516,9 @@ function print_cols(dialog, identifier, options) {
             }
             var colsetbox = colset.getBBox();
             $(paper.canvas).width(colsetbox.width + 20); 
+            if (dialog == "minimize") {
+                paper.rect(0, 0, 138, 120).attr({fill: "#000000", stroke: "none", "fill-opacity": "0.2"});
+            }
         }
         else {
             if (dialog == "load" || info[objtype] !== null) {
@@ -1482,7 +1579,7 @@ function print_cols(dialog, identifier, options) {
                                         checkRecodeSelections(colclicks, papers["recode"]["main"]);
                                     }
                                 }
-                                if (dialog == "eqmcc") {
+                                if (dialog == "minimize") {
                                     filldirexp();
                                 }
                                 console_command(dialog);
@@ -1525,7 +1622,6 @@ function print_cols(dialog, identifier, options) {
                                                     }
                                                 }
                                                 sat(papers["load"]["title"].text(10, 10 + 20*rows, rowtext));
-                                                console_command("load");
                                             }
                                         }
                                         else if (dialog == "calibrate") {
@@ -1545,6 +1641,9 @@ function print_cols(dialog, identifier, options) {
                                         }
                                         else if (dialog == "export") {
                                             commobj.export.dataset = this.name;
+                                        }
+                                        else if (dialog == "findRows") {
+                                            commobj.findRows.obj = this.name;
                                         }
                                         else if (dialog == "xyplot") {
                                             if (identifier !== "dataset") {
@@ -1569,7 +1668,7 @@ function print_cols(dialog, identifier, options) {
                                     if (dialog == "data_editor") {
                                         $("#data_editor_dataset_border").remove();
                                     }
-                                    if (identifier == "dataset" && ["eqmcc", "tt", "calibrate", "recode", "xyplot"].indexOf(dialog) >= 0) {
+                                    if (identifier == "dataset" && ["minimize", "tt", "calibrate", "recode", "xyplot"].indexOf(dialog) >= 0) {
                                         if (commobj[dialog][identifier] != this.name) {
                                             var identifiers = getKeys(colclicks[dialog]);
                                             for (var i = 0; i < identifiers.length; i++) {
@@ -1938,7 +2037,7 @@ function update_data() {
             .dblclick(function(event) {
                 var coords = getCoords(event);
                 bodyrect.hide();
-                temp = "" + info["data"][dataset].theData[coords.mX + coords.Xshift][coords.mY];
+                temp = "" + info["data"][dataset].theData[coords.mX][coords.mY];
                 temp = (temp == "null")?"":temp;
                 tobe = sat(papers["data_editor"]["body"].text(0, 0, temp));
                 papers["data_editor"]["body"].inlineTextEditing(tobe);
@@ -2179,11 +2278,11 @@ function draw_import(paper) {
         }, true);
     });
     sat(paper.text(stx + 5, sty + 218, "Preview column names:"));
-    sat(paper.text(stx + 251, sty + 15, "Directory:"));
-    paper.stdir_text = sat(paper.text(stx + 320, sty + 15, commobj.read_table.row_names),
-                        {"clip": (stx + 315) + ", " + (sty + 5) + ", 337, 20"});
+    sat(paper.text(stx + 248, sty + 15, "Directory:"));
+    paper.stdir_text = sat(paper.text(stx + 317, sty + 15, commobj.read_table.row_names),
+                        {"clip": (stx + 315) + ", " + (sty + 5) + ", 307, 20"});
     paper.inlineTextEditing(paper.stdir_text);
-    var stdir_rect = paper.rect(stx + 315, sty + 5, 337, 20)
+    var stdir_rect = paper.rect(stx + 312, sty + 5, 307, 20)
         .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
         .click(function(e) {
             e.stopPropagation();
@@ -2214,8 +2313,8 @@ function draw_import(paper) {
         width: 4
     });
     paper.glow.hide();
-    sat(paper.text(stx + 595, sty + 378.5, "Import"));
-    var import_open = paper.rect(stx + 577, sty + 366, 75, 25)
+    sat(paper.text(stx + 560, sty + 378.5, "Import"));
+    var import_open = paper.rect(stx + 542, sty + 366, 75, 25)
         .attr({"stroke-width": 1.25, fill: "#ffffff", "fill-opacity": 0})
         .click(function(e) {
             e.stopPropagation();
@@ -2434,9 +2533,9 @@ function draw_export(paper) {
             paper.ovr.hideIt();
             console_command("export");
         });
-        sat(paper.text(stx + 257, sty + 10, "Set working directory:"));
-        sat(paper.text(stx + 570, sty + 318.5, "Export"));
-        var export_rect = paper.rect(stx + 552, sty + 306, 75, 25)
+        sat(paper.text(stx + 247, sty + 10, "Choose directory:"));
+        sat(paper.text(stx + 515, sty + 318.5, "Export"));
+        var export_rect = paper.rect(stx + 497, sty + 306, 75, 25)
             .attr({"stroke-width": 1.25, fill: "#ffffff", "fill-opacity": 0})
             .click(function(e) {
                 e.stopPropagation();
@@ -2565,7 +2664,7 @@ function draw_saveRplot(paper) {
             paper.ovr.check();
             paper.ovr.hideIt();
         });
-        sat(paper.text(stx + 257, sty + 17, "Set working directory:"));
+        sat(paper.text(stx + 257, sty + 17, "Choose directory:"));
         sat(paper.text(stx + 574, sty + 343.5, "Save"));
         var saveRplot_rect = paper.rect(stx + 552, sty + 331, 75, 25)
             .attr({"stroke-width": 1.25, fill: "#ffffff", "fill-opacity": 0})
@@ -2582,7 +2681,7 @@ function draw_saveRplot(paper) {
 }
 function refresh_cols(dialogs, exclude) {
     if (dialogs == "all") {
-        dialogs = ["load", "import", "export", "eqmcc", "tt", "calibrate", "recode", "xyplot"];
+        dialogs = ["load", "import", "export", "minimize", "tt", "calibrate", "recode", "xyplot"];
         if (exclude !== void 0) {
             dialogs = copy(dialogs, exclude);
         }
@@ -2666,14 +2765,34 @@ function refresh_cols(dialogs, exclude) {
                            });
             }
         }
-        if (dialogs[i] == "eqmcc") {
-            if ($("#eqmcc").length) {
+        if (dialogs[i] == "findRows") {
+            if ($("#findRows").length) {
+                if (tts.length) {
+                    if (tts.length == 1) {
+                        click_col(dialogs[i], "tt", tts[0], others = false);
+                        commobj.findRows.obj = tts[0];
+                    }
+                    print_cols("findRows", "tt",
+                              {
+                                   "selection": "single",
+                                   "cols": tts,
+                                   "selectable": ["all"]
+                              });
+                }   
+                else {
+                    papers["findRows"]["tt"].clear();
+                    $(papers["findRows"]["tt"].canvas).height(0);
+                }
+            }
+        }
+        if (dialogs[i] == "minimize") {
+            if ($("#minimize").length) {
                 if (datasets.length || tts.length) {
                     var cols = getKeys(info[commobj[dialogs[i]].source]);
                     if (cols.length == 1) {
                         click_col(dialogs[i], "dataset", cols[0], others = false);
                     }
-                    print_cols("eqmcc", "dataset",
+                    print_cols("minimize", "dataset",
                                {
                                     "selection": "single",
                                     "cols": cols,
@@ -2681,13 +2800,13 @@ function refresh_cols(dialogs, exclude) {
                                });
                     if (commobj[dialogs[i]].dataset !== "" && info[commobj[dialogs[i]].source] !== null) {
                         cols = info[commobj[dialogs[i]].source][commobj[dialogs[i]].dataset].colnames;
-                        print_cols("eqmcc", "outcome",
+                        print_cols("minimize", "outcome",
                                {
                                     "selection": (commobj[dialogs[i]].source == "data")?"multiple":"none",
                                     "cols": cols,
                                     "selectable": ["numerics"]
                                });
-                        print_cols("eqmcc", "conditions",
+                        print_cols("minimize", "conditions",
                                {
                                     "selection": (commobj[dialogs[i]].source == "data")?"multiple":"none",
                                     "cols": cols,
@@ -2695,19 +2814,19 @@ function refresh_cols(dialogs, exclude) {
                                });
                     }
                     else {
-                        papers["eqmcc"]["outcome"].clear();
-                        $(papers["eqmcc"]["outcome"].canvas).height(0);
-                        papers["eqmcc"]["conditions"].clear();
-                        $(papers["eqmcc"]["conditions"].canvas).height(0);
+                        papers["minimize"]["outcome"].clear();
+                        $(papers["minimize"]["outcome"].canvas).height(0);
+                        papers["minimize"]["conditions"].clear();
+                        $(papers["minimize"]["conditions"].canvas).height(0);
                     }
                 }
                 else {
-                    papers["eqmcc"]["dataset"].clear();
-                    $(papers["eqmcc"]["dataset"].canvas).height(0);
-                    papers["eqmcc"]["outcome"].clear();
-                    $(papers["eqmcc"]["outcome"].canvas).height(0);
-                    papers["eqmcc"]["conditions"].clear();
-                    $(papers["eqmcc"]["conditions"].canvas).height(0);
+                    papers["minimize"]["dataset"].clear();
+                    $(papers["minimize"]["dataset"].canvas).height(0);
+                    papers["minimize"]["outcome"].clear();
+                    $(papers["minimize"]["outcome"].canvas).height(0);
+                    papers["minimize"]["conditions"].clear();
+                    $(papers["minimize"]["conditions"].canvas).height(0);
                 }
             }
         }
@@ -2936,20 +3055,10 @@ if ($("#calibrate").length) {
         showFuzzy();
         console_command("calibrate");
     });
-    var thinfoset = paper.set();
-    var thinfotext = sat(paper.text(stx + 10, sty + 65, "Number of thresholds: 1"));
-    thinfoset.push(thinfotext);
-    thinfoset.push(paper.rect(stx + 196, sty + 62, 1, 7));
-    thinfoset.push(paper.rect(stx + 193, sty + 65, 7, 1));
-    var plus = sat(paper.rect(stx + 190, sty + 59, 13, 13));
-    thinfoset.push(paper.rect(stx + 176, sty + 65, 7, 1));
-    var minus = sat(paper.rect(stx + 173, sty + 59, 13, 13));
-    thinfoset.push(plus, minus);
-    plus.click(function() {
-        commobj.calibrate.nth += 1;
-        if (commobj.calibrate.nth > 6) {
-            commobj.calibrate.nth = 6;
-        }
+    var thno = paper.counter({"x": stx + 180, "y": sty + 65, "startval": commobj.calibrate.nth, "maxval": 6, "width": 18, "textheight": getTextHeight("0", 10)});
+    thno.label({"x": -33, "y": 0, "label": "Number of thresholds:", "anchor": "end"});
+    thno.update = function() {
+        commobj.calibrate.nth = thno.value;
         commobj.calibrate.thresholds = ["", "", "", "", "", ""];
         for (var i = 0; i < commobj.calibrate.nth; i++) {
             commobj.calibrate.thresholds[i] = ths[i].attr("text");
@@ -2962,27 +3071,14 @@ if ($("#calibrate").length) {
         else {
             drawPointsAndThresholds();
         }
+    }
+    thno.down.click(function() {
+        thno.update();
     });
-    minus.click(function() {
-        commobj.calibrate.nth -= 1;
-        if (commobj.calibrate.nth < 1) {
-            commobj.calibrate.nth = 1;
-        }
-        commobj.calibrate.thresholds = ["", "", "", "", "", ""];
-        for (var i = 0; i < commobj.calibrate.nth; i++) {
-            commobj.calibrate.thresholds[i] = ths[i].attr("text");
-        }
-        showths();
-        console_command("calibrate");
-        if (paper.findth.isChecked) {
-            thinfoToR();
-        }
-        else {
-            drawPointsAndThresholds();
-        }
+    thno.up.click(function() {
+        thno.update();
     });
     function showths() {
-        thinfotext.attr({"text": ("Number of thresholds: " + commobj.calibrate.nth)});
         for (var i = 1; i < 6; i++) {
             if (i < commobj.calibrate.nth) {
                 thsets[i].show();
@@ -3267,7 +3363,7 @@ if ($("#calibrate").length) {
             });
         }));
     function showCrisp() {
-        thinfoset.show();
+        thno.showIt();
         paper.thsetter_frame.show();
         thsetter_content.show();
         paper.findth.showIt();
@@ -3325,7 +3421,7 @@ if ($("#calibrate").length) {
         incdec.showIt();
         sbell.showIt();
         paper.findth.hideIt();
-        thinfoset.hide();
+        thno.hideIt();
         jitter.hideIt();
         thsets[1].show();
         thsets[2].show();
@@ -4266,30 +4362,44 @@ function draw_tt(paper) {
         sat(paper.text(315, 17, "Conditions:"));
         var stx = 14;
         var sty = 175;
-        var neg_out = paper.checkBox(stx, sty + 25 - 14, commobj.tt.neg_out, "negate outcome");
+        var neg_out = paper.checkBox(stx, sty, commobj.tt.neg_out, "negate outcome");
         neg_out.cover.click(function() {
             commobj.tt.neg_out = neg_out.isChecked;
             console_command("tt");
         });
-        var complete = paper.checkBox(stx, sty + 50 - 14, commobj.tt.complete, "complete");
+        var complete = paper.checkBox(stx, sty + 25, commobj.tt.complete, "complete");
         complete.cover.click(function() {
             commobj.tt.complete = complete.isChecked;
             console_command("tt");
         });
-        var show_cases = paper.checkBox(stx, sty + 75 - 14, commobj.tt.show_cases, "show cases");
-        show_cases.cover.click(function() {
-            commobj.tt.show_cases = show_cases.isChecked;
-            console_command("tt");
-        });
-        var use_letters = paper.checkBox(stx, sty + 100 - 14, commobj.tt.use_letters, "use letters");
+        var use_letters = paper.checkBox(stx, sty + 50, commobj.tt.use_letters, "use letters");
         use_letters.cover.click(function() {
             commobj.tt.use_letters = use_letters.isChecked;
             console_command("tt");
         });
-        sat(paper.text(stx + 160, sty + 6, "Sort by:"));
+        var show_cases = paper.checkBox(stx, sty + 75, commobj.tt.show_cases, "show cases");
+        show_cases.cover.click(function() {
+            commobj.tt.show_cases = show_cases.isChecked;
+            if (commobj.tt.show_cases) {
+                dcc.activate();
+            }
+            else {
+                dcc.deactivate();
+            }
+            console_command("tt");
+        });
+        var dcc = paper.checkBox(stx + 20.6, sty + 100, commobj.tt.dcc, "deviant cases");
+        dcc.cover.click(function() {
+            commobj.tt.dcc = dcc.isChecked;
+            console_command("tt");
+        });
+        if (!commobj.tt.show_cases) {
+            dcc.deactivate();
+        }
+        sat(paper.text(stx + 160, sty + 5, "Sort by:"));
         paper.decr = sat(paper.text(stx + 240, sty + 6, "Decr."));
         paper.decr.hide();
-        paper.rect(stx + 152, sty + 18.5, 78, 77)
+        paper.rect(stx + 152, sty + 17.5, 78, 77)
            .attr({stroke: '#d0d0d0', 'stroke-width': 1, fill: "#ffffff", "fill-opacity": 0});
         paper.decrease = new Array(3);
         paper.rects = new Array(6);
@@ -4302,10 +4412,10 @@ function draw_tt(paper) {
         for (var i = 0; i < 3; i++) {
             paper.sortsets[i] = paper.set();
             paper.positions[i] = i;
-            paper.coordsy[i] = sty + 20 + i*25;
+            paper.coordsy[i] = sty + 19 + i*25;
             paper.rects[i] = paper.rect(stx + 154, paper.coordsy[i], 74, 24);
             paper.rects[i].backcolor = commobj.tt.sort_sel[keys[i]];
-            paper.texts[i] = sat(paper.text(stx + 160, sty + 31 + i*25, sortbyoptions[keys[i]]));
+            paper.texts[i] = sat(paper.text(stx + 160, sty + 30 + i*25, sortbyoptions[keys[i]]));
             if (commobj.tt.sort_sel[keys[i]]) {
                 paper.rects[i].attr({fill: "#79a74c", stroke: "none"});
                 paper.texts[i].attr({fill: "white", "text-anchor": "start", "font-size": "14px"});
@@ -4318,7 +4428,7 @@ function draw_tt(paper) {
         }
         for (var i = 0; i < 3; i++) {
             paper.rects[3 + i] = paper.rect(stx + 154, paper.coordsy[i], 74, 24)
-                .attr({stroke: 'none', fill: "#ffffff", "fill-opacity": 0});
+                .attr({stroke: '#ffffff', fill: "#ffffff", "fill-opacity": 0});
             paper.rects[3 + i].id = i;
             paper.rects[3 + i].name = keys[i];
             paper.rects[3 + i].top = stx + 200 - 4;
@@ -4363,64 +4473,64 @@ function draw_tt(paper) {
             });
         paper.inlineTextEditing(frequency);
         paper.text(ctx - 15, cty + 50, "Inclusion 1").attr({"text-anchor": "end", "font-size": "14px"});
-        var inclcut1 = paper.text(ctx + 5, cty + 50, commobj.tt.ic1).attr({"text-anchor": "start", "font-size": "14px"});
+        var ic1 = paper.text(ctx + 5, cty + 50, commobj.tt.ic1).attr({"text-anchor": "start", "font-size": "14px"});
         paper.rect(ctx, cty + 40, 50, 20, 3)
             .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
             .click(function(e) {
                 e.stopPropagation();
                 var me = this;
                 var BBox = this.getBBox();
-                input = inclcut1.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
+                input = ic1.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
                 input.addEventListener("blur", function(e) {
-                    inclcut1.inlineTextEditing.stopEditing(tasta);
-                    if (isNumeric(inclcut1.attr("text"))) {
-                        commobj.tt.ic1 = inclcut1.attr("text");
+                    ic1.inlineTextEditing.stopEditing(tasta);
+                    if (isNumeric(ic1.attr("text"))) {
+                        commobj.tt.ic1 = ic1.attr("text");
                         if (commobj.tt.ic1 < commobj.tt.ic0) {
                             commobj.tt.ic0 = commobj.tt.ic1;
-                            inclcut0.attr({"text": commobj.tt.ic0});
+                            ic0.attr({"text": commobj.tt.ic0});
                         }
                     }
                     else {
                         commobj.tt.ic1 = "1";
                         commobj.tt.ic0 = "";
-                        inclcut1.attr({"text": "1"});
-                        inclcut0.attr({"text": ""});
+                        ic1.attr({"text": "1"});
+                        ic0.attr({"text": ""});
                     }
                     me.toFront();
                     tasta = "enter";
                     console_command("tt");
                 });
             });
-        paper.inlineTextEditing(inclcut1);
+        paper.inlineTextEditing(ic1);
         paper.text(ctx - 15, cty + 75, "Inclusion 0").attr({"text-anchor": "end", "font-size": "14px"});
-        var inclcut0 = paper.text(ctx + 5, cty + 75, commobj.tt.ic0).attr({"text-anchor": "start", "font-size": "14px"});
+        var ic0 = paper.text(ctx + 5, cty + 75, commobj.tt.ic0).attr({"text-anchor": "start", "font-size": "14px"});
         paper.rect(ctx, cty + 65, 50, 20, 3)
             .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
             .click(function(e) {
                 e.stopPropagation();
                 var me = this;
                 var BBox = this.getBBox();
-                input = inclcut0.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
+                input = ic0.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
                 input.addEventListener("blur", function(e) {
-                    inclcut0.inlineTextEditing.stopEditing(tasta);
-                    commobj.tt.ic0 = inclcut0.attr("text");
-                    if (isNumeric(inclcut0.attr("text"))) {
-                        commobj.tt.ic0 = inclcut0.attr("text");
+                    ic0.inlineTextEditing.stopEditing(tasta);
+                    commobj.tt.ic0 = ic0.attr("text");
+                    if (isNumeric(ic0.attr("text"))) {
+                        commobj.tt.ic0 = ic0.attr("text");
                         if (commobj.tt.ic1 < commobj.tt.ic0) {
                             commobj.tt.ic0 = commobj.tt.ic1;
-                            inclcut0.attr({"text": commobj.tt.ic0});
+                            ic0.attr({"text": commobj.tt.ic0});
                         }
                     }
                     else {
                         commobj.tt.ic0 = commobj.tt.ic1;
-                        inclcut0.attr({"text": commobj.tt.ic0});
+                        ic0.attr({"text": commobj.tt.ic0});
                     }
                     me.toFront();
                     tasta = "enter";
                     console_command("tt");
                 });
             });
-        paper.inlineTextEditing(inclcut0);
+        paper.inlineTextEditing(ic0);
         var stx = 13, sty = 0;
         var objname = paper.checkBox(stx, sty + 309, commobj.tt.nameit, "Assign");
         objname.cover.click(function() {
@@ -4439,7 +4549,7 @@ function draw_tt(paper) {
             console_command("tt");
         });
         var objnameset = paper.set();
-        var objname_TB = textbox(paper, {x: stx + 95, y: sty + 314, width: 100, height: 20, text: commobj.tt.objname});
+        var objname_TB = textbox(paper, {x: stx + 95, y: sty + 314, width: 200, height: 20, text: commobj.tt.objname});
         paper.inlineTextEditing(objname_TB.text);
         objname_TB.rect.click(function(e) {
             var me = this;
@@ -4477,286 +4587,367 @@ function draw_tt(paper) {
         });
     }
 }
-function draw_eqmcc(paper) {
-    if ($("#eqmcc").length) {
+function draw_minimize(paper) {
+    if ($("#minimize").length) {
         paper.clear();
         var copydataset = "";
         var copyclicks = null;
         var backup = function() {
-            var tempdataset = commobj["eqmcc"].dataset;
-            commobj["eqmcc"].dataset = copydataset;
+            var tempdataset = commobj["minimize"].dataset;
+            commobj["minimize"].dataset = copydataset;
             copydataset = tempdataset;
             var tempclicks = null;
-            console.log(1);
-            if (colclicks["eqmcc"] !== void 0) { 
-                console.log(2);
-                console.log(colclicks["eqmcc"].constructor(), colclicks["eqmcc"]);
-                tempclicks = copy(colclicks["eqmcc"]);
-                console.log(tempclicks);
+            if (colclicks["minimize"] !== void 0) { 
+                tempclicks = copy(colclicks["minimize"]);
             }
-            colclicks = copy(colclicks, exclude = "eqmcc");
+            colclicks = copy(colclicks, exclude = "minimize");
             if (copyclicks !== null) {
-                colclicks["eqmcc"] = copy(copyclicks);
+                colclicks["minimize"] = copy(copyclicks);
             }
             if (tempclicks !== null) {
                 copyclicks = copy(tempclicks);
             }
         }
-        var dsource = paper.radio(30, 18, 1*(commobj.eqmcc.source == "tt"), ["Dataset", "TT"], [0, 0], [0, 80]);
+        var dsource = paper.radio(30, 18, 1*(commobj.minimize.source == "tt"), ["Dataset", "TT"], [0, 0], [0, 80]);
         dsource.cover[0].click(function() { 
-            commobj.eqmcc.source = "data";
+            commobj.minimize.source = "data";
             backup();
-            refresh_cols("eqmcc");
+            refresh_cols("minimize");
             filldirexp();
-            checkeqtt();
             paper.neg_out.activate();
+            if (commobj.minimize.details) {
+                paper.show_cases.activate();
+            }
+            else {
+                paper.show_cases.deactivate();
+            }
             paper.use_letters.activate();
+            for (var i = 0; i < 3; i++) {
+                paper.shadecutoffs[i].attr({"fill-opacity": "0"});
+            }
+            checkeqtt();
         });
         dsource.cover[1].click(function() { 
-            commobj.eqmcc.source = "tt";
+            commobj.minimize.source = "tt";
             backup();
-            refresh_cols("eqmcc");
+            refresh_cols("minimize");
             filldirexp();
-            checkeqtt();
             paper.neg_out.deactivate();
+            paper.show_cases.deactivate();
             paper.use_letters.deactivate();
+            for (var i = 0; i < 3; i++) {
+                paper.shadecutoffs[i].attr({"fill-opacity": "0.2"});
+            }
+            checkeqtt();
         });
         sat(paper.text(172, 17, "Outcome:"));
         sat(paper.text(320, 17, "Conditions:"));
-        paper.direxpl = sat(paper.text(18, 283, ""));
+        paper.direxps = sat(paper.text(17, 255, "")); 
         var stx = 17;
         var sty = 172;
-        sat(paper.text(stx, sty, "Explain:"));
-        paper.rect(stx + 3.5, sty + 11, 38, 82)
+        sat(paper.text(stx, sty + 19, "Include"));
+        paper.rect(stx + 60, sty + 7, 50, 23)
                    .attr({stroke: '#d0d0d0', 'stroke-width': 1, fill: "#ffffff", "fill-opacity": 0});
-        sat(paper.text(stx + 61, sty, "Include:"));
-        paper.rect(stx + 65.5, sty + 11, 38, 82)
-                   .attr({stroke: '#d0d0d0', 'stroke-width': 1, fill: "#ffffff", "fill-opacity": 0});
-        var expinc = ["0", "1", "?", "C"];
-        var rects = new Array(20);
-        var texts = new Array(10);
+        var rects = new Array(4);
+        var texts = new Array(2);
         var selected = false;
-        for (var i = 0; i < 2; i++) {
-            for (var j = 0; j < 4; j++) {
-                selected = commobj.eqmcc[(i==0)?"explain":"include"].indexOf(expinc[j]) >= 0;
-                rects[i*4 + j] = paper.rect(stx + 5.5 + i*62, sty + 12.5 + j*20, 34, 19).attr({fill: selected?"#79a74c":"#eeeeee", stroke: 'none'});
-                rects[i*4 + j].backcolor = selected;
-                texts[i*4 + j] = paper.text(stx + 17 + i*62, sty + 21.5 + j*20, expinc[j]).attr({"text-anchor": "start", "font-size": "14px", fill: selected?"white":"black"});
-            }
-        }      
-        for (var i = 0; i < 2; i++) {
-            for (var j = 0; j < 4; j++) {
-                rects[8 + i*4 + j] = paper.rect(10 + i*62, sty + 10.5 + j*20, 35, 20)
-                    .attr({stroke: 'none', fill: "#ffffff", "fill-opacity": 0})
-                    .click(function() {
-                        if (rects[this.id].backcolor) {
-                            rects[this.id].attr({fill: "#eeeeee", stroke: "none"});
-                            texts[this.id].attr({"text-anchor": "start", "font-size": "14px", fill: "black"});
-                        }
-                        else {
-                            rects[this.id].attr({fill: "#79a74c", stroke: "none"});
-                            texts[this.id].attr({"text-anchor": "start", "font-size": "14px", fill: "white"});
-                        }
-                        rects[this.id].backcolor = !rects[this.id].backcolor;
-                        var value = expinc[this.id % 4];
-                        if (this.id < 4) { 
-                            var index = commobj.eqmcc.explain.indexOf(value);
-                            if (index > -1) {
-                                commobj.eqmcc.explain.splice(index, 1);
-                            }
-                            else {
-                                commobj.eqmcc.explain.push(value);
-                            }
-                        }
-                        else { 
-                            var index = commobj.eqmcc.include.indexOf(value);
-                            if (index > -1) {
-                                commobj.eqmcc.include.splice(index, 1);
-                            }
-                            else {
-                                commobj.eqmcc.include.push(value);
-                            }
-                            filldirexp();
-                        }
-                        console_command("eqmcc");
-                    });
-                rects[8 + i*4 + j].id = i*4 + j;
-            }
+        selected = commobj.minimize.include[0] == "?";
+        rects[0] = paper.rect(stx + 62, sty + 9, 22, 19)
+                   .attr({fill: selected?"#79a74c":"#eeeeee", stroke: 'none'});
+        texts[0] = sat(paper.text(stx + 69, sty + 19, "?"));
+        rects[0].backcolor = selected;
+        if (selected) {
+            texts[0].attr({"fill": "white"});
         }
-        paper.neg_out = paper.checkBox(stx + 147, sty + 5, commobj.eqmcc.neg_out, "negate outcome");
+        selected = commobj.minimize.include[1] == "C";
+        rects[1] = paper.rect(stx + 62 + 24, sty + 9, 22, 19)
+                   .attr({fill: selected?"#79a74c":"#eeeeee", stroke: 'none'});
+        texts[1] = sat(paper.text(stx + 92, sty + 19, "C"));
+        rects[1].backcolor = selected;
+        if (selected) {
+            texts[1].attr({"fill": "white"});
+        }
+        rects[2] = paper.rect(stx + 61, sty + 8, 23, 21)
+                   .attr({stroke: 'none', fill: "#ffffff", "fill-opacity": 0, cursor: "pointer"});
+        rects[2].click(function() {
+                commobj.minimize.pi_cons = "0";
+                commobj.minimize.sol_cons = "0";
+                paper.sol_cons.text.attr({"text": "0"});
+                paper.pi_cons.text.attr({"text": "0"});
+                if (commobj.minimize.include[0] == "?") 
+                {
+                    rects[0].attr({fill: "#eeeeee", stroke: "none"});
+                    texts[0].attr({"text-anchor": "start", "font-size": "14px", fill: "black"});
+                    commobj.minimize.include[0] = "";
+                }
+                else {
+                    rects[0].attr({fill: "#79a74c", stroke: "none"});
+                    texts[0].attr({"text-anchor": "start", "font-size": "14px", fill: "white"});
+                    commobj.minimize.include[0] = "?";
+                }
+                filldirexp();
+                console_command("minimize");
+        });
+        rects[3] = paper.rect(stx + 86, sty + 8, 23, 21)
+                   .attr({stroke: 'none', fill: "#ffffff", "fill-opacity": 0, cursor: "pointer"});
+        rects[3].click(function() {
+                if (commobj.minimize.include[1] == "C") {
+                    rects[1].attr({fill: "#eeeeee", stroke: "none"});
+                    texts[1].attr({"text-anchor": "start", "font-size": "14px", fill: "black"});
+                    commobj.minimize.include[1] = "";
+                }
+                else {
+                    rects[1].attr({fill: "#79a74c", stroke: "none"});
+                    texts[1].attr({"text-anchor": "start", "font-size": "14px", fill: "white"});
+                    commobj.minimize.include[1] = "C";
+                }
+                console_command("minimize");
+        });
+        sat(paper.text(stx, sty + 44, "Exclude"), {anchor: "start"});
+        paper.exclude = textbox(paper, {x: stx + 62, y: sty + 44, width: 56, height: 20, text: commobj.minimize.exclude});
+        paper.inlineTextEditing(paper.exclude.text);
+        paper.exclude.rect.click(function(e) {
+                var me = this;
+                e.stopPropagation();
+                var BBox = this.getBBox();
+                input = paper.exclude.text.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
+                input.addEventListener("blur", function(e) {
+                    paper.exclude.text.inlineTextEditing.stopEditing(tasta);
+                    commobj.minimize.exclude = paper.exclude.text.attr("text");
+                    me.toFront();
+                    tasta = "enter";
+                    console_command("minimize");
+                });
+        });
+        paper.neg_out = paper.checkBox(stx + 147, sty + 10 + 3, commobj.minimize.neg_out, "negate outcome");
         paper.neg_out.cover.click(function() {
             if (this.active) {
-                commobj.eqmcc.neg_out = paper.neg_out.isChecked;
-                console_command("eqmcc");
+                commobj.minimize.neg_out = paper.neg_out.isChecked;
+                console_command("minimize");
             }
         });
-        var details = paper.checkBox(stx + 147, sty + 5 + 25, commobj.eqmcc.details, "show details");
-        details.cover.click(function() {
-            commobj.eqmcc.details = details.isChecked;
-            if (details.isChecked) {
-                show_cases.activate();
-            }
-            else {
-                show_cases.uncheck();
-                commobj.eqmcc.show_cases = false;
-                show_cases.deactivate();
-            }
-            console_command("eqmcc");
-        });
-        var show_cases = paper.checkBox(stx + 147, sty + 5 + 50, commobj.eqmcc.show_cases, "show cases");
-        show_cases.cover.click(function() {
-            if (this.active) {
-                commobj.eqmcc.show_cases = show_cases.isChecked;
-                console_command("eqmcc");
-            }
-        });
-        if (!commobj.eqmcc.details) {
-            show_cases.deactivate();
-        }
-        var all_sol = paper.checkBox(stx + 147, sty + 5 + 75, commobj.eqmcc.all_sol, "maximal solutions");
-        all_sol.cover.click(function() {
-            commobj.eqmcc.all_sol = all_sol.isChecked;
-            if (all_sol.isChecked) {
-                row_dom.uncheck();
-                commobj.eqmcc.row_dom = false;
-            }
-            console_command("eqmcc");
-        });
-        var use_tilde = paper.checkBox(stx + 307, sty + 5, commobj.eqmcc.use_tilde, "use tilde");
-        use_tilde.cover.click(function() {
-            commobj.eqmcc.use_tilde = use_tilde.isChecked;
-            console_command("eqmcc");
-        });
-        paper.use_letters = paper.checkBox(stx + 307, sty + 5 + 25, commobj.eqmcc.use_letters, "use letters");
+        paper.use_letters = paper.checkBox(stx + 147, sty + 35 + 3, commobj.minimize.use_letters, "use letters");
         paper.use_letters.cover.click(function() {
             if (this.active) {
-                commobj.eqmcc.use_letters = paper.use_letters.isChecked;
-                console_command("eqmcc");
+                commobj.minimize.use_letters = paper.use_letters.isChecked;
+                console_command("minimize");
             }
         });
-        var row_dom = paper.checkBox(stx + 307, sty + 5 + 50, commobj.eqmcc.row_dom, "PI dominance");
-        row_dom.cover.click(function() {
-            commobj.eqmcc.row_dom = row_dom.isChecked;
-            if (row_dom.isChecked) {
-                all_sol.uncheck();
-                commobj.eqmcc.all_sol = false;
+        paper.show_cases = paper.checkBox(stx + 147, sty + 60 + 3, commobj.minimize.show_cases, "show cases");
+        paper.show_cases.cover.click(function() {
+            if (this.active) {
+                commobj.minimize.show_cases = paper.show_cases.isChecked;
+                console_command("minimize");
             }
-            console_command("eqmcc");
         });
-        sat(paper.text(stx + 168, sty + 115 + 5, "Relation:"));
-        var relation = paper.radio(stx + 155, sty + 141 + 5, 1*(commobj.eqmcc.relation == "sufnec"), ["sufficiency", ""], 33);
-        sat(paper.text(stx + 168, sty + 166 + 5, "sufficiency and"));
-        sat(paper.text(stx + 168, sty + 181 + 5, "necessity"));
-        relation.cover[0].click(function() {
-            commobj.eqmcc.relation = "suf";
-            console_command("eqmcc");
-        });
-        relation.cover[1].click(function() {
-            commobj.eqmcc.relation = "sufnec";
-            console_command("eqmcc");
-        });
-        sat(paper.text(stx + 380, sty + 90 + 5, "cut-off:"));
-        sat(paper.text(stx + 365, sty + 115 + 5, "Frequency"), {anchor: "end"});
-        paper.frequency = sat(paper.text(stx + 385, sty + 115 + 5, commobj.eqmcc.n_cut));
-        paper.rect(stx + 380, sty + 105 + 5, 50, 20, 3)
+        paper.neg_out.deactivate();
+        paper.show_cases.deactivate();
+        paper.use_letters.deactivate();
+        var cofftty = sty - 7;
+        paper.shadecutoffs = new Array(3);
+        sat(paper.text(stx + 380, cofftty, "cut-off:"));
+        sat(paper.text(stx + 370, cofftty + 5 + 20, "Frequency"), {anchor: "end"});
+        paper.frequency = sat(paper.text(stx + 385, cofftty + 5 + 20, commobj.minimize.n_cut));
+        paper.shadecutoffs[0] = paper.rect(stx + 380, cofftty + 5 + 10, 50, 20, 3).attr({fill: "#000000", stroke: "none", "fill-opacity": "0.2"});
+        paper.rect(stx + 380, cofftty + 5 + 10, 50, 20, 3)
             .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
             .click(function(event) {
-                if (commobj.eqmcc.source == "data") {
+                if (commobj.minimize.source == "data") {
                     event.stopPropagation();
                     var me = this;
                     var BBox = this.getBBox();
                     input = paper.frequency.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
                     input.addEventListener("blur", function(e) {
                         paper.frequency.inlineTextEditing.stopEditing(tasta);
-                        commobj.eqmcc.n_cut = paper.frequency.attr("text");
+                        commobj.minimize.n_cut = paper.frequency.attr("text");
                         me.toFront();
                         tasta = "enter";
-                        console_command("eqmcc");
+                        console_command("minimize");
                     });
                 }
             });
         paper.inlineTextEditing(paper.frequency);
-        sat(paper.text(stx + 365, sty + 140 + 5, "Inclusion 1"), {anchor: "end"});
-        paper.inclcut1 = sat(paper.text(stx + 385, sty + 140 + 5, commobj.eqmcc.ic1));
-        paper.rect(stx + 380, sty + 130 + 5, 50, 20, 3)
+        sat(paper.text(stx + 370, cofftty + 5 + 45, "Inclusion 1"), {anchor: "end"});
+        paper.ic1 = sat(paper.text(stx + 385, cofftty + 5 + 45, commobj.minimize.ic1));
+        paper.shadecutoffs[1] = paper.rect(stx + 380, cofftty + 5 + 35, 50, 20, 3).attr({fill: "#000000", stroke: "none", "fill-opacity": "0.2"});
+        paper.rect(stx + 380, cofftty + 5 + 35, 50, 20, 3)
             .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
             .click(function(event) {
-                if (commobj.eqmcc.source == "data") {
+                if (commobj.minimize.source == "data") {
                     event.stopPropagation();
                     var me = this;
                     var BBox = this.getBBox();
-                    input = paper.inclcut1.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
+                    input = paper.ic1.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
                     input.addEventListener("blur", function(e) {
-                        paper.inclcut1.inlineTextEditing.stopEditing(tasta);
-                        if (isNumeric(paper.inclcut1.attr("text"))) {
-                            commobj.eqmcc.ic1 = paper.inclcut1.attr("text");
-                            if (commobj.eqmcc.ic1 < commobj.eqmcc.ic0) {
-                                commobj.eqmcc.ic0 = commobj.eqmcc.ic1;
-                                paper.inclcut0.attr({"text": commobj.eqmcc.ic0});
+                        paper.ic1.inlineTextEditing.stopEditing(tasta);
+                        if (isNumeric(paper.ic1.attr("text"))) {
+                            commobj.minimize.ic1 = paper.ic1.attr("text");
+                            if (commobj.minimize.ic1 < commobj.minimize.ic0) {
+                                commobj.minimize.ic0 = commobj.minimize.ic1;
+                                paper.ic0.attr({"text": commobj.minimize.ic0});
                             }
                         }
                         else {
-                            commobj.eqmcc.ic1 = "1";
-                            commobj.eqmcc.ic0 = "";
-                            paper.inclcut1.attr({"text": "1"});
-                            paper.inclcut0.attr({"text": ""});
+                            commobj.minimize.ic1 = "1";
+                            commobj.minimize.ic0 = "";
+                            paper.ic1.attr({"text": "1"});
+                            paper.ic0.attr({"text": ""});
                         }
                         me.toFront();
                         tasta = "enter";
-                        console_command("eqmcc");
+                        console_command("minimize");
                     });
                 }
             });
-        paper.inlineTextEditing(paper.inclcut1);
-        sat(paper.text(stx + 365, sty + 125 + 40 + 5, "Inclusion 0"), {anchor: "end"});
-        paper.inclcut0 = sat(paper.text(stx + 385, sty + 125 + 40 + 5, commobj.eqmcc.ic0));
-        paper.rect(stx + 380, sty + 115 + 40 + 5, 50, 20, 3)
+        paper.inlineTextEditing(paper.ic1);
+        sat(paper.text(stx + 370, cofftty + 5 + 70, "Inclusion 0"), {anchor: "end"});
+        paper.ic0 = sat(paper.text(stx + 385, cofftty + 5 + 70, commobj.minimize.ic0));
+        paper.shadecutoffs[2] = paper.rect(stx + 380, cofftty + 5 + 60, 50, 20, 3).attr({fill: "#000000", stroke: "none", "fill-opacity": "0.2"});
+        paper.rect(stx + 380, cofftty + 5 + 60, 50, 20, 3)
             .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
             .click(function(event) {
-                if (commobj.eqmcc.source == "data") {
+                if (commobj.minimize.source == "data") {
                     event.stopPropagation();
                     var me = this;
                     var BBox = this.getBBox();
-                    input = paper.inclcut0.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
+                    input = paper.ic0.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
                     input.addEventListener("blur", function(e) {
-                        paper.inclcut0.inlineTextEditing.stopEditing(tasta);
-                        commobj.eqmcc.ic0 = paper.inclcut0.attr("text");
-                        if (isNumeric(paper.inclcut0.attr("text"))) {
-                            commobj.eqmcc.ic0 = paper.inclcut0.attr("text");
-                            if (commobj.eqmcc.ic1 < commobj.eqmcc.ic0) {
-                                commobj.eqmcc.ic0 = commobj.eqmcc.ic1;
-                                paper.inclcut0.attr({"text": commobj.eqmcc.ic0});
+                        paper.ic0.inlineTextEditing.stopEditing(tasta);
+                        commobj.minimize.ic0 = paper.ic0.attr("text");
+                        if (isNumeric(paper.ic0.attr("text"))) {
+                            commobj.minimize.ic0 = paper.ic0.attr("text");
+                            if (commobj.minimize.ic1 < commobj.minimize.ic0) {
+                                commobj.minimize.ic0 = commobj.minimize.ic1;
+                                paper.ic0.attr({"text": commobj.minimize.ic0});
                             }
                         }
                         else {
-                            commobj.eqmcc.ic0 = commobj.eqmcc.ic1;
-                            paper.inclcut0.attr({"text": commobj.eqmcc.ic0});
+                            commobj.minimize.ic0 = commobj.minimize.ic1;
+                            paper.ic0.attr({"text": commobj.minimize.ic0});
                         }
                         me.toFront();
                         tasta = "enter";
-                        console_command("eqmcc");
+                        console_command("minimize");
                     });
                 }
             });
-        paper.inlineTextEditing(paper.inclcut0);
-        var objname = paper.checkBox(stx - 4, sty + 222, commobj.eqmcc.nameit, "Assign");
+        paper.inlineTextEditing(paper.ic0);
+        paper.path("M155,266 L455,266").attr({stroke: "#a0a0a0", "stroke-width": 1.2});
+        sat(paper.text(stx + 430, cofftty + 125, "Search solutions by:"), {anchor: "end"});
+        sat(paper.text(stx + 370, cofftty + 150, "coverage"), {anchor: "end"});
+        sat(paper.text(stx + 370, cofftty + 175, "consistency"), {anchor: "end"});
+        sat(paper.text(stx + 370, cofftty + 200, "PI consistency"), {anchor: "end"});
+        paper.sol_cov = textbox(paper, {x: stx + 385, y: cofftty + 150, width: 50, height: 20, text: commobj.minimize.sol_cov});
+        paper.inlineTextEditing(paper.sol_cov.text);
+        paper.sol_cov.rect.click(function(e) {
+            var me = this;
+            e.stopPropagation();
+            var BBox = this.getBBox();
+            input = paper.sol_cov.text.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
+            input.addEventListener("blur", function(e) {
+                paper.sol_cov.text.inlineTextEditing.stopEditing(tasta);
+                commobj.minimize.sol_cov = paper.sol_cov.text.attr("text");
+                me.toFront();
+                tasta = "enter";
+                console_command("minimize");
+            });
+        });
+        paper.sol_cons = textbox(paper, {x: stx + 385, y: cofftty + 175, width: 50, height: 20, text: commobj.minimize.sol_cons});
+        paper.inlineTextEditing(paper.sol_cons.text);
+        paper.sol_cons.rect.click(function(e) {
+            var me = this;
+            e.stopPropagation();
+            var BBox = this.getBBox();
+            input = paper.sol_cons.text.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
+            input.addEventListener("blur", function(e) {
+                paper.sol_cons.text.inlineTextEditing.stopEditing(tasta);
+                commobj.minimize.sol_cons = paper.sol_cons.text.attr("text");
+                if (commobj.minimize.sol_cons != "1") {
+                    rects[0].attr({fill: "#79a74c", stroke: "none"});
+                    texts[0].attr({"text-anchor": "start", "font-size": "14px", fill: "white"});
+                    commobj.minimize.include[0] = "?";
+                    filldirexp();
+                }
+                me.toFront();
+                tasta = "enter";
+                console_command("minimize");
+            });
+        });
+        paper.pi_cons = textbox(paper, {x: stx + 385, y: cofftty + 200, width: 50, height: 20, text: commobj.minimize.pi_cons});
+        paper.inlineTextEditing(paper.pi_cons.text);
+        paper.pi_cons.rect.click(function(e) {
+            var me = this;
+            e.stopPropagation();
+            var BBox = this.getBBox();
+            input = paper.pi_cons.text.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
+            input.addEventListener("blur", function(e) {
+                paper.pi_cons.text.inlineTextEditing.stopEditing(tasta);
+                commobj.minimize.pi_cons = paper.pi_cons.text.attr("text");
+                if (commobj.minimize.pi_cons != "1") {
+                    rects[0].attr({fill: "#79a74c", stroke: "none"});
+                    texts[0].attr({"text-anchor": "start", "font-size": "14px", fill: "white"});
+                    commobj.minimize.include[0] = "?";
+                    filldirexp();
+                }
+                me.toFront();
+                tasta = "enter";
+                console_command("minimize");
+            });
+        });
+        var all_sol = paper.checkBox(stx + 147, sty + 12 + 100, commobj.minimize.all_sol, "maximal solutions");
+        all_sol.cover.click(function() {
+            commobj.minimize.all_sol = all_sol.isChecked;
+            console_command("minimize");
+        });
+        var row_dom = paper.checkBox(stx + 147, sty + 12 + 125, commobj.minimize.row_dom, "row dominance");
+        row_dom.cover.click(function() {
+            commobj.minimize.row_dom = row_dom.isChecked;
+            console_command("minimize");
+        });
+        var details = paper.checkBox(stx + 147, sty + 162, commobj.minimize.details, "show details");
+        details.cover.click(function() {
+            commobj.minimize.details = details.isChecked;
+            if (commobj.minimize.source == "data") {
+                if (commobj.minimize.details) {
+                    paper.show_cases.activate();
+                }
+                else {
+                    paper.show_cases.deactivate();
+                }
+            }
+            console_command("minimize");
+        });
+        if (!commobj.minimize.details && commobj.minimize.source == "data") {
+            paper.show_cases.deactivate();
+        }
+        var use_tilde = paper.checkBox(stx + 147, sty + 12 + 175, commobj.minimize.use_tilde, "use tilde");
+        use_tilde.cover.click(function() {
+            commobj.minimize.use_tilde = use_tilde.isChecked;
+            console_command("minimize");
+        });
+        var txtheight = getTextHeight("0", 10);
+        paper.soldepth = paper.counter({"x": stx + 267, "y": sty + 18 + 200, "startval": 0, "maxval": 9, "width": 18, "textheight": txtheight});
+        paper.soldepth.label({"label": "Solution depth", "x": -32, "y": 0, "anchor": "end"}); 
+        paper.pidepth = paper.counter({"x": stx + 402, "y": sty + 18 + 200, "startval": 0, "maxval": 9, "width": 18, "textheight": txtheight});
+        paper.pidepth.label({"label": "PI depth", "x": -32, "y": 0, "anchor": "end"});
+        var objname = paper.checkBox(stx - 4, sty + 218 + 25, commobj.minimize.nameit, "Assign");
         objname.cover.click(function() {
             if (this.isChecked) {
                 objname.label[0].attr({"text": "Assign to:"});
-                commobj.eqmcc.objname = objname_TB.text.attr("text");
-                commobj.eqmcc.nameit = true;
+                commobj.minimize.objname = objname_TB.text.attr("text");
+                commobj.minimize.nameit = true;
                 objnameset.show();
             }
             else {
                 objname.label[0].attr({"text": "Assign"});
-                commobj.eqmcc.objname = "";
-                commobj.eqmcc.nameit = false;
+                commobj.minimize.objname = "";
+                commobj.minimize.nameit = false;
                 objnameset.hide();
             }
-            console_command("eqmcc");
+            console_command("minimize");
         });
         var objnameset = paper.set();
-        var objname_TB = textbox(paper, {x: stx + 91, y: sty + 227, width: 200, height: 20, text: commobj.eqmcc.objname});
+        var objname_TB = textbox(paper, {x: stx + 91, y: sty + 224 + 25, width: 200, height: 20, text: commobj.minimize.objname});
         paper.inlineTextEditing(objname_TB.text);
         objname_TB.rect.click(function(e) {
             var me = this;
@@ -4767,13 +4958,13 @@ function draw_eqmcc(paper) {
             input.addEventListener("blur", function() {
                 objname_TB.text.inlineTextEditing.stopEditing(tasta);
                 if (objname_TB.text.attr("text") != temp) {
-                    commobj.eqmcc.objname = objname_TB.text.attr("text").replace(/[^A-Za-z0-9]/g, '');
-                    if (isNumeric(commobj.eqmcc.objname[0])) {
-                        commobj.eqmcc.objname = "x" + commobj.eqmcc.objname;
+                    commobj.minimize.objname = objname_TB.text.attr("text").replace(/[^A-Za-z0-9]/g, '');
+                    if (isNumeric(commobj.minimize.objname[0])) {
+                        commobj.minimize.objname = "x" + commobj.minimize.objname;
                     }
-                    objname_TB.text.attr({"text": commobj.eqmcc.objname});
-                    if (commobj.eqmcc.dataset != "") {
-                        console_command("eqmcc");
+                    objname_TB.text.attr({"text": commobj.minimize.objname});
+                    if (commobj.minimize.dataset != "") {
+                        console_command("minimize");
                     }
                 }
                 me.toFront();
@@ -4784,24 +4975,24 @@ function draw_eqmcc(paper) {
         if (!objname.isChecked) {
             objnameset.hide();
         }
-        sat(paper.text(stx + 383, sty + 224, "Run"));
-        paper.rect(stx + 360, sty + 211, 70, 25)
+        sat(paper.text(stx + 383, sty + 224 + 25, "Run"));
+        paper.rect(stx + 360, sty + 211 + 25, 70, 25)
         .attr({fill: "white", "fill-opacity": 0, 'stroke-width': 1.25})
         .click(function() {
-            if (commobj.eqmcc.source == "tt") {
+            if (commobj.minimize.source == "tt") {
                 if (info["tt"] !== null) {
-                    if (info["tt"][commobj.eqmcc.dataset] !== void 0) {
-                        console_command("eqmcc");
+                    if (info["tt"][commobj.minimize.dataset] !== void 0) {
+                        console_command("minimize");
                         Rcommand.command = string_command;
                         talkToR();
                     }
                 }
             }
             else {
-                if (info["data"][commobj.eqmcc.dataset].rownames != "") {
-                    console_command("eqmcc");
-                    commobj.eqmcc.outcome = getTrueKeys(colclicks.eqmcc.outcome);
-                    commobj.eqmcc.conditions = getTrueKeys(colclicks.eqmcc.conditions);
+                if (info["data"][commobj.minimize.dataset].rownames != "") {
+                    console_command("minimize");
+                    commobj.minimize.outcome = getTrueKeys(colclicks.minimize.outcome);
+                    commobj.minimize.conditions = getTrueKeys(colclicks.minimize.conditions);
                     Rcommand.command = string_command;
                     talkToR();
                 }
@@ -4810,21 +5001,21 @@ function draw_eqmcc(paper) {
     }
 }
 function filldirexp() {
-    if ($("#eqmcc").length) {
-        papers["eqmcc"]["direxp"].clear();
-        papers["eqmcc"]["direxp"].setSize(200, 20); 
+    if ($("#minimize").length) {
+        papers["minimize"]["direxp"].clear();
+        papers["minimize"]["direxp"].setSize(200, 20); 
         var print = false;
-        var inclrem = commobj.eqmcc.include.indexOf("?") >= 0;
-        if (colclicks.eqmcc !== void 0) {
-            if (colclicks.eqmcc.outcome !== void 0) {
-                if (getKeys(colclicks.eqmcc.outcome).length) {
-                    commobj.eqmcc.outcome = getTrueKeys(colclicks.eqmcc.outcome);
-                    commobj.eqmcc.conditions = getTrueKeys(colclicks.eqmcc.conditions);
+        var inclrem = commobj.minimize.include.indexOf("?") >= 0;
+        if (colclicks.minimize !== void 0) {
+            if (colclicks.minimize.outcome !== void 0) {
+                if (getKeys(colclicks.minimize.outcome).length) {
+                    commobj.minimize.outcome = getTrueKeys(colclicks.minimize.outcome);
+                    commobj.minimize.conditions = getTrueKeys(colclicks.minimize.conditions);
                 }
             }
         }
-        var condselected = commobj.eqmcc.conditions.length > 0;
-        var singleoutcome = commobj.eqmcc.outcome.length == 1;
+        var condselected = commobj.minimize.conditions.length > 0;
+        var singleoutcome = commobj.minimize.outcome.length == 1;
         if (inclrem) {
             if (condselected) {
                 print = true;
@@ -4836,12 +5027,12 @@ function filldirexp() {
             }
         }
         if (print) {
-            papers["eqmcc"]["main"].direxpl.attr({"text": "Directional exps:"});
-            var conds = commobj.eqmcc.conditions;
+            papers["minimize"]["main"].direxps.attr({"text": "Directional exps:"});
+            var conds = commobj.minimize.conditions;
             if (conds.length == 0) {
                 if (singleoutcome) {
-                    var colnames = copy(info["data"][commobj["eqmcc"].dataset].colnames);
-                    var index = colnames.indexOf(commobj.eqmcc.outcome[0]);
+                    var colnames = copy(info["data"][commobj["minimize"].dataset].colnames);
+                    var index = colnames.indexOf(commobj.minimize.outcome[0]);
                     if (index >= 0) { 
                         colnames.splice(index, 1);
                     }
@@ -4851,48 +5042,206 @@ function filldirexp() {
             var celltext = new Array(conds.length);
             var cellcover = new Array(conds.length);
             var colnms = new Array(conds.length);
-            if (commobj.eqmcc.dir_exp.length != conds.length) {
-                commobj.eqmcc.dir_exp = new Array(conds.length);
+            if (commobj.minimize.dir_exp.length != conds.length) {
+                commobj.minimize.dir_exp = new Array(conds.length);
                 for (var i = 0; i < conds.length; i++) {
-                    commobj.eqmcc.dir_exp[i] = "-";
+                    commobj.minimize.dir_exp[i] = "";
                 }
             }
             for (var i = 0; i < conds.length; i++) {
-                colnms[i] = papers["eqmcc"]["direxp"].text(3, i*20 + 11, conds[i]).attr({"text-anchor": "start", "font-size": "14px"});
-                if (colnms[i].getBBox().width > 52) {
+                colnms[i] = papers["minimize"]["direxp"].text(3, i*20 + 11, conds[i]).attr({"text-anchor": "start", "font-size": "14px"});
+                if (colnms[i].getBBox().width > 60) {
                     colnms[i].attr("text", getTrimmedText(colnms[i].attr("text"), 52));
                 }
-                celltext[i]  = papers["eqmcc"]["direxp"].text(73, i*20 + 11, commobj.eqmcc.dir_exp[i]).attr({"text-anchor": "start", "font-size": "14px"});
-                cellcover[i] = papers["eqmcc"]["direxp"].rect(68, i*20 + 1, 38, 20, 3)
+                celltext[i]  = papers["minimize"]["direxp"].text(81, i*20 + 11, commobj.minimize.dir_exp[i]).attr({"text-anchor": "start", "font-size": "14px"});
+                cellcover[i] = papers["minimize"]["direxp"].rect(76, i*20 + 1, 38, 20, 3)
                     .attr({fill: "#ffffff", stroke: "#d7d7d7", "fill-opacity": "0"});
                 cellcover[i].idx = i;
-                papers["eqmcc"]["direxp"].inlineTextEditing(celltext[i]);
+                papers["minimize"]["direxp"].inlineTextEditing(celltext[i]);
                 cellcover[i].click(function(e) {
                     e.stopPropagation();
                     var temp = celltext[this.idx].attr("text");
                     ovBox = this.getBBox();
-                    input = celltext[this.idx].inlineTextEditing.startEditing(ovBox.x, ovBox.y - $("#eqmcc_direxp").scrollTop(), ovBox.width, ovBox.height, "from_filldirexp");
+                    input = celltext[this.idx].inlineTextEditing.startEditing(ovBox.x, ovBox.y - $("#minimize_direxp").scrollTop(), ovBox.width, ovBox.height, "from_filldirexp");
                     input.idx = this.idx;
                     input.addEventListener("blur", function(e) {
                         celltext[this.idx].inlineTextEditing.stopEditing(tasta);
-                        if (celltext[this.idx].attr("text") == "") {
-                            celltext[this.idx].attr({"text": "-"})
-                        }
                         if (temp != celltext[this.idx].attr("text")) {
-                            commobj.eqmcc.dir_exp[this.idx] = celltext[this.idx].attr("text");
-                            console_command("eqmcc");
+                            commobj.minimize.dir_exp[this.idx] = celltext[this.idx].attr("text");
+                            console_command("minimize");
                         }
                         tasta = "enter";
                     })
                 })
             }
-            $(papers["eqmcc"]["direxp"].canvas).height(20*conds.length + 2);
+            $(papers["minimize"]["direxp"].canvas).height(20*conds.length + 2);
         }
         else {
-            commobj.eqmcc.dir_exp = new Array();
-            papers["eqmcc"]["main"].direxpl.attr({"text": ""});
-            $(papers["eqmcc"]["direxp"].canvas).height(20);
+            commobj.minimize.dir_exp = new Array();
+            papers["minimize"]["main"].direxps.attr({"text": ""});
+            $(papers["minimize"]["direxp"].canvas).height(20);
         }
+    }
+}
+function draw_findRows(paper) {
+    if ($("#findRows").length) {
+        paper.clear();
+        sat(paper.text(19, 17, "Truth table:"));
+        var type = new Array(4);
+        type[0] = paper.checkBox(170, 30, commobj.findRows.type[0], "Select All");
+        type[1] = paper.checkBox(170, 55, commobj.findRows.type[1], "Expression subsets:");
+        type[2] = paper.checkBox(170, 110, commobj.findRows.type[2], "Contradictory simplifying assumptions");
+        type[3] = paper.checkBox(170, 135, commobj.findRows.type[3], "Simultaneous subset relations");
+        var remainders = paper.checkBox(430, 55, commobj.findRows.remainders, "remainders only", 1);
+        var shade = paper.rect(195 - 5, 88 - 10, 255, 20, 3).attr({fill: "#000000", stroke: "none", "fill-opacity": "0.2"});
+        var type1_TB = textbox(paper, {x: 195, y: 88, width: 255, height: 20, text: commobj.findRows.expression});
+        paper.inlineTextEditing(type1_TB.text);
+        type1_TB.rect.click(function(e) {
+            if (commobj.findRows.type[1]) { 
+                var me = this;
+                e.stopPropagation();
+                var temp = type1_TB.text.attr("text");
+                ovBox = this.getBBox();
+                input = type1_TB.text.inlineTextEditing.startEditing(ovBox.x + 1, ovBox.y + 21 - 1*(navigator.browserType == "Firefox"), ovBox.width - 2, ovBox.height - 2);
+                input.addEventListener("blur", function() {
+                    type1_TB.text.inlineTextEditing.stopEditing(tasta);
+                    if (type1_TB.text.attr("text") != temp) {
+                        commobj.findRows.expression = type1_TB.text.attr("text");
+                        type1_TB.text.attr({"text": commobj.findRows.expression});
+                        console_command("findRows");
+                    }
+                    me.toFront();
+                    tasta = "enter";
+                }, true);
+            }
+        });
+        if (type[1].isChecked) {
+            shade.attr({"fill-opacity": "0"});
+        }
+        type[0].cover.click(function() {
+            var isChecked = type[0].isChecked;
+            shade.attr({"fill-opacity": 1*(isChecked ? 0 : 0.2)});
+            for (var i = 0; i < 4; i++) {
+                commobj.findRows.type[i] = isChecked;
+                if (isChecked) {
+                    type[i].check();
+                    remainders.activate();
+                }
+                else {
+                    type[i].uncheck();
+                    remainders.deactivate();
+                }
+            }
+            console_command("findRows");
+        });
+        var allchecked = function() {
+            var check = true;
+            for (var i = 1; i < 4; i++) {
+                check = check && type[i].isChecked;
+            }
+            return(check);
+        }
+        type[1].cover.click(function() {
+            commobj.findRows.type[1] = type[1].isChecked;
+            shade.attr({"fill-opacity": 1*(type[1].isChecked ? 0 : 0.2)});
+            if (allchecked()) {
+                type[0].check();
+                commobj.findRows.type[0] = true;
+                shade.attr({"fill-opacity": 0});
+            }
+            else {
+                type[0].uncheck();
+                commobj.findRows.type[0] = false;
+            }
+            if (type[1].isChecked) {
+                remainders.activate();
+            }
+            else {
+                remainders.deactivate();
+            }
+            console_command("findRows");
+        });
+        type[2].cover.click(function() {
+            commobj.findRows.type[2] = type[2].isChecked;
+            if (allchecked()) {
+                type[0].check();
+                commobj.findRows.type[0] = true;
+            }
+            else {
+                type[0].uncheck();
+                commobj.findRows.type[0] = false;
+            }
+            console_command("findRows");
+        });
+        type[3].cover.click(function() {
+            commobj.findRows.type[3] = type[3].isChecked;
+            if (allchecked()) {
+                type[0].check();
+                commobj.findRows.type[0] = true;
+            }
+            else {
+                type[0].uncheck();
+                commobj.findRows.type[0] = false;
+            }
+            console_command("findRows");
+        });
+        remainders.cover.click(function() {
+            commobj.findRows.remainders = remainders.isChecked;
+        });
+        var objname = paper.checkBox(14, 170, commobj.findRows.nameit, "Assign");
+        objname.cover.click(function() {
+            if (this.isChecked) {
+                objname.label[0].attr({"text": "Assign to:"});
+                commobj.findRows.objname = objname_TB.text.attr("text");
+                commobj.findRows.nameit = true;
+                objnameset.show();
+            }
+            else {
+                objname.label[0].attr({"text": "Assign"});
+                commobj.findRows.objname = "";
+                commobj.findRows.nameit = false;
+                objnameset.hide();
+            }
+            console_command("findRows");
+        });
+        var objnameset = paper.set();
+        var objname_TB = textbox(paper, {x: 14 + 95, y: 170 + 6, width: 220, height: 20, text: commobj.findRows.objname});
+        paper.inlineTextEditing(objname_TB.text);
+        objname_TB.rect.click(function(e) {
+            var me = this;
+            e.stopPropagation();
+            var temp = objname_TB.text.attr("text");
+            ovBox = this.getBBox();
+            input = objname_TB.text.inlineTextEditing.startEditing(ovBox.x + 1, ovBox.y + 21 - 1*(navigator.browserType == "Firefox"), ovBox.width - 2, ovBox.height - 2);
+            input.addEventListener("blur", function() {
+                objname_TB.text.inlineTextEditing.stopEditing(tasta);
+                if (objname_TB.text.attr("text") != temp) {
+                    commobj.findRows.objname = objname_TB.text.attr("text").replace(/[^A-Za-z0-9]/g, '');
+                    if (isNumeric(commobj.findRows.objname[0])) {
+                        commobj.findRows.objname = "x" + commobj.findRows.objname;
+                    }
+                    objname_TB.text.attr({"text": commobj.findRows.objname});
+                    console_command("findRows");
+                }
+                me.toFront();
+                tasta = "enter";
+            }, true);
+        });
+        objnameset.push(objname_TB.text, objname_TB.rect);
+        if (!objname.isChecked) {
+            objnameset.hide();
+        }
+        sat(paper.text(377 + 23, 163 + 13, "Run"));
+        paper.rect(377, 163, 70, 25)
+        .attr({fill: "white", "fill-opacity": 0, 'stroke-width': 1.25})
+        .click(function() {
+            if (info["tt"][commobj.findRows.obj] !== void 0) {
+                console.log(string_command);
+                Rcommand.command = string_command;
+                talkToR();
+            }
+        });
+        console_command("findRows");
     }
 }
 function checkIfDataLoadedInR() {
@@ -5279,7 +5628,7 @@ function printWhenOutputChanges() {
         if (responseR) {
             updatecounter = 0;
             refresh_cols("all");
-                if ($("#eqmcc").length) {
+                if ($("#minimize").length) {
                     checkeqtt();
                     filldirexp();
                 }
@@ -6235,15 +6584,28 @@ $("#menu_create_tt").click(function() {
     $("#main_menu").smartmenus('menuHideAll');
     return false;
 });
-$("#menu_eqmcc").click(function() {
+$("#menu_find_rows").click(function() {
     pingit();
-    if (!$("#eqmcc").length) {
-        createDialog(settings["eqmcc"]);
-        makePapers(settings["eqmcc"]);
-        draw_eqmcc(papers["eqmcc"]["main"]);
-        refresh_cols("eqmcc");
+    if (!$("#findRows").length) {
+        createDialog(settings["findRows"]);
+        makePapers(settings["findRows"]);
+        refresh_cols("findRows");
+        draw_findRows(papers["findRows"]["main"]);
+        current_command = "findRows";
+    }
+    $("#main_menu").smartmenus('menuHideAll');
+    return false;
+});
+$("#menu_minimize").click(function() {
+    pingit();
+    if (!$("#minimize").length) {
+        createDialog(settings["minimize"]);
+        makePapers(settings["minimize"]);
+        draw_minimize(papers["minimize"]["main"]);
+        refresh_cols("minimize");
         filldirexp();
-        current_command = "eqmcc";
+        checkeqtt()
+        current_command = "minimize";
     }
     $("#main_menu").smartmenus('menuHideAll');
     return false;
@@ -6331,7 +6693,7 @@ $("#menu_about").click(function() {
     if (!$("#about").length) {
         createDialog(settings["about"]);
         var messages = [
-            "R package: QCA, version 2.6",
+            "R package: QCA, version 3.0",
             "",
             "Author: Adrian Dușa (dusa.adrian@unibuc.ro)",
             "Former coauthors:",
@@ -6353,9 +6715,9 @@ $("#menu_about").click(function() {
             "results in a minimal causal combination which explains a given",
             "phenomenon.",
             "",
-            "To use in publications, please cite as:",
-            "        Dușa, Adrian (2007) User manual for the QCA(GUI) package in R,",
-            "        Journal of Business Research 60(5), 576-586."
+            "To cite this package in publications, please use:",
+            "        Dușa, Adrian (2018) QCA with R. A Comprehensive Resource.",
+            "        Springer International Publishing."
         ];
         for (var i = 0; i < messages.length; i++) {
             var text = strwrap(messages[i], 80, "  ");
@@ -6384,7 +6746,7 @@ $("#menu_changes").click(function() {
                 }
             }
         }
-        changes = 1;
+        changes += 1;
         updatecounter = 0;
         outres = new Array();
         responseR = false;
@@ -6442,8 +6804,8 @@ $("#result_main").append("<span style='color:#932192'>" + "> " + "</span>");
 $("#result_main").append("<span style='color:blue'>library(QCA)</span><br>");
 $("#result_main").append("<span style='color:red'>" + 
     "To cite this package in publications, please use:<br><br>" + 
-    "  Dusa, Adrian (2007). User manual for the QCA(GUI) package in R.<br>".split(" ").join("&nbsp;") + 
-    "  Journal of Business Research 60(5), 576-586.<br><br>".split(" ").join("&nbsp;"))
+    "  Dușa, Adrian (2018) QCA with R. A Comprehensive Resource.<br>".split(" ").join("&nbsp;") + 
+    "  Springer International Publishing.<br><br>".split(" ").join("&nbsp;"))
 createCommandPromptInRconsole();
 var keys = {
     cmd: false,

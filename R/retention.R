@@ -1,6 +1,6 @@
 `retention` <- 
-function(data, outcome = "", conditions = "", type = "corruption", 
-         dependent = TRUE, n.cut = 1, incl.cut = 1, p.pert = 0.5, n.pert = 1) {
+function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
+         type = "corruption", dependent = TRUE, p.pert = 0.5, n.pert = 1) {
     names(data) <- toupper(names(data))
     conditions <- toupper(conditions)
     outcome <- toupper(outcome)
@@ -32,7 +32,7 @@ function(data, outcome = "", conditions = "", type = "corruption",
     cneg <- cneg[total >= n.cut]
     total <- total[total >= n.cut]
     calculatePairs <- function(x, n.pert, type = "deletion") {
-        pairsxl <- combn(nrow(udata), min(x, nrow(udata)))
+        pairsxl <- combinations(nrow(udata), min(x, nrow(udata)))
         nofsetsxl <- 0
         for (j in seq(ncol(pairsxl))) {
             cposneg <- NULL

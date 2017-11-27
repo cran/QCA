@@ -1,7 +1,7 @@
 `export` <-
 function(x, file = "", ...) {
     export.args <- list(...)
-    Call <- match.call(expand.dots = TRUE)
+    Call <- as.list(match.call(expand.dots = TRUE))[-1]
     caseid <- "cases"
     if (any(names(export.args) == "caseid")) {
         caseid <- export.args[["caseid"]]
@@ -32,9 +32,6 @@ function(x, file = "", ...) {
     if (any(names(export.args) == "col.names")) {
         Call[["col.names"]] <- export.args[["col.names"]]
     }
-    Call[[1L]] <- as.name("write.table")
-    Call[[2L]] <- as.name("x")
-    Call[[3L]] <- file
     Call[["row.names"]] <- FALSE
-    eval(Call)
+    do.call("write.table", Call)
 }

@@ -1,6 +1,11 @@
 `prettyTable` <-
 function(mytable) {
-    mytable <- as.matrix(mytable)
+    if (methods::is(mytable, "pic")) {
+        class(mytable) <- "matrix" 
+    }
+    else {
+        mytable <- as.matrix(mytable) 
+    }
     if (is.logical(mytable)) {
         mytable2 <- mytable
         mytable[mytable2]  <- "x"

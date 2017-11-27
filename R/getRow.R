@@ -1,5 +1,5 @@
 `getRow` <- 
-function(noflevels, row.no, zerobased=FALSE) {
+function(row.no, noflevels, zerobased=FALSE) {
     max.combs <- prod(noflevels)
     if (any(row.no > (max.combs - zerobased))) {
         cat("\n")

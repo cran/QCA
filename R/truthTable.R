@@ -1,9 +1,12 @@
 `truthTable` <-
-function(data, outcome = "", conditions = "", n.cut = 1,
-         incl.cut = 1, complete = FALSE, show.cases = FALSE,
-         sort.by = "", use.letters = FALSE, inf.test = "", ...) {
+function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
+         complete = FALSE, use.letters = FALSE, show.cases = FALSE,
+         dcc = FALSE, sort.by = "", inf.test = "", ...) {
     metacall <- match.call(expand.dots = TRUE)
     other.args <- list(...)
+    back.args <- c("outcome", "conditions", "n.cut", "incl.cut", "complete", "show.cases", sort.by = "", "use.letters", "inf.test")
+    check.args <- pmatch(names(other.args), back.args)
+    names(other.args)[!is.na(check.args)] <- back.args[check.args[!is.na(check.args)]]
     ica <- 1
     if (is.character(incl.cut) & length(incl.cut) == 1) {
         incl.cut <- splitstr(incl.cut)
@@ -34,12 +37,12 @@ function(data, outcome = "", conditions = "", n.cut = 1,
     }
     outcome.copy <- outcome
     initial.data <- data
-    if (substring(outcome, 1, 1) == "~") {
+    if (tilde1st(outcome)) {
         neg.out <- TRUE
         outcome <- substring(outcome, 2)
     }
     if (!identical(outcome, "")) {
-        if (! toupper(curlyBrackets(outcome, outside=TRUE)) %in% colnames(data)) {
+        if (! toupper(curlyBrackets(outcome, outside = TRUE)) %in% colnames(data)) {
             cat("\n")
             stop(simpleError("Inexisting outcome name.\n\n"))
         }
@@ -50,7 +53,7 @@ function(data, outcome = "", conditions = "", n.cut = 1,
         data[, toupper(outcome)] <- as.numeric(data[, toupper(outcome)] %in% splitstr(outcome.value))
     }
     if (identical(conditions, "")) {
-        conditions <- setdiff(names(data), outcome)
+        conditions <- setdiff(colnames(data), outcome)
     }
     else {
         if (is.character(conditions) & length(conditions) == 1) {
@@ -70,6 +73,22 @@ function(data, outcome = "", conditions = "", n.cut = 1,
     if (!identical(inf.test, "")) {
         inf.test <- splitstr(inf.test)
     }
+    if (is.matrix(data)) {
+        if (is.null(colnames(data))) {
+            cat("\n")
+            stop(simpleError("The data should have column names.\n\n"))
+        }
+        if (any(duplicated(rownames(data)))) {
+            rownames(data) <- seq(nrow(data))
+        }
+        data <- as.data.frame(data)
+        for (i in seq(ncol(data))) {
+            if (possibleNumeric(data[, i])) {
+                data[, i] <- asNumeric(data[, i])
+            }
+        }
+        initial.data <- data
+    }
     verify.tt(data, outcome, conditions, complete, show.cases, icp, ica, inf.test)
     data <- data[, c(conditions, outcome)]
     if (ica > icp) {
@@ -82,23 +101,29 @@ function(data, outcome = "", conditions = "", n.cut = 1,
         data[, outcome] <- 1 - data[, outcome]
     }
     nofconditions <- length(conditions)
-    getnofl <- getNoflevels(data, conditions, outcome)
-    data <- getnofl$data
-    fuzzy.cc <- getnofl$fuzzy.cc
-    noflevels <- getnofl$noflevels
-    dc.code <- getnofl$dc.code
+    infodata  <- getInfo(data, conditions, outcome)
+    data      <- infodata$data 
+    hastime   <- infodata$hastime
+    fuzzy.cc  <- infodata$fuzzy.cc
+    noflevels <- infodata$noflevels
+    dc.code   <- infodata$dc.code
     rownames(data) <- rownames(initial.data)
     condata <- data[, conditions, drop = FALSE]
     if (any(fuzzy.cc)) {
+        if (any(data[, conditions[fuzzy.cc]] == 0.5)) {
+            cat("\n")
+            stop(simpleError("Fuzzy set causal conditions should not have values of 0.5 in the data.\n\n"))
+        }
         condata[, fuzzy.cc] <- lapply(condata[, fuzzy.cc, drop = FALSE], function(x) as.numeric(x > 0.5))
     }
-    line.data <- as.vector(as.matrix(condata) %*% c(rev(cumprod(rev(noflevels))), 1)[-1])
+    mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
+    line.data <- as.vector(as.matrix(condata) %*% mbase) + 1
     condata <- condata[order(line.data), ]
     uniq <- which(!duplicated(condata))
     tt <- condata[uniq, ]
-    rownstt <- sort(line.data)[uniq] + 1
+    rownstt <- sort(line.data)[uniq]
     rownames(tt) <- rownstt
-    ipc <- .Call("truthTable", as.matrix(data[, conditions]), as.matrix(tt), as.numeric(fuzzy.cc), data[, outcome], PACKAGE="QCA")
+    ipc <- .Call("truthTable", as.matrix(data[, conditions]), data[, outcome], as.matrix(tt), as.numeric(fuzzy.cc), PACKAGE = "QCA")
     colnames(ipc) <- rownstt
     minmat <- ipc[seq(4, nrow(ipc)), ]
     ipc <- ipc[1:3, ]
@@ -111,14 +136,18 @@ function(data, outcome = "", conditions = "", n.cut = 1,
     }
     tt$OUT <- "?"
     tt$OUT[!exclude] <- as.numeric(ipc[2, !exclude] >= (icp - .Machine$double.eps ^ 0.5))
-    tt$OUT[ipc[2, !exclude] < icp & ipc[2, !exclude] >= (ica - .Machine$double.eps ^ 0.5)] <- "C"
+    tt$OUT[ipc[2, !exclude] <= (icp - .Machine$double.eps ^ 0.5) & ipc[2, !exclude] >= (ica - .Machine$double.eps ^ 0.5)] <- "C"
     tt <- cbind(tt, t(ipc))
-    cases <- sapply(sort(unique(line.data)), function(x) {
-        paste(rownames(data)[which(line.data == x)], collapse=",")
+    cases <- sapply(rownstt, function(x) {
+        paste(rownames(data)[line.data == x], collapse = ",")
+    })
+    DCC <- apply(minmat, 2, function(x) {
+        paste(rownames(data)[x > 0.5 & data[, outcome] < 0.5], collapse = ",")
     })
     casesexcl <- cases[exclude]
     rownstt <- rownstt[!exclude]
     cases <- cases[!exclude]
+    DCC <- DCC[!exclude]
     excluded <- tt[exclude, , drop = FALSE]
     excluded$OUT <- as.numeric(ipc[2, exclude] >= (icp - .Machine$double.eps ^ 0.5))
     excluded$OUT[ipc[2, exclude] < icp & ipc[2, exclude] >= (ica - .Machine$double.eps ^ 0.5)]  <- "C"
@@ -158,8 +187,8 @@ function(data, outcome = "", conditions = "", n.cut = 1,
             }
         }
         sort.by[sort.by == "out"] <- "OUT"
-        decreasing <- decreasing[sort.by %in% names(tt)]
-        sort.by <- sort.by[sort.by %in% names(tt)]
+        decreasing <- decreasing[is.element(sort.by, names(tt))]
+        sort.by <- sort.by[is.element(sort.by, names(tt))]
         rowsorder <- seq_len(nrow(tt))
         for (i in rev(seq(length(sort.by)))) {
             rowsorder <- rowsorder[order(tt[rowsorder, sort.by[i]], decreasing = decreasing[i])]
@@ -170,12 +199,10 @@ function(data, outcome = "", conditions = "", n.cut = 1,
     }
     uppercols <- toupper(colnames(initial.data))
     for (i in seq(length(conditions))) {
-        if (!fuzzy.cc[i]) {
-            if (any(initial.data[, match(conditions[i], uppercols)] == dc.code)) {
-                tt[, i][tt[, i] == max(tt[, i])] <- dc.code
-                data[, i][data[, i] == max(data[, i])] <- dc.code
-                noflevels[i] <- noflevels[i] - 1
-            }
+        if (hastime[i]) {
+            tt[, i][tt[, i] == max(tt[, i])] <- dc.code
+            data[, i][data[, i] == max(data[, i])] <- -1 
+            noflevels[i] <- noflevels[i] - 1
         }
     }
     statistical.testing <- FALSE
@@ -219,15 +246,15 @@ function(data, outcome = "", conditions = "", n.cut = 1,
     numerics <- unlist(lapply(initial.data, possibleNumeric))
     colnames(initial.data)[!numerics] <- initialcols[!numerics]
     x <- list(tt = tt, indexes = rownstt, noflevels = as.vector(noflevels),
-              initial.data = initial.data, recoded.data = data, cases = cases, minmat = minmat,
+              initial.data = initial.data, recoded.data = data, cases = cases, DCC = DCC, minmat = minmat,
               options = list(outcome = outcome.copy, conditions = conditions, neg.out = neg.out, n.cut = n.cut,
-                             incl.cut = incl.cut, complete = complete, show.cases = show.cases,
+                             incl.cut = incl.cut, complete = complete, show.cases = show.cases, dcc = dcc,
                              use.letters = use.letters, inf.test = statistical.testing))
     if (any(exclude)) {
         excluded$cases <- ""
         excluded$cases <- casesexcl
         x$excluded <- structure(list(tt = excluded,
-                                     options = list(show.cases = TRUE, complete = FALSE, excluded = TRUE)), class="tt")
+                                     options = list(complete = FALSE, show.cases = show.cases, dcc = dcc, excluded = TRUE)), class="tt")
     }
     if (use.letters & any(nchar(conditions) > 1)) { 
         colnames(x$tt)[seq(nofconditions)] <- LETTERS[seq(nofconditions)]
@@ -235,7 +262,7 @@ function(data, outcome = "", conditions = "", n.cut = 1,
     if (!identical(sort.by, "")) {
         x$rowsorder <- rowsorder
     }
-    x$origin <- "QCAGUI"
+    x$fs <- unname(fuzzy.cc)
     x$call <- metacall
     return(structure(x, class="tt"))
 }

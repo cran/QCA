@@ -1,22 +1,22 @@
-`writePrimeimp` <- 
-function(idx, collapse="*", uplow=FALSE, use.tilde=FALSE) {
-    if (use.tilde) {
-        uplow <- FALSE
+`writePrimeimp` <-
+function(mymat, mv = FALSE, use.tilde = FALSE, collapse = "*", snames = "") {
+    if (any(mymat > 2)) {
+        mv <- TRUE
     }
-    idx <- as.data.frame(idx)
-    for (i in seq(ncol(idx))) {
-        if (uplow) {
-            conditions <- c(tolower(colnames(idx)[i]), toupper(colnames(idx)[i]))
-        }
-        else if (use.tilde) {
-            conditions <- c(paste("~", toupper(colnames(idx)[i]), sep=""), toupper(colnames(idx)[i]))
-        }
-        else {
-            conditions <- paste(colnames(idx)[i], "{", seq(max(idx[, i])) - 1, "}", sep="")
-        }
-        idx[idx[, i] != 0, i] <- conditions[idx[idx[, i] != 0, i]]
+    if (identical(snames, "")) {
+        snames <- colnames(mymat)
     }
-    return(apply(idx, 1, function(x) {
-        paste(x[x != 0], collapse=collapse)
-    }))
+    else {
+        mymat <- t(mymat)
+    }
+    chars <- snames[col(mymat)]
+    if (mv) {
+        chars <- matrix(paste(chars, "{", mymat - 1, "}", sep=""), nrow = nrow(mymat))
+    }
+    else {
+        lochars <- if (use.tilde) paste0("~", chars) else tolower(chars)
+        chars <- ifelse(mymat == 1L, lochars, chars)
+    }
+    keep <- mymat > 0L
+    as.vector(unlist(lapply(split(chars[keep], row(chars)[keep]), paste, collapse = collapse)))
 }

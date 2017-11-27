@@ -1,14 +1,13 @@
 citHeader("To cite this package in publications, please use:")
 
-citEntry(entry = "Article",
+citEntry(entry = "Book",
     author      = personList(as.person("Adrian Dusa")),
-    year        = "2007",
-    journal     = "Journal of Business Research",
-    volume      = "60",
-    number      = "5",
-    pages       = "576--586",
-    title       = "User manual for the QCA(GUI) package in R",
-    textVersion = paste("Dusa, Adrian (2007).",
-                        "User manual for the QCA(GUI) package in R,",
-                        "Journal of Business Research 60(5), 576-586.")
+    year        = "2018",
+    title       = "QCA with R. The Comprehensive Resource",
+    address     = "New York",
+    publisher   = "Springer-Verlag",
+    textVersion = paste("Dusa, Adrian (2018).",
+                        "QCA with R. A Comprehensive Resource.",
+                        "Springer International Publishing.")
 )
+

@@ -1,8 +1,5 @@
 `factorize` <- 
-function(expression, snames = "", noflevels, pos = FALSE, tilde, ...) {
-    if (!identical(snames, "")) {
-        snames <- splitstr(snames)
-    }
+function(input, snames = "", noflevels, pos = FALSE, tilde, ...) {
     pasteit <- function(mat, comrows, cols, comvals) {
         if (!missing(cols)) {
             temp <- mat[comrows, -cols, drop = FALSE]
@@ -44,7 +41,15 @@ function(expression, snames = "", noflevels, pos = FALSE, tilde, ...) {
             rowsf1 <- rowsf[rowsf != ""]
             rowsf[rowsf != ""] <- rowsf1[order(match(toupper(gsub("[^A-Za-z]", "", rowsf1)), snames))]
             rowsf <- sapply(rowsf, paste, collapse = collapse)
-            rowsf[rowsf == ""] <- 1
+            rowsf <- unique(setdiff(rowsf, ""))
+            if (all(nchar(unique(rowsf)) == 1)) {
+                tblchar <- table(toupper(rowsf))
+                if (any(tblchar > 1)) {
+                    for (ch in names(tblchar)[tblchar > 1]) {
+                        rowsf <- rowsf[-which(toupper(rowsf) == ch)]
+                    }
+                }
+            }
             rowsf <- paste(rowsf, collapse = " + ")
             cf <- paste(cf[order(match(toupper(gsub("[^A-Za-z]", "", cf)), snames))], collapse = collapse)
             pasted <- paste(cf, rowsf, sep="@")
@@ -77,7 +82,7 @@ function(expression, snames = "", noflevels, pos = FALSE, tilde, ...) {
         cfound <- FALSE
         result <- list()
         for (cc in seq(ncol(mat))) {
-            allcols <- combn(ncol(mat), cc)
+            allcols <- combinations(ncol(mat), cc)
             for (cols in seq(ncol(allcols))) {
                 temp <- mat[, allcols[, cols], drop = FALSE]
                 uniq <- unique(temp)
@@ -95,7 +100,7 @@ function(expression, snames = "", noflevels, pos = FALSE, tilde, ...) {
                                 names(result)[length(result)] <- pasted
                             }
                             else {
-                                result <- list(1)
+                                result <- list(NA)
                                 names(result) <- pasted
                             }
                         }
@@ -104,7 +109,7 @@ function(expression, snames = "", noflevels, pos = FALSE, tilde, ...) {
             }
         }
         if (!cfound) {
-            result <- list(1)
+            result <- list(NA)
             names(result) <- pasteit(mat)
         }
         return(result)
@@ -165,98 +170,57 @@ function(expression, snames = "", noflevels, pos = FALSE, tilde, ...) {
         }))
         return(sol)
     }
-    result <- list()
-    if (is(expression, "qca")) {
-        collapse <- expression$options$collapse
-        if (identical(snames, "")) {
-            if (expression$options$use.letters) {
-                snames <- LETTERS[seq(length(expression$tt$options$conditions))]
-            }
-            else {
-                snames <- expression$tt$options$conditions
-            }
+    isol <- NULL
+    if (methods::is(input, "qca")) {
+        collapse <- input$options$collapse
+        snames <- input$tt$options$conditions
+        if (input$options$use.letters) {
+            snames <- LETTERS[seq(length(snames))]
         }
-        if ("i.sol" %in% names(expression)) {
-            result$i.sol <- lapply(expression$i.sol, function(x) {
-                lapply(x$solution, paste, collapse=" + ")
-            })
-            names(result$i.sol) <- paste(names(expression$i.sol), "S", sep="")
+        if ("i.sol" %in% names(input)) {
+            elengths <- unlist(lapply(input$i.sol, function(x) length(x$solution)))
+            isol <- paste(rep(names(input$i.sol), each = elengths), unlist(lapply(elengths, seq)), sep = "-")
+            input <- unlist(lapply(input$i.sol, function(x) {
+                lapply(x$solution, paste, collapse = " + ")
+            }))
         }
         else {
-            result[[1]] <- list(lapply(expression$solution, paste, collapse=" + "))
+            input <- unlist(lapply(input$solution, paste, collapse = " + "))
         }
     }
-    else if (is(expression, "deMorgan")) {
-        collapse <- ifelse(any(grepl("[*]", unname(unlist(expression)))), "*", "")
-        getsnames <- FALSE
-        if (identical(snames, "")) {
-            if (any(attributes(expression) == "snames")) {
-                snames <- attr(expression, "snames")
-            }
-            else {
-                getsnames <- TRUE
-            }
-        }
-        if (names(expression)[1] == "S1") {
-            result[[1]] <- list(lapply(expression, function(x) {
-                paste(x[[2]], collapse = " + ")
-            }))
-            if (getsnames) {
-                snames <- sort(unique(toupper(gsub("[^A-Za-z]", "",
-                          unlist(strsplit(unname(unlist(lapply(expression, "[[", 2))), split=ifelse(collapse == "", "", "[*]")))))))
-            }
-        }
-        else {
-            result <- list(lapply(expression, function(x) {
-                lapply(x, function(y) {
-                    paste(y[[2]], collapse = " + ")
-                })
-            }))
-            if (getsnames) {
-                snames <- sort(unique(toupper(gsub("[^A-Za-z]", "",
-                          unlist(strsplit(unname(unlist(lapply(expression, function(x) {
-                              lapply(x, "[[", 2)
-                          }))), split=ifelse(collapse == "", "", "[*]")))))))
-            }
-            names(result) <- "i.sol"
-            names(result$i.sol) <- paste(names(result$i.sol), "N", sep="")
+    else if (methods::is(input, "deMorgan")) {
+        if (any(attributes(input) == "snames")) {
+            snames <- attr(input, "snames")
         }
     }
-    else if (is.character(expression)) {
-        collapse <- ifelse(any(grepl("[*]", expression)), "*", "")
-        result <- list(list(as.list(expression)))
-        if (identical(snames, "")) {
-            snames <- sort(unique(toupper(gsub("[^A-Za-z]", "",
-                          unlist(strsplit(unlist(strsplit(
-                          gsub("[[:space:]]", "", expression), split = "[+]")),
-                          split = ifelse(collapse == "", "", "[*]")))))))
+    factorizeit <- function(x, snames, noflevels) {
+        trexp <- translate(x, snames = snames, noflevels = noflevels)
+        snames <- colnames(trexp)
+        getSol(lapply(
+            names(unlist(getFacts(trexp))),
+            function(x) {
+                unlist(strsplit(x, split = "[.]"))
+            }
+        ), collapse = collapse, pos = pos)
+    }
+    if (is.character(input)) {
+        if (!identical(snames, "")) {
+            snames <- splitstr(snames)
         }
+        collapse <- ifelse(any(grepl("[*]", input)), "*", "")
+        mv <- any(grepl("[{]", unlist(input)))
+        if (missing(tilde)) {
+            tilde <- any(hastilde(unlist(input)))
+        }
+        result <- lapply(input, factorizeit, snames = snames, noflevels = noflevels)
+        names(result) <- unname(input)
+        if (!identical(snames, "")) {
+            attr(result, "snames") <- snames
+        }
+        if (!is.null(isol)) {
+            attr(result, "isol") <- isol
+        }
+        class(result) <- c("character", "factorize")
+        return(result)
     }
-    mv <- any(grepl("[{]", unlist(result)))
-    if (missing(tilde)) {
-        tilde <- any(grepl("~", unlist(result)))
-    }
-    mnofl <- missing(noflevels)
-    result[[1]] <- lapply(result[[1]], function(x) {
-        y <- lapply(x, function(x) {
-            if (mnofl) {
-                trnlt <- translate(x, snames = snames)
-            }
-            else {
-                trnlt <- translate(x, snames = snames, noflevels = noflevels)
-            }
-            getSol(lapply(
-                names(unlist(getFacts(trnlt))),
-                function(x) {
-                    unlist(strsplit(x, split = "[.]"))
-                }
-            ), collapse = collapse, pos = pos)
-        })
-        names(y) <- x
-        return(y)
-    })
-    if (is.null(names(result))) {
-        result <- result[[1]][[1]]
-    }
-    return(structure(result, class="fctr"))
 }

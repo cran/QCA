@@ -174,11 +174,11 @@
 				    txt = subject.attrs.text.replace(/\'/g,"\\\'");
 				}
                  
-                 if (type == "from_filldirexp") {
-                     if (txt == "-") {
-                         txt = "";
-                     }
-                 }
+                 // if (type == "from_filldirexp") {
+                 //    if (txt == "-") {
+                 //        txt = "";
+                 //    }
+                 // }
                  
                  this.input.value = txt;
                  

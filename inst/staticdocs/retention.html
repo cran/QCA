@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>retention. QCA 2.6</title>
+<title>retention. QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -53,37 +53,6 @@ Adrian Dusa
 
 <div class="row">
   <div class="span8">
-    <h2>Usage</h2>
-<pre><div>retention(data, outcome = "", conditions = "", type = "corruption",
-          dependent = TRUE, n.cut = 1, incl.cut = 1, p.pert = 0.5, n.pert = 1)</div></pre>
-    
-    <h2>Arguments</h2>
-    <dl>
-      <dt>data</dt>
-      <dd>A dataset of bivalent crisp-set factors.</dd>
-      <dt>outcome</dt>
-      <dd>The name of the outcome.</dd>
-      <dt>conditions</dt>
-      <dd>A string containing the condition variables' names,
-        separated by commas.</dd>
-      <dt>type</dt>
-      <dd>Simulate corruptions of values in the conditions (<b><code>"corruption"</code></b>),
-          or cases deleted entirely (<b><code>"deletion"</code></b>).</dd>
-      <dt>dependent</dt>
-      <dd>Logical, if <b><code>TRUE</code></b> indicating DPA - Dependent Perturbations
-        Assumption and if <b><code>FALSE</code></b> indicating IPA - Independent
-        Perturbations Assumption.</dd>
-      <dt>n.cut</dt>
-      <dd>The minimum number of cases for a causal combination with a set
-        membership score above 0.5, for an output function value of "0" or "1".</dd>
-      <dt>incl.cut</dt>
-      <dd>The minimum sufficiency inclusion score for an output function 
-        value of "1".</dd>
-      <dt>p.pert</dt>
-      <dd>Probability of perturbation under independent (IPA) assumption.</dd>
-      <dt>n.pert</dt>
-      <dd>Number of perturbations under dependent (DPA) assumption.</dd>
-    </dl>
     
     <div class="Description">
       <h2>Description</h2>
@@ -93,6 +62,65 @@ perturbation scenarios. It only works with  bivalent crisp-set data, containing 
 binary values 0 or 1.</p>
   
     </div>
+    
+    <h2>Usage</h2>
+<pre><div>retention(data, outcome = "", conditions = "", type = "corruption",
+          dependent = TRUE, n.cut = 1, incl.cut = 1, p.pert = 0.5, n.pert = 1)</div></pre>
+    
+    <h2>Arguments</h2>
+    <table>
+        <tr>
+            <td valign="top"><b><code>data</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A dataset of bivalent crisp-set factors.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>outcome</code></b></td>
+            <td></td><td></td><td></td>
+            <td>String, the name of the outcome.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>conditions</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A string containing the condition variables' names,
+        separated by commas.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>type</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Simulate corruptions of values in the conditions (<b><code>"corruption"</code></b>),
+          or cases deleted entirely (<b><code>"deletion"</code></b>).</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>dependent</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, if <b><code>TRUE</code></b> indicating DPA - Dependent Perturbations
+        Assumption and if <b><code>FALSE</code></b> indicating IPA - Independent
+        Perturbations Assumption.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>n.cut</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The minimum number of cases for a causal combination with a set
+        membership score above 0.5, for an output function value of "0" or "1".</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>incl.cut</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The minimum sufficiency inclusion score for an output function 
+        value of "1".</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>p.pert</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Probability of perturbation under independent (IPA) assumption.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>n.pert</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Number of perturbations under dependent (DPA) assumption.</td>
+        </tr>
+    </table>
 
     <div class="Details">
       <h2>Details</h2>

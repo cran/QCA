@@ -2,22 +2,33 @@
 
 \alias{.onAttach}
 
-\alias{deMorganLoop}
-\alias{eqmccLoop}
+\alias{agteb}
+\alias{alteb}
+\alias{as.panel}
+\alias{combinations}
+\alias{minimizeLoop}
+\alias{negateLoop}
 \alias{prettyTable}
 \alias{print.aE}
 \alias{print.deMorgan}
-\alias{print.fctr}
+\alias{print.factorize}
+\alias{print.fuzzy}
 \alias{print.pic}
 \alias{print.pof}
 \alias{print.qca}
 \alias{print.mqca}
 \alias{print.sS}
 \alias{print.tt}
+\alias{rebuild}
+\alias{removeRedundants}
+\alias{setRownames}
+\alias{setColnames}
+\alias{setDimnames}
 \alias{uninstall}
+\alias{validateNames}
 \alias{verify.data}
 \alias{verify.dir.exp}
-\alias{verify.eqmcc}
+\alias{verify.minimize}
 \alias{verify.inf.test}
 \alias{verify.qca}
 \alias{verify.mqca}
@@ -60,10 +71,15 @@
 \alias{asNumeric}
 \alias{possibleNumeric}
 
+\alias{dashes}
+\alias{hastilde}
+\alias{tilde1st}
+\alias{notilde}
 \alias{trimstr}
 \alias{nec}
 \alias{suf}
 \alias{splitstr}
+\alias{getInfo}
 \alias{getName}
 \alias{getNoflevels}
 \alias{getBigList}
@@ -88,7 +104,6 @@
 
 \alias{getSolution}
 \alias{writeSolution}
-\alias{createString}
 \alias{prettyString}
 \alias{rowDominance}
 \alias{sortVector}
@@ -96,21 +111,11 @@
 \alias{writePrimeimp}
 
 
-
-\alias{callAllSol}
-\alias{callFindSubsets}
-\alias{callRemoveRedundants}
-\alias{callSolveChart}
-\alias{callSuperSubsetMem}
-\alias{callSuperSubset}
-\alias{callTruthTable}
-
-
 \title{Internal Functions}
 
 \description{
   The above functions are internal in the QCA package which are not designed to 
-  be called directly by the user. All of them are used by the \code{eqmcc} function, 
+  be called directly by the user. All of them are used by the \code{minimize} function, 
   except \code{sortMatrix} which is used by \code{allExpressions}. The verification 
   and error messages have been moved to the internal functions \code{verify.data} 
   and \code{verify.tt}.

@@ -11,9 +11,8 @@ binary values 0 or 1.
 }
 
 \usage{
-retention(data, outcome = "", conditions = "", type = "corruption",
-          dependent = TRUE, n.cut = 1, incl.cut = 1, p.pert = 0.5,
-          n.pert = 1)
+retention(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
+         type = "corruption", dependent = TRUE, p.pert = 0.5, n.pert = 1)
 }
 
 \arguments{
@@ -21,15 +20,15 @@ retention(data, outcome = "", conditions = "", type = "corruption",
   \item{outcome}{The name of the outcome.}
   \item{conditions}{A string containing the condition variables' names,
         separated by commas.}
+  \item{incl.cut}{The minimum sufficiency inclusion score for an output function 
+        value of "1".}
+  \item{n.cut}{The minimum number of cases for a causal combination with a set
+        membership score above 0.5, for an output function value of "0" or "1".}
   \item{type}{Simulate corruptions of values in the conditions ("corruption"),
         or cases deleted entirely ("deletion").}
   \item{dependent}{Logical, if \bold{\code{TRUE}} indicating DPA - Dependent
         Perturbations Assumption and if \bold{\code{FALSE}} indicating
         IPA - Independent Perturbations Assumption.}
-  \item{n.cut}{The minimum number of cases for a causal combination with a set
-        membership score above 0.5, for an output function value of "0" or "1".}
-  \item{incl.cut}{The minimum sufficiency inclusion score for an output function 
-        value of "1".}
   \item{p.pert}{Probability of perturbation under independent (IPA) assumption.}
   \item{n.pert}{Number of perturbations under dependent (DPA) assumption.}
 }
@@ -68,7 +67,7 @@ cases is at least \bold{\code{n.cut}}, configurations with an inclusion score of
 inclusion score below \bold{\code{incl.cut}} are coded negative (\bold{\code{OUT = "0"}}).
 
 The argument \bold{\code{p.pert}} specifies the probability of perturbation under the
-IPA - independent perturbations assumption (when \bold{\code{dependent = FALSE}}.
+IPA - independent perturbations assumption (when \bold{\code{dependent = FALSE}}).
 
 The argument \bold{\code{n.pert}} specifies the number of perturbations under the
 DPA - dependent perturbations assumption (when \bold{\code{dependent = TRUE}}). At least
@@ -94,27 +93,25 @@ Diagnostics for Qualitative Comparative Analysis: A Combinatorial Approach.}
 }
 
 \examples{
-
 # the replication data, see Thiem, Spohel and Dusa (2015)
-
 dat <- data.frame(matrix(c(
     rep(1,25), rep(0,20), rep(c(0,0,1,0,0),3),
     0,0,0,1,0,0,1,0,0,0,0, rep(1,7),0,1),
-    nrow = 16, byrow = TRUE, dimnames = list(c(
-    "AT","DK","FI","NO","SE","AU","CA","FR",
-    "US","DE","NL","CH","JP","NZ","IE","BE"),
+    nrow = 16, byrow = TRUE, dimnames = list(
+    c("AT","DK","FI","NO","SE","AU","CA","FR",
+      "US","DE","NL","CH","JP","NZ","IE","BE"),
     c("P", "U", "C", "S", "W"))
 ))
 
 
 # calculate the retention probability, for 2.5% probability of data corruption
 # under the IPA - independent perturbation assuption
-retention(dat, outcome = "W", type = "corruption", dependent = FALSE,
-       p.pert = 0.025, incl.cut = 1)
+retention(dat, outcome = "W", incl.cut = 1, type = "corruption",
+       dependent = FALSE, p.pert = 0.025)
 
 # the probability that a csQCA solution will change
-1 - retention(dat, outcome = "W", type = "corruption", dependent = FALSE,
-       p.pert = 0.025, incl.cut = 1)
+1 - retention(dat, outcome = "W", incl.cut = 1, type = "corruption",
+       dependent = FALSE, p.pert = 0.025)
 
 }
 

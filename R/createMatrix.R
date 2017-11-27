@@ -18,6 +18,9 @@ function(noflevels, ...) {
         if (!is.null(other.args$depth)) {
             if (is.numeric(other.args$depth)) {
                 depth <- other.args$depth
+                if (depth < length(noflevels)) {
+                    arrange <- TRUE
+                }
             }
         }
     }
@@ -46,7 +49,16 @@ function(noflevels, ...) {
             depth <- nofconds
         }
     }
-    return(.Call("createMatrix", noflevels, arrange, depth, PACKAGE = "QCA"))
+    tosend <- list(noflevels, arrange, depth)
+    if (is.element("colnames", names(other.args))) {
+        colnms <- other.args$colnames
+        if (is.character(colnms)) {
+            if (length(colnms) == length(noflevels)) {
+                tosend <- c(tosend, list(colnms))
+            }
+        }
+    }
+    return(.Call("createMatrix", tosend, PACKAGE = "QCA"))
     pwr <- unique(noflevels)
     if (length(pwr) == 1) {
         create <- function(idx) {

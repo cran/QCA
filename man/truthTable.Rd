@@ -4,34 +4,37 @@
 \title{Create a truth table}
 
 \description{
-This function creates a truth table from all types of calibrated data (binary
+Function to create a truth table from all types of calibrated data (binary
 crisp, multi-value crisp and fuzzy).
-For fuzzy data, Ragin's (2008) procedure is applied to assign cases to the
-vector space corners (the truth table rows, combinations of causal conditions).
+For fuzzy data, an improved verson of Ragin's (2008) procedure is applied to
+assign cases to the vector space corners (the truth table rows).
 }
 
 \usage{
-truthTable(data, outcome = "", conditions = "", n.cut = 1,
-    incl.cut = 1, complete = FALSE,  show.cases = FALSE,
-    sort.by = "", use.letters = FALSE, inf.test = "", ...)
+truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
+           complete = FALSE, use.letters = FALSE, show.cases = FALSE,
+           dcc = FALSE, sort.by = "", inf.test = "", ...)
 }
 
 \arguments{
-  \item{data}{A data frame containing calibrated causal conditions and an outcome}
+  \item{data}{A data frame containing calibrated causal conditions and an outcome.}
   \item{outcome}{String, the name of the outcome.}
   \item{conditions}{A single string containing the conditions' (columns) names
         separated by commas, or a character vector of conditions' names.}
+  \item{incl.cut}{The inclusion cut-off(s): either a single value for the presence of the
+        output, or a vector of length 2, the second for the absence of the output.}
   \item{n.cut}{The minimum number of cases under which a truth table row is 
         declared as a remainder.}
-  \item{incl.cut}{The inclusion cutoff(s): either a single value for the presence of the
-        output, or a vector of length 2, the second for the absence of the output.}
   \item{complete}{Logical, print complete truth table.}
-  \item{show.cases}{Logical, print case names.}
-  \item{sort.by}{Sort the truth table according to various columns.}
   \item{use.letters}{Logical, use letters instead of causal conditions' names.}
+  \item{show.cases}{Logical, print case names.}
+  \item{dcc}{Logical, if \bold{\code{show.cases = TRUE}}, the cases being
+        displayed are the deviant cases consistency in kind.}
+  \item{sort.by}{Sort the truth table according to various columns.}
   \item{inf.test}{Specifies the statistical inference test to be performed
-       (currently only \code{"binom"}) and the critical significance level. It can be either
-       a vector of length 2, or a single string containing both, separated by a comma.}
+       (currently only \bold{\code{"binom"}}) and the critical significance level.
+       It can be either a vector of length 2, or a single string containing both,
+       separated by a comma.}
   \item{...}{Other arguments (mainly for backward compatibility).}
 }
 
@@ -52,59 +55,62 @@ If the outcome is a multivalue column, it can be specified in curly bracket nota
 indicating the value to be explained (the others being automatically converted to
 zero).
 
-The outcome can be negated using a tilde operator \bold{\code{~X}}. The logical argument
-\bold{\code{neg.out}} is now deprecated, but still backwards compatible. Replaced by the tilde
-in front of the outcome name, it controls whether \bold{\code{outcome}} is to be explained or
-its negation.
+The outcome can be negated using a tilde operator \bold{\code{~X}}. The logical
+argument \bold{\code{neg.out}} is now deprecated, but still backwards compatible.
+Replaced by the tilde in front of the outcome name, it controls whether
+\bold{\code{outcome}} is to be explained or its negation.
 
-If the outcome column is multi-value, the argument \bold{\code{outcome}} should use the standard
-curly-bracket notation \bold{\code{X{value}}}. Multiple values are allowed, separated by a comma
-(for example \bold{\code{X{1,2}}}). Negation of the outcome can also be performed using the tilde
-\bold{\code{~}} operator, for example \bold{\code{~X{1,2}}}, which is interpreted as:
-"all values in X except 1 and 2" and it becomes the new outcome to be explained.
+If the outcome column is multi-value, the argument \bold{\code{outcome}} should use
+the standard curly-bracket notation \bold{\code{X{value}}}. Multiple values are
+allowed, separated by a comma (for example \bold{\code{X{1,2}}}). Negation of the
+outcome can also be performed using the tilde \bold{\code{~}} operator, for example
+\bold{\code{~X{1,2}}}, which is interpreted as: "all values in X except 1 and 2"
+and it becomes the new outcome to be explained.
 
-Using both \bold{\code{neg.out = TRUE}} and a tilde \bold{\code{~}} in the outcome name don't cancel
-each other out, either one (or even both) signaling if the \bold{\code{outcome}} should be
-negated.
+Using both \bold{\code{neg.out = TRUE}} and a tilde \bold{\code{~}} in the outcome
+name don't cancel each other out, either one (or even both) signaling if the
+\bold{\code{outcome}} should be negated.
 
 The argument \bold{\code{conditions}} specifies the causal conditions' names among the other
 columns in the data. When this argument is not specified, all other columns except for
 the outcome are taken as causal conditions.
 
-A good practice advice is to specify both \bold{\code{outcome}} and \bold{\code{conditions}}
-as upper case letters. It is possible, in a next version, to negate outcomes using lower case
-letters, situation in which it really does matter how the outcome and/or conditions are
-specified.
+A good practice advice is to specify both \bold{\code{outcome}} and
+\bold{\code{conditions}} as upper case letters. It is possible, in a next version,
+to negate outcomes using lower case letters, a situation where it really does
+matter how the outcome and/or conditions are specified.
 
-The argument \bold{\code{n.cut}} specifies the frequency threshold under which a truth
-table row is coded as a remainder, irrespective of its inclusion score.
-
-The argument \bold{\code{incl.cut}} replaces the (deprecated, but still backwards compatible)
-former arguments \bold{\code{incl.cut1}} and \bold{\code{incl.cut0}}. Most of the analyses use
-the inclusion cutoff for the presence of the output (code \bold{\code{"1"}}). When users need
-both inclusion cutoffs (see below), \bold{\code{incl.cut}} can be specified as a vector of
-length 2, in the form: \bold{\code{c(ic1, ic0)}} where:
+The argument \bold{\code{incl.cut}} replaces the (deprecated, but still backwards
+compatible) former arguments \bold{\code{incl.cut1}} and \bold{\code{incl.cut0}}.
+Most of the analyses use the inclusion cutoff for the presence of the output
+(code \bold{\code{"1"}}). When users need both inclusion cutoffs (see below),
+\bold{\code{incl.cut}} can be specified as a vector of length 2, in the form:
+\bold{\code{c(ic1, ic0)}} where:
 
 \tabular{rl}{
 \bold{\code{ic1}} \tab is the inclusion cutoff for the presence of the output,\cr
                   \tab a minimum sufficiency inclusion score above which the output
-                       value is coded with \bold{\code{"1"}}.\cr \cr
+                       value is coded with \code{"1"}.\cr \cr
 \bold{\code{ic0}} \tab is the inclusion cutoff for the absence of the output,\cr
                   \tab a maximum sufficiency inclusion score below which the output
-                       value is coded with \bold{\code{"0"}}.
+                       value is coded with \code{"0"}.\cr
 }
 
-
-If not specifically declared, the argument \bold{\code{ic0}} is automatically set equal to
-\bold{\code{ic1}}, but otherwise \bold{\code{ic0}} should always be lower than \bold{\code{ic1}}.
+If not specifically declared, the argument \bold{\code{ic0}} is automatically set
+equal to \bold{\code{ic1}}, but otherwise \bold{\code{ic0}} should always be lower
+than \bold{\code{ic1}}.
 
 Using these two cutoffs, the observed combinations are coded with:
 
 \tabular{rl}{
 \bold{\code{"1"}} \tab if they have an inclusion score above \bold{\code{ic1}}\cr \cr
-\bold{\code{"C"}} \tab if they have an inclusion score below \bold{\code{ic1}} and above \bold{\code{ic0}} (contradiction)\cr \cr
-\bold{\code{"0"}} \tab if they have an inclusion score below \bold{\code{ic0}}
+\bold{\code{"C"}} \tab if they have an inclusion score below \bold{\code{ic1}} and
+                       above \bold{\code{ic0}} (contradiction)\cr \cr
+\bold{\code{"0"}} \tab if they have an inclusion score below \bold{\code{ic0}}\cr
 }
+
+The argument \bold{\code{n.cut}} specifies the frequency threshold under which a truth
+table row is coded as a remainder, irrespective of its inclusion score.
 
 When argument \bold{\code{show.cases}} is set to \bold{\code{TRUE}}, the case names will be
 printed at their corresponding row in the truth table. The resulting object always contains
@@ -117,7 +123,7 @@ and/or by their inclusion score, and/or by their frequency, in any order.
 
 Sorting decreasingly (the default) or increasingly can be specified adding the signs
 \bold{\code{-}} or \bold{\code{+}}, next after the column name in argument
-\bold{\code{sort.by}} (see examples). Note that \bold{\code{-}} is redundant, because
+\bold{\code{sort.by}} (see examples). Note that \bold{\code{-}} is redundant because
 it is the default anyways.
 
 The order specified in this vector is the order in which the configurations will
@@ -135,16 +141,20 @@ Following a similar logic as above, for a given (specified) critical significanc
 the output for a truth table row will be coded as:
 
 \tabular{rl}{
-\bold{\code{"1"}} \tab if the true inclusion score is significanly higher than \bold{\code{ic1}},\cr \cr
-\bold{\code{"C"}} \tab contradiction, if the true inclusion score is not significantly higher than \bold{\code{ic1}}\cr
+\bold{\code{"1"}} \tab if the true inclusion score is significanly higher than
+                       \bold{\code{ic1}},\cr \cr
+\bold{\code{"C"}} \tab contradiction, if the true inclusion score is not significantly
+                       higher than \bold{\code{ic1}}\cr
                   \tab but significantly higher than \bold{\code{ic0}},\cr \cr
-\bold{\code{"0"}} \tab if the true inclusion score is not significantly higher than \bold{\code{ic0}}.
+\bold{\code{"0"}} \tab if the true inclusion score is not significantly higher than
+                       \bold{\code{ic0}}.\cr
 }
 
-It should be noted that statistical tests perform well only when the number of cases is large,
-otherwise they are usually not significant. For a low number of cases, depending on the inclusion
-cutoff value(s), it will be harder to code a value of \bold{\code{"1"}} in the output, and also
-harder to obtain contradictions if the true inclusion is not signficantly higher than \bold{\code{ic0}}.
+It should be noted that statistical tests perform well only when the number of cases is
+large, otherwise they are usually not significant. For a low number of cases, depending
+on the inclusion cutoff value(s), it will be harder to code a value of \bold{\code{"1"}}
+in the output, and also harder to obtain contradictions if the true inclusion is not
+signficantly higher than \bold{\code{ic0}}.
 
 The argument \bold{\code{complete}} controls how to print the table on the screen, either
 complete (when set to \bold{\code{TRUE}}), or just the observed combinations (default).
@@ -158,7 +168,7 @@ truth table row having a correspondent intersection in the diagram.
 }
 
 \value{
-An object of class \dQuote{tt}, a list containing the following components:
+An object of class \code{"tt"}, a list containing the following components:
 
 \tabular{rl}{
 \bold{tt} \tab The truth table itself.\cr
@@ -169,13 +179,8 @@ An object of class \dQuote{tt}, a list containing the following components:
 \bold{cases} \tab The cases for each observed causal configuration.\cr
 \bold{options} \tab The command options used.\cr
 \bold{rowsorder} \tab The order of the rows after sorting, if using \bold{\code{sort.by}}.\cr
-\bold{minmat} \tab A membership scores matrix of cases in the observed truth table combinations.
+\bold{minmat} \tab The membership scores matrix of cases in the observed truth table combinations.
 }
-
-For reasons related to compatibility with other packages, the \bold{\code{options}}
-component with temporarily contain both forms of notation for the inclusion cuttofs: in
-addition to \bold{\code{incl.cut}} it will also contain \bold{\code{incl.cut1}} and
-\bold{\code{incl.cut0}} (but will soon be deprecated).
 
 }
 
@@ -209,10 +214,9 @@ Thiem, A.; Dusa, A. (2013) \emph{Qualitative Comparative Analysis with R:
 A User's Guide}. New York: Springer.
 }
 
-\seealso{\code{\link{eqmcc}}}
+\seealso{\code{\link{minimize}}}
 
 \examples{
-
 # -----
 # Lipset binary crisp data
 data(LC)
@@ -238,7 +242,6 @@ truthTable(LC, "SURV", complete = TRUE, sort.by = "incl, n")
 truthTable(LC, "SURV", complete = TRUE, sort.by = "incl-, n+")
 
 
-
 # -----
 # Lipset multi-value crisp data (Cronqvist & Berg-Schlosser 2009, p.80)
 data(LM)
@@ -250,7 +253,6 @@ ttLM
 
 # the observed combinations coded as remainders
 ttLM$excluded
-
 
 
 # -----
@@ -270,7 +272,6 @@ truthTable(CVF, "~PROTEST", incl.cut = 0.8, sort.by = "incl")
 
 # allow contradictions
 truthTable(CVF, "PROTEST", incl.cut = c(0.8, 0.75), sort.by = "incl")
-
 
 
 # -----

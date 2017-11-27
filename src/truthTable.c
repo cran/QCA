@@ -1,30 +1,30 @@
 # include <R.h>
 # include <Rinternals.h>
 # include <R_ext/Rdynload.h>
-SEXP truthTable(SEXP x, SEXP y, SEXP fuz, SEXP vo) { 
+SEXP truthTable(SEXP x, SEXP vo, SEXP tt, SEXP fuz) {
     int i, j, k, index;
     double *p_x, *p_inclpri, *p_vo, min, so, sumx, sumpmin, prisum, temp1, temp2;
-    int xrows, xcols, yrows, ncut, *p_y, *p_fuz;
+    int xrows, xcols, ttrows, ncut, *p_tt, *p_fuz;
     SEXP usage = PROTECT(allocVector(VECSXP, 4));
     SET_VECTOR_ELT(usage, 0, x = coerceVector(x, REALSXP));
-    SET_VECTOR_ELT(usage, 1, y = coerceVector(y, INTSXP));
-    SET_VECTOR_ELT(usage, 2, fuz = coerceVector(fuz, INTSXP));
-    SET_VECTOR_ELT(usage, 3, vo = coerceVector(vo, REALSXP));
+    SET_VECTOR_ELT(usage, 1, vo = coerceVector(vo, REALSXP));
+    SET_VECTOR_ELT(usage, 2, tt = coerceVector(tt, INTSXP));
+    SET_VECTOR_ELT(usage, 3, fuz = coerceVector(fuz, INTSXP));
     xrows = nrows(x);
-    yrows = nrows(y);
     xcols = ncols(x);
+    ttrows = nrows(tt);
     double copyline[xcols];
     p_x = REAL(x);
-    p_y = INTEGER(y);
-    p_fuz = INTEGER(fuz);
     p_vo = REAL(vo);
-    SEXP inclpri = PROTECT(allocMatrix(REALSXP, 3 + xrows, yrows));
+    p_tt = INTEGER(tt);
+    p_fuz = INTEGER(fuz);
+    SEXP inclpri = PROTECT(allocMatrix(REALSXP, 3 + xrows, ttrows));
     p_inclpri = REAL(inclpri);
     so = 0;
     for (i = 0; i < length(vo); i++) {
         so += p_vo[i];
     }
-    for (k = 0; k < yrows; k++) { 
+    for (k = 0; k < ttrows; k++) { 
         sumx = 0;
         sumpmin = 0;
         prisum = 0;  
@@ -33,14 +33,14 @@ SEXP truthTable(SEXP x, SEXP y, SEXP fuz, SEXP vo) {
             min = 1000;
             for (j = 0; j < xcols; j++) { 
                 copyline[j] = p_x[j * xrows + i];
-                index = j * yrows + k;
+                index = j * ttrows + k;
                 if (p_fuz[j] == 1) { 
-                    if (p_y[index] == 0) {
+                    if (p_tt[index] == 0) {
                         copyline[j] = 1 - copyline[j];
                     }
                 }
                 else {
-                    if (p_y[index] != (copyline[j])) {
+                    if (p_tt[index] != (copyline[j])) {
                         copyline[j] = 0;
                     }
                     else {

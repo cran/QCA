@@ -1,13 +1,38 @@
 `pof` <-
-function(setms, outcome, data, relation = "nec", inf.test = "",
-         incl.cut = c(0.75, 0.5), ...) {
-    funargs <- lapply(match.call(expand.dots = TRUE), deparse) 
+function(setms, outcome, data, relation = "necessity", inf.test = "",
+         incl.cut = c(0.75, 0.5), add = NULL, ...) {
+    funargs <- lapply(match.call(), deparse)
     other.args <- list(...)
     conds <- ""
     condnegated <- NULL
     if (inherits(tryCatch(eval(setms), error = function(e) e), "error")) {
         setms <- funargs$setms
+        toverify <- gsub("1-", "", gsub("[[:space:]]", "", notilde(setms)))
+        toverify <- unique(unlist(lapply(strsplit(toverify, split = "[+]"), strsplit, split = "[*]")))
+        if (!all(found <- is.element(toupper(toverify), toupper(eval.parent(parse(text = "ls()", n = 1)))))) {
+            cat("\n")
+            stop(simpleError(sprintf("Object '%s' not found.\n\n", toverify[which(!found)[1]])))
+        }
     }
+    else {
+        if (grepl("coms|pims", funargs$setms)) {
+            toverify <- notilde(gsub("1-", "", gsub("[[:space:]]", "", funargs$setms)))
+            if (grepl("[$]", toverify)) {
+                toverify <- unlist(strsplit(toverify, split = "\\$"))[1]
+                if (grepl("pims", funargs$setms)) { 
+                    tt <- eval.parent(parse(text = sprintf("%s$tt", toverify)))
+                    conds <- tt$options$conditions
+                    if (tt$options$use.letters) {
+                        conds <- LETTERS[seq(length(conds))]    
+                    }
+                }
+                else {
+                    conds <- eval.parent(parse(text = sprintf("%s$options$conditions", toverify)))
+                }
+            }
+        }
+    }
+    missingdata <- missing(data)
     if (!is.character(setms)) {
         if (inherits(testit <- tryCatch(eval(setms), error = function(e) e), "error")) {
             setms <- deparse(funargs$setms)
@@ -15,9 +40,10 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
         else {
             testit <- capture.output(testit)
             if (is.character(testit) & length(testit) == 1) {
-                if (grepl("~", testit)) {
-                    if (eval.parent(parse(text=paste0("\"", gsub("~", "", testit), "\" %in% ls()")), n = 1)) {
-                        setms <- 1 - eval.parent(parse(text=paste("get(\"", gsub("~", "", testit), "\")", sep="")), n = 1)
+                if (hastilde(testit)) {
+                    if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", notilde(testit))), n = 1)) {
+                        setms <- eval.parent(parse(text = sprintf("get(\"%s\")", notilde(testit))), n = 1)
+                        setms <- getNoflevels(setms) - setms - 1
                         condnegated <- TRUE
                     }
                     else {
@@ -29,9 +55,10 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
     }
     else {
         if (setms == tolower(setms) & setms != toupper(setms)) {
-            if (eval.parent(parse(text=paste0("\"", toupper(setms), "\" %in% ls()")), n = 1)) {
+            if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", toupper(setms))), n = 1)) {
                 conds <- toupper(setms)
-                setms <- 1 - eval.parent(parse(text=paste("get(\"", toupper(setms), "\")", sep="")), n = 1)
+                setms <- eval.parent(parse(text = sprintf("get(\"%s\")", toupper(setms))), n = 1)
+                setms <- getNoflevels(setms) - setms - 1
                 condnegated <- TRUE
             }
         }
@@ -42,16 +69,18 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
         outcome <- funargs$outcome
     }
     if (!is.character(outcome)) {
-        if (inherits(testit <- tryCatch(eval(outcome), error = function(e) e), "error")) {
+        testit <- tryCatch(eval(outcome), error = function(e) e)
+        if (inherits(testit, "error")) {
             outcome <- deparse(funargs$outcome)
         }
         else {
             testit <- capture.output(testit)
             if (is.character(testit) & length(testit) == 1) {
-                if (grepl("~", testit)) {
-                    if (eval.parent(parse(text=paste0("\"", gsub("~", "", testit), "\" %in% ls()")), n = 1)) {
-                        outcome <- 1 - eval.parent(parse(text=paste("get(\"", gsub("~", "", testit), "\")", sep="")), n = 1)
-                        condnegated <- TRUE
+                if (hastilde(testit)) {
+                    if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", notilde(testit))), n = 1)) {
+                        outcome <- eval.parent(parse(text = sprintf("get(\"%s\")", notilde(testit))), n = 1)
+                        outcome <- getNoflevels(outcome) - outcome - 1
+                        outnegated <- TRUE
                     }
                     else {
                         outcome <- testit
@@ -79,8 +108,7 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
         if ("incl.cut0" %in% names(other.args) & identical(ica, 0.5)) {
             ica <- other.args$incl.cut0
         }
-    recursive <- "recursive" %in% names(other.args)
-    via.eqmcc <- "via.eqmcc" %in% names(other.args)
+    syscalls <- unlist(lapply(lapply(sys.calls(), as.character), "[[", 1)) 
     force.rows <- "force.rows" %in% names(other.args)
     if (is.null(outnegated)) {
         outnegated <- identical(substr(gsub("[[:space:]]", "", funargs$outcome), 1, 2), "1-")
@@ -89,12 +117,12 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
         condnegated <- identical(substr(gsub("[[:space:]]", "", funargs$setms), 1, 2), "1-")
     }
     fuzzyop <- FALSE
-    if (recursive) {
+    if (is.element("Recall", syscalls)) {
         mins <- other.args$mins
         outcome <- other.args$vo
         sum.outcome <- other.args$so
         pims <- other.args$pims
-        incl.cov <- matrix(NA, nrow=ncol(mins), ncol=4)
+        incl.cov <- matrix(nrow = ncol(mins), ncol = 4)
     }
     else {
         outcomename <- "Y" 
@@ -105,16 +133,37 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
             verify.qca(data)
             colnames(data) <- toupper(colnames(data))
             for (i in colnames(data)) {
-                if (!is.numeric(data[, i]) & possibleNumeric(data[, i])) {
-                    data[, i] <- asNumeric(data[, i])
+                if (!is.numeric(data[, i])) {
+                    if (possibleNumeric(data[, i])) {
+                        data[, i] <- asNumeric(data[, i])
+                    }
                 }
             }
         }
-        if (class(setms) == "character") {
+        if (is.element("character", class(setms))) {
             if (length(setms) == 1) {
                 if (missing(data)) {
-                    cat("\n")
-                    stop(simpleError("The data argument is missing, with no default.\n\n"))
+                    syscalls <- unlist(lapply(sys.calls(), deparse))
+                    if (any(withdata <- grepl("with\\(", syscalls))) {
+                        data <- get(unlist(strsplit(gsub("with\\(", "", syscalls), split = ","))[1], envir = length(syscalls) - which(withdata))
+                    }
+                    else {
+                        toverify <- gsub("1-", "", gsub("[[:space:]]", "", notilde(setms)))
+                        if (all(is.character(outcome)) & length(outcome) == 1) {
+                            toverify <- paste(toverify, notilde(outcome), sep = "*")
+                        }
+                        colnms <- validateNames(gsub("<|=|>", "", toverify), sort(toupper(eval.parent(parse(text = "ls()", n = 1)))))
+                        data <- vector(mode = "list", length = length(colnms))
+                        for (i in seq(length(data))) {
+                            data[[i]] <- eval.parent(parse(text = sprintf("get(\"%s\")", colnms[i]), n = 1))
+                        }
+                        if (length(unique(unlist(lapply(data, length)))) > 1) {
+                            cat("\n")
+                            stop(simpleError("Objects should be vectors of the same length.\n\n"))
+                        }
+                        names(data) <- colnms
+                        data <- as.data.frame(data)
+                    }
                 }
                 expression <- setms
                 if (grepl("<=>", expression)) {
@@ -146,16 +195,16 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
                 else {
                     if (is.character(outcome)) {
                         conditions <- setdiff(conditions, outcome)
-                        if (! toupper(gsub("~", "", curlyBrackets(outcome, outside=TRUE))) %in% colnames(data)) {
+                        if (! toupper(notilde(curlyBrackets(outcome, outside=TRUE))) %in% colnames(data)) {
                             cat("\n")
                             stop(simpleError("The outcome in the expression is not found in the data.\n\n"))
                         }
                     }
                 }
                 if (is.character(outcome)) {
-                    if (substring(outcome, 1, 1) == "~") {
+                    if (tilde1st(outcome)) {
                         neg.out <- TRUE
-                        outcome <- substring(outcome, 2)
+                        outcome <- notilde(outcome)
                     }
                     if (grepl("[{|}]", outcome)) {
                         outcome.value <- curlyBrackets(outcome)
@@ -163,7 +212,7 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
                         data[, toupper(outcome)] <- as.numeric(data[, toupper(outcome)] %in% splitstr(outcome.value))
                     }
                     else if (! outcome %in% colnames(data)) {
-                        data[, toupper(outcome)] <- 1 - data[, toupper(outcome)]
+                        data[, toupper(outcome)] <- getNoflevels(data[, toupper(outcome)]) - data[, toupper(outcome)] - 1
                     }
                     outcome <- toupper(outcome)
                 }
@@ -174,7 +223,7 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
                     }
                 }
                 if (is.character(outcome)) {
-                    data2 <- data[, -which(colnames(data) == outcome)]
+                    data2 <- data[, -which(colnames(data) == outcome), drop = FALSE]
                     setms <- compute(expression, data2, separate = TRUE)
                     if (is.data.frame(setms)) {
                         setms$expression <- compute(expression, data2)
@@ -207,7 +256,7 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
             }
             else {
                 outcome <- toupper(outcome)
-                if (substring(outcome, 1, 1) == "~") {
+                if (tilde1st(outcome)) {
                     neg.out <- TRUE
                     outcome <- substring(outcome, 2)
                 }
@@ -229,13 +278,10 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
             }
         }
         else if (is.vector(outcome)) {
-            if (identical(outcomename, "")) {
-                outcomename <- "Y"
                 verify.qca(outcome)
                 if (!inherits(tc <- tryCatch(getName(funargs$outcome), error = function(e) e), "error")) {
                     outcomename <- tc
                 }
-            }
         }
         else {
             cat("\n")
@@ -254,8 +300,8 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
             outcomename <- toupper(outcomename)
             conditions <- setdiff(colnames(data), outcomename)
             data <- data[, c(conditions, outcomename)]
-            if (any(outcomename %in% colnames(data))) {
-                noflevels <- getNoflevels(data, conditions, outcomename)$noflevels
+            if (any(is.element(outcomename, colnames(data)))) {
+                noflevels <- getInfo(data[, conditions, drop = FALSE])
             }
             else {
                 cat("\n")
@@ -263,7 +309,7 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
             }
         }
         pims <- FALSE
-        if (class(setms) == "fuzzyop") {
+        if (is.element("fuzzyop", class(setms))) {
             conditions <- "expression"
             setms <- data.frame(X = as.vector(setms))
             colnames(setms) <- conditions
@@ -309,7 +355,7 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
             }
         }
         else if (is.matrix(setms)) {
-            if (via.eqmcc) {
+            if (is.element("minimize", syscalls)) {
                 conditions <- other.args$conditions
             }
             if (missing(data)) {
@@ -341,7 +387,7 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
                     cat("\n")
                     stop(simpleError("The \"setms\" argument does not appear to be a vector of row numbers.\n\n"))
                 }
-                setms <- getRow(noflevels + 1, setms)
+                setms <- getRow(setms, noflevels + 1)
             }
             else {
                 if (length(setms) == length(outcome)) {
@@ -372,7 +418,7 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
                         stop(simpleError("Data argument is missing, or the length of \"setms\" is not equal to the length of outcome.\n\n"))
                     }
                     else {
-                        setms <- getRow(noflevels + 1, setms)
+                        setms <- getRow(setms, noflevels + 1)
                     }
                 }
             }
@@ -383,8 +429,9 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
         }
         if (missing(data)) {
             data <- as.data.frame(newdata)
-            noflevels <- getNoflevels(data, conditions, outcomename)$noflevels
         }
+        infodata <- getInfo(data, conditions = conditions)
+        noflevels <- infodata$noflevels
         if (is.matrix(setms)) {
             if (is.null(colnames(setms))) {
                 colnames(setms) <- toupper(conditions)
@@ -392,27 +439,20 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
             if (is.null(rownames(setms))) {
                 use.tilde <- FALSE
                 if ("use.tilde" %in% names(other.args)) {
-                    rownames(setms) <- writePrimeimp(setms, uplow=all(noflevels == 2), use.tilde=other.args$use.tilde)
+                    use.tilde <- other.args$use.tilde
                 }
-                else {
-                    rownames(setms) <- writePrimeimp(setms, uplow=all(noflevels == 2))
-                }
+                rownames(setms) <- writePrimeimp(setms, mv = any(setms > 2), use.tilde = use.tilde)
                 rownames(setms) <- gsub("NA\\*", "", rownames(setms))
             }
         }
-        hastime <- logical(length(conditions))
-        for (i in seq(length(conditions))) {
-            if (any(data[, i] %in% c("-", "dc", "?"))) {
-                hastime[i] <- TRUE
+        if (any(hastime <- infodata$hastime)) {
+            data <- infodata$data
+            for (i in which(hastime)) {
+                data[, i][data[, i] < 0] <- noflevels[i] + 1
             }
         }
-        if (!pims) {
-            setms <- setms[, !hastime, drop=FALSE]
-        }
-        data[, which(hastime)] <- NULL
-        conditions <- conditions[!hastime]
         if (neg.out) {
-            outcome <- 1 - outcome
+            outcome <- getNoflevels(outcome) - outcome - 1
         }
         sum.outcome <- sum(outcome)
         if (pims) {
@@ -455,11 +495,11 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
     multivalue <- any(grepl("[{|}]", colnames(mins)))
     if (condnegated) {
         if (identical(conds, "")) {
-            conds <- eval(parse(text = paste("attr(", gsub("1-", "", gsub("[[:space:]]", "", funargs$setms)), ", \"conditions\")")), envir=parent.frame())
+            conds <- eval.parent(parse(text = paste("attr(", gsub("1-", "", gsub("[[:space:]]", "", funargs$setms)), ", \"conditions\")")))
         }
         if (any(grepl("[*]", colnames(mins)))) {
-            rownames(incl.cov) <- gsub("[[:space:]]", "", sapply(lapply(colnames(mins), deMorgan, snames = conds, use.tilde = any(grepl("~", colnames(mins)))), function(x) {
-                return(paste(x[[1]][[2]], collapse="+"))
+            rownames(incl.cov) <- gsub("[[:space:]]", "", sapply(lapply(colnames(mins), negate, snames = conds, use.tilde = any(hastilde(colnames(mins)))), function(x) {
+                gsub("[[:space:]]", "", x)
             }))
         }
         else {
@@ -475,19 +515,24 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
                 }
             }
             if (all(toupper(unique(unlist(strsplit(colnames(mins), split="")))) %in% toupper(conds))) {
-                rownames(incl.cov) <- gsub("[[:space:]]", "", sapply(lapply(colnames(mins), deMorgan, snames = conds, use.tilde = any(grepl("~", colnames(mins)))), function(x) {
-                    return(paste(x[[1]][[2]], collapse="+"))
+                rownames(incl.cov) <- gsub("[[:space:]]", "", sapply(lapply(colnames(mins), negate, snames = conds, use.tilde = any(hastilde(colnames(mins)))), function(x) {
+                    gsub("[[:space:]]", "", x)
                 }))
             }
             else {
-                rownames(incl.cov) <- paste("~", colnames(mins))
+                if (identical(colnames(mins), toupper(colnames(mins)))) {
+                    rownames(incl.cov) <- paste("~", colnames(mins), sep = "")
+                }
+                else {
+                    rownames(incl.cov) <- paste("~", colnames(mins))
+                }
             }
-        }     
+        }
     }
     else {
         rownames(incl.cov) <- colnames(mins)
     }
-    colnames(incl.cov) <- c("incl", "PRI", "cov.r", "cov.u")
+    colnames(incl.cov) <- c("inclS", "PRI", "covS", "covU")
     pmins <- apply(mins, 2, pmin, outcome)
     primins <- apply(mins, 2, function(x) pmin(x, 1 - outcome, outcome))
     if (nec(relation)) {
@@ -503,6 +548,7 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
     incl.cov[, 2] <- (colSums(pmins) - colSums(primins))/(colSums(mins) - colSums(primins))
     incl.cov[, 3] <- colSums(pmins)/sum.outcome
     if (nec(relation)) {
+        colnames(incl.cov)[c(1, 3)] <- c("inclN", "covN")
         incl.cov[, 1] <- colSums(pmins)/sum.outcome
         incl.cov[, 2] <- colSums(1 - mins)/colSums(1 - pmins)
         incl.cov[, 3] <- colSums(pmins)/colSums(mins)
@@ -521,15 +567,46 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
             incl.cov[i, 4] <- incl.cov[i, 3] - sum(pmin(pmins[, i], fuzzyor(pmins[, -i]), outcome))/sum.outcome
         }
     }
+    if (!is.null(add)) {
+        if (!(is.list(add) | is.function(add))) {
+            cat("\n")
+            stop(simpleError("The argument \"add\" should be a function or a list of functions.\n\n"))
+        }
+        if (is.list(add)) {
+            if (!all(unlist(lapply(add, is.function)))) {
+                cat("\n")
+                stop(simpleError("Components from the list argument \"add\" should be functions.\n\n"))
+            }
+            toadd <- matrix(nrow = nrow(incl.cov), ncol = length(add))
+            if (is.null(names(add))) {
+                names(add) <- paste0("X", seq(length(add)))
+            }
+            if (any(duplicated(substr(names(add), 1, 5)))) {
+                names(add) <- paste0("X", seq(length(add)))
+            }
+            colnames(toadd) <- substr(names(add), 1, 5)
+            for (i in seq(length(add))) {
+                toadd[, i] <- apply(mins, 2, add[[i]], outcome)
+            }
+        }
+        else {
+            toadd <- matrix(apply(mins, 2, add, outcome), ncol = 1)
+            if (any(grepl("function", funargs$add))) {
+                funargs$add <- "X"
+            }
+            colnames(toadd) <- substr(funargs$add, 1, 5)
+        }
+        incl.cov <- cbind(incl.cov, toadd)
+    }
     sol.incl <- sum(inclusions)/sum(maxmins)
     sol.pri <- (sum(inclusions) - sum(prisol))/(sum(maxmins) - sum(prisol))
     sum.cov <- sum(inclusions)/sum.outcome
     result.list <- list(incl.cov=as.data.frame(incl.cov, stringsAsFactors = FALSE), relation=relation)
-    if (!pims & via.eqmcc) {
+    if (!pims & is.element("minimize", syscalls)) {
         result.list$sol.incl.cov <- c(incl=sol.incl, PRI=sol.pri, cov=sum.cov)
         result.list$pims <- as.data.frame(mins)
     }
-    if ("recursive" %in% names(other.args)) {
+    if (is.element("Recall", syscalls)) {
         return(result.list)
     }
     showc <- FALSE
@@ -554,7 +631,7 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
         else {
             nofcases <- colSums(mins)
         }
-        success <- as.vector(round(nofcases * as.numeric(incl.cov[, "incl"])))
+        success <- as.vector(round(nofcases * as.numeric(incl.cov[, which(grepl("incl", colnames(incl.cov)))[1]])))
         incl.cov$pval0 <- incl.cov$pval1 <- 0
         for (i in seq(length(success))) {
             incl.cov[i, "pval1"] <- binom.test(success[i], nofcases[i], p = icp, alternative = "greater")$p.value
@@ -573,9 +650,8 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
         length.solution <- length(solution.list)
         individual <- vector("list", length=length.solution)
         for (i in seq(length.solution)) {
-            individual[[i]] <- Recall(relation="sufficiency", recursive=TRUE, via.eqmcc=TRUE,
-                                      mins=mins[, solution.list[[i]], drop=FALSE],
-                                      vo=outcome, so=sum.outcome, pims=pims) 
+            individual[[i]] <- Recall(setms = setms, outcome = outcome, data = data, relation = "sufficiency", mins = mins[, solution.list[[i]], drop=FALSE],
+                                      vo = outcome, so = sum.outcome, pims = pims) 
         }
         return(structure(list(overall=result.list, individual=individual, essential=other.args$essential, pims=as.data.frame(mins), relation=relation, options=funargs[-1]), class="pof"))
     }
@@ -585,9 +661,11 @@ function(setms, outcome, data, relation = "nec", inf.test = "",
             cnames[cnames == "PRI"] <- "RoN"
             colnames(result.list$incl.cov) <- cnames
         }
+        funargs$setms <- setms
+        funargs$outcome <- outcome
+        funargs$relation <- relation
         result.list$options <- funargs[-1]
         result.list$options$fuzzyop <- fuzzyop
-        result.list$options$relation <- relation
         return(structure(result.list, class="pof"))
     }   
 }

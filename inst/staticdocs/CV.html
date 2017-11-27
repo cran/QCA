@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>_Cebotari and Vink. QCA 2.6</title>
+<title>_Cebotari and Vink. QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="">
 
@@ -32,7 +32,7 @@
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -67,27 +67,57 @@ associated replication file Cebotari and Vink (2015).</p>
       <h2>Format</h2>
 
       <p>A data frame containing 29 cases (ethnic minorities) and the following 6 columns:</p>
-  
-      <p><table><tr><td>
-<b><code>DEMOC</code></b>    </td>
-</tr><tr><td> Level of democracy </td>
-</tr><tr><td>
-<b><code>ETHFRACT</code></b> </td>
-</tr><tr><td> Degree of ethnic fractionalization </td>
-</tr><tr><td> 
-<b><code>GEOCON</code></b>   </td>
-</tr><tr><td> Territorial concentration </td>
-</tr><tr><td> 
-<b><code>POLDIS</code></b>   </td>
-</tr><tr><td> Political discrimination </td>
-</tr><tr><td>
-<b><code>NATPRIDE</code></b> </td>
-</tr><tr><td> National pride </td>
-</tr><tr><td>
-<b><code>PROTEST</code></b>  </td>
-</tr><tr><td> Ethnopolitical protest </td>
-</tr></table></p>
-  
+<p><table>
+    <tr>
+        <td valign="top"><b><code>DEMOC</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Level of democracy: (contextual factor), based on a democracy index ranking countries on a
+scale from strong autocracies (0) to strong democracies (10). The fuzzy scores were
+calibrated using an exclusion threshold of 2, a crossover of 7 and an inclusion
+threshold of 9.5.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>ETHFRACT</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Degree of ethnic fractionalization: (contextual factor), with raw scores ranging from a perfectly
+homogenous society (0) to a highly fragmented country (1). The fuzzy scores were
+calibrated using an exclusion threshold of 0, a crossover of 0.495 and an inclusion
+threshold of 0.8.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>GEOCON</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Territorial concentration: (group-related factor) with raw data coded as: widely dispersed (0) and
+primarily urban minorities (1) considered territorially dispersed minorities, and
+ethnic comunities majoritary in a region (2) and entirely concentrated in one region (3)
+considered as territorially concentrated minorities. The fuzzy scores were calibrated
+using an exclusion threshold of 0, a crossover of 1.25 and an inclusion threshold of 3.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>POLDIS</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Political discrimination: (group-related factor) captures discrimination practices toward minority
+groups that vary from no discrimination (0) to exclusive and repressive policies
+toward a minority group (4). The fuzzy scores were calibrated using an exclusion
+threshold of 0, a crossover of 0.75 and an inclusion threshold of 3.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>NATPRIDE</code></b></td>
+        <td></td><td></td><td></td>
+        <td>National pride: (group-related factor) with raw scores ranging from &#145;not at all
+proud&#146; (0) to &#145;very proud&#146; (3). The fuzzy scores were calibrated using an
+exclusion threshold of 0.5, a crossover of 1.5 and an inclusion threshold of 2.5.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>PROTEST</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Outcome, ethnopolitical protest: measured on a range from 0 to 5 with
+higher values indicating more intense protest actions. The fuzzy scores were
+calibrated using an exclusion threshold of 0.5, a crossover of 1.5 and an inclusion
+threshold of 3.</td>
+    </tr>
+</table></p>
+
     </div>
 
     <div class="Details">
@@ -96,39 +126,6 @@ associated replication file Cebotari and Vink (2015).</p>
       <p>There are two different versions of the Cebotari and Vink data: <b><code>CVR</code></b> contains
 the raw data, and <b><code>CVF</code></b> contains the data calibrated to fuzzy-sets.</p>
   
-      <p>The causal conditions are:</p>
-  
-      <p><b><code>DEMOC</code></b> (contextual factor), based on a democracy index ranking countries on a
-scale from strong autocracies (0) to strong democracies (10). The fuzzy scores were
-calibrated using an exclusion threshold of 2, a crossover of 7 and an inclusion
-threshold of 9.5.</p>
-  
-      <p><b><code>ETHFRACT</code></b> (contextual factor), with raw scores ranging from a perfectly
-homogenous society (0) to a highly fragmented country (1). The fuzzy scores were
-calibrated using an exclusion threshold of 0, a crossover of 0.495 and an inclusion
-threshold of 0.8.</p>
-  
-      <p><b><code>GEOCON</code></b> (group-related factor) with raw data coded as: widely dispersed (0) and
-primarily urban minorities (1) considered territorially dispersed minorities, and
-ethnic comunities majoritary in a region (2) and entirely concentrated in one region (3)
-considered as territorially concentrated minorities. The fuzzy scores were calibrated
-using an exclusion threshold of 0, a crossover of 1.25 and an inclusion threshold of 3.</p>
-  
-      <p><b><code>POLDIS</code></b> (group-related factor) captures discrimination practices toward minority
-groups that vary from no discrimination (0) to exclusive and repressive policies
-toward a minority group (4). The fuzzy scores were calibrated using an exclusion
-threshold of 0, a crossover of 0.75 and an inclusion threshold of 3.</p>
-  
-      <p><b><code>NATPRIDE</code></b> (group-related factor) with raw scores ranging from &#145;not at all
-proud&#146; (0) to &#145;very proud&#146; (3). The fuzzy scores were calibrated using an
-exclusion threshold of 0.5, a crossover of 1.5 and an inclusion threshold of 2.5.</p>
-  
-      <p>The outcome is the column <b><code>PROTEST</code></b>, measured on a range from 0 to 5 with
-higher values indicating more intense protest actions. The fuzzy scores were
-calibrated using an exclusion threshold of 0.5, a crossover of 1.5 and an inclusion
-threshold of 3.</p>
-  
-      <p></p>
   
     </div>
 

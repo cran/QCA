@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>truthTable. QCA 2.6</title>
+<title>truthTable. QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -53,53 +53,92 @@ Adrian Dusa
 
 <div class="row">
   <div class="span8">
-    <h2>Usage</h2>
-<pre><div>truthTable(data, outcome = "", conditions = "", n.cut = 1,
-           incl.cut = 1, complete = FALSE,  show.cases = FALSE,
-           sort.by = "", use.letters = FALSE, inf.test = "", ...)</div></pre>
-    
-    <h2>Arguments</h2>
-    <dl>
-      <dt>data</dt>
-      <dd>A data frame containing calibrated causal conditions and an outcome</dd>
-      <dt>outcome</dt>
-      <dd>String, the name of the outcome.</dd>
-      <dt>conditions</dt>
-      <dd>A single string containing the conditions' (columns) names
-        separated by commas, or a character vector of conditions' names.</dd>
-      <dt>n.cut</dt>
-      <dd>The minimum number of cases under which a truth table row is 
-        declared as a remainder.</dd>
-      <dt>incl.cut</dt>
-      <dd>The inclusion cutoff(s): either a single value for the presence of the
-        output, or a vector of length 2, the second for the absence of the output.</dd>
-      <dt>complete</dt>
-      <dd>Logical, print complete truth table.</dd>
-      <dt>show.cases</dt>
-      <dd>Logical, print case names.</dd>
-      <dt>sort.by</dt>
-      <dd>Sort the truth table according to various columns.</dd>
-      <dt>use.letters</dt>
-      <dd>Logical, use letters instead of causal conditions' names.</dd>
-      <dt>inf.test</dt>
-      <dd>Specifies the statistical inference test to be performed
-       (currently only <code>"binom"</code>) and the critical significance level. It can be either
-       a vector of length 2, or a single string containing both, separated by a comma.</dd>
-      <dt>...</dt>
-      <dd>Other arguments (mainly for backward compatibility).</dd>
-      <dt>x</dt>
-      <dd>An object of class &#147;tt&#148;.</dd>
-    </dl>
     
     <div class="Description">
       <h2>Description</h2>
 
-      <p>This function creates a truth table from all types of calibrated data (binary
-crisp, multi-value crisp and fuzzy).
-For fuzzy data, Ragin's (2008) procedure is applied to assign cases to the
-vector space corners (the truth table rows, combinations of causal conditions).</p>
+      <p>Function to create a truth table from all types of calibrated data (binary
+crisp, multi-value crisp and fuzzy). For fuzzy data, an improved verson of Ragin's (2008)
+procedure is applied to assign cases to the vector space corners (the truth table rows,
+combinations of causal conditions).</p>
   
     </div>
+    
+    <h2>Usage</h2>
+<pre><div>truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
+           complete = FALSE, use.letters = FALSE, show.cases = FALSE,
+           dcc = FALSE, sort.by = "", inf.test = "", ...)</div></pre>
+    
+    <h2>Arguments</h2>
+    <table>
+        <tr>
+            <td valign="top"><b><code>data</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A data frame containing calibrated causal conditions and an outcome</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>outcome</code></b></td>
+            <td></td><td></td><td></td>
+            <td>String, the name of the outcome.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>conditions</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A single string containing the conditions' (columns) names
+        separated by commas, or a character vector of conditions' names.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>incl.cut</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The inclusion cutoff(s): either a single value for the presence of the
+        output, or a vector of length 2, the second for the absence of the output.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>n.cut</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The minimum number of cases under which a truth table row is 
+        declared as a remainder.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>complete</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, print complete truth table.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>use.letters</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, use letters instead of causal conditions' names.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>show.cases</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, print case names.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>dcc</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, if <b><code>show.cases = TRUE</code></b>, the cases being displayed
+                are the deviant cases consistency in kind.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>sort.by</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Sort the truth table according to various columns.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>inf.test</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Specifies the statistical inference test to be performed
+        (currently only <b><code>"binom"</code></b>) and the critical significance level. It can be either
+        a vector of length 2, or a single string containing both, separated by a comma.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>...</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Other arguments (mainly for backward compatibility).</td>
+        </tr>
+    </table>
+    
 
     <div class="Details">
       <h2>Details</h2>
@@ -144,9 +183,6 @@ as upper case letters. It is possible, in a next version, to negate outcomes usi
 letters, situation in which it really does matter how the outcome and/or conditions are
 specified.</p>
   
-      <p>The argument <b><code>n.cut</code></b> specifies the frequency threshold under which a truth
-table row is coded as a remainder, irrespective of its inclusion score.</p>
-  
       <p>The argument <b><code>incl.cut</code></b> replaces the (deprecated, but still backwards compatible)
 former arguments <b><code>incl.cut1</code></b> and <b><code>incl.cut0</code></b>. Most of the analyses use
 the inclusion cutoff for the presence of the output (code <b><code>"1"</code></b>). When users need
@@ -176,6 +212,9 @@ length 2, in the form: <b><code>c(ic1, ic0)</code></b> where:</p>
 <b><code>"C"</code></b> </td>
 <td> if they have an inclusion score below <b><code>ic1</code></b> and above <b><code>ic0</code></b> (contradiction)</td>
 </tr></table></p>
+  
+      <p>The argument <b><code>n.cut</code></b> specifies the frequency threshold under which a truth
+table row is coded as a remainder, irrespective of its inclusion score.</p>
   
       <p>When argument <b><code>show.cases</code></b> is set to <b><code>TRUE</code></b>, the case names will be
 printed at their corresponding row in the truth table. The resulting object always contains
@@ -239,38 +278,56 @@ truth table row having a correspondent intersection in the diagram.</p>
 
       <p><dl>
 An object of class &#147;tt&#148;, a list containing the following components:</p>
-  
-      <p><table><tr><td>
-<b>tt</b> </td><td></td>
-<td> The truth table itself.</td>
-</tr><tr><td>
-<b>indexes</b> </td><td></td>
-<td> The line numbers for the observed causal configurations.</td>
-</tr><tr><td>
-<b>noflevels</b> </td><td></td>
-<td> A vector with the number of values for each causal condition.</td>
-</tr><tr><td>
-<b>initial.data</b> </td><td></td>
-<td> The initial data.</td>
-</tr><tr><td>
-<b>recoded.data</b> </td><td></td>
-<td> The crisp version of the <b><code>initial.data</code></b>, if fuzzy.</td>
-</tr><tr><td>
-<b>cases</b> </td><td></td>
-<td> The cases for each observed causal configuration.</td>
-</tr><tr><td>
-<b>options</b> </td><td></td>
-<td> The command options used.</td>
-<b>rowsorder</b> </td><td></td>
-<td> The order of the rows after sorting, if using <b><code>sort.by</code></b>.</td>
-<b>minmat</b> </td><td></td>
-<td> A membership scores matrix of cases in the observed truth table combinations.</td>
-</tr></table></p>
-  
-      <p>For reasons related to compatibility with other packages, the <b><code>options</code></b>
-component with temporarily contain both forms of notation for the inclusion cuttofs: in
-addition to <b><code>incl.cut</code></b> it will also contain <b><code>incl.cut1</code></b> and
-<b><code>incl.cut0</code></b> (but will soon be deprecated).</p>
+
+    <p>
+    <table>
+        <tr>
+            <td valign="top"><b><code>tt</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The truth table itself.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>indexes</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The line numbers for the observed causal configurations.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>noflevels</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A vector with the number of values for each causal condition.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>initial.data</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The initial data.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>recoded.data</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The crisp version of the <b><code>initial.data</code></b>, if fuzzy.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>cases</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The cases for each observed causal configuration.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>options</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The command options used.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>rowsorder</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The order of the rows after sorting, if using <b><code>sort.by</code></b>.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>minmat</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A membership scores matrix of cases in the observed truth table combinations.</td>
+        </tr>
+    </table>
+    </p>
   
       <p></dl></p>
   
@@ -597,12 +654,12 @@ ttCVF &lt;- truthTable(CVF, &quot;PROTEST&quot;, incl.cut = 0.8, sort.by = &quot
 library(venn)
 venn(ttCVF)
 </div>
-<p><img src='truthTable-20.svg' alt='' width='400' height='400' /></p>
+<p><img src='truthTable-20.svgz' alt='' width='400' height='400' /></p>
 <div class='input'>
 # each intersection transparent by its inclusion score
 venn(ttCVF, transparency = ttCVF$tt$incl)
 </div>
-<p><img src='truthTable-22.svg' alt='' width='400' height='400' /></p>
+<p><img src='truthTable-22.svgz' alt='' width='400' height='400' /></p>
 <div class='input'>
 # the truth table negating the outcome
 truthTable(CVF, &quot;~PROTEST&quot;, incl.cut = 0.8, sort.by = &quot;incl&quot;)

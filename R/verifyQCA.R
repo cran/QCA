@@ -74,7 +74,7 @@ function(data) {
                                 paste(notnumeric, collapse=", "),
                                 ifelse(length(notnumeric) == 1, " is ", " are "),
                                 "not numeric.", sep="")
-            stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")), "\n\n")
+            stop(simpleError(paste(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep=""), "\n\n", sep = "")))
         }
         if (any(checkuncal)) {
             cat("\n")
@@ -114,7 +114,7 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
                    ".\n\n", sep="")
         stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
     }
-    if (is(data, "tt")) {
+    if (methods::is(data, "tt")) {
         data <- data$initial.data
     }
     if (identical(outcome, "")) {
@@ -173,7 +173,7 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
     verify.qca(data)
     verify.inf.test(inf.test, data)
 }
-`verify.eqmcc` <-
+`verify.minimize` <-
 function(data, outcome = "", conditions = "", explain = "",
          include = "", use.letters = FALSE) {
     verify.data(data, outcome = outcome, conditions = conditions)
@@ -181,28 +181,25 @@ function(data, outcome = "", conditions = "", explain = "",
         cat("\n")
         stop(simpleError("You have not specified what to explain.\n\n"))
     }
-    if (!all(explain %in% c(0, 1, "C"))) {
+    if (any(explain == 0)) {
         cat("\n")
-        stop(simpleError("You should explain either 0, 1, or C.\n\n"))
+        stop(simpleError("Negative output configurations cannot be explained.\n\n"))
     }
-    chexplain <- c(0, 1)[which(0:1 %in% explain)]
-    chinclude <- c(0, 1)[which(0:1 %in% include)]
-    if (length(chinclude) > 0) {
-        if (any(chinclude != chexplain)) {
-            chinclude <- chinclude[which(chinclude != chexplain)]
-            cat("\n")
-            errmessage <- paste("You cannot include ", chinclude, " since you want to explain ", chexplain, ".\n\n", sep="")
-            stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
-        }
-    }
-    if (length(chexplain) == 2) {
+    if (any(include == 0)) {
         cat("\n")
-        stop(simpleError("Combination to be explained not allowed.\n\n"))
+        stop(simpleError("Negative output configurations cannot be included in the minimization.\n\n"))
     }
-    if (!all(include %in% c("?", "0", "1", "C"))) {
+    if (length(setdiff(explain, c(1, "C"))) > 0) {
         cat("\n")
-        errmessage <- "You can only include one or more of the following: \"?\", \"C\", \"0\" and \"1\".\n\n"
-        stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+        stop(simpleError("Only the positive output configurations and/or contradictions can be explained.\n\n"))
+    }
+    if (length(setdiff(include, c("?", "C", ""))) > 0) {
+        cat("\n")
+        stop(simpleError("Only the remainders and/or the contradictions can be included in the minimization.\n\n"))
+    }
+    if (is.element("C", explain) & is.element("C", include)) {
+        cat("\n")
+        stop(simpleError("Contradictions are either explained or included, but not both.\n\n"))
     }
     if (!identical(conditions, "")) {
         if (length(conditions) == 1 & is.character(conditions)) {
@@ -287,7 +284,7 @@ function(data, outcome, conditions, dir.exp = "") {
         for (i in seq(length(del))) {
             values <- del[[i]]
             if (all(values %in% c("-", "dc"))) {
-                delc[[i]][names(delc[[i]])] <- 1
+                delc[[i]][names(delc[[i]])] <- 0
             }
             else {
                 values <- setdiff(values, c("-", "dc"))
@@ -305,25 +302,14 @@ function(data, outcome, conditions, dir.exp = "") {
     }
 }
 `verify.mqca` <-
-function(data, outcome = "", conditions = c("")) {
+function(allargs) {
+    data <- allargs$input
+    outcome <- splitstr(allargs$outcome)
     mvoutcome <- grepl("[{]", outcome) 
-    outcome.value <- rep(-1, length(outcome))
     if (any(mvoutcome)) {
-        outcome.copy <- outcome
-        outcome.copy <- strsplit(outcome.copy, split = "")
-        outcome.name <- outcome.value <- vector(mode="list", length=length(outcome))
-        for (i in seq(length(outcome.copy))) {
-            if (mvoutcome[i]) {
-                outcome.value[[i]] <- as.numeric(outcome.copy[[i]][which(outcome.copy[[i]] == "{") + 1])
-                outcome.name[[i]] <- paste(outcome.copy[[i]][seq(1, which(outcome.copy[[i]] == "{") - 1)], collapse="")
-            }
-            else {
-                outcome.value[[i]] <- -1
-                outcome.name[[i]] <- outcome[i]
-            }
-        }
-        outcome <- unlist(outcome.name)
-        if (length(intersect(outcome, names(data))) < length(outcome)) {
+        outcome.value <- curlyBrackets(outcome)
+        outcome <- curlyBrackets(outcome, outside = TRUE)
+        if (length(setdiff(outcome, names(data))) > 0) {
             outcome <- setdiff(outcome, names(data))
             cat("\n")
             errmessage <- paste("Outcome(s) not present in the data: \"", paste(outcome, collapse="\", \""), "\".\n\n", sep="")
@@ -331,17 +317,17 @@ function(data, outcome = "", conditions = c("")) {
         }
         for (i in seq(length(outcome))) {
             if (mvoutcome[i]) {
-                if (!any(unique(data[, outcome.name[[i]]]) == outcome.value[[i]])) {
+                mvnot <- setdiff(splitstr(outcome.value[i]), unique(data[, outcome[i]]))
+                if (length(mvnot) > 0) {
                     cat("\n")
-                    errmessage <- paste("The value {", outcome.value[[i]], "} does not exist in the outcome \"", outcome.name[[i]], "\".\n\n", sep="")
+                    errmessage <- sprintf("Value(s) %s not found in the outcome \"%s\".\n\n", paste(mvnot, collapse = ","), outcome[i])
                     stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
                 }
             }
         }
-        outcome.value <- unlist(outcome.value)
     }
     else {
-        if (length(intersect(outcome, names(data))) < length(outcome)) {
+        if (length(setdiff(outcome, names(data))) > 0) {
             outcome <- setdiff(outcome, names(data))
             cat("\n")
             errmessage <- paste("Outcome(s) not present in the data: \"", paste(outcome, collapse="\", \""), "\".\n\n", sep="")
@@ -360,8 +346,12 @@ function(data, outcome = "", conditions = c("")) {
             }
         }
     }
-    if (identical(conditions, c(""))) {
+    conditions <- allargs$conditions
+    if (is.null(conditions)) {
         conditions <- names(data)
+    }
+    else {
+        conditions <- splitstr(conditions)
     }
     if (length(setdiff(outcome, conditions)) > 0) {
         outcome <- setdiff(outcome, conditions)
@@ -369,7 +359,6 @@ function(data, outcome = "", conditions = c("")) {
         errmessage <- paste("Outcome(s) not present in the conditions' names: \"", paste(outcome, collapse="\", \""), "\".\n\n", sep="")
         stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
     }
-    invisible(return(list(mvoutcome = mvoutcome, outcome = outcome, outcome.value = outcome.value, conditions = conditions)))
 }
 `verify.inf.test` <- function(inf.test, data) {
     if (all(inf.test != "")) {
@@ -402,35 +391,57 @@ function(data, outcome = "", conditions = c("")) {
     }
     tempexpr <- gsub("[*|,|;|(|)]", "", expression)
     pp <- unlist(strsplit(tempexpr, split="[+]"))
-    insb <- curlyBrackets(tempexpr)
+    insb <- curlyBrackets(gsub("[*|(|)]", "", expression))
     tempexpr <- curlyBrackets(tempexpr, outside=TRUE)
     if (length(insb) != length(tempexpr)) {
         cat("\n")
         stop(simpleError("Incorrect expression, some snames don't have brackets.\n\n"))
     }
-    if (any(grepl("[a-zA-Z]", insb))) {
+    if (any(grepl("[a-zA-Z]", gsub("[,|;]", "", insb)))) {
         cat("\n")
         stop(simpleError("Invalid {multi}values, levels should be numeric.\n\n"))
     }
-    conds <- sort(unique(toupper(gsub("~", "", curlyBrackets(pp, outside=TRUE)))))
+    conds <- sort(unique(toupper(notilde(curlyBrackets(pp, outside = TRUE)))))
     if (missing(data)) {
-        if (any(grepl("~", expression))) {
-            if (missing(noflevels)) {
+        if (missing(noflevels)) {
+            if (any(hastilde(expression))) {
                 cat("\n")
                 stop(simpleError("Negating a multivalue condition requires the number of levels.\n\n"))
+            }
+        }
+        else {
+            if (identical(snames, "")) {
+                cat("\n")
+                stop(simpleError("Cannot verify the number of levels without the set names.\n\n"))
+            }
+            snames <- splitstr(snames)
+            noflevels <- splitstr(noflevels)
+            if (length(snames) != length(noflevels)) {
+                cat("\n")
+                stop(simpleError("Length of the set names differs from the length of the number of levels.\n\n"))
+            }
+            for (i in seq(length(tempexpr))) {
+                if (!is.element(notilde(tempexpr[i]), snames)) {
+                    cat("\n")
+                    stop(simpleError(sprintf("Condition %s not present in the set names.\n\n", tempexpr[i])))
+                }
+                if (max(asNumeric(splitstr(insb[i]))) > noflevels[match(notilde(tempexpr[i]), snames)] - 1) {
+                    cat("\n")
+                    stop(simpleError(sprintf("Levels outside the number of levels for condition %s.\n\n", tempexpr[i])))
+                }
             }
         }
     }
     else { 
         if (identical(snames, "")) {
-            if (!all(conds %in% colnames(data))) {
+            if (length(setdiff(conds, colnames(data))) > 0) {
                 cat("\n")
                 stop(simpleError("Parts of the expression don't match the column names from \"data\" argument.\n\n"))
             }
         }
     }
     if (!identical(snames, "")) {
-        if (!all(conds %in% toupper(splitstr(snames)))) {
+        if (length(setdiff(conds, toupper(splitstr(snames)))) > 0) {
             cat("\n")
             stop(simpleError("Parts of the expression don't match the set names from \"snames\" argument.\n\n"))
         }

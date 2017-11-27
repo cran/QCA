@@ -1,5 +1,5 @@
 `findSubsets` <-
-function(noflevels, input, stop, ...) {
+function(input, noflevels, stop, ...) {
     other.args <- list(...)
         if ("row.no" %in% names(other.args)) {
             input <- other.args$row.no

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>findTh. QCA 2.6</title>
+<title>findTh. QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -53,22 +53,6 @@ Adrian Dusa
 
 <div class="row">
   <div class="span8">
-    <h2>Usage</h2>
-    <pre><div>findTh(x, n = 1, hclustm = "complete", distm = "euclidean", ...)</div></pre>
-    
-    <h2>Arguments</h2>
-    <dl>
-      <dt>x</dt>
-      <dd>A numerical causal condition.</dd>
-      <dt>n</dt>
-      <dd>The number of thresholds to find.</dd>
-      <dt>hclustm</dt>
-      <dd>The agglomeration (clustering) method to be used.</dd>
-      <dt>distm</dt>
-      <dd>The distance measure to be used.</dd>
-      <dt>...</dt>
-      <dd>Other arguments (mainly for backwards compatibility).</dd>
-    </dl>
     
     <div class="Description">
       <h2>Description</h2>
@@ -77,12 +61,44 @@ Adrian Dusa
 for a numerical causal condition, to be split into separate groups.</p>
   
     </div>
+    
+    <h2>Usage</h2>
+    <pre><div>findTh(x, n = 1, hclustm = &quot;complete&quot;, distm = &quot;euclidean&quot;, ...)</div></pre>
+    
+    <h2>Arguments</h2>
+    <table>
+        <tr>
+            <td valign="top"><b><code>x</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A numerical causal condition.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>n</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The number of thresholds to find.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>hclustm</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The agglomeration (clustering) method to be used.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>distm</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The distance measure to be used.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>...</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Other arguments (mainly for backwards compatibility).</td>
+        </tr>
+    </table>
 
     <div class="Details">
       <h2>Details</h2>
 
       <p>The process of calibration into crisp sets assumes expert knowledge about the
-best threshold(s) which separates the raw data into the most meaningful
+best threshold(s) that separate the raw data into the most meaningful
 groups.</p>
   
       <p>In the absence of such knowledge, an automatic procedure might help grouping
@@ -91,9 +107,6 @@ the raw data according to statistical clustering techniques.</p>
       <p>The number of groups to split depends on the number of thresholds: one
 thresholds splits into two groups, two thresholds splits into three groups etc.</p>
   
-      <p>Previous versions of this function had an argument named <b><code>groups</code></b> instead
-of argument <b><code>n</code></b>, but they are bacwards compatible.</p>
-  
       <p>For more details about how many groups can be formed with how many thresholds,
 see <code>?cutree</code>.</p>
   
@@ -101,7 +114,6 @@ see <code>?cutree</code>.</p>
 using <code>?hclust</code>, and also more details about different distance measures
 can be found with <code>?dist</code>. This function uses their default values.</p>
 
-      <p></p>
   
     </div>
 
@@ -126,8 +138,7 @@ findTh(gdp)
 </div>
 <div class='output'>[1] 8700
 </div>
-<div class='input'># 8700
-
+<div class='input'>
 
 # find two thresholds to separate into two groups
 findTh(gdp, n = 2)
@@ -151,12 +162,18 @@ findTh(gdp, n = 2, hclustm = &quot;ward.D2&quot;, distm = &quot;canberra&quot;)
       <li>functions</li>
     </ul> -->
       
-    <h2>See also</h2>
-    <code><a href='http://www.inside-r.org/r-doc/stats/cutree'>cutree</a></code>, <code><a href='http://www.inside-r.org/r-doc/stats/hclust'>hclust</a></code>, <code><a href='http://www.inside-r.org/r-doc/stats/dist'>dist</a></code>
     
     <h2>Author</h2>
     
 Adrian Dusa
+
+
+    <h2>See also</h2>
+    
+<b><code><a href='https://stat.ethz.ch/R-manual/R-devel/library/stats/html/cutree.html'>cutree</a></code></b>,
+<b><code><a href='https://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html'>hclust</a></code></b>,
+<b><code><a href='https://stat.ethz.ch/R-manual/R-devel/library/stats/html/dist.html'>dist</a></code></b>
+    
 
     
   </div>

@@ -1,3 +1,67 @@
+Version 3.0
+    o New: cutting edge, next generation algorithm for Boolean minimization
+    o New: function causalChain() to enable coincidence analysis comparable
+      with the version 2.0 of package cna
+    o New: function modelFit() to enable theory evaluation
+    o New: function findmin() to find the minimum number of PIs necessary to
+      solve a PI chart, replacing the function lp() from package lpSolve
+    o New: arguments "sol.cons" and "sol.cov" added to function minimize()
+    o New: arguments "enhance" and "model" added to function XYplot()
+    o New: reactivated the argument "add" to functions pof() and superSubset(),
+      to allow for more parameter of fit measures in the output
+    o Improved: function intersection() now accept entire minimization objects
+      of class "qca" as input
+    o Improved: function minimize() gains three new arguments "depth", "min.pin"
+      and "method"
+    o Improved: function recode() gains two new arguments "cuts" and "values"
+    o Improved: function truthTable() gains a new argument "dcc" to identify 
+      deviant cases consistency in kind
+    o Improved: function calibrate() gains a new argument "method", implementing 
+      the indirect method along the traditional direct method of calibration
+    o Improved: function XYplot() now accepts complex expressions for both x and y
+    o Improved: when data is available, functions translate(), compute() and pof()
+      throw an error if the data is multivalue and the expression is not
+    o Improved: more negation signs (apart of the tilde) are accepted for all
+      functions that have a character expression as input(s)
+    o Improved: when printing the truth table, column "OUT" in now spaced out
+      more evidently, to differentiate it from the other columns and create a natural
+      separation between the configurations and the parameters of fit
+    o Improved: better documentation, including the HTML version from the GUI 
+    o Improved: functions fuzzyand() and fuzzyor() gain two new arguments called
+      "na.rm" (indicating to remove missing values) and "use.tilde", to signal
+      negations when constructing attribute expressions
+    o Improved: function findRows() now accepts a matrix in addition to a truth table,
+      for demonstration purposes
+    o Improved: function findRows() gains a new argument called "type", to find
+      contradictory simplifying assumptions and simultaneous subset relations
+    o Changed: objects of class "fctr" now have class "factorize"
+    o Changed: objects of class "deMorgan" are now proper character vectors instead of
+      lists containing these vectors
+    o Changed: objects of class "pic" (prime implicants chart) and "translate" are now
+      proper matrices instead of lists containing matrices
+    o Changed: function makeChart() gained three new arguments: "mv", "use.tilde"
+      and "collapse" for a complete flexibility, and its output gained the class "pic"
+    o Changed: the argument "data" in function minimize() is renamed to "input"
+      (but still backwards compatible)
+    o Changed: argument "omit" from function minimize() renamed to "exclude"
+    o Changed: simplified function minimize(), the following arguments are dropped
+      but still backwards compatible: outcome, conditions, incl.cut, show.cases,
+      n.cut, use.letters, inf.test as they were duplicating the same arguments from 
+      function truthTable(), to which they are sent anyways; in addition, arguments
+      relation and explain did not have any real use
+    o Changed: crisp calibration now include the thresholds values in the upper
+      groups, to maintain backwards compatibility and be consistent with the
+      default function findInterval() which now crisp calibration employs. Users
+      who actually want to _exclude_ the thresholds from the upper groups, should
+      simply set them to an upper value (thanks to Yan Turgeon for the report).
+    o Changed: function deMorgan() renamed to negate()
+    o Changed: function eqmcc() renamed to minimize()
+    o Fixed: minor bug in the web GUI, the data editor did not display the
+      correct cell value on double click, when scrolling horizontally
+    o Fixed: bug in function minimize(), with all directional expectations as
+      don't cares it should return the complex solution
+      (thanks to Eva Thomann for the report)
+    
 Version 2.6
     o Improved: function superSubset() is now many orders of magnitude faster
     o New: argument "depth" added to functions superSubset() and allExpressions()
@@ -14,7 +78,7 @@ Version 2.6
       when feeding multivalue conditions with multiple levels
       
 Version 2.5
-    o Packages QCA and QCAGUI merged back in a single package.
+    o Packages QCA and QCAGUI merged back into a single package QCA.
     o New in GUI: redesigned dialog for the calibrate menu, which now contains
       a thresholds setter area for both crisp and fuzzy calibrations.
     o New: function sop() to transform any expression into a simpler (minimal)
@@ -23,26 +87,26 @@ Version 2.5
       matrix between cases and truth table rows
     o New: function plot1() to examine the distribution of values for a single
       causal condition (typically for calibration purposes)
-    o Improved: SOP expressions now allow the negation of multivalue conditions, as
-      well as unions of multiple levels for the same causal condition.
-    o Improved: deMorgan() now allows negating multivalue expression, providing a new
-      argument called "noflevels"
+    o Improved: SOP expressions now allow the negation of multivalue conditions,
+      as well as unions of multiple levels for the same causal condition.
+    o Improved: deMorgan() now allows negating multivalue expression, providing 
+      a new argument called "noflevels"
     o Improved: treatment of commands in the GUI console
-    o Improved: for boolean expressions only (not multivalue), the function translate()
-      now allows duplicated set names in the same product
-    o Removed: argument "include" from function calibrate(): it only applied to the
-      crisp calibration, and did not have any practical advantage, users could simply
-      move the threshold one more (lower or upper) value.
-    o Removed: argument "add" from function pof(), both PRI and RoN are now formally
-      included in the output.
+    o Improved: for boolean expressions only (not multivalue), the function 
+      translate() now allows duplicated set names in the same product
+    o Removed: argument "include" from function calibrate(): it only applied to 
+      the crisp calibration, and did not have any practical advantage, users could 
+      simply move the threshold one more (lower or upper) value.
+    o Removed: argument "add" from function pof(), both PRI and RoN are now 
+      formally included in the output.
     o Removed: arguments "prod.split" and "complete" from function deMorgan().
     o Changed: argument "dep" in function retention(), to "dependent".
     o Changed: argument "row.no" in function findSubsets(), to "input".
     o Changed: argument "maximum" in function findSubsets(), to "stop".
     o Changed: argument "input.combs" in function findSupersets(), to "input".
     o Changed: argument "type" in function calibrate() is now "fuzzy" by default
-    o Fixed: a situation when all directional expectations are "don't cares", and the
-      intermediate solutions should be identical to the parsimonious solutions
+    o Fixed: a situation when all directional expectations are "don't cares", and 
+      the intermediate solutions should be identical to the parsimonious solutions
       (thanks to Carsten Schneider for reporting)
     o Fixed: a bug giving an error for a non-calibrated original dataset, when the
       minimized object was already produced by truthTable()
@@ -67,18 +131,18 @@ Version 2.3
     o New: plots produced in the command line can be saved in various formats
     o New: the menu dialogs and the command line in the interface work with the
       same objects in the workspace
-    o New: function findRows(), to find patterns of rows in a truth table, usually to
-      be served as the "omit" argument in the function eqmcc()
+    o New: function findRows(), to find patterns of rows in a truth table, usually 
+      to be served as the "omit" argument in the function eqmcc()
       (thanks to Eva Thomann for the suggestion)
     o New: argument "clabels" to function XYplot() to add case labels to the plot
     o Changed: function compute() now returns the scores for the entire expression
       while for individual paths it has gained an argument called "separate"
-    o Changed: deprecated functions is.tt(x), is.qca(x), is.sS(x), is.deMorgan(x) and
-      is.pof(x), in favor of the more consistent, for example, is(x, "tt")
+    o Changed: deprecated functions is.tt(x), is.qca(x), is.sS(x), is.deMorgan(x) 
+      and is.pof(x), in favor of the more consistent, for example, is(x, "tt")
     o Changed: reverted value of argument "hclustm" to "complete", and default
       value of argument "distm" to "euclidean", in the function findTh()
-    o Improved: for argument sort.by in function truthTable(), it is now possible to
-      use "+" and "-" to signal "increasing" or "decreasing"
+    o Improved: for argument sort.by in function truthTable(), it is now possible 
+      to use "+" and "-" to signal "increasing" or "decreasing"
     o Improved: splitting strings now possible using "+" and "-" to signal
       "increasing" or "decreasing", when using sort.by in function truthTable()
     o Fixed: an outstanding bug assigning cases from truth table rows to solution,
@@ -113,8 +177,8 @@ Version 2.2
     o Improved: the user interface for the calibrate() function
     o Improved: function pof() is now even more flexible, see examples
     o Improved: function truthTable() now faster for very large data
-    o Fixed: correct treatment of the "PRI" column, if one of the causal conditions is
-      also named "PRI" (for example the Porter data)
+    o Fixed: correct treatment of the "PRI" column, if one of the causal conditions 
+      is also named "PRI" (for example the Porter data)
 
 Version 2.1
     o New: function translate() for an DNF expression
@@ -149,8 +213,8 @@ Version 2.0
       context
     o Improved: the truthTable() function always returns a complete truth table
       but printed on the screen only if complete = TRUE
-    o Improved: similarly, the truth table object always contains the cases, which are
-      printed on the screen only if show.cases = TRUE
+    o Improved: similarly, the truth table object always contains the cases, which 
+      are printed on the screen only if show.cases = TRUE
     o Improved: decreasing argument  in the truthTable() function can be a vector,
       to allow for complete flexibility when sorting by multiple arguments
     o Improved: argument thresholds in the calibrate() function now has names
@@ -162,8 +226,9 @@ Version 2.0
       for compatibility with fsQCA
     o Changed: removed formal argument "decreasing" in the truthTable() function
       (it is still recognised as an unformal argument, for backwards compatibility)
-    o Changed: arguments from truthTable() and eqmcc() which needed vectors of values
-      now accept a single character containing those values, separated by commas
+    o Changed: arguments from truthTable() and eqmcc() which needed vectors of 
+      values now accept a single character containing those values, separated
+      by commas
     o Fixed: deMorgan() now able to negate disjunctions of single conditions
       (e.g. "A + B")
     o Fixed: intermediate solutions now properly identified in some particular, rare
@@ -210,12 +275,12 @@ Version 1.1-0
     o New: argument "row.dom" in function solveChart() 
     o Improved: documentation for function eqmcc()
     o Improved: output structure of eqmcc() with respect to intermediate solutions
-    o Changed: default value to argument "row.dom" of function eqmcc() from TRUE to
-      FALSE
+    o Changed: default value to argument "row.dom" of function eqmcc() from TRUE 
+      to FALSE
     o Changed: argument "row.dom" works independently of argument "all.sol" in 
       function eqmcc()    
-    o Renamed: arguments "rowdom" and "direxp" in function eqmcc() to "row.dom" and
-      "dir.exp"
+    o Renamed: arguments "rowdom" and "direxp" in function eqmcc() to "row.dom" 
+      and "dir.exp"
     o Renamed: values "necessity" (now "nec") and "sufficiency" (now "suf") to 
       argument "relation" in function superSubset()
     o Dropped: function readTosmana()
@@ -238,11 +303,11 @@ Version 1.0-4
     o New: argument "all.sol" for functions eqmcc() and solveChart()
       (thanks to  Michael Baumgartner for the suggestion)
     o Improved: speed for functions superSubset() and truthTable()
-    o Improved: function truthTable() now also calculates number of cases in remainder
-      configurations
+    o Improved: function truthTable() now also calculates number of cases in 
+      remainder configurations
     o Renamed: arguments in function factorize()
-    o Fixed: in function eqmcc() condition names in uppercase letters were not treated
-      correctly (thanks to Michael Baumgartner for the report)
+    o Fixed: in function eqmcc() condition names in uppercase letters were not 
+      treated correctly (thanks to Michael Baumgartner for the report)
     o Fixed: in function truthTable() case names were not assigned correctly 
       under some circumstances (thanks to M. Gasser)
 
@@ -273,8 +338,8 @@ Version 1.0-0
       (class "pof"), results from function superSubset() (class "ss"),  results from
       function allExpressions() (class "aE") and results from  factorization (class 
       "fctr")
-    o Improved: function eqmcc() automatically determines conditions and outcome when
-      truth table object passed (object of class "tt") 
+    o Improved: function eqmcc() automatically determines conditions and outcome 
+      when truth table object passed (object of class "tt") 
     o Changed: functions prettyTable() and createString() now internalized
     o Renamed: function findPrimes() to findSubsets()
     o Dropped: function qmcc() (fully replaced by function eqmcc())

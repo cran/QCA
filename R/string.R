@@ -8,14 +8,41 @@
     gsub(pattern, "", x)
 }
 `nec` <- function(x) {
-    !is.na(charmatch(x, "necessity"))
+    !is.na(pmatch(x, "necessity"))
 }
 `suf` <- function(x) {
-    !is.na(charmatch(x, "sufficiency"))
+    !is.na(pmatch(x, "sufficiency"))
+}
+`tildas` <- function() {
+    irv <- c(126, 226, 136, 188, 194, 172, 226, 136, 189)
+    unlist(strsplit(rawToChar(as.raw(irv)), split = ""))
+}
+`tilde1st` <- function(x) {
+    is.element(substring(gsub("[[:space:]]", "", x), 1, 1), tildas())
+}
+`hastilde` <- function(x) {
+    grepl(paste(tildas(), collapse = "|"), x)
+}
+`notilde` <- function(x) {
+    gsub(paste(tildas(), collapse = "|"), "", gsub("[[:space:]]", "", x))
+}
+`dashes` <- function() {
+    irv <- c(45, 226, 128, 147)
+    paste(unlist(strsplit(rawToChar(as.raw(irv)), split = "")), collapse = "|")
 }
 `splitstr` <- function(x) {
     if (identical(x, "")) return(x)
     y <- gsub("\\n", "", unlist(strsplit(gsub("[[:space:]]", "", x), split = ",")))
+    if (any(grepl(",", x) & grepl("[{]", x))) {
+        i <- 1
+        while (i <= length(y)) {
+            if (grepl("[{]", y[i]) & !grepl("[}]", y[i])) {
+                y[i] <- paste(y[i], y[i + 1], sep = ",")
+                y <- y[-(i + 1)]
+            }
+            i <- i + 1
+        }
+    }
     if (length(y) == 1) {
         y <- gsub("\\n", "", unlist(strsplit(gsub("[[:space:]]", "", y), split = ";")))
     }
@@ -126,9 +153,6 @@ getName <- function(x) {
     return(gsub(",|\ ", "", result))
 }
 `getBigList` <- function(expression, prod.split = "") {
-    if (class(expression) == "deMorgan") {
-        expression <- paste(expression[[1]][[2]], collapse = "+")
-    }
     expression <- gsub("[[:space:]]", "", expression)
     big.list <- splitMainComponents(expression)
     big.list <- splitBrackets(big.list)
@@ -256,7 +280,7 @@ splitStars <- function(big.list, prod.split) {
                 star.split <- unlist(strsplit(z, ifelse(prod.split == "", "", paste("\\", prod.split, sep=""))))
                 star.split <- star.split[star.split != ""]
                 if (prod.split == "") {
-                    tilda <- star.split == "~"
+                    tilda <- hastilde(star.split)
                     if (any(tilda)) {
                         tilda.pos <- which(tilda)
                         if (max(tilda.pos) == length(star.split)) {
@@ -277,14 +301,14 @@ splitTildas <- function (big.list) {
         lapply(x, function(y) {
             lapply(y, function(z) {
                 lapply(z, function(w) {
-                    if (grepl("~", w)) {
-                        wsplit <- unlist(strsplit(w, split=""))
-                        if (max(which(wsplit == "~")) > 1) {
+                    if (hastilde(w)) {
+                        wsplit <- unlist(strsplit(w, split = ""))
+                        if (max(which(hastilde(wsplit))) > 1) {
                             cat("\n")
                             stop(paste("Unusual expression: ", w, ". Perhaps you meant \"*~\"?\n\n", sep=""), call. = FALSE)
                         }
                         else {
-                            return(c("~", sub("~", "", w)))
+                            return(c("~", notilde(w)))
                         }
                     }
                     else {
@@ -370,7 +394,7 @@ simplifyList <- function(big.list) {
         values <- unlist(lapply(x, paste, collapse=""))
         x <- x[!duplicated(values)]
         ind.values <- unlist(x)
-        ind.values <- ind.values[ind.values != "~"]
+        ind.values <- ind.values[!hastilde(ind.values)]
         ind.values <- toupper(ind.values)
         if (length(x) == 0 | any(table(ind.values) > 1)) {
             return(NULL)
@@ -384,7 +408,7 @@ simplifyList <- function(big.list) {
         unlist(lapply(x, paste, collapse=""))
     })
     redundants <- vector(length = length(big.list))
-    pairings <- combn(length(big.list), 2)
+    pairings <- combinations(length(big.list), 2)
     for (i in seq(ncol(pairings))) {
         blp1 <- blp[[pairings[1, i]]]
         blp2 <- blp[[pairings[2, i]]]
@@ -408,171 +432,29 @@ simplifyList <- function(big.list) {
     }
     return(big.list[!redundants])
 }
-factor.function <- function(trimmed.string, prod.split, collapse, sort.factorizing, sort.factorized, pos=FALSE) {
-    my.string <- trimmed.string
-    if (prod.split == "" & grepl("~", paste(trimmed.string, collapse = ""))) {
-        list.my.string <- sapply(trimmed.string, strsplit, split = "")
-        list.my.string <- lapply(list.my.string, function(x) {
-            tildas <- x == "~"
-            if (any(tildas)) {
-                x[which(tildas) + 1] <- paste("~", x[which(tildas) + 1], sep="")
-                x <- x[-which(tildas)]
-            }
-            return(x)
-        })
-    }
-    else {
-        list.my.string <- sapply(trimmed.string, strsplit, prod.split)
-    }
-    all.combs <- createMatrix(rep(2, length(list.my.string)))
-    all.combs <- all.combs[rowSums(all.combs) > 1, , drop=FALSE]
-    all.combs <- col(all.combs) * as.vector(all.combs)
-    if (nrow(all.combs) > 1) {
-        match.list <- as.list(apply(all.combs, 1, function(x) {
-            x <- list.my.string[x[x > 0]]
-            y <- table(unlist(x))
-            return(names(y)[y == length(x)])
-        }))
-        names(match.list) <- lapply(match.list, paste, collapse=collapse)
-    }
-    else {
-        match.list <- table(unlist(list.my.string))
-        match.list <- list(names(match.list)[match.list == length(list.my.string)])
-        names(match.list) <- lapply(match.list, paste, collapse=collapse)
-    }
-    if (length(match.list) > 0) {
-        null.branches <- unlist(lapply(match.list, function(x) all(is.na(x))))
-        match.list <- match.list[!null.branches]
-        if (length(match.list) > 0) {
-            if (nrow(all.combs) > 1) {
-                all.combs <- all.combs[!null.branches, , drop=FALSE]
-            }
-            if (sort.factorizing) {
-                sort.factorized <- FALSE
-                lengths.vector <- as.numeric(unlist(lapply(match.list, length)))
-                match.list <- match.list[rev(order(lengths.vector))]
-                all.combs <- all.combs[rev(order(lengths.vector)), , drop=FALSE]
-            }
-            selected.rows <- rep(FALSE, nrow(all.combs))
-            complex.list <- vector("list", length(selected.rows))
-            extract <- function(match.list, all.combs, complex.list, my.string.index, my.string) {
-                initial.index <- my.string.index
-                for (i in seq(length(match.list))) {
-                    common.factor <- match.list[[i]]
-                    similar.branches <- unlist(lapply(match.list[-i], function (x) all(common.factor %in% x)))
-                    if (any(similar.branches)) {
-                        similar.index <- seq(length(match.list))[-i][similar.branches]
-                        my.string.index <- sort(unique(c(all.combs[c(i, similar.index), ])))
-                        my.string.index <- my.string.index[my.string.index > 0]
-                    }
-                    else {
-                        my.string.index <- all.combs[i, ]
-                        my.string.index <- my.string.index[my.string.index > 0]
-                    }
-                    sol <- paste(sapply(my.string.index, function(x) {
-                            paste(list.my.string[[x]][!list.my.string[[x]] %in% common.factor], collapse=collapse)
-                            }), collapse=" + ")
-                    common.factor <- paste(match.list[[i]], collapse=collapse)
-                    factor.sol <- paste(common.factor, collapse, "(", sol, ")", sep="")
-                    selected.rows <- apply(all.combs, 1, function(x) any(x %in% my.string.index))
-                    if (!is.null(initial.index)) my.string.index <- sort(unique(c(initial.index, my.string.index)))
-                    if (sum(!selected.rows) == 0) {
-                        if (length(my.string[-my.string.index]) > 0) {
-                                factor.sol <- paste(factor.sol, paste(my.string[-my.string.index], collapse=" + "), sep=" + ")
-                        }
-                        names(complex.list)[i] <- factor.sol
-                        complex.list[[i]] <- factor.sol
-                    }
-                    else {
-                        sift <- function(x, y, z) {
-                            sift.list <- list(match.list=NULL, all.combs=NULL)
-                            sift.list[[1]] <- x[!z]
-                            sift.list[[2]] <- y[which(!z), , drop=FALSE]
-                            sift.list
-                        }
-                        sift.list <- sift(match.list, all.combs, selected.rows)
-                        names(complex.list)[i] <- factor.sol
-                        complex.list[[i]] <- vector("list", length(sift.list$match.list))
-                        complex.list[[i]] <- Recall(sift.list$match.list, sift.list$all.combs, complex.list[[i]], my.string.index, my.string)
-                    }
-                }
-                return(complex.list)
-            }
-            my.string.index <- NULL
-            complex.list <- extract(match.list, all.combs, complex.list, my.string.index, my.string)
-            final.solution <- unique(names(unlist(complex.list)))
-            if (length(final.solution) > 1) {
-                final.solution.list <- strsplit(final.solution, "\\.")
-                if (sort.factorized) {
-                    order.vector <- order(unlist(lapply(lapply(final.solution.list, "[", 1), nchar)), decreasing=TRUE)
-                    final.solution.list <- final.solution.list[order.vector]
-                    final.solution <- final.solution[order.vector]
-                }
-                all.combs <- as.matrix(combn(length(final.solution.list), 2))
-                match.list <- apply(all.combs, 2, function(x) {
-                    if (length(final.solution.list[[x[1]]]) == length(final.solution.list[[x[2]]])) {
-                        if (all(final.solution.list[[x[1]]] %in% final.solution.list[[x[2]]])) x
-                    }
-                })
-                null.branches <- unlist(lapply(match.list, is.null))
-                if (!all(null.branches)) {
-                    match.list <- match.list[-which(null.branches)]
-                    equivalent.solutions <- unlist(lapply(match.list, "[", 2))
-                    final.solution <- final.solution[-equivalent.solutions]
-                }
-                final.solution <- unlist(lapply(strsplit(final.solution, split = "\\."), function(x) {
-                    if (pos) {
-                        x <- strsplit(x, split = prod.split) 
-                        tbl <- table(unlist(x))
-                        if (any(tbl > 1)) {
-                            tbl <- names(tbl)[tbl > 1]
-                            checked <- logical(length(x))
-                            common <- vector(mode = "list", length(tbl))
-                            names(common) <- tbl
-                            for (i in seq(length(tbl))) {
-                                for (j in seq(length(x))) {
-                                    if (!checked[j]) {
-                                        if (any(x[[j]] == tbl[i])) {
-                                            common[[i]] <- c(common[[i]], setdiff(x[[j]], tbl[i]))
-                                            checked[j] <- TRUE
-                                        }
-                                    }
-                                }
-                                common[[i]] <- sort(common[[i]])
-                            }
-                            common <- unname(sapply(seq(length(common)), function(x) {
-                                paste(sort(c(paste("(", paste(common[[x]], collapse = " + "), ")", sep = ""), tbl[x])), collapse = "")
-                            }))
-                            x <- x[!checked]
-                            if (length(x) > 0) {
-                                common <- paste(c(common, sapply(x, paste, collapse = collapse)), collapse = " + ")
-                            }
-                            return(common)
-                        }
-                        else {
-                            paste(sapply(x, paste, collapse = collapse), collapse = " + ")
-                        }
-                    }
-                    else {
-                        paste(x, collapse = " + ")
-                    }
-                }))
-            }
-            return(unique(final.solution))
-        }
-    }
-    else {
-        return(NULL)
-    }
-}
 getNonChars <- function(x) {
     x <- gsub("^[[:space:]]+|[[:space:]]+$", "", unlist(strsplit(x, "\\+")))
     z <- vector(mode="list", length=length(x))
     for (i in seq(length(x))) {
         z[[i]] <- strsplit(gsub("[[:alnum:]]", "", x[i]), "+")[[1]]
     }
-    z <- gsub("\\~", "", unique(unlist(z)))
+    z <- notilde(unique(unlist(z)))
     return(z[-which(z == "")])
+}
+`colnms` <- function(mymat, rownms, tilde = FALSE) {
+    apply(mymat, 1, function(x) {
+        rownms1 <- rownms[x == 1]
+        rownms[x == 1] <- if (tilde) paste0("~", rownms1) else tolower(rownms1)
+        return(paste(rownms[x > 0], collapse = "*"))
+    })
+}
+`colnms2` <- function(mymat, colnms, tilde = FALSE) {
+    chars <- colnms[col(mymat)]
+    lowerChars <- if (tilde) paste0("~", chars) else tolower(chars)
+    chars <- ifelse(mymat==1L, lowerChars, chars)
+    keep <- mymat > 0L
+    charList <- split(chars[keep], row(chars)[keep])
+    unlist(lapply(charList, paste, collapse = "*"))
 }
 splitMainComponents2 <- function(expression) {
     expression <- gsub("[[:space:]]", "", expression)
@@ -708,8 +590,8 @@ outsideBrackets <- function(x, type = "{") {
     unlist(strsplit(gsub("\\s+", " ", trimstr(gsub(pattern, " ", x))), split=" "))
 }
 curlyBrackets <- function(x, outside = FALSE) {
-    x <- paste(x, collapse="+")
-    regexp <- "\\{[[:alnum:]|,]+\\}"
+    x <- paste(x, collapse = "+")
+    regexp <- "\\{[[:alnum:]|,|;]+\\}"
     x <- gsub("[[:space:]]", "", x)
     res <- regmatches(x, gregexpr(regexp, x), invert = outside)[[1]]
     if (outside) {

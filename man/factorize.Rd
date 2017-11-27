@@ -10,39 +10,39 @@ written in SOP - Sum Of Products form.
 }
 
 \usage{
-factorize(expression, snames = "", noflevels, pos = FALSE, tilde, ...)
+factorize(input, snames = "", noflevels, pos = FALSE, tilde, ...)
 }
 
 \arguments{
-  \item{expression}{A string containing the SOP expression, or an object of
+  \item{input}{A string containing the SOP expression, or an object of
         class \code{"qca"}.}
   \item{snames}{A string containing the sets' names, separated by commas.}
   \item{noflevels}{Numerical vector containing the number of levels for each set.}
   \item{pos}{Logical, if possible factorize using product(s) of sums.}
-  \item{tilde}{Logical, use a tilde to negate the expression.}
+  \item{tilde}{Logical, use a tilde to negate the sets.}
   \item{...}{Other arguments (mainly for backwards compatibility).}
 }
 
 \details{
 
 Factorization is a process of finding common factors in a Boolean expression,
-written in DNF - disjunctive normal form, or in a sum of products (SOP) form.
-The factorization is also possible using products of sums (POS) form, whenever possible.
+written in a SOP - sum of products (or DNF - disjunctive normal form).
+Whenever possible, the factorization can also be performed in a POS - product of sums form.
 
-Starting with version 2.1 of the package, a number of arguments have been deprecated.
-For example, \bold{\code{prod.split}}, because intersections (products) are
-indicated by the standard \bold{\code{*}} sign, and sometimes products are not
-indicated by anything (for example when the set names are single letters.
+Conjunctions should preferably be indicated with a star \code{*} sign, but this is not
+necessary when conditions have single letters or when the expression is expressed in
+multi-value notation.
 
-The argument \bold{\code{snames}} is only needed when products are not indicated by
-any sign at all, and the set names have more than one letter each (see function
+
+The argument \bold{\code{snames}} is only needed when conjunctions are not indicated by
+any sign, and the set names have more than one letter each (see function
 \bold{\code{translate()}} for more details).
 
 The number of levels in \bold{\code{noflevels}} is needed only when negating multivalue
 conditions, and it should complement the \bold{\code{snames}} argument.
 
-If \bold{\code{expression}} is an object of class \code{"qca"} (the result of the
-\bold{\code{eqmcc()}} minimization function), this function performs a factorization
+If \bold{\code{input}} is an object of class \code{"qca"} (the result of the
+\bold{\code{\link{minimize}()}} function), a factorization is performed
 for each of the minimized solutions.
 
 }
@@ -70,6 +70,9 @@ and quantitative strategies}, Berkeley: University of California Press
 
 \examples{
 
+# typical example with redundant conditions
+factorize("AbcD + AbCd + AbCD + ABCd")
+
 # results presented in alphabetical order
 factorize("one*TWO*four + one*THREE + THREE*four")
 
@@ -81,20 +84,20 @@ factorize("~ONE*TWO*~FOUR + ~ONE*THREE + THREE*~FOUR",
           snames = "ONE, TWO, THREE, FOUR")
 
 # using pos - products of sums
-factorize("a*c + a*D + b*c + b*D", pos = TRUE)
+factorize("ac + aD + bc + bD", pos = TRUE)
 
 
-# using an object of class "qca" produced with eqmcc()
+# using an object of class "qca" produced with minimize()
 data(CVF)
-pCVF <- eqmcc(CVF, outcome = "PROTEST", incl.cut = 0.8,
-              include = "?", use.letters = TRUE)
+pCVF <- minimize(CVF, outcome = "PROTEST", incl.cut = 0.8,
+                 include = "?", use.letters = TRUE)
 
 factorize(pCVF)
 
-\dontrun{
-# using an object of class "deMorgan" produced with deMorgan()
-factorize(deMorgan(pCVF))
-}
+
+# using an object of class "deMorgan" produced with negate()
+factorize(negate(pCVF))
+
 
 }
 

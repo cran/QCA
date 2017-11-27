@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>runGUI. QCA 2.6</title>
+<title>runGUI. QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -53,14 +53,6 @@ Adrian Dusa
 
 <div class="row">
   <div class="span8">
-    <h2>Usage</h2>
-    <pre><div>runGUI(x)</div></pre>
-    
-    <h2>Arguments</h2>
-    <dl>
-      <dt>x</dt>
-      <dd>Path to the shiny app.</dd>
-    </dl>
     
     <div class="Description">
       <h2>Description</h2>
@@ -68,16 +60,28 @@ Adrian Dusa
       <p>Runs the graphical user interface app based on the <span class = "pkg">shiny</span> package.</p>
   
     </div>
+    
+    <h2>Usage</h2>
+    <pre><div>runGUI(x)</div></pre>
+    
+    <h2>Arguments</h2>
+    <table>
+        <tr>
+            <td valign="top"><b><code>x</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Path to the shiny app.</td>
+        </tr>
+    </table>
 
     <div class="Details">
       <h2>Details</h2>
 
-      <p>This function is nothing but a wrapper to the <b><code>runApp()</code></b> function in package
-<span class = "pkg">shiny</span>.
-It locates the <b><code>gui</code></b> directory in the path where the QCA package has been
-installed, and runs it.</p>
+      <p>This function is nothing but a wrapper to the <b><code><a href=''>runApp()</a></code></b>
+function in package <span class = "pkg">shiny</span>. If <b><code>x</code></b> is not provided,
+it automatically locates the <b><code>gui</code></b> directory in the path where the QCA package
+has been installed, and runs it.</p>
 
-<p>Since version 2.2, the user interface gained an interactive R console in the webpage. Commands are
+<p>The user interface gained an interactive R console in the webpage. Commands are
 parsed and evaluated into a dedicated environment, with efforts to capture errors and
 warnings. Preliminary tests are encouraging, but users should be aware this is not a
 real console and bugs are likely to appear in this stage of development.</p>

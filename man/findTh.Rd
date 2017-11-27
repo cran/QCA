@@ -23,7 +23,7 @@ findTh(x, n = 1, hclustm = "complete", distm = "euclidean", ...)
 
 \details{
 The process of calibration into crisp sets assumes expert knowledge about the
-best threshold(s) which separates the raw data into the most meaningful
+best threshold(s) that separate the raw data into the most meaningful
 groups.
 
 In the absence of such knowledge, an automatic procedure might help grouping
@@ -31,9 +31,6 @@ the raw data according to statistical clustering techniques.
 
 The number of groups to split depends on the number of thresholds: one
 thresholds splits into two groups, two thresholds splits into three groups etc.
-
-Previous versions of this function had an argument named \bold{\code{groups}} instead
-of argument \bold{\code{n}}, but they are bacwards compatible.
 
 For more details about how many groups can be formed with how many thresholds,
 see \code{?cutree}.
@@ -53,7 +50,7 @@ Adrian Dusa
 }
 
 
-\seealso{\code{\link{cutree}}, \code{\link{hclust}}, \code{\link{dist}}}
+\seealso{\code{\link[stats]{cutree}}, \code{\link[stats]{hclust}}, \code{\link[stats]{dist}}}
 
 \examples{
 

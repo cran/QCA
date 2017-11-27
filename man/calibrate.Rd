@@ -6,17 +6,18 @@
 
 \description{
 This function transforms (calibrates) the raw data to either crisp or fuzzy sets
-values, using the \dfn{direct} method of calibration.
+values, using both the \dfn{direct} and the \dfn{indirect} methods of calibration.
 }
 
 \usage{
-calibrate(x, type = "fuzzy", thresholds = NA, logistic = TRUE,
-          idm = 0.95, ecdf = FALSE, below = 1, above = 1, ...)
+calibrate(x, type = "fuzzy", method = "direct", thresholds = NA,
+          logistic = TRUE, idm = 0.95, ecdf = FALSE, below = 1, above = 1, ...)
 }
 
 \arguments{
   \item{x}{A numerical causal condition.}
   \item{type}{Calibration type, either \bold{\code{"crisp"}} or \bold{\code{"fuzzy"}}.}
+  \item{method}{Calibration method, either \bold{\code{"direct"}} or \bold{\code{"indirect"}}.}
   \item{thresholds}{A vector of (named) thresholds.}
   \item{logistic}{Calibrate to fuzzy sets using the logistic function.}
   \item{idm}{The set inclusion degree of membership for the logistic function.}
@@ -46,16 +47,13 @@ distributions.
 The argument \bold{\code{thresholds}} can be specified either as a simple numeric vector, or as a
 named numeric vector. If used as a named vector, for the first category of \dfn{s-shaped}
 distributions, the names of the thresholds should be:\cr
-
 \tabular{rl}{
     \bold{\code{"e"}} \tab for the full set exclusion\cr
     \bold{\code{"c"}} \tab for the set crossover\cr
     \bold{\code{"i"}} \tab for the full set inclusion\cr
 }
-
 For the second category of \dfn{bell-shaped} distributions, the names of the thresholds
 should be:\cr
-
 \tabular{rl}{
     \bold{\code{"e1"}} \tab for the first (left) threshold for full set exclusion\cr
     \bold{\code{"c1"}} \tab for the first (left) threshold for set crossover\cr
@@ -64,7 +62,6 @@ should be:\cr
     \bold{\code{"c2"}} \tab for the second (right) threshold for set crossover\cr
     \bold{\code{"e2"}} \tab for the second (right) threshold for full set exclusion\cr
 }
-
 If used as a simple numerical vector, the order of the values matter.
 
 If \bold{\code{e}} \eqn{<} \bold{\code{c}} \eqn{<} \bold{\code{i}}, then the membership 
@@ -96,9 +93,8 @@ Both \bold{\code{logistic}} and \bold{\code{ecdf}} arguments can be used only fo
 distributions (using 3 thresholds), and they are mutually exclusive.
 
 The parameters \bold{\code{below}} and \bold{\code{above}} (active only when both
-\bold{\code{logistic = TRUE}} and \bold{\code{ecdf}} are deactivated, establish the degree of
+\bold{\code{logistic}} and \bold{\code{ecdf}} are deactivated, establish the degree of
 concentration and  dilation (convex or concave shape) between the threshold and crossover:\cr
-
 \tabular{ll}{
     \bold{\code{0 < below < 1}} \tab dilates in a concave shape below the crossover\cr
     \bold{\code{below = 1}}     \tab produces a linear shape (neither convex, nor concave)\cr
@@ -107,10 +103,17 @@ concentration and  dilation (convex or concave shape) between the threshold and 
     \bold{\code{above = 1}}     \tab produces a linear shape (neither convex, nor concave)\cr
     \bold{\code{above > 1}}     \tab concentrates in a convex shape above the crossover\cr
 }
-
 Usually, \bold{\code{below}} and \bold{\code{above}} have equal values, unless specific reasons
 exist to make them different.
 
+For the \bold{\code{type = "fuzzy"}} it is also possible to use the \bold{\code{"indirect"}}
+method to calibrate the data, using a procedure first introduced by Ragin (2008). The indirect method
+assumes a vector of thresholds to cut the original data into equal intervals, then it applies
+a (quasi)binomial logistic regression with a fractional polynomial equation. 
+
+The results are also fuzzy between 0 and 1, but the method is entirely different: it has no anchors
+(specific to the direct method), and it doesn't need to specify a calibration function to calculate
+the scores along with.
 }
 
 \value{
@@ -123,12 +126,13 @@ Adrian Dusa
 }
 
 \references{
+Ragin, C. (2008) \dQuote{Fuzzy Sets: Calibration Versus Measurement.}
+In \emph{The Oxford Handbook of Political Methodology}, edited by Janet
+Box-Steffensmeier, Henry E. Brady, and David Collier, pp.87-121.
+Oxford: Oxford University Press.
+
 Thiem, A.; Dusa, A. (2013) \emph{Qualitative Comparative Analysis with R: 
 A User's Guide}. New York: Springer.
-
-Thiem, A. (2014) \dQuote{Membership Function Sensitivity of Descriptive Statistics 
-in Fuzzy-Set Relations.} \emph{International Journal of Social Research Methodology} 
-vol.17, no.6, pp.625-642. 
 }
 
 \examples{
@@ -229,7 +233,17 @@ cx <- calibrate(x, thresholds = "e=155, c=175, i=195", logistic = FALSE,
 plot(x, cx, main = "Membership scores in the set of tall people", 
      xlab = "Raw data", ylab = "Calibrated data")
 
+
+## the indirect method, per capita income data from Ragin (2008)
+inc <- c(40110, 34400, 25200, 24920, 20060, 17090, 15320, 13680, 11720,
+         11290, 10940, 9800, 7470, 4670, 4100, 4070, 3740, 3690, 3590,
+         2980, 1000, 650, 450, 110)
+
+cinc <- calibrate(inc, method = "indirect",
+        thresholds = "1000, 4000, 5000, 10000, 20000")
+
+plot(inc, cinc, main = "Membership scores in the set of high income", 
+     xlab = "Raw data", ylab = "Calibrated data")
+
 }
-
-
 \keyword{functions}

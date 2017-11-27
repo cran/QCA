@@ -1,7 +1,7 @@
 `writeSolution` <- 
 function(sol, pic) {
     solution <- output <- list()
-    row.matrix <- matrix(FALSE, nrow=nrow(pic), ncol=ncol(sol))
+    row.matrix <- matrix(FALSE, nrow = nrow(pic), ncol = ncol(sol))
     rownames(row.matrix) <- rownames(pic)
     for (i in seq(ncol(sol))) {
         aa <- sol[, i]
@@ -12,14 +12,9 @@ function(sol, pic) {
     for (i in seq(ncol(sol))) {
         aa <- sol[, i]
         aa <- aa[!is.na(aa)]
-        if (length(ess.PIs) > 0) {
-            solution[[i]] <- c(ess.PIs, aa[!(aa %in% ess.PIs)])
-        }
-        else {
-            solution[[i]] <- aa
-        }
+        solution[[i]] <- as.vector(aa)
     }
-    output[[1]] <- lapply(solution, as.vector)
+    output[[1]] <- solution
     output[[2]] <- as.vector(ess.PIs)
     return(output)
 }

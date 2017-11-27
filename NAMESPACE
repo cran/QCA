@@ -1,49 +1,65 @@
+import(shiny)
+import(venn)
+import(fastdigest)
+importFrom("utils", "packageDescription", "remove.packages", "capture.output")
+importFrom("stats", "glm", "predict", "quasibinomial", "binom.test", "cutree", "dist", "hclust", "na.omit", "dbinom", "setNames")
+importFrom("grDevices", "dev.cur", "dev.new", "dev.list")
+importFrom("graphics", "abline", "axis", "box", "mtext", "par", "title", "text")
+importFrom("methods", "is", "as")
+
 useDynLib(QCA, .registration = TRUE)
+
 export(.onAttach,
     allExpressions,
+    agteb,
+    alteb,
+    as.panel,
     asNumeric,
     calibrate,
+    causalChain,
+    combinations,
     compute,
     createMatrix,
     deMorgan,
-    deMorganLoop,
     eqmcc,
-    eqmccLoop,
     export,
     factorize,
+    findmin,
     findRows,
     findSubsets,
     findSupersets,
     findTh,
     fuzzyand,
     fuzzyor,
+    getInfo,
     getRow,
     getNoflevels,
     intersection,
     makeChart,
+    minimize,
+    minimizeLoop,
+    modelFit,
+    negate,
     pof,
     prettyTable,
-    print.aE,
-    print.deMorgan,
-    print.fctr,
-    print.pof,
-    print.qca,
-    print.mqca,
-    print.pic,
-    print.sS,
-    print.tt,
     recode,
+    rebuild,
+    removeRedundants,
     retention,
     runGUI,
+    setRownames,
+    setColnames,
+    setDimnames,
     solveChart,
     sop,
     superSubset,
     translate,
     truthTable,
     uninstall,
+    validateNames,
     verify.data,
     verify.dir.exp,
-    verify.eqmcc,
+    verify.minimize,
     verify.inf.test,
     verify.qca,
     verify.mqca,
@@ -54,6 +70,10 @@ export(.onAttach,
     
     possibleNumeric,
     
+    dashes,
+    hastilde,
+    tilde1st,
+    notilde,
     trimstr,
     nec,
     suf,
@@ -70,7 +90,6 @@ export(.onAttach,
     simplifyList,
     negateValues,
     removeDuplicates,
-    factor.function,
     getNonChars,
     splitProducts,
     insideBrackets,
@@ -78,38 +97,24 @@ export(.onAttach,
     curlyBrackets,
     roundBrackets,
     
-    createString,
     getSolution,
     prettyString,
     rowDominance,
     sortMatrix,
     sortVector,
     writePrimeimp,
-    writeSolution,
-    
-    
-    callAllSol,
-    callFindSubsets,
-    callRemoveRedundants,
-    callSolveChart,
-    callSuperSubsetMem,
-    callSuperSubset,
-    callTruthTable
+    writeSolution
 )
-import(lpSolve)
-import(shiny)
-import(venn)
-import(fastdigest)
-importFrom("utils", "combn", "packageDescription", "remove.packages", "capture.output")
-importFrom("stats", "binom.test", "cutree", "dist", "hclust", "na.omit", "dbinom", "setNames")
-importFrom("grDevices", "dev.cur", "dev.new", "dev.list")
-importFrom("graphics", "abline", "axis", "box", "mtext", "par", "title", "text")
-importFrom("methods", "is")
+
 S3method(print, "aE")
+S3method(print, "chain")
 S3method(print, "deMorgan")
-S3method(print, "fctr")
-S3method(print, "fuzzyop")
+S3method(print, "factorize")
+S3method(print, "fuzzy")
+S3method(print, "intersection")
+S3method(print, "modelFit")
 S3method(print, "mqca")
+S3method(print, "panel")
 S3method(print, "pic")
 S3method(print, "pof")
 S3method(print, "qca")

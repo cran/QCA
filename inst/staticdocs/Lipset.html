@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>_Lipset. QCA 2.6</title>
+<title>_Lipset. QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="">
 
@@ -32,7 +32,7 @@
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -69,26 +69,47 @@ Cronqvist and Berg-Schlosser (2009) and Ragin (2009).</p>
       <h2>Format</h2>
 
       <p>A data frame containing 18 rows and the following 6 columns:</p>
-  
-      <p><table><tr><td>
-<b><code>DEV</code></b>  </td>
-</tr><tr><td> Level of development </td>
-</tr><tr><td>
-<b><code>URB</code></b>  </td>
-</tr><tr><td> Level of urbanization </td>
-</tr><tr><td> 
-<b><code>LIT</code></b>  </td>
-</tr><tr><td> Level of literacy </td>
-</tr><tr><td> 
-<b><code>IND</code></b>  </td>
-</tr><tr><td> Level of industrialization </td>
-</tr><tr><td>
-<b><code>STB</code></b>  </td>
-</tr><tr><td> Government stability </td>
-</tr><tr><td>
-<b><code>SURV</code></b> </td>
-</tr><tr><td> Survival of democracy during the inter-war period. </td>
-</tr></table></p>
+<p><table>
+    <tr>
+        <td valign="top"><b><code>DEV</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Level of development: it is the GDP per capita (USD) in the raw data, calibrated
+        in the binary crisp version to 0 if below 550 USD and 1 otherwise. For the multi-value
+        crisp version, two thresholds were used: 550 and 850 USD.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>URB</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Level of urbanization: percent of the population in towns with 20,000 or more
+inhabitants, calibrated in the crisp versions to 0 if below 50% and 1 if above.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>LIT</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Level of literacy: percent of the literate population, calibrated
+in the crisp versions to 0 if below 75% and 1 if above.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>IND</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Level of industrialization: percent of the industrial labor force, calibrated
+in the crisp versions to 0 if below 30% and 1 if above.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>STB</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Government stability: a &#147;political-institutional&#148; condition added to the
+previous four &#147;socioeconomic&#148; ones. The raw data has the number of cabinets
+which governed in the period under study, calibrated in the crisp versions to 0 if
+10 or above and 1 if below 10.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>SURV</code></b></td>
+        <td></td><td></td><td></td>
+        <td>Outcome: survival of democracy during the inter-war period, calibrated to 0 if
+negative, and 1 if positive raw data.</td>
+    </tr>
+</table></p>
   
     </div>
 
@@ -96,46 +117,30 @@ Cronqvist and Berg-Schlosser (2009) and Ragin (2009).</p>
       <h2>Details</h2>
 
       <p>There are four different versions of the Lipset data:</p>
+<p><table>
+    <tr>
+        <td valign="top"><b><code>LR</code></b></td>
+        <td></td><td></td><td></td>
+        <td>contains the raw data</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>LC</code></b></td>
+        <td></td><td></td><td></td>
+        <td>is the same data calibrated to binary crisp sets</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>LM</code></b></td>
+        <td></td><td></td><td></td>
+        <td>calibrated to multi-value sets</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>LF</code></b></td>
+        <td></td><td></td><td></td>
+        <td>calibrated to fuzzy-sets</td>
+    </tr>
+</table></p>
+
   
-      <p><table><tr><td>
-<b><code>LR</code></b>  </td>
-</tr><tr><td> contains the raw data </td>
-</tr><tr><td>
-<b><code>LC</code></b>  </td>
-</tr><tr><td> is the same data calibrated to binary crisp sets </td>
-</tr><tr><td> 
-<b><code>LM</code></b>  </td>
-</tr><tr><td> is calibrated to multi-value sets </td>
-</tr><tr><td> 
-<b><code>LF</code></b>  </td>
-</tr><tr><td> is calibrated to fuzzy-sets </td>
-</tr></table></p>
-  
-      <p>The causal conditions are:</p>
-  
-      <p><b><code>DEV</code></b> referring to the level of development: in the raw data is
-the GDP per capita (USD), calibrated in the binary crisp version to 0 if
-below 550 USD and 1 otherwise. For the multi-value crisp version, two thresholds
-were used: 550 and 850 USD.</p>
-  
-      <p><b><code>URB</code></b> is the percent of the population in towns with 20,000 or more
-inhabitants, calibrated in the crisp versions to 0 if below 50% and 1 if above.</p>
-  
-      <p><b><code>LIT</code></b> is the percent of the literate population, calibrated
-in the crisp versions to 0 if below 75% and 1 if above.</p>
-  
-      <p><b><code>IND</code></b> is the percent of the industrial labor force, calibrated
-in the crisp versions to 0 if below 30% and 1 if above.</p>
-  
-      <p><b><code>STB</code></b> is a &#147;political-institutional&#148; condition added to the
-previous four &#147;socioeconomic&#148; ones. The raw data has the number of cabinets
-which governed in the period under study, calibrated in the crisp versions to 0 if
-10 or above and 1 if below 10.</p>
-  
-      <p>The outcome is the column <b><code>SURV</code></b>, calibrated to 0 if negative, and 1 if
-positive raw data.</p>
-  
-      <p></p>
   
     </div>
 

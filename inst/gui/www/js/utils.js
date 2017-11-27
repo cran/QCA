@@ -38,9 +38,84 @@ function addDiv(parent, child, settings) {
         }
     }
 }
-Raphael.fn.checkBox = function(x, y, isChecked, label, dim, fontsize) {
+Raphael.fn.counter = function(options) {
+    if (options.fontsize == void 0) {
+        options.fontsize = 14;
+    }
+    if (options.width == void 0) {
+        options.width = 18;
+    }
+    var cntr = new Array();
+    cntr.active = true;
+    cntr.value = options.startval;
+    var txtanchor = "middle";
+    cntr.textlabel = this.text(options.x, options.y, "")
+        .attr({"text-anchor": txtanchor, "font-size": options.fontsize + "px"});
+    cntr.textvalue = this.text(options.x, options.y, "" + options.startval)
+        .attr({"text-anchor": txtanchor, "font-size": options.fontsize + "px"});
+    cntr.downsign = this.path([
+        ["M", options.x - 12 - options.width / 2, options.y - options.textheight/4],
+        ["l", 12, 0],
+        ["l", -6, 12],
+        ["z"]
+    ]).attr({fill: "#eeeeee", "stroke-width": 1.2, stroke: "#a0a0a0"});
+    cntr.upsign = this.path([
+        ["M", options.x + options.width / 2, options.y + options.textheight/4],
+        ["l", 12, 0],
+        ["l", -6, -12],
+        ["z"]
+    ]).attr({fill: "#eeeeee", "stroke-width": 1.2, stroke: "#a0a0a0"});
+    cntr.down = this.rect(options.x - 22, options.y - 6, 15, 15)
+        .attr({fill: "#fff", opacity: 0, stroke: "#000", "stroke-width": 1, cursor: "pointer"})
+        .click(function() {
+            if (cntr.value > options.startval) {
+                cntr.value -= 1;
+                cntr.textvalue.attr({"text": ("" + cntr.value)});
+            }
+        });
+    cntr.up = this.rect(options.x + 8, options.y - 8, 15, 15)
+        .attr({fill: "#fff", opacity: 0, stroke: "#000", "stroke-width": 1, cursor: "pointer"})
+        .click(function() {
+            if (cntr.value < options.maxval) {
+                cntr.value += 1;
+                cntr.textvalue.attr({"text": ("" + cntr.value)});
+            }
+        });
+    cntr.hideIt = function() {
+        cntr.upsign.hide();
+        cntr.downsign.hide();
+        cntr.up.hide();
+        cntr.down.hide();
+        cntr.textvalue.hide();
+        cntr.textlabel.hide();
+    }
+    cntr.showIt = function() {
+        cntr.upsign.show();
+        cntr.downsign.show();
+        cntr.up.show();
+        cntr.down.show();
+        cntr.textvalue.show();
+        cntr.textlabel.show();
+    }
+    cntr.label = function(options) {
+        if (options.anchor == void 0) {
+            options.anchor = "end";
+        }
+        if (options.label != void 0) {
+            cntr.textlabel.attr({"text": "" + options.label, "text-anchor": options.anchor});
+        }
+        if (options.x != void 0 && options.y != void 0) {
+            cntr.textlabel.transform("t" + options.x + "," + options.y);
+        }
+    }
+    return(cntr);
+}
+Raphael.fn.checkBox = function(x, y, isChecked, label, pos, dim, fontsize) {
     if (dim == void 0) {
         dim = 12;
+    }
+    if (pos == void 0) {
+        pos = 3;
     }
     if (fontsize == void 0) {
         fontsize = 14;
@@ -48,8 +123,30 @@ Raphael.fn.checkBox = function(x, y, isChecked, label, dim, fontsize) {
     var cb = new Array();
     cb.active = true;
     cb.label = new Array(1);
-    cb.label[0] = this.text(x + 20, y + 5, label)
-        .attr({"text-anchor": "start", "font-size": (fontsize + "px")});
+    var txtanchor = "start";
+    var xpos = x;
+    var ypos = y;
+    if (pos == 1) { 
+        xpos -= 8;
+        ypos += dim / 2;
+        txtanchor = "end";
+    }
+    else if (pos == 2) { 
+        xpos += dim / 2;
+        ypos -= dim;
+        txtanchor = "middle";
+    }
+    else if (pos == 3) { 
+        xpos += 20;
+        ypos += dim / 2;
+    }
+    else { 
+        xpos += dim / 2;
+        ypos += 5;
+        txtanchor = "middle";
+    }
+    cb.label[0] = this.text(xpos, ypos, label)
+        .attr({"text-anchor": txtanchor, "font-size": (fontsize + "px")});
     cb.box = this.rect(x, y, dim, dim)
         .attr({fill: isChecked?"#97bd6c":"#eeeeee","stroke-width": 1.2, stroke: "#a0a0a0"});
     cb.chk = this.path([

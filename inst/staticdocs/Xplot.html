@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>Xplot. QCA 2.6</title>
+<title>Xplot. QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -52,23 +52,7 @@ Adrian Dusa
       <h1>Display the distribution of points for a single condition</h1>
 
 <div class="row">
-  <div class="span8">
-    <h2>Usage</h2>
-    <pre><div>Xplot(x, jitter = FALSE, at = NULL, ...)</div></pre>
-    
-    <h2>Arguments</h2>
-    <dl>
-      <dt>x</dt>
-      <dd>A numeric vector.</dd>
-      <dt>jitter</dt>
-      <dd>Logical, vertically jitter the points.</dd>
-      <dt>at</dt>
-      <dd>The points at which tick-marks are to be drawn. Non-finite (infinite, NaN or NA)
-          values are omitted. By default (when NULL) tickmark locations are automatically
-          computed, see the help file for <b><code>?axis</code></b>.</dd>
-      <dt>...</dt>
-      <dd>Other graphical parameters from <code>par</code></dd>
-    </dl>
+    <div class="span8">
     
     <div class="Description">
       <h2>Description</h2>
@@ -77,6 +61,35 @@ Adrian Dusa
 horizontally from minimum to maximum.</p>
   
     </div>
+    
+    <h2>Usage</h2>
+    <pre><div>Xplot(x, jitter = FALSE, at = NULL, ...)</div></pre>
+    
+    <h2>Arguments</h2>
+    <table>
+        <tr>
+            <td valign="top"><b><code>x</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A numeric vector.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>jitter</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, vertically jitter the points.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>at</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The points at which tick-marks are to be drawn. Non-finite (infinite, NaN or NA)
+          values are omitted. By default (when NULL) tickmark locations are automatically
+          computed, see the help file for <b><code>?axis</code></b>.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>...</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Other graphical parameters from <b><code>?par</code></b></td>
+        </tr>
+    </table>
 
     <div class="Details">
       <h2>Details</h2>
@@ -99,7 +112,15 @@ of the points.</p>
 both the tickmarks labels and the axis labels.</p>
   
       <p>When jittering the points, default values of 0.5 are used for the parameters
-<b><code>factor</code></b> and <b><code>amount</code></b>, on the horizontal axis.</p>
+<b><code>factor</code></b> and <b><code>amount</code></b>, on the horizontal axis.
+More details can be found in the base function
+<b><code><a href='https://stat.ethz.ch/R-manual/R-devel/library/base/html/jitter.html'>jitter()</a></code></b>.</p>
+  
+      <p>Although the points are displayed in a single dimension, on the horizontal axis,
+the R graphical window will still have the default squared shape, with a lot of 
+empty space on the vertical axis. Users are free to create their custom code to 
+determine the size of the graphics window, or simply resize it to a suitable
+height.</p>
   
     </div>
 
@@ -110,22 +131,22 @@ data(LR)
 # plot the DEV (level of developent) causal condition
 Xplot(LR$DEV)
 </div>
-<p><img src='Xplot-1.svg' alt='' width='400' height='100' /></p>
+<p><img src='Xplot-1.svgz' alt='' width='400' height='100' /></p>
 <div class='input'>
 # jitter the points vertically
 Xplot(LR$DEV, jitter = TRUE)
 </div>
-<p><img src='Xplot-2.svg' alt='' width='400' height='100' /></p>
+<p><img src='Xplot-2.svgz' alt='' width='400' height='100' /></p>
 <div class='input'>
 # make the x axis large enough to accommodate all values
 Xplot(LR$DEV, jitter = TRUE, at = pretty(LR$DEV))
 </div>
-<p><img src='Xplot-3.svg' alt='' width='400' height='100' /></p>
+<p><img src='Xplot-3.svgz' alt='' width='400' height='100' /></p>
 <div class='input'>
 # clip plotting between the range of min and max
 Xplot(LR$DEV, jitter = TRUE, at = range(LR$DEV))
 </div>
-<p><img src='Xplot-4.svg' alt='' width='400' height='100' /></p>
+<p><img src='Xplot-4.svgz' alt='' width='400' height='100' /></p>
 
 <div class='input'></div></pre>
   </div>
@@ -137,13 +158,14 @@ Xplot(LR$DEV, jitter = TRUE, at = range(LR$DEV))
       <li>functions</li>
     </ul> -->
       
-    <h2>See also</h2>
-    <code><a href='http://www.inside-r.org/r-doc/graphics/par'>par</a></code>, <code><a href='http://www.inside-r.org/r-doc/graphics/text'>text</a></code>, <code><a href='http://www.inside-r.org/r-doc/base/jitter'>jitter</a></code>
-    
     <h2>Author</h2>
     
 Adrian Dusa
 
+    <h2>See also</h2>
+<b><code><a href='https://stat.ethz.ch/R-manual/R-devel/library/graphics/html/par.html'>par</a></code></b>,
+<b><code><a href='https://stat.ethz.ch/R-manual/R-devel/library/graphics/html/text.html'>text</a></code></b>,
+<b><code><a href='https://stat.ethz.ch/R-manual/R-devel/library/base/html/jitter.html'>jitter</a></code></b>
     
   </div>
 </div>

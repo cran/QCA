@@ -1,8 +1,9 @@
 `superSubset` <-
-function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
+function(data, outcome = "", conditions = "", relation = "necessity", incl.cut = 1,
     cov.cut = 0, ron.cut = 0, pri.cut = 0, use.tilde = FALSE, use.letters = FALSE,
-    depth = NULL, ...) {
+    depth = NULL, add = NULL, ...) {
     memcare <- FALSE 
+    funargs <- lapply(match.call(), deparse)
     other.args <- list(...)
     colnames(data) <- toupper(colnames(data))
         neg.out <- FALSE
@@ -14,7 +15,7 @@ function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
         cov.cut <- cov.cut - .Machine$double.eps ^ 0.5
     }
     outcome <- toupper(outcome)
-    if (substring(outcome, 1, 1) == "~") {
+    if (tilde1st(outcome)) {
         neg.out <- TRUE
         outcome <- substring(outcome, 2)
     }
@@ -57,18 +58,17 @@ function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
     if (neg.out) {
         data[, outcome] <- 1 - data[, outcome]
     }
-    uplow <- !use.tilde
     fc <- apply(data[, conditions], 2, function(x) any(x %% 1 > 0))
-    if (mv.data <- any(data[, conditions] > 1)) {
-        uplow <- use.tilde <- FALSE
+    if (mv <- any(data[, conditions] > 1)) {
+        use.tilde <- FALSE
     }
     alreadyletters <- sum(nchar(conditions)) == length(conditions)
-    collapse <- ifelse(alreadyletters & uplow | use.tilde, "", "*")
+    collapse <- ifelse(alreadyletters & !mv & !use.tilde, "", "*")
     if (use.letters & !alreadyletters) {
         replacements <- LETTERS[seq(length(conditions))]
         names(replacements) <- conditions
         colnames(data)[seq(length(conditions))] <- conditions <- replacements
-        collapse <- ifelse(!uplow | use.tilde, "*", "")
+        collapse <- ifelse(mv | use.tilde, "*", "")
     }
     noflevels <- apply(data[, conditions], 2, max) + 1L
     noflevels[fc] <- 2
@@ -86,8 +86,12 @@ function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
                      incl.cut,
                      cov.cut,
                      depth, PACKAGE = "QCA")
-    colnames(CMatrix[[1]]) <- c("incl", ifelse(nec(relation), "RoN", "PRI"), "cov.r")
-    colnames(CMatrix[[2]]) <- c("incl", ifelse(nec(relation), "RoN", "PRI"), "cov.r")
+    if (nec(relation)) {
+        colnames(CMatrix[[1]]) <- colnames(CMatrix[[2]]) <- c("inclN", "RoN", "covN")
+    }
+    else {
+        colnames(CMatrix[[1]]) <- colnames(CMatrix[[2]]) <- c("inclS", "PRI", "covS")
+    }
     prev.result <- FALSE
     lexpressions <- nrow(CMatrix[[1]])
     if (lexpressions > 0) {
@@ -95,7 +99,7 @@ function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
         rownames(result.matrix) <- expressions <- seq(lexpressions)
         colnames(result.matrix) <- conditions
         prev.result <- TRUE
-        row_names <- writePrimeimp(result.matrix, collapse=collapse, uplow=uplow, use.tilde=use.tilde)
+        row_names <- writePrimeimp(result.matrix, mv = mv, use.tilde = use.tilde, collapse = collapse)
         rownames(CMatrix[[1]]) <- row_names
         result <- as.data.frame(CMatrix[[1]])
         mins <- CMatrix[[5]]
@@ -111,7 +115,7 @@ function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
             result.matrix2 <- CMatrix[[4]]
             rownames(result.matrix2) <- seq(lexprnec) + lexpressions
             colnames(result.matrix2) <- conditions
-            row_names2 <- writePrimeimp(result.matrix2, collapse="+", uplow=uplow, use.tilde=use.tilde)
+            row_names2 <- writePrimeimp(result.matrix2, mv = mv, use.tilde = use.tilde, collapse = "+")
             rownames(CMatrix[[2]]) <- row_names2
             mins2 <- CMatrix[[6]]
             if (prev.result) {
@@ -153,6 +157,19 @@ function(data, outcome = "", conditions = "", relation = "nec", incl.cut = 1,
     if (nrow(result) == 0) {
         cat("\n")
         stop(simpleError(paste("There are no combinations with", ifelse(nec(relation), paste("ron.cut =", round(ron.cut, 3)), paste("pri.cut =", round(pri.cut, 3))), "\n\n")))
+    }
+    if (!is.null(add)) {
+        toadd <- pof(mins,
+                     data[, outcome],
+                     relation = ifelse(nec(relation), "nec", "suf"),
+                     add = add)$incl.cov[, -seq(1, 4), drop = FALSE]
+        if (is.function(add)) {
+            if (any(grepl("function", funargs$add))) {
+                funargs$add <- "X"
+            }
+            colnames(toadd) <- funargs$add
+        }
+        result <- cbind(result, toadd)
     }
     out.list <- list(incl.cov=result, coms=mins, use.letters=use.letters)
     if (use.letters & !alreadyletters) {

@@ -6,38 +6,42 @@
 
 \description{
 Recodes a vector (numeric, character or factor) according to a set of rules.
-Similar to the \bold{\code{recode()}} function in package \bold{\pkg{car}},
-but more flexible.
+Similar to the \bold{\code{\link[car]{recode}()}} function in package \bold{\pkg{car}},
+but more flexible. It is also similar to function \bold{\code{\link[base]{findInterval}()}}
+from package \bold{\pkg{base}}.
 }
 
 \usage{
-recode(x, rules, ...)
+recode(x, rules, cuts, values, ...)
 }
 
 \arguments{
-    \item{x}{Any kind of vector, numeric, character or factor.}
+    \item{x}{A vector of mode numeric, character or factor.}
     \item{rules}{Character string or a vector of character strings
-                 for recoding specifications}
+                 for recoding specifications.}
+    \item{cuts}{A vector of one or more unique cut points.}
+    \item{values}{A vector of output values.}
     \item{...}{Other parameters, for compatibility with other functions such as
-               \bold{\code{recode()}} in package \bold{\pkg{car}} but also
-               \bold{\code{factor()}} in package \bold{\pkg{base}}}
+               \bold{\code{\link[car]{recode}()}} in package \bold{\pkg{car}} but also
+         \bold{\code{\link[base]{factor}()}} in package \bold{\pkg{base}}}
 }
 
 \details{
-Similar to the \bold{\code{recode}} function in package \bold{\pkg{car}}, the
-recoding rules are separated by semicolons, of the form \bold{\code{input=output}},
+Similar to the \bold{\code{recode()}} function in package \bold{\pkg{car}}, the
+recoding rules are separated by semicolons, of the form \bold{\code{input = output}},
 and allow for:
 
-\describe{
-\item{a single value}{\code{1=0}}
-\item{a range of values}{\code{2:5=1}}
-\item{a set of values}{\code{c(6,7,10)=2}}
-\item{\bold{\code{else}}}{everything that is not covered by the previously specified rules} 
+
+\tabular{rl}{
+    a single value \tab \bold{\code{1 = 0}}\cr
+    a range of values \tab \bold{\code{2:5 = 1}}\cr
+    a set of values \tab \bold{\code{c(6,7,10) = 2}}\cr
+    \bold{\code{else}} \tab everything that is not covered by the previously specified rules
 }
 
-Contrary to the \bold{\code{recode()}} function in package \bold{\pkg{car}}, this function
-allows the \bold{\code{:}} sequence operator (even for factors), so that a rule such as
-\bold{\code{c(1,3,5:7)}}, or \bold{\code{c(a,d,f:h)}} would be valid.
+Contrary to the \bold{\code{\link[car]{recode}()}} function in package \bold{\pkg{car}}, this
+function allows the \bold{\code{:}} sequence operator (even for factors), so that a rule
+such as \bold{\code{c(1,3,5:7)}}, or \bold{\code{c(a,d,f:h)}} would be valid.
 
 Actually, since all rules are specified in a string, it really doesn't matter
 if the \bold{\code{c()}} function is used or not. For compatibility reasons it accepts it, but
@@ -67,14 +71,25 @@ packages to use one instead of the other (depending which package is loaded firs
 In order to preserve functionality, special efforts have been made to ensure this
 function performs exactly as the other one (plus more).
 
-In order to minimize possible namespace collisions with package \bold{\pkg{car}}, special efforts
-have been done to ensure perfect compatibility with the other \bold{\code{recode()}} function. The
-argument \bold{\code{...}} allows for more arguments specific to the \pkg{car} package,
-such as \bold{\code{as.factor.result}}, \bold{\code{as.numeric.result}} and \bold{\code{levels}}.
-In addition, it also accepts \bold{\code{labels}} and \bold{\code{ordered}} specific to function
-\bold{\code{factor}} in package \bold{\pkg{base}}.
+In order to minimize possible namespace collisions with package \bold{\pkg{car}}, special
+efforts have been invested to ensure perfect compatibility with the other
+\bold{\code{\link[car]{recode}()}} function. The argument \bold{\code{...}} allows for more
+arguments specific to the \pkg{car} package, such as \bold{\code{as.factor.result}},
+\bold{\code{as.numeric.result}} and \bold{\code{levels}}. In addition, it also accepts
+\bold{\code{labels}} and \bold{\code{ordered}} specific to function
+\bold{\code{\link[base]{factor}()}} in package \bold{\pkg{base}}.
 
 Blank spaces outside category labels are ignored, see the last example.
+
+It is possible to use \bold{\code{recode()}} in a similar way to function \bold{\code{cut()}},
+by specifying a vector of cuts which work for both numeric and character/factor objects. 
+For any number of \bold{\code{c}} cuts, there should be \bold{\code{c + 1}} values, and if
+not otherwise specified the argument \bold{\code{values}} is automatically constructed as a
+sequence of numbers from \bold{\code{1}} to \bold{\code{c + 1}}.
+
+Unlike the function \bold{\code{cut()}}, arguments such as \bold{\code{include.lowest}} or
+\bold{\code{right}} are not necessary because the final outcome can be changed by tweaking
+the cut values.
 }
 
 \author{
@@ -82,7 +97,6 @@ Adrian Dusa
 }
 
 \examples{
-
 x <- rep(1:3, 3)
 x
 #  [1] 1 2 3 1 2 3 1 2 3
@@ -92,7 +106,6 @@ recode(x, "1:2 = A; else = B")
 
 recode(x, "1:2 = 0; else = copy")
 #  [1] 0 0 3 0 0 3 0 0 3
-
 
 set.seed(1234)
 x <- factor(sample(letters[1:10], 20, replace = TRUE),
@@ -114,18 +127,16 @@ recode(x, "a, c:f = 1; g:hi = 2; else = 3", as.factor.result = TRUE,
 # [11] two   one   one   two   one   two   one   one   three one  
 # Levels: one < two < three  
 
-
 set.seed(1234)
 categories <- c("An", "example", "that has", "spaces")
 x <- factor(sample(categories, 20, replace = TRUE),
-            levels = categories)
-
+            levels = categories, ordered = TRUE)
 sort(x)
 #  [1] An       An       An       An       An       example 
 #  [7] example  example  example  that has that has that has
 # [13] that has that has that has that has that has spaces  
 # [19] spaces   spaces  
-# Levels: An example that has spaces
+# Levels: An < example < that has < spaces
 
 recode(sort(x), "An : 'that has' = 1; spaces = 2")
 #  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2
@@ -134,8 +145,15 @@ recode(sort(x), "An : 'that has' = 1; spaces = 2")
 recode(sort(x), "An : that has = 1; spaces = 2")
 #  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2
 
+# same using cut values
+recode(sort(x), cuts = "that has")
+#  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2
 
-# treatment of "else" values
+# modifying the output values
+recode(sort(x), cuts = "that has", values = 0:1)
+#  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1
+
+# more treatment of "else" values
 x <- 10:20
 
 # recoding rules don't overlap all existing values, the rest are empty
@@ -143,8 +161,6 @@ recode(x, "8:15=1")
 
 # all other values are copied
 recode(x, "8:15=1; else=copy")
-
-
 }
 
 \keyword{functions}

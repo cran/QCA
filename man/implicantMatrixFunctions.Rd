@@ -22,14 +22,14 @@ allExpressions(noflevels, arrange = FALSE, depth = NULL, raw = FALSE, ...)
 
 createMatrix(noflevels, ...)
 
-getRow(noflevels, row.no, zerobased = FALSE)
+getRow(row.no, noflevels, zerobased = FALSE)
 }
 
 \arguments{
   \item{noflevels}{The number of levels (values) for each causal condition.}
-  \item{arrange}{Logical, if TRUE the result matrix is arranged for visual inspection.}
+  \item{arrange}{Logical, if \code{TRUE} the result matrix is arranged for visual inspection.}
   \item{depth}{Integer, an upper number of causal conditions to form expressions with.}
-  \item{raw}{Logical, if TRUE it returns the matrix indicating which conditions have
+  \item{raw}{Logical, if \code{TRUE} it returns the matrix indicating which conditions have
              been minimized, using \bold{\code{-1}}.}
   \item{row.no}{A vector, the desired row numbers.}
   \item{zerobased}{Logical, if \bold{\code{TRUE}} the first row number is zero.}
@@ -42,9 +42,10 @@ A truth table for binary crisp conditions is a matrix with \eqn{2^k} rows, where
 
 For multi-value causal conditions, the same equation can be generalised to:
 
-\eqn{v_{1} * v_{2} * ... * v_{k}}
+\eqn{v_{1} \cdot v_{2} \cdot ... \cdot v_{k}}
 
-where \eqn{v} is the number of values (levels) for every causal condition from 1 to k.
+where \eqn{v} is the number of values (levels) for every causal condition from \eqn{1}
+to \eqn{k}.
 
 Implicant matrices contain all rows from the truth table, plus all of their supersets,
 (all implicants and prime implicants), including the empty set (Dusa 2007, 2010).
@@ -56,11 +57,11 @@ truth table configurations.
 
 In fact, \eqn{3^k} is also obtained by the product:
 
-\eqn{(2 + 1) * (2 + 1) * ... * (2 + 1)}
+\eqn{(2 + 1) \cdot (2 + 1) \cdot ... \cdot (2 + 1)}
 
 For multi-value causal conditions, the same equation can be generalised to:
 
-\eqn{(v_{1} + 1) * (v_{2} + 1) * ... * (v_{k} + 1)}
+\eqn{(v_{1} + 1) \cdot (v_{2} + 1) \cdot ... \cdot (v_{k} + 1)}
 
 where every number of levels in each causal conditions is incremented with 1, to allow
 coding the minimization of literals in each (prime) implicant (see examples).
@@ -70,31 +71,33 @@ and prime implicants, displayed in the original values form using the code \bold
 point the minimized literals, while the other functions use the code \bold{\code{0}}, all other
 values being incremented with 1.
 
-The function \bold{\code{createMatrix()}} creates a base matrix for truth tables and implicant
-matrices.
+Specifying a smaller \bold{\code{depth}} automatically activates the argument \bold{\code{arrange}}.
 
 When the argument \bold{\code{arrange}} is activated, the output is arranged in the increasing
 order of the number of conditions which form conjunctions, up to the maximum number specified
-by the argument \bold{\code{depth}} (which if \bold{\code{NULL}} it is considered equal to the
+by the argument \bold{\code{depth}} (which if \bold{\code{NULL}}, it is considered equal to the
 number of columns in the matrix).
+
+The function \bold{\code{createMatrix()}} creates a base matrix for truth tables and implicant
+matrices.
 
 The function \bold{\code{getRow()}} takes the number of a row in the truth table or implicant matrix
 (in its decimal form), and transforms it into its binary (or multi-base) representation,
 as a configuration of binary or multi-values for each causal condition.
 
-Note that R is a 1-based language (all numbers start from 1), and similarly positions
+Note that \eqn{\textsf{R}} is a 1-based language (all numbers start from 1), and similarly positions
 in vectors and matrices start with 1. For this reason, although (mathematicall) the binary
 representation of the decimal number 0 (for example, at three causal conditions) is 0 0 0,
-in R that would be the \dQuote{first} line in the implicant matrix, therefore 0 0 0 is
-translated into the number 1.
+in \eqn{\textsf{R}} that would be the \dQuote{first} line in the implicant matrix, therefore 0 0 0 is
+translated into the number 1, unless the argument \bold{\code{zerobased}} is activated.
 }
 
 \value{
 A matrix with \eqn{k} columns and:
 
-\eqn{v_{1} * v_{2} * ... * v_{k}} rows if a truth table;
+\eqn{v_{1} \cdot v_{2} \cdot ... \cdot v_{k}} rows if a truth table;
 
-\eqn{(v_{1} + 1) * (v_{2} + 1) * ... * (v_{k} + 1)} rows if an implicant matrix;
+\eqn{(v_{1} + 1) \cdot (v_{2} + 1) \cdot ... \cdot (v_{k} + 1)} rows if an implicant matrix;
 
 \eqn{x} rows, equal to the length of \bold{\code{row.no}}.
 }
@@ -104,8 +107,8 @@ Adrian Dusa
 }
 
 \references{
-Dusa, Adrian. 2007. \emph{Enhancing Quine-McCluskey}. COMPASSS: Working Paper 
-2007-49. URL: \url{http://www.compasss.org/wpseries/Dusa2007b.pdf}.
+Dusa, Adrian. 2007. \emph{Enhancing Quine-McCluskey}.
+\href{http://www.compasss.org/wpseries/Dusa2007b.pdf}{COMPASSS: Working Paper 2007-49}
 
 Dusa, Adrian. 2010. \dQuote{A Mathematical Approach to the Boolean Minimization 
 Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113.
@@ -137,39 +140,38 @@ allExpressions(noflevels, arrange = TRUE, depth = 2)
 allExpressions(noflevels, raw = TRUE)
 
 
-# create a truth table based on 3 conditions
+# create a base truth table for 3 binary conditions
 createMatrix(noflevels)
 
 # its implicant matrix
 createMatrix(noflevels + 1)
 
-# create a truth table based on 3 conditions where the second has three levels
+# create a base truth table where the second condition has three levels
 createMatrix(c(2, 3, 2))
 
 
 
 # deriving rows
 rows <- c(2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17)
-mat <- getRow(noflevels + 1, rows) # note the +1
+mat <- getRow(rows, noflevels + 1) # note the +1
 rownames(mat) <- rows
 colnames(mat) <- c("A", "B", "C")
 mat
 
 # implicant matrix     normal values
-
-#      A  B  C    |       A  B  C       
-#   2  0  0  1    |    2  -  -  0       c      
-#   4  0  1  0    |    4  -  0  -       b
-#   5  0  1  1    |    5  -  0  0       bc
-#   7  0  2  0    |    7  -  1  -       B
-#   8  0  2  1    |    8  -  1  0       Bc
-#  10  1  0  0    |   10  0  -  -       a  
-#  11  1  0  1    |   11  0  -  0       ac                 
-#  13  1  1  0    |   13  0  0  -       ab   
-#  14  1  1  1    |   14  0  0  0       abc
-#  16  1  2  0    |   16  0  1  -       aB
-#  17  1  2  1    |   17  0  1  0       aBc
-                          
+# 
+#       A  B  C    |       A  B  C       
+#    2  0  0  1    |    2  -  -  0       c      
+#    4  0  1  0    |    4  -  0  -       b
+#    5  0  1  1    |    5  -  0  0       bc
+#    7  0  2  0    |    7  -  1  -       B
+#    8  0  2  1    |    8  -  1  0       Bc
+#   10  1  0  0    |   10  0  -  -       a  
+#   11  1  0  1    |   11  0  -  0       ac                 
+#   13  1  1  0    |   13  0  0  -       ab   
+#   14  1  1  1    |   14  0  0  0       abc
+#   16  1  2  0    |   16  0  1  -       aB
+#   17  1  2  1    |   17  0  1  0       aBc                   
 }
 
 \keyword{functions}

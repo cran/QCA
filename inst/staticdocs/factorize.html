@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>factorize. QCA 2.6</title>
+<title>factorize. QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -52,34 +52,52 @@ Adrian Dusa
       <h1>Factorize Boolean expressions</h1>
 
 <div class="row">
-  <div class="span8">
-    <h2>Usage</h2>
-    <pre><div>factorize(expression, snames = "", noflevels, pos = FALSE, tilde, ...)</div></pre>
-    
-    <h2>Arguments</h2>
-    <dl>
-      <dt>expression</dt>
-      <dd>A string containing the DNF expression, or an object of
-        class <code>"qca"</code>.</dd>
-      <dt>snames</dt>
-      <dd>A string containing the sets' names, separated by commas.</dd>
-      <dt>noflevels</dt>
-      <dd>Numerical vector containing the number of levels for each set.</dd>
-      <dt>pos</dt>
-      <dd>Logical, if possible factorize using product(s) of sums.</dd>
-      <dt>tilde</dt>
-      <dd>Logical, use a tilde to negate the expression.</dd>
-      <dt>...</dt>
-      <dd>Other arguments (mainly for backwards compatibility).</dd>
-    </dl>
+    <div class="span8">
     
     <div class="Description">
       <h2>Description</h2>
 
       <p>This function finds all combinations of common factors in a Boolean expression
-written in DNF - disjunctive normal form.</p>
+written in SOP - Sum Of Products form.</p>
   
     </div>
+    
+    <h2>Usage</h2>
+    <pre><div>factorize(expression, snames = &quot;&quot;, noflevels, pos = FALSE, tilde, ...)</div></pre>
+    
+    <h2>Arguments</h2>
+    <table>
+        <tr>
+            <td valign="top"><b><code>expression</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A string containing the SOP expression, or an object of class <code>"qca"</code>.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>snames</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A string containing the sets' names, separated by commas.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>noflevels</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Numerical vector containing the number of levels for each set.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>pos</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, if possible factorize using product(s) of sums.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>tilde</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, use a tilde to negate the sets.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>...</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Other arguments (mainly for backwards compatibility).</td>
+        </tr>
+    </table>
 
     <div class="Details">
       <h2>Details</h2>
@@ -87,23 +105,19 @@ written in DNF - disjunctive normal form.</p>
       <p></p>
   
       <p>Factorization is a process of finding common factors in a Boolean expression,
-written in DNF - disjunctive normal form, or in a sum of products (SOP) form.
-The factorization is also possible using products of sums (POS) form, whenever possible.</p>
+written in a SOP - sum of products (or DNF - disjunctive normal form).
+Whenever possible, the factorization can also be performed in a POS - product of sums form.</p>
   
-      <p>Starting with version 2.1 of the package, a number of arguments have been deprecated.
-For example, <b><code>prod.split</code></b>, because intersections (products) are
-indicated by the standard <b><code>*</code></b> sign, and sometimes products are not
-indicated by anything (for example when the set names are single letters.</p>
+      <p>Conjunctions should preferably be indicated with a star <b><code>*</code></b> sign,
+but this is not necessary when conditions have single letters or when the expression is
+expressed in multi-value notation.</p>
   
-      <p>The argument <b><code>snames</code></b> is only needed when products are not indicated by
-any sign at all, and the set names have more than one letter each (see function
-<b><code>translate()</code></b> for more details).</p>
+      <p>The number of levels in <b><code>noflevels</code></b> is needed only when negating
+multivalue conditions, and it should complement the <b><code>snames</code></b> argument.</p>
+
   
-      <p>The number of levels in <b><code>noflevels</code></b> is needed only when negating multivalue
-conditions, and it should complement the <b><code>snames</code></b> argument.</p>
-  
-      <p>If <b><code>expression</code></b> is an object of class <code>"qca"</code> (the result of the
-<b><code>eqmcc()</code></b> minimization function), this function performs a factorization
+      <p>If <b><code>input</code></b> is an object of class <code>"qca"</code> (the result of the
+<b><code><a href='minimize.html'>minimize()</a></code></b> function), a factorization is performed
 for each of the minimized solutions.</p>
   
       <p></p>
@@ -137,7 +151,22 @@ and quantitative strategies</em>, Berkeley: University of California Press</p>
     </div>
     
     <h2 id="examples">Examples</h2>
-    <pre class="examples"><div class='input'>
+    <pre class="examples">
+<div class='input'>
+# typical example with redundant conditions
+factorize(&quot;AbcD + AbCd + AbCD + ABCd&quot;)
+</div>
+<div class='output'>
+M1: AbcD + AbCd + AbCD + ABCd
+
+F1: A(bcD + bCd + bCD + BCd) 
+F2: Ab(cD + Cd + CD) + ABCd 
+F3: AbcD + AC(bd + bD + Bd) 
+F4: AbD + ACd 
+F5: A(bcD + BCd) + AbC
+
+
+<div class='input'>
 # results presented in alphabetical order
 factorize(&quot;one*TWO*four + one*THREE + THREE*four&quot;)
 </div>
@@ -179,21 +208,21 @@ F3: ~FOUR*(THREE + ~ONE*TWO) + ~ONE*THREE
 </div>
 <div class='input'>
 # using pos - products of sums
-factorize(&quot;a*c + a*D + b*c + b*D&quot;, pos = TRUE)
+factorize(&quot;ac + aD + bc + bD&quot;, pos = TRUE)
 </div>
 <div class='output'>
-M1: a*c + a*D + b*c + b*D 
+M1: ac + aD + bc + bD 
 
-F1: (a + b)*(c + D) 
+F1: (a + b)(c + D) 
 
 
 </div>
 <div class='input'>
 
-# using an object of class &quot;qca&quot; produced with eqmcc()
+# using an object of class &quot;qca&quot; produced with minimize()
 data(CVF)
-pCVF &lt;- eqmcc(CVF, outcome = &quot;PROTEST&quot;, incl.cut = 0.8,
-              include = &quot;?&quot;, use.letters = TRUE)
+pCVF &lt;- minimize(CVF, outcome = &quot;PROTEST&quot;, incl.cut = 0.8,
+                 include = &quot;?&quot;, use.letters = TRUE)
 
 factorize(pCVF)
 </div>
@@ -230,8 +259,8 @@ F3: CD(A + B) + e + ABd
 </div>
 <div class='input'>
 
-# using an object of class &quot;deMorgan&quot; produced with deMorgan()
-factorize(deMorgan(pCVF))
+# using an object of class &quot;deMorgan&quot; produced with negate()
+factorize(negate(pCVF))
 </div>
 <div class='output'>
 M1: abE + adE + bcE + AcE + cdE + bdE 
@@ -301,14 +330,14 @@ F14: bE(a + c) + cE(a + D) + dE(a + b)
     <ul>
       <li>functions</li>
     </ul> -->
-      
-    <h2>See also</h2>
-    <code><a href='translate.html'>translate</a></code>
     
     <h2>Author</h2>
     
 Adrian Dusa
 
+      
+    <h2>See also</h2>
+    <b><code><a href='SOPexpression.html'>translate</a></code></b>
     
   </div>
 </div>

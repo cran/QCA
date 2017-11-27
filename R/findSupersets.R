@@ -1,5 +1,5 @@
 `findSupersets` <-
-function (noflevels, input, ...) {
+function (input, noflevels, ...) {
     other.args <- list(...)
         if ("input.combs" %in% names(other.args)) {
             input <- other.args$input.combs
@@ -7,7 +7,7 @@ function (noflevels, input, ...) {
     if (!is.matrix(input)) {
         if (!is.vector(input)) {
             cat("\n")
-            stop("input must be either an solution-space matrix or a vector of line numbers.\n\n",
+            stop("input must be either an solution-space matrix or a vector of row numbers.\n\n",
                  call. = FALSE)
         }
         else {
@@ -16,7 +16,7 @@ function (noflevels, input, ...) {
                 stop(paste("Some line numbers do not belong in the solution-space for",
                            length(noflevels), "causal conditions.\n\n"), call. = FALSE)
             }
-            input <- getRow(noflevels, input)
+            input <- getRow(input, noflevels)
         }
     }
     mbase <- rev(c(1, cumprod(rev(noflevels))))[-1]

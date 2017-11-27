@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>translate, compute, findRows, sop. QCA 2.6</title>
+<title>translate, compute, findRows, sop. QCA 3.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 2.6</a>
+      <a class="brand" href="#">QCA 3.0</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -53,65 +53,76 @@ Adrian Dusa
 
 <div class="row">
   <div class="span8">
-    <h2>Usage</h2>
-<pre><div>translate(expression = "", snames = "", noflevels, data, ...)</div>
-<div>compute(expression = "", data, separate = FALSE)</div>
-<div>findRows(expression = "", ttobj, remainders = FALSE)</div>
-<div>sop(expression = "", snames = "")</div></pre>
-    
-    <h2>Arguments</h2>
-    <dl>
-      <dt>expression</dt>
-      <dd>String: a QCA expression written in sum of products form.</dd>
-      <dt>snames</dt>
-      <dd>A string containing the sets' names, separated by commas.</dd>
-      <dt>noflevels</dt>
-      <dd>Numerical vector containing the number of levels for each set.</dd>
-      <dt>data</dt>
-      <dd>A dataset with binary cs, mv and fs data.</dd>
-      <dt>separate</dt>
-      <dd>Logical, perform computations on individual, separate paths.</dd>
-      <dt>ttobj</dt>
-      <dd>A truth table, an object of class "tt".</dd>
-      <dt>remainders</dt>
-      <dd>Logical, find remainders only.</dd>
-      <dt>...</dt>
-      <dd>Other arguments, mainly for backwards compatibility.</dd>
-    </dl>
     
     <div class="Description">
       <h2>Description</h2>
 
       <p>These functions interpret an expression written in a SOP (sum of products) form,
-for both crisp and multivalue QCA. The function <b><code>translate()</code></b> translates
-the expression into a standard (canonical) SOP form using a matrix of implicants, while
-<b><code>compute()</code></b> uses the first to compute the scores based on a particular
-dataset.</p>
-
-      <p>The function <b><code>findRows()</code></b> takes a QCA expression written in SOP
-form, and applies it on a truth table to find all rows that match the pattern in the
-expression.</p>
+for both crisp and multivalue QCA. The function <b><code><a href=''>translate()</a></code></b>
+translates the expression into a standard (canonical) SOP form using a matrix of implicants, while
+<b><code><a href=''>compute()</a></code></b> uses the first to compute the scores based on a particular
+data input.</p>
   
       <p>For crisp sets notation, upper case letters are considered the presence of that causal
 condition, and lower case letters are considered the absence of the respective causal
 condition. Tilde is recognized as a negation, even in combination with upper/lower letters.</p>
   
-      <p>Functions similar to <b><code>translate()</code></b> and <b><code>compute()</code></b>
-have initially been written by Jirka Lewandowski (2015) but the actual code in these functions
-has been completely re-written to integrate it with the package QCA, and expanded with more
-extensive functionality (see details and examples below).</p>
+      <p>Functions similar to <b><code><a href=''>translate()</a></code></b> and
+<b><code><a href=''>compute()</a></code></b> have initially been written by Lewandowski (2015)
+but the actual code in these functions has been completely re-written to integrate it with the
+package <b><span class = "pkg">QCA</span></b>, and expanded with more extensive functionality (see details and examples below).</p>
   
-      <p>The function <b><code>sop()</code></b> transforms any expression (most notably
-a POS product of sums) into a sum of products, minimizing it to the simplest equivalent
-logical expression.</p>
+      <p>The function <b><code><a href=''>sop()</a></code></b> transforms any expression
+(most notably a POS product of sums) into a sum of products, minimizing it to the simplest
+equivalent logical expression. It provides a software implementation of the intersection
+examples presented by Ragin (1987: 144-147), and extended to multi-value sets.</p>
   
     </div>
+    
+    <h2>Usage</h2>
+<pre><div>translate(expression = &quot;&quot;, snames = &quot;&quot;, noflevels, data)</div>
+<div>compute(expression = &quot;&quot;, data, separate = FALSE)</div>
+<div>sop(expression = &quot;&quot;, snames = "", use.tilde = FALSE, noflevels)</div></pre>
+    
+    <h2>Arguments</h2>
+    <table>
+        <tr>
+            <td valign="top"><b><code>expression</code></b></td>
+            <td></td><td></td><td></td>
+            <td>String: a QCA expression written in sum of products form.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>snames</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A string containing the sets' names, separated by commas.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>use.tilde</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, use tilde to negate bivalent conditions.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>noflevels</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Numerical vector containing the number of levels for each set.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>data</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A dataset with binary cs, mv and fs data.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>separate</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, perform computations on individual, separate paths.</td>
+        </tr>
+    </table>
 
     <div class="Details">
       <h2>Details</h2>
 
-      <p>A SOP ("sum of products") is also known as a DNF ("disjunctive normal form"), or in other
-words a "union of intersections", for example <b><code>A*D + B*c</code></b>.</p>
+      <p>A SOP - sum of products is also known as a DNF - disjunctive normal form, or in other
+words a &quot;union of intersections&quot;, for example <b><code>A*D + B*c</code></b>.</p>
   
       <p>The same expression can be written in multivalue notation: <b><code>A{1}*D{1} + B{1}*C{0}</code></b>.
 Both types of expressions are valid, and yield the same result on the same dataset.</p>
@@ -124,7 +135,7 @@ by a comma. If B was a multivalue causal condition, an expression could be:
       <p>In this example, all values in B equal to either 1 or 2 will be converted to 1, and the
 rest of the (multi)values will be converted to 0.</p>
   
-      <p>The function automatically detects the use of tilde "~" as a negation for a particular
+      <p>These functions automatically detects the use of tilde &quot;~&quot; as a negation for a particular
 causal condition. <b><code>~A</code></b> does two things: it identifies the presence of causal
 condition <b><code>A</code></b> (because it was specified as upper case) and it recognizes that it
 must be negated, because of the  tilde. It works even combined with lower case names:
@@ -140,16 +151,19 @@ while <b><code>A{0}*A{1}</code></b> results in the empty set.</p>
 the argument <b><code>data</code></b>. Arguments <b><code>snames</code></b> and <b><code>noflevels</code></b> have
 precedence over <b><code>data</code></b>, when specified.</p>
 
-      <p>The use of the product operator <b><code>*</code></b> is redundant when causal snames' names are single
+      <p>The use of the product operator <b><code>*</code></b> is redundant the set names are single
 letters (for example <b><code>AD + Bc</code></b>), and is also redundant for multivalue data, where 
 product terms can be separated by using the curly brackets notation.</p>
 
-      <p>When causal snames are binary and their names have multiple letters (for example
+      <p>When conditions are binary and their names have multiple letters (for example
 <b><code>AA + CC*bb</code></b>), the use of the product operator <b><code>*</code></b> is preferable but the
 function manages to translate an expression even without it (<b><code>AA + CCbb</code></b>) by searching
 deep in the space of the conditions' names, at the cost of slowing down for a high number of causal
 conditions. For this reason, an arbitrary limit of 7 causal <b><code>snames</code></b> is imposed, to write an
 expression with.</p>
+
+      <p>For the function <b><code><a href=''>sop()</a></code></b>, if a tilde is present in the expression, the argument
+<b><code>use.tilde</code></b> is automatically activated.</p>
   
     </div>
 
@@ -157,7 +171,7 @@ expression with.</p>
       <h2>Value</h2>
 
       <p><dl>
-For the function <b><code>translate()</code></b>, a matrix containing the implicants on the
+For the function <b><code><a href=''>translate()</a></code></b>, a matrix containing the implicants on the
 rows and the set names on the columns, with the following codes:
 <br>
 <table>
@@ -175,8 +189,9 @@ rows and the set names on the columns, with the following codes:
     </tr>
 </table>
 <br>
-The matrix was also assigned a class "translate", to avoid printing the -1 codes. The mode
-of this matrix is character, to allow printing multiple levels in the same cell, such as "1,2"
+The matrix was also assigned a class <code>"translate"</code>, to avoid printing the -1 codes when signaling
+a minimized condition. The mode of this matrix is character, to allow printing multiple levels
+in the same cell, such as &quot;1,2&quot;
 </dl></p>
   
     </div>
@@ -184,7 +199,9 @@ of this matrix is character, to allow printing multiple levels in the same cell,
     <div class="References">
       <h2>References</h2>
 
-      <p>Jirka Lewandowski (2015) QCAtools: Helper functions for QCA in R. R package version 0.1</p>
+      <p>Ragin, C.C. (1987) <em>The Comparative Method: Moving beyond Qualitative and 
+Quantitative Strategies</em>. Berkeley: University of California Press.</p>
+      <p>Lewandowski, J. (2015) <em>QCAtools: Helper functions for QCA in R</em>. R package version 0.1</p>
   
     </div>
     
@@ -363,67 +380,37 @@ b*C   -1  0  1
 
 
 # for compute()
-data(CVF)
-compute(&quot;natpride + GEOCON&quot;, data = CVF)
+data(LF)
+compute(&quot;DEV*ind + URB*STB&quot;, data = LF)
 </div>
 <div class='output'>
- [1] 0.95 0.35 0.35 0.78 0.40 0.78 0.78 0.78 0.78 0.17 0.78 0.35 0.95 0.95 0.71
-[16] 0.95 0.78 0.35 0.95 0.49 0.95 0.95 0.95 0.95 0.95 0.95 0.95 0.95 0.95
+ [1] 0.27 0.89 0.91 0.16 0.58 0.19 0.31 0.09 0.13 0.72 0.34 0.99 0.02 0.01 0.03
+[16] 0.20 0.33 0.98
 </div>
 <div class='input'>
 
 data(CVF)
-compute(&quot;natpride + GEOCON&quot;, data = CVF, separate = TRUE)
+compute(&quot;DEV*ind + URB*STB&quot;, data = LF, separate = TRUE)
 </div>
-<div class='output'>   natpride GEOCON
-1      0.23   0.95
-2      0.12   0.35
-3      0.09   0.35
-4      0.20   0.78
-5      0.40   0.35
-6      0.34   0.78
-7      0.04   0.78
-8      0.13   0.78
-9      0.30   0.78
-10     0.17   0.05
-11     0.46   0.78
-12     0.07   0.35
-13     0.14   0.95
-14     0.25   0.95
-15     0.71   0.35
-16     0.75   0.95
-17     0.13   0.78
-18     0.05   0.35
-19     0.40   0.95
-20     0.49   0.35
-21     0.38   0.95
-22     0.62   0.95
-23     0.14   0.95
-24     0.25   0.95
-25     0.12   0.95
-26     0.94   0.95
-27     0.66   0.95
-28     0.57   0.95
-29     0.59   0.95
-</div>
-<div class='input'>
-
-
-
-# for findRows()
-data(LC)
-ttLC &lt;- truthTable(LC, &quot;SURV&quot;)
-
-findRows(&quot;DEV*ind*STB&quot;, ttLC)
-</div>
-<div class='output'>
-[1] 18 22 26 30
-</div>
-<div class='input'>
-findRows(&quot;DEV*ind*STB&quot;, ttLC, remainders = TRUE)
-</div>
-<div class='output'>
-[1] 18 26 30
+<div class='output'>   DEV*ind URB*STB
+1     0.27    0.12
+2     0.00    0.89
+3     0.10    0.91
+4     0.16    0.07
+5     0.58    0.03
+6     0.19    0.03
+7     0.04    0.31
+8     0.04    0.09
+9     0.07    0.13
+10    0.72    0.05
+11    0.34    0.10
+12    0.06    0.99
+13    0.02    0.00
+14    0.01    0.01
+15    0.01    0.03
+16    0.03    0.20
+17    0.33    0.13
+18    0.00    0.98
 </div>
 
 <div class='input'>
@@ -450,6 +437,54 @@ sop("(A{1} + ~B{0})(B{1} + C{0})", snames = "A, B, C", noflevels = c(2, 3, 2))
 </div>
 <div class='output'>
 [1] "A{1}*C{0} + B{1} + B{1,2}*C{0}"
+</div>
+
+<div class='input'>
+# in Ragin's (1987) book, the equation E = SG + LW is the result
+# of the Boolean minimization for the ethnic political mobilization.
+
+# intersecting the reactive ethnicity perspective (R = lw)
+# with the equation E (page 144)
+
+sop("lw(SG + LW)", snames = "S, L, W, G")
+</div>
+<div class='output'>
+[1] "SlwG"
+</div>
+
+<div class='input'>
+# resources for size and wealth (C = SW) with E (page 145)
+sop("SW(SG + LW)", snames = "S, L, W, G")
+</div>
+<div class='output'>
+[1] "SWG + SLW"
+</div>
+
+<div class='input'>
+# and factorized
+factorize(sop("SW(SG + LW)", snames = "S, L, W, G"))
+</div>
+<div class='output'>
+F1: SW(G + L)
+</div>
+
+<div class='input'>
+# developmental perspective (D = Lg) and E (page 146)
+sop("Lg(SG + LW)", snames = "S, L, W, G", use.tilde = TRUE)
+</div>
+<div class='output'>
+[1] "LW~G"
+</div>
+
+<div class='input'>
+# subnations that exhibit ethnic political mobilization (E) but were
+# not hypothesized by any of the three theories (page 147)
+# ~H = ~(lw + SW + Lg) = GLs + GLw + GsW + lsW
+
+sop("(GLs + GLw + GsW + lsW)(SG + LW)", snames = "S, L, W, G")
+</div>
+<div class='output'>
+[1] "sLWG + SLwG"
 </div>
 
 <div class='input'></div></pre>

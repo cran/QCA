@@ -1,17 +1,43 @@
 `compute` <-
-function(expression = "", data, separate = FALSE) {
-    colnames(data) <- toupper(colnames(data))
-    pp <- translate(expression, data = data, tomatrix = FALSE)
-    ppm <- do.call("rbind", lapply(pp, function(x) {
-        xnames <- names(x)
-        x <- unlist(lapply(x, paste, collapse = ","))
-        names(x) <- xnames
-        return(x)
-    }))
+function(expression = "", data, separate = FALSE) { 
+    expression <- gsub("[[:space:]]", "", expression)
+    enchar <- nchar(expression)
+    if (identical(substring(expression, 1, 2), "~(") & identical(substring(expression, enchar, enchar), ")")) {
+        expression <- paste("1-", substring(expression, 3, enchar - 1), sep = "")
+    }
+    negated <- identical(unname(substring(expression, 1, 2)), "1-")
+    expression <- gsub("1-", "", expression)
+    if (missing(data)) {
+        syscalls <- parse(text = paste(unlist(lapply(sys.calls(), deparse)), collapse = "\n"))
+        if (any(withdata <- grepl("with\\(", syscalls))) {
+            withdata <- which(withdata)
+            withdata <- withdata[length(withdata)]
+            data <- get(unlist(strsplit(gsub("with\\(", "", syscalls[withdata]), split = ","))[1], envir = length(syscalls) - withdata)
+        }
+        else {
+            colnms <- validateNames(notilde(expression), sort(toupper(eval.parent(parse(text = "ls()", n = 1)))))
+            data <- vector(mode = "list", length = length(colnms))
+            for (i in seq(length(data))) {
+                data[[i]] <- eval.parent(parse(text = sprintf("get(\"%s\")", colnms[i]), n = 1))
+            }
+            if (length(unique(unlist(lapply(data, length)))) > 1) {
+                cat("\n")
+                stop(simpleError("Objects should be vectors of the same length.\n\n"))
+            }
+            names(data) <- colnms
+            data <- as.data.frame(data)
+        }
+    }
+    ppm <- translate(expression, data = data)
+    pp <- attr(ppm, "retlist")
     retain <- apply(ppm, 2, function(x) any(x >= 0))
     pp <- lapply(pp, function(x) x[retain])
     ppm <- ppm[, retain, drop = FALSE]
     data <- data[, retain, drop = FALSE]
+    infodata <- getInfo(cbind(data, YYYYY_YYYYY = 1), conditions = colnames(data))
+    if (any(infodata$hastime)) {
+        data <- infodata$data[, colnames(data), drop = FALSE]
+    }
     verify.qca(data)
     tempList <- vector("list", length(pp))
     for (i in seq(length(pp))) {
@@ -32,7 +58,7 @@ function(expression = "", data, separate = FALSE) {
                 }
             }
             else { 
-                temp[, j] <- as.numeric(temp[, j] %in% val[[j]])
+                temp[, j] <- as.numeric(is.element(temp[, j], val[[j]]))
             }
         }
         if (ncol(temp) > 1) {
@@ -50,5 +76,6 @@ function(expression = "", data, separate = FALSE) {
     else {
         res <- as.vector(res[, 1])
     }
+    if (negated) res <- 1 - res
     return(res)
 }

@@ -1,33 +1,121 @@
-`fuzzyand` <- function(...) {
-    other.args <- list(...)
-    negated <- FALSE
-    if (is.vector(other.args[[1]])) {
-        if (length(other.args) == 1) {
-            return(other.args[[1]])
-        }
-        funargs <- toupper(unlist(lapply(match.call(expand.dots = TRUE), deparse)[-1]))
-        negated <- grepl("1 -", funargs)
-        other.args <- as.data.frame(other.args)
-        tc <- capture.output(tryCatch(getName(funargs), error = function(e) e, warning = function(w) w))
-        if (!grepl("simpleError", tc)) {
-            names(other.args) <- getName(funargs)
+`fuzzyand` <- function(..., na.rm = FALSE, use.tilde = FALSE) {
+    funargs <- unlist(lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x)))
+    if (!is.na(rem <- match("use.tilde", names(funargs)))) {
+        funargs <- funargs[-rem]
+    }
+    if (!is.na(rem <- match("na.rm", names(funargs)))) {
+        funargs <- funargs[-rem]
+    }
+    other.args <- vector(mode = "list", length = length(funargs))
+    funargs <- gsub(rawToChar(as.raw(c(226, 128, 147))), "-", funargs)
+    negated <- grepl("1-", funargs)
+    funargs <- gsub("1-", "", funargs)
+    tildenegated <- badnames <- cols <- logical(length(funargs))
+    for (i in seq(length(funargs))) {
+        badnames[i] <- grepl("\\(|:", funargs[i])
+        cols[i] <- getName(notilde(funargs[i]))
+        tildenegated[i] <- tilde1st(funargs[i])
+        funargs[i] <- notilde(funargs[i])
+    }
+    if (sum(badnames) > 0) {
+        if (sum(badnames) > length(LETTERS) | any(is.element(cols, LETTERS))) {
+            cols[badnames] <- paste("X", seq(sum(badnames)), sep = "")
         }
         else {
-            names(other.args) <- LETTERS[seq(ncol(other.args))]
+            cols[badnames] <- LETTERS[seq(sum(badnames))]
         }
     }
-    else if (is.matrix(other.args[[1]]) | is.data.frame(other.args[[1]])) {
+    for (i in seq(length(funargs))) {
+        tc <- tryCatch(eval.parent(parse(text = funargs[i])), error = function(e) e, warning = function(w) w)
+        tc <- capture.output(tc)[1]
+        if (identical(substring(gsub("[[:space:]]", "", tc), 1, 9), "function(")) {
+            tc <- simpleError("simpleError")
+        }
+        if (grepl("simpleError", tc)) {
+            tc <- tryCatch(eval.parent(parse(text = toupper(funargs[i]))), error = function(e) e, warning = function(w) w)
+            tc <- capture.output(tc)[1]
+            if (identical(substring(gsub("[[:space:]]", "", tc), 1, 9), "function(")) {
+                tc <- simpleError("simpleError")
+            }
+            if (grepl("simpleError", tc)) {
+                cat("\n")
+                stop(simpleError(sprintf("Object '%s' not found.\n\n", funargs[i])))
+            }
+            else {
+                negated[i] <- !negated[i]
+                other.args[[i]] <- eval.parent(parse(text = toupper(funargs[i])), n = 1)
+            }
+        }
+        else {
+            other.args[[i]] <- eval.parent(parse(text = funargs[i]), n = 1)
+        }
+    }
+    if (is.vector(other.args[[1]])) {
+        if (any(!unlist(lapply(other.args, function(x) is.numeric(x) | is.logical(x))))) {
+            cat("\n")
+            stop(simpleError("Input vectors should be numeric or logical.\n\n"))
+        }
+        if (length(unique(unlist(lapply(other.args, length)))) > 1) {
+            cat("\n")
+            stop(simpleError("Input vectors should have equal lengths.\n\n"))
+        }
+        other.args <- as.data.frame(other.args)
+    }
+    else if (is.matrix(other.args[[1]])) {
         other.args <- other.args[[1]]
+        if (is.null(colnames(other.args))) {
+            if (ncol(other.args) > length(LETTERS)) {
+                cols <- paste("X", seq(ncol(other.args)), sep = "")
+            }
+            else {
+                cols <- LETTERS[seq(ncol(other.args))]
+            }
+        }
+        other.args <- as.data.frame(other.args)
+        negated <- logical(ncol(other.args))
+        tildenegated <- logical(ncol(other.args))
+        if (!all(unlist(lapply(other.args, function(x) is.numeric(x) | is.logical(x))))) {
+            cat("\n")
+            stop(simpleError("Input should be numeric or logical.\n\n"))
+        }
     }
-    cols <- colnames(other.args)
-    if (is.null(cols)) {
-        cols <- LETTERS[seq(ncol(other.args))]
+    else if (is.data.frame(other.args[[1]])) {
+        other.args <- other.args[[1]]
+        negated <- logical(ncol(other.args))
+        tildenegated <- logical(ncol(other.args))
+        cols <- colnames(other.args)
+        if (!all(unlist(lapply(other.args, function(x) is.numeric(x) | is.logical(x))))) {
+            cat("\n")
+            stop(simpleError("Some columns are not numeric or logical.\n\n"))
+        }
     }
-    if (length(negated) > 1) {
-        cols[negated] <- tolower(cols[negated])
+    else {
+        cat("\n")
+        stop(simpleError("The input should be vectors, or a matrix or a dataframe.\n\n"))
     }
-    result <- apply(other.args, 1, min)
-    attr(result, "name") <- paste(cols, collapse = "*")
+    if (any(unlist(lapply(other.args, function(x) any(as.numeric(x) < 0 | as.numeric(x) > 1))))) {
+        cat("\n")
+        stop(simpleError("Input should be logical or numbers between 0 and 1.\n\n"))
+    }
+    for (i in seq(length(cols))) {
+        if (tildenegated[i]) {
+            other.args[[i]] <- 1 - other.args[[i]]
+        }
+        if (negated[i]) {
+            other.args[[i]] <- 1 - other.args[[i]]
+        }
+        if (negated[i] + tildenegated[i] == 1) {
+            if (use.tilde | tildenegated[i] | !identical(cols[i], toupper(cols[i]))) {
+                cols[i] <- paste("~", cols[i], sep = "")
+            }
+            else {
+                cols[i] <- tolower(cols[i])
+            }
+        }
+    }
+    result <- apply(other.args, 1, min, na.rm = na.rm)
     attr(result, "names") <- NULL
-    return(structure(result, class = "fuzzyop"))
+    attr(result, "name") <- paste(cols, collapse = "*")
+    class(result) <- c("numeric", "fuzzy")
+    return(result)
 }

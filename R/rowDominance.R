@@ -18,5 +18,5 @@ function(mtrx) {
             break
         }
     }
-    return(match(rownames(mtrx), rownames(mtrx.copy)))
+    return(sort(match(rownames(mtrx), rownames(mtrx.copy))))
 }
