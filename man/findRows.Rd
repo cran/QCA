@@ -71,6 +71,10 @@ The following types of untenable assumptions can be searched for:
     \code{3} \tab simultaneous subset relations\cr
 }
 
+To find contradictory simplifying assumptions, a truth table for the negated outcome is
+constructed, using the \bold{\code{incl.cut}} argument from the \bold{\code{obj}}
+input object. If the inclusion cut-off has a single value, the same is used for the negated
+outcome, and if it has two values the second is used.
 }
 
 

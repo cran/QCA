@@ -1,3 +1,28 @@
+# Copyright (c) 2018, Adrian Dusa
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, in whole or in part, are permitted provided that the
+# following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * The names of its contributors may NOT be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 `minimize` <-
 function(input, include = "", exclude = NULL, dir.exp = "",
          pi.cons = 0, pi.depth = 0, sol.cons = 0, sol.cov = 1, sol.depth = 0,
@@ -22,6 +47,7 @@ function(input, include = "", exclude = NULL, dir.exp = "",
     inf.test    <- if     (is.element("inf.test",    names(other.args))) other.args$inf.test     else ""
     relation    <- if     (is.element("relation",    names(other.args))) other.args$relation     else "sufficiency"
     neg.out     <- ifelse (is.element("neg.out",     names(other.args)), other.args$neg.out,     FALSE)
+    enter       <- ifelse (is.element("enter",       names(other.args)), other.args$enter,       TRUE)
     if (is.null(exclude)) {
         if (is.element("omit", names(other.args))) {
             exclude <- other.args$omit
@@ -34,18 +60,18 @@ function(input, include = "", exclude = NULL, dir.exp = "",
         other.args$data <- NULL
     }
     if (any(is.element(c("min.dis", "mindis"), names(other.args)))) {
-        cat("\n")
-        stop(simpleError("Argument \"min.dis\" is obsolete, please use the formal argument \"all.sol\".\n\n"))
+        if (enter) cat("\n")
+        stop(simpleError(paste0("Argument \"min.dis\" is obsolete, please use the formal argument \"all.sol\".", ifelse(enter, "\n\n", ""))))
     }
     if (missing(input)) {
-        cat("\n")
-        stop(simpleError("The input (a truth table or a dataset) is missing.\n\n"))
+        if (enter) cat("\n")
+        stop(simpleError(paste0("The input (a truth table or a dataset) is missing.", ifelse(enter, "\n\n", ""))))
     }
     else {
         if (is.matrix(input)) {
             if (is.null(colnames(input))) {
-                cat("\n")
-                stop(simpleError("The data should have column names.\n\n"))
+                if (enter) cat("\n")
+                stop(simpleError(paste0("The data should have column names.", ifelse(enter, "\n\n", ""))))
             }
             if (any(duplicated(rownames(input)))) {
                 rownames(input) <- seq(nrow(input))
@@ -58,15 +84,15 @@ function(input, include = "", exclude = NULL, dir.exp = "",
             }
         }
         if(!(is.data.frame(input) | methods::is(input, "tt"))) {
-            cat("\n")
-            stop(simpleError("The input should be a truth table or a dataset.\n\n"))
+            if (enter) cat("\n")
+            stop(simpleError(paste0("The input should be a truth table or a dataset.", ifelse(enter, "\n\n", ""))))
         }
     }
     print.truth.table <- details & !methods::is(input, "tt")
     if (identical(include, "")) {
         if (!identical(dir.exp, "")) {
-            cat("\n")
-            stop(simpleError("Directional expectations were specified, without including the remainders.\n\n"))
+            if (enter) cat("\n")
+            stop(simpleError(paste0("Directional expectations were specified, without including the remainders.", ifelse(enter, "\n\n", ""))))
         }
     }
     if (is.character(explain) & !identical(explain, "1")) {
@@ -90,8 +116,8 @@ function(input, include = "", exclude = NULL, dir.exp = "",
     }
     else {
         if (identical(outcome, "")) {
-            cat("\n")
-            stop(simpleError("Consider creating a truth table first, or formally specify the argument \"outcome\".\n\n"))
+            if (enter) cat("\n")
+            stop(simpleError(paste0("Consider creating a truth table first, or formally specify the argument \"outcome\".", ifelse(enter, "\n\n", ""))))
         }
         if (any(c(pi.cons, sol.cons) > 0) & incl.cut[1] == 1) {
             incl.cut[1] <- min(c(pi.cons, sol.cons))
@@ -109,8 +135,8 @@ function(input, include = "", exclude = NULL, dir.exp = "",
             outcome <- substring(outcome, 2)
         }
         if (!is.element(toupper(curlyBrackets(outcome, outside = TRUE)), colnames(input))) {
-            cat("\n")
-            stop(simpleError("Inexisting outcome name.\n\n"))
+            if (enter) cat("\n")
+            stop(simpleError(paste0("Inexisting outcome name.", ifelse(enter, "\n\n", ""))))
         }
         outcome.name <- ifelse (tilde1st(outcome), substring(outcome, 2), outcome)
         if (grepl("\\{|\\}", outcome)) {
@@ -154,7 +180,7 @@ function(input, include = "", exclude = NULL, dir.exp = "",
     mbase <- rev(c(1, cumprod(rev(noflevels))))[-1]
     mbaseplus <- rev(c(1, cumprod(rev(noflevels + 1))))[-1]
     alreadyletters <- sum(nchar(colnames(recdata)[-ncol(recdata)])) == ncol(recdata) - 1
-    tt$tt[, seq(length(conditions))] <- as.data.frame(lapply(tt$tt[, seq(length(conditions))], function(x) {
+    tt$tt[seq(length(conditions))] <- as.data.frame(lapply(tt$tt[seq(length(conditions))], function(x) {
         x[x %in% c("-", "dc")] <- -1
         return(asNumeric(x))
     }))
@@ -176,8 +202,8 @@ function(input, include = "", exclude = NULL, dir.exp = "",
     neg.matrix <- matrix(as.numeric(neg.matrix), ncol = length(noflevels)) + 1
     rownames(neg.matrix) <- drop((neg.matrix - 1) %*% mbase) + 1
     if (sum(subset.pos) == 0) {
-        cat("\n")
-        stop(simpleError("None of the values in OUT is explained. Please check the truth table.\n\n"))
+        if (enter) cat("\n")
+        stop(simpleError(paste0("None of the values in OUT is explained. Please check the truth table.", ifelse(enter, "\n\n", ""))))
     }
     inputt <- as.matrix(tt$tt[subset.tt, seq(length(noflevels)), drop = FALSE])
     rownames(inputt) <- drop(inputt %*% mbase) + 1
@@ -229,14 +255,14 @@ function(input, include = "", exclude = NULL, dir.exp = "",
     inputcases <- inputcases[!tomitinputt]
     rownms <- rownames(inputt)
     if (nrow(pos.matrix) == 0) {
-        cat("\n")
-        stop(simpleError("Nothing to explain. Please check the truth table.\n\n"))
+        if (enter) cat("\n")
+        stop(simpleError(paste0("Nothing to explain. Please check the truth table.", ifelse(enter, "\n\n", ""))))
     }
     incl.rem <- is.element("?", include)
     if (nrow(neg.matrix) == 0 & incl.rem & method == "QMC") {
-        cat("\n")
-        stop(simpleError(paste("All combinations have been included into analysis. The solution is 1.\n",
-                   "Please check the truth table.", "\n\n", sep="")))
+        if (enter) cat("\n")
+        stop(simpleError(paste0("All truth table configurations have been included, all conditions are minimized.\n",
+                   "Please check the truth table.", ifelse(enter, "\n\n", ""))))
     }
     expressions <- pos.matrix
     recdata[, conditions] <- as.data.frame(lapply(recdata[, conditions, drop = FALSE], function(x) {
@@ -253,7 +279,7 @@ function(input, include = "", exclude = NULL, dir.exp = "",
         changed <- TRUE
     }
     else {
-        colnames(expressions) <- colnames(inputt) <- colnames(pos.matrix) <- colnames(neg.matrix) <- colnames(recdata[, seq(ncol(inputt))])
+        colnames(expressions) <- colnames(inputt) <- colnames(pos.matrix) <- colnames(neg.matrix) <- colnames(recdata[, seq(ncol(inputt)), drop = FALSE])
     }
     rownames(neg.matrix) <- (neg.matrix - 1) %*% mbase + 1
     output$initials <- writePrimeimp(inputt, mv = mv, use.tilde = use.tilde, collapse = collapse)

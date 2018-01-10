@@ -1,3 +1,30 @@
+/*
+Copyright (c) 2018, Adrian Dusa
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, in whole or in part, are permitted provided that the
+following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * The names of its contributors may NOT be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 # include <float.h>
 # include <stdlib.h>
 # include <R.h>
@@ -400,7 +427,6 @@ static R_INLINE SEXP transpose(SEXP matrix, int nr, int nc) {
                 p_out[r * nc + c] = p_matrix[c * nr + r];
             }
         }
-        UNPROTECT(1);
     }
     else if (type == LGLSXP) {
         int *p_out = LOGICAL(out);
@@ -410,8 +436,8 @@ static R_INLINE SEXP transpose(SEXP matrix, int nr, int nc) {
                 p_out[r * nc + c] = p_matrix[c * nr + r];
             }
         }
-        UNPROTECT(1);
     }
+    UNPROTECT(1);
     return(out);
 }
 static R_INLINE int getmin(SEXP pichart, int foundPI) {
@@ -1378,6 +1404,28 @@ SEXP findmin(SEXP pichart) {
     UNPROTECT(1);
     return(out);
 }
+SEXP getRow(SEXP input) {
+    PROTECT(input);
+    SEXP rowno, noflevels, mbase, matrix;
+    SEXP usage = PROTECT(allocVector(VECSXP, 4));
+    SET_VECTOR_ELT(usage, 0, rowno = coerceVector(VECTOR_ELT(input, 0), INTSXP));
+    SET_VECTOR_ELT(usage, 1, noflevels = coerceVector(VECTOR_ELT(input, 1), INTSXP));
+    SET_VECTOR_ELT(usage, 2, mbase   = coerceVector(VECTOR_ELT(input, 2), INTSXP));
+    int *p_rowno = INTEGER(rowno);
+    int *p_noflevels = INTEGER(noflevels);
+    int *p_mbase = INTEGER(mbase);
+    int nrows = length(rowno);
+    int ncols = length(noflevels);
+    SET_VECTOR_ELT(usage, 3, matrix = allocMatrix(INTSXP, nrows, ncols));
+    int *p_matrix = INTEGER(matrix);
+    for (int r = 0; r < nrows; r++) {
+        for (int c = 0; c < ncols; c++) {
+            p_matrix[c * nrows + r] = (p_rowno[r] / p_mbase[c]) % p_noflevels[c];
+        }
+    }
+    UNPROTECT(2);
+    return(matrix);
+}
 SEXP createMatrix(SEXP input) {
     PROTECT(input);
     SEXP matrix, noflevels, arrange, maxprod;
@@ -1883,8 +1931,15 @@ SEXP QMC(SEXP tt, SEXP noflevels) {
         combs[1] = 0;
         e = 0;
         h = 2; 
-        while (combs[0] != nimplicants - 2) { 
-            increment(2, &e, &h, nimplicants, combs, 0);
+        Rboolean last = (nimplicants == 2);
+        while (combs[0] != nimplicants - 2 || last) { 
+            if (nimplicants == 2) {
+                combs[1] = 1;
+            }
+            else {
+                increment(2, &e, &h, nimplicants, combs, 0);
+            }
+            last = FALSE;
             int r = 0;
             int diffs = 0;
             int which = 0;

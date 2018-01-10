@@ -1,8 +1,78 @@
+/*
+Copyright (c) 2018, Adrian Dusa
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, in whole or in part, are permitted provided that the
+following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * The names of its contributors may NOT be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 $( function() {
 $('#main_menu').smartmenus({
     subMenusSubOffsetX: 6,
     subMenusSubOffsetY: -8
 });
+var spinnerstarted = false;
+function positionSpinner() {
+    if ($("#background").length) {
+        var result = document.getElementById("result_main");
+        $("#background").css({
+            "width": $("#result").width(),
+            "height": $("#result").height() - 20
+        });
+        $("#background").position({my: "left top", at: "left top", of: result, collision: "flip"});
+        $("#spinner").position({my: "left top", at: "left+" + ($("#result").width() / 2 - 40) + "px top+" + ((($("#result").height() - 20) / 2) - 40) + "px", of: result, collision: "flip"});
+    }
+}
+function createSpinner() {
+    var background = document.createElement("div");
+    background.id = "background";
+    document.body.appendChild(background);
+    $("#background").addClass("spinnerbackground");
+    background = document.getElementById("background");
+    var spinner = document.createElement("div");
+    spinner.id = "spinner";
+    background.appendChild(spinner);
+    $("#spinner").addClass("cssload-loader");
+    spinner = document.getElementById("spinner");
+    var one = document.createElement("div");
+    one.id = "one";
+    spinner.appendChild(one);
+    $("#one").addClass("cssload-inner cssload-one");
+    var two = document.createElement("div");
+    two.id = "two";
+    spinner.appendChild(two);
+    $("#two").addClass("cssload-inner cssload-two");
+    var three = document.createElement("div");
+    three.id = "three";
+    spinner.appendChild(three);
+    $("#three").addClass("cssload-inner cssload-three");
+    $("#background").css("z-index", "9099");
+    spinnerstarted = true;
+    positionSpinner();
+}
+function removeSpinner() {
+    $("#background").remove();
+    spinnerstarted = false;
+}
 var responseR = false;
 var divid = 0;
 var history = ["library(QCA)"];
@@ -785,8 +855,10 @@ Shiny.addCustomMessageHandler("Rcommand",
                 });
             }
         }
-        history[(histindex < history.length)?history.length:histindex] = string_command;
         histindex = history.length;
+        if (history[histindex - 1] != string_command) {
+            history[histindex] = string_command;
+        }
         outres = copy(object, exclude = ["xyplot"]);
         responseR = true;
     }
@@ -915,7 +987,7 @@ function createCommandPromptInRconsole(prompt) {
         });
         $("#txtarea").on("keyup", function(evt) {
             if (evt.keyCode == 38) { 
-                if (histindex > 0 && crpos == input.value.length) { 
+                if (histindex > 0 && (crpos == 0 || crpos == input.value.length)) { 
                     histindex -= 1;
                     input.value = history[histindex];
                 }
@@ -2063,7 +2135,6 @@ function update_data() {
                         sat(papers["data_editor"]["body"].text(5 + 70*(coords.mouseX + coords.Xshift), 10 + 20*(coords.mouseY + coords.Yshift), tocompare));
                         activeSquare();
                         string_command = dataset + "[\"" + info["data"][dataset].rownames[coords.mouseY + coords.Yshift] + "\", \"" + info["data"][dataset].colnames[coords.mX + coords.Xshift] + "\"] <- " + tocompare;
-                        console.log(string_command);
                         Rcommand.command = string_command; 
                         talkToR();
                     }
@@ -2135,7 +2206,7 @@ function draw_load(paper) {
     sat(paper.text(355, 230, "Load"));
     paper.rect(355 - 19, 230 - 13, 70, 25).attr({fill: "white", "fill-opacity": 0, 'stroke-width': 1.25})
          .click(function() {
-             if (commobj.load.pkgdata != "") {
+             if (commobj.load.pkgdata != "" && !spinnerstarted) {
                  $("#load").remove();
                  Rcommand.command = string_command;
                  talkToR();
@@ -2243,7 +2314,6 @@ function draw_import(paper) {
     header.cover.click(function() {
         commobj.read_table.header = header.isChecked;
         if (dirfile.filename != "") {
-            console.log("header");
             console_command("import");
             tempdatainfo.nrows = 0;
             Shiny.onInputChange("read_table", commobj.read_table);
@@ -2318,7 +2388,7 @@ function draw_import(paper) {
         .attr({"stroke-width": 1.25, fill: "#ffffff", "fill-opacity": 0})
         .click(function(e) {
             e.stopPropagation();
-            if (dirfile.filename != "" && tempdatainfo.rownames != "foobar") {
+            if (dirfile.filename != "" && tempdatainfo.rownames != "foobar" && !spinnerstarted) {
                 dirfilist.refresh = false;
                 function littleWait() {
                     updatecounter += 1;
@@ -2539,10 +2609,12 @@ function draw_export(paper) {
             .attr({"stroke-width": 1.25, fill: "#ffffff", "fill-opacity": 0})
             .click(function(e) {
                 e.stopPropagation();
-                console_command("export");
-                Rcommand.command = string_command;
-                talkToR();
-                $("#export").remove();
+                if (!spinnerstarted) {
+                    console_command("export");
+                    Rcommand.command = string_command;
+                    talkToR();
+                    $("#export").remove();
+                }
             })
         refresh_dirs();
     }
@@ -3282,7 +3354,7 @@ if ($("#calibrate").length) {
                             commobj.calibrate.thnames[me.i] = thlabels.sub(me.i);
                             commobj.calibrate.thscopyfuzs = copy(commobj.calibrate.thresholds);
                         }
-                        showFuzzy();
+                        showFuzzy(); 
                     }
                     console_command("calibrate");
                 }
@@ -3506,7 +3578,7 @@ if ($("#calibrate").length) {
     .attr({fill: "white", "fill-opacity": 0, 'stroke-width': 1.25})
     .click(function() {
         focus = "calibrate";
-        if (info["data"][commobj["calibrate"].dataset].rownames != "") {
+        if (info["data"][commobj["calibrate"].dataset].rownames != "" && !spinnerstarted) {
             commobj.calibrate.x = getTrueKeys(colclicks.calibrate.x)[0];
             if (commobj.calibrate.x === void 0) {
                 commobj.calibrate.x = "";
@@ -3845,7 +3917,7 @@ if ($("#recode").length) {
     sat(paper.text(445, 295, "Run"));
     paper.rect(445 - 20, 295 - 13, 70, 25).attr({fill: "white", "fill-opacity": 0, 'stroke-width': 1.25})
          .click(function() {
-             if (info["data"][commobj["recode"].dataset].rownames != "") {
+             if (info["data"][commobj["recode"].dataset].rownames != "" && !spinnerstarted) {
                  commobj.recode.x = getTrueKeys(colclicks.recode.x)[0];
                  if (commobj.recode.x === void 0) {
                      commobj.recode.x = "";
@@ -4314,7 +4386,6 @@ function draw_venn(paper) {
                                 customHover.toFront();
                                 for (i = 0; i < cols.length; i++) {
                                     if (!inverted[i]) {
-                                        console.log(Hovers[i].txt);
                                         Hovers[i].toFront();
                                     }
                                 }
@@ -4579,7 +4650,7 @@ function draw_tt(paper) {
         paper.rect(ctx - 20, cty + 121, 70, 25)
         .attr({fill: "white", "fill-opacity": 0, 'stroke-width': 1.25})
         .click(function() {
-            if (info["data"][commobj["tt"].dataset].rownames != "") {
+            if (info["data"][commobj["tt"].dataset].rownames != "" && !spinnerstarted) {
                 console_command("tt");
                 Rcommand.command = string_command;
                 talkToR();
@@ -4981,7 +5052,7 @@ function draw_minimize(paper) {
         .click(function() {
             if (commobj.minimize.source == "tt") {
                 if (info["tt"] !== null) {
-                    if (info["tt"][commobj.minimize.dataset] !== void 0) {
+                    if (info["tt"][commobj.minimize.dataset] !== void 0 && !spinnerstarted) {
                         console_command("minimize");
                         Rcommand.command = string_command;
                         talkToR();
@@ -4989,7 +5060,7 @@ function draw_minimize(paper) {
                 }
             }
             else {
-                if (info["data"][commobj.minimize.dataset].rownames != "") {
+                if (info["data"][commobj.minimize.dataset].rownames != "" && !spinnerstarted) {
                     console_command("minimize");
                     commobj.minimize.outcome = getTrueKeys(colclicks.minimize.outcome);
                     commobj.minimize.conditions = getTrueKeys(colclicks.minimize.conditions);
@@ -5235,8 +5306,7 @@ function draw_findRows(paper) {
         paper.rect(377, 163, 70, 25)
         .attr({fill: "white", "fill-opacity": 0, 'stroke-width': 1.25})
         .click(function() {
-            if (info["tt"][commobj.findRows.obj] !== void 0) {
-                console.log(string_command);
+            if (info["tt"][commobj.findRows.obj] !== void 0 && !spinnerstarted) {
                 Rcommand.command = string_command;
                 talkToR();
             }
@@ -5366,8 +5436,10 @@ function drawPointsAndThresholds() {
         if (poinths.vals.length > 0) {
             var pointsmin = min(poinths.vals);
             var pointsmax = max(poinths.vals);
-            var minv = min([pointsmin, poinths.prettyx[0]]);
-            var maxv = max([pointsmax, poinths.prettyx[poinths.prettyx.length - 1]]);
+            var mint = (any(isNumeric(commobj.calibrate.thresholds), "==", true) ? min(commobj.calibrate.thresholds) : pointsmin);
+            var maxt = (any(isNumeric(commobj.calibrate.thresholds), "==", true) ? max(commobj.calibrate.thresholds) : pointsmax);
+            var minv = min([pointsmin, poinths.prettyx[0], ((papers["calibrate"]["main"].crfuz == 0) ? pointsmin : mint)]);
+            var maxv = max([pointsmax, poinths.prettyx[poinths.prettyx.length - 1], ((papers["calibrate"]["main"].crfuz == 0) ? pointsmax : maxt)]);
             var lm = 165;
             var rm = $("#calibrate").width() - 20;
             var thy = 304;
@@ -5437,11 +5509,11 @@ function drawPointsAndThresholds() {
                             ["L", position, thy],
                             ["L", position, thy - 120]
                         ]).attr({"stroke-width": 1, fill: "#cb2626", stroke: "#cb2626"});
-                        handles[i].min = pointsmin;
-                        handles[i].max = pointsmax;
+                        handles[i].min = ((papers["calibrate"]["main"].crfuz == 0) ? pointsmin : mint);
+                        handles[i].max = ((papers["calibrate"]["main"].crfuz == 0) ? pointsmax : maxt);
                         handles[i].name = i;
-                        handles[i].left = (rm - lm)*(pointsmin - minv)/(maxv - minv) + lm;
-                        handles[i].right = (rm - lm)*(pointsmax - minv)/(maxv - minv) + lm;
+                        handles[i].left = (rm - lm)*(handles[i].min - minv)/(maxv - minv) + lm;
+                        handles[i].right = (rm - lm)*(handles[i].max - minv)/(maxv - minv) + lm;
                         handles[i].id = "thsetter";
                         handles[i].pos = position;
                         handles[i].drag(dragMove(handles[i]), dragStart(handles[i]), dragStop(handles[i]));
@@ -5516,92 +5588,79 @@ function pingit(where) {
 }
 function printRcommand() {
     updatecounter += 1;
-    if (updatecounter < 51) {
-        if (responseR) {
-            var viewdata = "";
-            txtcommand = ""
-            updatecounter = 0;
-            for (var i = 0, length = outres.evaluate.length; i < length; i++) {
-                var temp = outres.evaluate[i].command.split("\n");
-                var first = ">";
-                var color = "#932192";
-                if (tempcommand != "") {
-                    temp.splice(0, tempcommand.split("\n").length - 1);
-                    first = "+";
-                    color = "blue";
+    if (responseR) {
+        var viewdata = "";
+        txtcommand = ""
+        updatecounter = 0;
+        for (var i = 0, length = outres.evaluate.length; i < length; i++) {
+            var temp = outres.evaluate[i].command.split("\n");
+            var first = ">";
+            var color = "#932192";
+            if (tempcommand != "") {
+                temp.splice(0, tempcommand.split("\n").length - 1);
+                first = "+";
+                color = "blue";
+            }
+            for (var t = 0, tlen = temp.length; t < tlen; t++) {
+                temp[t] = strwrap(temp[t], cpl.result, "  ");
+            }
+            $("#result_main").append("<span style='color:" + color + "'>" + first + " </span>");
+            $("#result_main").append("<span style='color:blue'>" + 
+                temp.join("<br>+ ").split(" ").join("&nbsp;") + "</span><br>");
+            if (outres.evaluate[i].continue) {
+                if (outres.evaluate[i].hasOwnProperty("output")) {
+                    $("#result_main").append(outres.evaluate[i].output.split("\n").join("<br>") + "<br>");
                 }
-                for (var t = 0, tlen = temp.length; t < tlen; t++) {
-                    temp[t] = strwrap(temp[t], cpl.result, "  ");
-                }
-                $("#result_main").append("<span style='color:" + color + "'>" + first + " </span>");
-                $("#result_main").append("<span style='color:blue'>" + 
-                    temp.join("<br>+ ").split(" ").join("&nbsp;") + "</span><br>");
-                if (outres.evaluate[i].continue) {
-                    if (outres.evaluate[i].hasOwnProperty("output")) {
-                        $("#result_main").append(outres.evaluate[i].output.split("\n").join("<br>") + "<br>");
-                    }
-                    createCommandPromptInRconsole("+");
-                    if (outres.evaluate[i].hasOwnProperty("partial")) {
-                        tempcommand += temp[0].substring(outres.evaluate[i].partial.length, temp[0].length) + "\n";
-                    }
-                    else {
-                        tempcommand += temp.join("\n") + "\n";
-                    }
+                createCommandPromptInRconsole("+");
+                if (outres.evaluate[i].hasOwnProperty("partial")) {
+                    tempcommand += temp[0].substring(outres.evaluate[i].partial.length, temp[0].length) + "\n";
                 }
                 else {
-                    tempcommand = "";
-                    if (outres.evaluate[i].hasOwnProperty("message")) {
-                        $("#result_main").append("<span style='color:red'>" + outres.evaluate[i].message.split("\n").join("<br>") + "</span>");
-                    }
-                    else {
-                        $("#result_main").append("<br>");
-                    }
-                    if (outres.evaluate[i].hasOwnProperty("output")) {
-                        $("#result_main").append(outres.evaluate[i].output.split("\n").join("<br>") + "<br><br>");
-                    }
-                    if (outres.evaluate[i].hasOwnProperty("warning")) {
-                        $("#result_main").append("<span style='color:red'>" + outres.evaluate[i].warning + "</span><br><br>");
-                    }
-                    if (outres.evaluate[i].hasOwnProperty("error")) {
-                        $("#result_main").append("<span style='color:red'>" + outres.evaluate[i].error + "</span><br><br>");
-                    }
-                    if (outres.evaluate[i].hasOwnProperty("view")) {
-                        viewdata = outres.evaluate[i].view;
-                    }
-                    if (i == outres.evaluate.length - 1) {
-                        createCommandPromptInRconsole();
-                    }
-                }
-                $("#result_main").animate({
-                    scrollTop: $("#result_main")[0].scrollHeight
-                });
-                if (focus == "result") {
-                    $("#tempdiv").click();
+                    tempcommand += temp.join("\n") + "\n";
                 }
             }
-            if (viewdata != "") {
-                openDataEditor(viewdata);
+            else {
+                tempcommand = "";
+                if (outres.evaluate[i].hasOwnProperty("message")) {
+                    $("#result_main").append("<span style='color:red'>" + outres.evaluate[i].message.split("\n").join("<br>") + "</span>");
+                }
+                else {
+                    $("#result_main").append("<br>");
+                }
+                if (outres.evaluate[i].hasOwnProperty("output")) {
+                    $("#result_main").append(outres.evaluate[i].output.split("\n").join("<br>") + "<br><br>");
+                }
+                if (outres.evaluate[i].hasOwnProperty("warning")) {
+                    $("#result_main").append("<span style='color:red'>" + outres.evaluate[i].warning + "</span><br><br>");
+                }
+                if (outres.evaluate[i].hasOwnProperty("error")) {
+                    $("#result_main").append("<span style='color:red'>" + outres.evaluate[i].error + "</span><br><br>");
+                }
+                if (outres.evaluate[i].hasOwnProperty("view")) {
+                    viewdata = outres.evaluate[i].view;
+                }
+                if (i == outres.evaluate.length - 1) {
+                    createCommandPromptInRconsole();
+                }
             }
-            reset_outres();
+            $("#result_main").animate({
+                scrollTop: $("#result_main")[0].scrollHeight
+            });
+            if (focus == "result") {
+                $("#tempdiv").click();
+            }
         }
-        else {
-            setTimeout(printRcommand, 50);
+        if (viewdata != "") {
+            openDataEditor(viewdata);
         }
+        reset_outres();
+        removeSpinner();
     }
     else {
-        history[(histindex < history.length)?history.length:histindex] = string_command;
-        histindex = history.length;
-        var header = strwrap(string_command, cpl.result, "  ");
-        $("#tempdiv").remove();
-        $("#result_main").append("<span style='color:#932192'>" + ((tempcommand == "")?">":"+") + " </span><span style='color:blue'>" + header + "</span><br>");
-        tempcommand = "";
-        $("#result_main").append("<br><span style='color:red'>Error: R takes too long to respond.</span><br><br>");
-        $("#result_main").animate({
-            scrollTop: $("#result_main")[0].scrollHeight
-        }, 1000);
-        createCommandPromptInRconsole();
-        $("#tempdiv").click();
-        updatecounter = 0;
+        if (updatecounter > 12) {
+            createSpinner();
+        }
+        setTimeout(printRcommand, 50);
     }
 }
 function resizePlot() {
@@ -5685,64 +5744,6 @@ function printWhenOutputChanges() {
             scrollTop: $("#result_main")[0].scrollHeight
         }, 1000);
         createCommandPromptInRconsole();
-        updatecounter = 0;
-    }
-}
-function doWhenRresponds() {
-    updatecounter += 1;
-    if (updatecounter < 21) {
-        if (responseR) {
-            var toprint = outres.toprint;
-            history[(histindex < history.length)?history.length:histindex] = string_command;
-            histindex = history.length;
-            var header = strwrap(string_command, cpl.result, "  ");
-            $("#tempdiv").remove();
-            $("#result_main").append("<span style='color:#932192'>> </span><span style='color:blue'>" + header + "</span><br><br>");
-            updatecounter = 0;
-            if (outres.error) {
-                if (toprint != "") {
-                    $("#result_main").append("<span style='color:red'>" + toprint.split(" ").join("&nbsp;") + "<br><br>" + "</span>");
-                }
-            }
-            else {
-                if (toprint != "") {
-                    $("#result_main").append(toprint.split(" ").join("&nbsp;") + "<br>");
-                }
-                visibledata = info["data"][outres.dataset].theData.toString();
-                coordscopy = info["data"][outres.dataset].dataCoords;
-                info["data"][outres.dataset] = outres.infobjs.data[outres.dataset];
-                if (info["data"][outres.dataset].theData.toString() != visibledata | info["data"][outres.dataset].dataCoords != coordscopy) {
-                    refresh_cols("all");
-                    if ($("#data_editor").length && info["data"] !== null) {
-                        $(papers["data_editor"]["body"].canvas).width(70*info["data"][commobj["data_editor"].dataset].ncols);
-                        $(papers["data_editor"]["body"].canvas).height(20*info["data"][commobj["data_editor"].dataset].nrows);
-                        $(papers["data_editor"]["rownames"].canvas).height(20*info["data"][commobj["data_editor"].dataset].nrows);
-                        $(papers["data_editor"]["colnames"].canvas).width(70*info["data"][commobj["data_editor"].dataset].ncols);
-                        update_data();
-                    } 
-                }
-                if (outres.origin == "calibrate" && outres.poinths !== void 0) {
-                    poinths = outres.poinths;
-                    drawPointsAndThresholds();
-                }
-            }
-            createCommandPromptInRconsole();
-            $("#result_main").animate({
-                scrollTop: $("#result_main")[0].scrollHeight
-            }, 1000);
-            if ($("#data_editor").length) {
-                update_data();
-            }
-        }
-        else {
-            setTimeout(doWhenRresponds, 50);
-        }
-    }
-    else {
-        $("#result_main").append("<br><br><span style='color:red'>Error in doWhenRresponds:<br>R takes too long to respond.</span><br>");
-        $("#result_main").animate({
-            scrollTop: $("#result_main")[0].scrollHeight
-        }, 1000);
         updatecounter = 0;
     }
 }
@@ -6693,7 +6694,7 @@ $("#menu_about").click(function() {
     if (!$("#about").length) {
         createDialog(settings["about"]);
         var messages = [
-            "R package: QCA, version 3.0",
+            "R package: QCA, version 3.1",
             "",
             "Author: Adrian Dușa (dusa.adrian@unibuc.ro)",
             "Former coauthors:",
@@ -6825,16 +6826,18 @@ $("body").on("keydown", function(evt) {
         keys["down"] = true;
     }
     if ((keys["ctrl"] || keys["cmd"]) && keys["down"]) {
-        if(!$("#txtarea").is(":focus")) {
-            $("#tempdiv").click();
-        }
-        $("#result_main").animate({
-            scrollTop: $("#result_main")[0].scrollHeight
-        }, 1);
-        keys = {
-            cmd: false,
-            ctrl: false,
-            down: false
+        if (!spinnerstarted) {
+            if(!$("#txtarea").is(":focus")) {
+                $("#tempdiv").click();
+            }
+            $("#result_main").animate({
+                scrollTop: $("#result_main")[0].scrollHeight
+            }, 1);
+            keys = {
+                cmd: false,
+                ctrl: false,
+                down: false
+            }
         }
     }
 });
@@ -6910,6 +6913,9 @@ function createDialog(dialogsettings) {
                     width: twidth + "px",
                     height: (theight - 20) + "px"
                 })
+                if (dialogsettings.name == "result") {
+                    positionSpinner();
+                }
             }
         })
     }

@@ -1,3 +1,28 @@
+# Copyright (c) 2018, Adrian Dusa
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, in whole or in part, are permitted provided that the
+# following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * The names of its contributors may NOT be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 `calibrate` <-
 function (x, type = "fuzzy", method = "direct", thresholds = NA,
           logistic = TRUE, idm = 0.95, ecdf = FALSE, below = 1, above = 1, ...) {
@@ -37,16 +62,16 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
         }
         thresholds <- asNumeric(thresholds)
         names(thresholds) <- nmsths
-        if (any(thresholds < min(x) | thresholds > max(x))) {
-            cat("\n")
-            stop(simpleError("Threshold value(s) outside the range of x.\n\n"))
-        }
     }
     else {
         cat("\n")
         stop(simpleError("Thresholds must be numeric.\n\n"))
     }
     if (type == "crisp") {
+        if (any(thresholds < min(x) | thresholds > max(x))) {
+            cat("\n")
+            stop(simpleError("Threshold value(s) outside the range of x.\n\n"))
+        }
         if (!is.null(names(thresholds))) {
             cat("\n")
             stop(simpleError("Named thresholds require fuzzy type calibration.\n\n"))

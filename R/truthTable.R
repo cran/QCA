@@ -1,3 +1,28 @@
+# Copyright (c) 2018, Adrian Dusa
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, in whole or in part, are permitted provided that the
+# following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * The names of its contributors may NOT be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 `truthTable` <-
 function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
          complete = FALSE, use.letters = FALSE, show.cases = FALSE,
@@ -7,25 +32,26 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     back.args <- c("outcome", "conditions", "n.cut", "incl.cut", "complete", "show.cases", sort.by = "", "use.letters", "inf.test")
     check.args <- pmatch(names(other.args), back.args)
     names(other.args)[!is.na(check.args)] <- back.args[check.args[!is.na(check.args)]]
-    ica <- 1
+    enter       <- ifelse (is.element("enter",       names(other.args)), other.args$enter,       TRUE)
+    ic0 <- 1
     if (is.character(incl.cut) & length(incl.cut) == 1) {
         incl.cut <- splitstr(incl.cut)
     }
-    icp <- incl.cut[1]
+    ic1 <- incl.cut[1]
     if (length(incl.cut) > 1) {
-        ica <- incl.cut[2]
+        ic0 <- incl.cut[2]
     }
         neg.out <- FALSE
         if ("neg.out" %in% names(other.args)) {
             neg.out <- other.args$neg.out
         }
-        if ("incl.cut1" %in% names(other.args) & identical(icp, 1)) {
-            icp <- other.args$incl.cut1
-            incl.cut[1] <- icp
+        if ("incl.cut1" %in% names(other.args) & identical(ic1, 1)) {
+            ic1 <- other.args$incl.cut1
+            incl.cut[1] <- ic1
         }
-        if ("incl.cut0" %in% names(other.args) & identical(ica, 1)) {
-            ica <- other.args$incl.cut0
-            incl.cut[2] <- ica
+        if ("incl.cut0" %in% names(other.args) & identical(ic0, 1)) {
+            ic0 <- other.args$incl.cut0
+            incl.cut[2] <- ic0
         }
     initialcols <- colnames(data)
     colnames(data) <- toupper(colnames(data))
@@ -33,7 +59,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     outcome <- toupper(outcome)
     if (length(outcome) > 1) {
         cat("\n")
-        stop(simpleError("Only one outcome is allowed.\n\n"))
+        stop(simpleError(paste0("Only one outcome is allowed.", ifelse(enter, "\n\n", ""))))
     }
     outcome.copy <- outcome
     initial.data <- data
@@ -44,7 +70,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     if (!identical(outcome, "")) {
         if (! toupper(curlyBrackets(outcome, outside = TRUE)) %in% colnames(data)) {
             cat("\n")
-            stop(simpleError("Inexisting outcome name.\n\n"))
+            stop(simpleError(paste0("Inexisting outcome name.", ifelse(enter, "\n\n", ""))))
         }
     }
     if (grepl("[{|}]", outcome)) {
@@ -76,7 +102,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     if (is.matrix(data)) {
         if (is.null(colnames(data))) {
             cat("\n")
-            stop(simpleError("The data should have column names.\n\n"))
+            stop(simpleError(paste0("The data should have column names.", ifelse(enter, "\n\n", ""))))
         }
         if (any(duplicated(rownames(data)))) {
             rownames(data) <- seq(nrow(data))
@@ -89,11 +115,8 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
         }
         initial.data <- data
     }
-    verify.tt(data, outcome, conditions, complete, show.cases, icp, ica, inf.test)
+    verify.tt(data, outcome, conditions, complete, show.cases, ic1, ic0, inf.test)
     data <- data[, c(conditions, outcome)]
-    if (ica > icp) {
-        ica <- icp
-    }
     colnames(data) <- toupper(colnames(data))
     conditions <- toupper(conditions)
     outcome <- toupper(outcome)
@@ -112,15 +135,15 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     if (any(fuzzy.cc)) {
         if (any(data[, conditions[fuzzy.cc]] == 0.5)) {
             cat("\n")
-            stop(simpleError("Fuzzy set causal conditions should not have values of 0.5 in the data.\n\n"))
+            stop(simpleError(paste0("Fuzzy set causal conditions should not have values of 0.5 in the data.", ifelse(enter, "\n\n", ""))))
         }
         condata[, fuzzy.cc] <- lapply(condata[, fuzzy.cc, drop = FALSE], function(x) as.numeric(x > 0.5))
     }
     mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
     line.data <- as.vector(as.matrix(condata) %*% mbase) + 1
-    condata <- condata[order(line.data), ]
+    condata <- condata[order(line.data), , drop = FALSE]
     uniq <- which(!duplicated(condata))
-    tt <- condata[uniq, ]
+    tt <- condata[uniq, , drop = FALSE]
     rownstt <- sort(line.data)[uniq]
     rownames(tt) <- rownstt
     ipc <- .Call("truthTable", as.matrix(data[, conditions]), data[, outcome], as.matrix(tt), as.numeric(fuzzy.cc), PACKAGE = "QCA")
@@ -132,11 +155,11 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     exclude <- ipc[1, ] < n.cut
     if (sum(!exclude) == 0) {
         cat("\n")
-        stop(simpleError("There are no combinations at this frequency cutoff.\n\n"))
+        stop(simpleError(paste0("There are no combinations at this frequency cutoff.", ifelse(enter, "\n\n", ""))))
     }
     tt$OUT <- "?"
-    tt$OUT[!exclude] <- as.numeric(ipc[2, !exclude] >= (icp - .Machine$double.eps ^ 0.5))
-    tt$OUT[ipc[2, !exclude] <= (icp - .Machine$double.eps ^ 0.5) & ipc[2, !exclude] >= (ica - .Machine$double.eps ^ 0.5)] <- "C"
+    tt$OUT[!exclude] <- as.numeric(ipc[2, !exclude] >= (ic1 - .Machine$double.eps ^ 0.5))
+    tt$OUT[ipc[2, !exclude] <= (ic1 - .Machine$double.eps ^ 0.5) & ipc[2, !exclude] >= (ic0 - .Machine$double.eps ^ 0.5)] <- "C"
     tt <- cbind(tt, t(ipc))
     cases <- sapply(rownstt, function(x) {
         paste(rownames(data)[line.data == x], collapse = ",")
@@ -149,8 +172,8 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     cases <- cases[!exclude]
     DCC <- DCC[!exclude]
     excluded <- tt[exclude, , drop = FALSE]
-    excluded$OUT <- as.numeric(ipc[2, exclude] >= (icp - .Machine$double.eps ^ 0.5))
-    excluded$OUT[ipc[2, exclude] < icp & ipc[2, exclude] >= (ica - .Machine$double.eps ^ 0.5)]  <- "C"
+    excluded$OUT <- as.numeric(ipc[2, exclude] >= (ic1 - .Machine$double.eps ^ 0.5))
+    excluded$OUT[ipc[2, exclude] < ic1 & ipc[2, exclude] >= (ic0 - .Machine$double.eps ^ 0.5)]  <- "C"
     if (length(conditions) < 8) {
         ttc <- as.data.frame(matrix(nrow = prod(noflevels), ncol = ncol(tt)))
         colnames(ttc) <- colnames(tt)
@@ -162,6 +185,9 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
         ttc[, whichpri[length(whichpri)]] <- "-"  
         ttc[rownames(tt), ] <- tt
         tt <- ttc
+    }
+    else {
+        tt <- tt[!exclude, , drop = FALSE]
     }
     if (!identical(sort.by, "")) {
         if (is.logical(sort.by)) { 
@@ -222,9 +248,9 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
         }
         tt[observed, "OUT"] <- 0
         for (i in seq(length(observed))) {
-            pval1 <- tt[observed[i], "pval1"] <- binom.test(success[i], tt[observed[i], "n"], p = icp, alternative = "greater")$p.value
+            pval1 <- tt[observed[i], "pval1"] <- binom.test(success[i], tt[observed[i], "n"], p = ic1, alternative = "greater")$p.value
             if (length(incl.cut) > 1) {
-                pval0 <- tt[observed[i], "pval0"] <- binom.test(success[i], tt[observed[i], "n"], p = ica, alternative = "greater")$p.value
+                pval0 <- tt[observed[i], "pval0"] <- binom.test(success[i], tt[observed[i], "n"], p = ic0, alternative = "greater")$p.value
             }
             if (pval1 < alpha) {
                 tt[observed[i], "OUT"] <- 1

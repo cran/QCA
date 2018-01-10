@@ -1,3 +1,18 @@
+Version 3.1
+    o New: spinning wheel in the web R console when calculations take a
+      long time
+    o Improved: faster version of getRow() that help speeding up finding the
+      simplifying assumptions
+    o Fixed: minor bug in the classical QMC algorithm when the PI chart has
+      exactly one column, irrelevant PIs were reported as sufficient (thanks
+      to Michael Baumgartner for reporting)
+    o Fixed: minimization in the classical QMC with exactly two observed
+      configurations
+    o Fixed: error in the truth table production when imposing a frequency
+      cutoff over 1 (thanks to Verena Patock for reporting)
+    o Fixed: error in fuzzy calibration, when thresholds are outside of the
+      data range (thanks to Priscilla Alamos-Concha for the report)
+
 Version 3.0
     o New: cutting edge, next generation algorithm for Boolean minimization
     o New: function causalChain() to enable coincidence analysis comparable

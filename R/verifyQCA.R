@@ -1,3 +1,28 @@
+# Copyright (c) 2018, Adrian Dusa
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, in whole or in part, are permitted provided that the
+# following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * The names of its contributors may NOT be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 `verify.data` <-
 function(data, outcome = "", conditions = "") {
     if (!is.data.frame(data)) {
@@ -24,10 +49,6 @@ function(data, outcome = "", conditions = "") {
         if (!all(conditions %in% names(data))) {
             cat("\n")
             stop(simpleError("The conditions' names are not correct.\n\n"))
-        }
-        if (length(conditions) == 1) {
-            cat("\n")
-            stop(simpleError("Cannot find a solution with only one causal condition.\n\n"))
         }
         if (any(duplicated(conditions))) {
             cat("\n")
@@ -103,7 +124,7 @@ function(data) {
     }
 }
 `verify.tt` <-
-function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FALSE, icp = 1, ica = 1, inf.test) {
+function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FALSE, ic1 = 1, ic0 = 1, inf.test) {
     if (!inherits(data, "data.frame")) {
         cat("\n")
         errmessage <- paste("You have to provide a data frame, the current \"data\" argument contains an object\n",
@@ -137,10 +158,6 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
             cat("\n")
             stop(simpleError("The conditions' names are not correct.\n\n"))
         }
-        if (length(conditions) == 1) {
-            cat("\n")
-            stop(simpleError("Cannot find a solution with only one causal condition.\n\n"))
-        }
         if (any(duplicated(conditions))) {
             cat("\n")
             stop(simpleError("Duplicated conditions.\n\n"))
@@ -156,13 +173,9 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
         stop(simpleError(paste("Missing values in the data are not allowed. Please check columns:\n",
              paste(names(checked)[checked], collapse = ", "), "\n\n", sep="")))
     }
-    if (any(c(icp, ica) < 0) | any(c(icp, ica) > 1)) {
+    if (any(c(ic1, ic0) < 0) | any(c(ic1, ic0) > 1)) {
         cat("\n")
         stop(simpleError("The including cut-off(s) should be bound to the interval [0, 1].\n\n"))
-    }
-    if (ica > icp & ica < 1) {
-        cat("\n")
-        stop(simpleError("ica cannot be greater than icp.\n\n"))
     }
     data <- data[, c(conditions, outcome)]
     data <- as.data.frame(lapply(data, function(x) {
@@ -212,10 +225,6 @@ function(data, outcome = "", conditions = "", explain = "",
         if (!all(conditions %in% names(data))) {
             cat("\n")
             stop(simpleError("The conditions' names are not correct.\n\n"))
-        }
-        if (length(conditions) == 1) {
-            cat("\n")
-            stop(simpleError("Cannot find a solution with only one causal condition.\n\n"))
         }
     }
     if (use.letters & ncol(data) > 27) {

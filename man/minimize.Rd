@@ -260,7 +260,7 @@ Qualitative Comparative Analysis (QCA) and Related Techniques}, SAGE.
 data(LC)
 
 # the associated truth table
-ttLC <- truthTable(LC, "SURV", sort.by = "incl, n")
+ttLC <- truthTable(LC, "SURV", sort.by = "incl, n", show.cases = TRUE)
 ttLC
 
 # conservative solution (Rihoux & De Meur 2009, p.57)
@@ -272,24 +272,24 @@ library(venn)
 venn(cLC)
 
 # add details and case names
-minimize(ttLC, details = TRUE, show.cases = TRUE)
+minimize(ttLC, details = TRUE)
 
 # negating the outcome
-ttLCn <- truthTable(LC, "~SURV", sort.by = "incl, n")
+ttLCn <- truthTable(LC, "~SURV", sort.by = "incl, n", show.cases = TRUE)
 minimize(ttLCn)
 
 # using a tilde instead of upper/lower case names
 minimize(ttLCn, use.tilde = TRUE)
 
 # parsimonious solution, positive output
-pLC <- minimize(ttLC, include = "?", details = TRUE, show.cases = TRUE)
+pLC <- minimize(ttLC, include = "?", details = TRUE)
 pLC
 
 # the associated simplifying assumptions
 pLC$SA
 
 # parsimonious solution, negative output
-pLCn <- minimize(ttLCn, include = "?", details = TRUE, show.cases = TRUE)
+pLCn <- minimize(ttLCn, include = "?", details = TRUE)
 pLCn
 
 
@@ -302,37 +302,37 @@ ttLM <- truthTable(LM, "SURV", conditions = "DEV, URB, LIT, IND",
         sort.by = "incl", show.cases = TRUE)
 
 # conservative solution, positive output
-minimize(ttLM, details = TRUE, show.cases = TRUE)
+minimize(ttLM, details = TRUE)
 
 # parsimonious solution, positive output
-minimize(ttLM, include = "?", details = TRUE, show.cases = TRUE)
+minimize(ttLM, include = "?", details = TRUE)
 
 # negate the outcome
 ttLMn <- truthTable(LM, "~SURV", conditions = "DEV, URB, LIT, IND",
          sort.by = "incl", show.cases = TRUE)
 
 # conservative solution, negative output
-minimize(ttLMn, details = TRUE, show.cases = TRUE)
+minimize(ttLMn, details = TRUE)
 
 # parsimonious solution, positive output
-minimize(ttLMn, include = "?", details = TRUE, show.cases = TRUE)
+minimize(ttLMn, include = "?", details = TRUE)
 
 # -----
 # Lipset fuzzy sets data (Ragin 2009, p.112)
 data(LF)
 # truth table using a very low inclusion cutoff
 ttLF <- truthTable(LF, "SURV", incl.cut = 0.7,
-        show.cases = TRUE, sort.by="incl")
+        sort.by = "incl", show.cases = TRUE)
 
 # conservative solution
-minimize(ttLF, details = TRUE, show.cases = TRUE)
+minimize(ttLF, details = TRUE)
 
 # parsimonious solution
-minimize(ttLF, include = "?", details = TRUE, show.cases = TRUE)
+minimize(ttLF, include = "?", details = TRUE)
 
 # intermediate solution using directional expectations
-iLF <- minimize(ttLF, include = "?", details = TRUE, show.cases = TRUE,
-             dir.exp = "1,1,1,1,1")
+iLF <- minimize(ttLF, include = "?", details = TRUE,
+                dir.exp = "1,1,1,1,1")
 iLF
 
 
@@ -342,9 +342,9 @@ iLF
 data(CVF) 
 
 ttCVF <- truthTable(CVF, outcome = "PROTEST", incl.cut = 0.8,
-	                show.cases = TRUE, sort.by = "incl, n")
+                    sort.by = "incl, n", show.cases = TRUE)
 
-pCVF <- minimize(ttCVF, include = "?", details = TRUE, show.cases = TRUE)
+pCVF <- minimize(ttCVF, include = "?", details = TRUE)
 pCVF
 
 # inspect the PI chart
@@ -352,8 +352,7 @@ pCVF$PIchart
 
 # DEMOC*ETHFRACT*poldis is dominated by DEMOC*ETHFRACT*GEOCON
 # using row dominance to solve the PI chart
-pCVFrd <- minimize(ttCVF, include = "?", row.dom = TRUE,
-                details = TRUE, show.cases = TRUE)
+pCVFrd <- minimize(ttCVF, include = "?", row.dom = TRUE, details = TRUE)
 
 # plot the prime implicants on the outcome
 pims <- pCVFrd$pims
@@ -371,7 +370,7 @@ for(i in 1:4) {
 # step before the minimization
 
 data(RS)
-minimize(RS, outcome = "REC", details = TRUE, show.cases = TRUE)
+minimize(RS, outcome = "REC", details = TRUE)
 
 }
 

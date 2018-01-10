@@ -1,3 +1,30 @@
+/*
+Copyright (c) 2018, Adrian Dusa
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, in whole or in part, are permitted provided that the
+following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * The names of its contributors may NOT be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 navigator.browserType = (function(){
     var N = navigator.appName, ua = navigator.userAgent, tem;
     var M = ua.match(/(opera|chrome|safari|firefox|msie|trident)\/?\s*(\.?\d+(\.\d+)*)/i);
@@ -316,12 +343,29 @@ Raphael.fn.radio = function(x, y, whichChecked, labels, vertspace, horspace, lbs
     }
     return(rd);
 }
-function isNumeric(n) {
+function isNumeric0(n) {
     if (n.length == 0) {
         return false;
     }
     else {
         return !/^(NaN|-?Infinity)$/.test(+n);
+    }
+}
+function isNumeric(obj) {   
+    if (obj.length == 0) {
+        return false;
+    }
+    else {
+        if (obj instanceof Array) {
+            var result = new Array(obj.length);
+            for (var i = 0; i < obj.length; i++) {
+                result[i] = (obj[i].length == 0) ? false : !/^(NaN|-?Infinity)$/.test(+obj[i]);
+            }
+            return(result);
+        }
+        else {
+            return !/^(NaN|-?Infinity)$/.test(+obj);
+        }
     }
 }
 function copy(obj, exclude) {
@@ -613,22 +657,32 @@ function unique(obj) {
     return(uniques);
 }
 function min(obj) { 
-    var minval = obj[0];
-    if (obj.length > 1) {
-        for (var i = 1; i < obj.length; i++) {
-            if (minval > obj[i] && obj[i] !== null) {
+    var minval = null;
+    for (var i = 0; i < obj.length; i++) {
+        if (obj[i] !== null && isNumeric(obj[i])) {
+            if (minval === null) {
                 minval = obj[i];
+            }
+            else {
+                if (minval > obj[i]) {
+                    minval = obj[i];
+                }
             }
         }
     }
     return(minval);
 }
 function max(obj) { 
-    var maxval = obj[0];
-    if (obj.length > 1) {
-        for (var i = 1; i < obj.length; i++) {
-            if (maxval < obj[i] && obj[i] !== null) {
+    var maxval = null;
+    for (var i = 0; i < obj.length; i++) {
+        if (obj[i] !== null && isNumeric(obj[i])) {
+            if (maxval === null) {
                 maxval = obj[i];
+            }
+            else {
+                if (maxval < obj[i]) {
+                    maxval = obj[i];
+                }
             }
         }
     }

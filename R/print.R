@@ -1,3 +1,28 @@
+# Copyright (c) 2018, Adrian Dusa
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, in whole or in part, are permitted provided that the
+# following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * The names of its contributors may NOT be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 `print.translate` <-
 function(x, ...) {
     other.args <- list(...)
@@ -29,6 +54,7 @@ function(x, ...) {
 `print.tt` <-
 function(x, ...) {
     other.args <- list(...)
+    enter <- ifelse (is.element("enter", names(as.list(x$call))), as.list(x$call)$enter, TRUE)
     PRI <- TRUE
     if (!is.null(x$rowsorder)) {
         x$tt <- x$tt[x$rowsorder, ]
@@ -61,7 +87,7 @@ function(x, ...) {
         x$tt$cases <- NULL
     }
     if (nrow(x$tt) > 1024) {
-        cat("\n")
+        if (enter) cat("\n")
         cat(paste("Warning: The truth table is too large (", nrow(x$tt), " rows). ",
                   "Printing it on the screen is impractical.\n         ",
                   "N.B.: You can still use its internal components (see ?str).", "\n\n", sep=""))
@@ -71,7 +97,7 @@ function(x, ...) {
         nofconditions <- length(x$noflevels)
         names.mydata <- colnames(x$recoded.data)[seq(nofconditions + 1)]
         if (!is.element("excluded", names(x$options))) {
-            cat("\n", sep="")
+            if (enter) cat("\n")
             if (!all(names(x$tt)[seq(nofconditions)] %in% names(x$recoded.data)[seq(nofconditions)])) {
                 for (i in seq(nofconditions)) {
                     cat("    ", paste(names(x$tt)[i], ": ", sep=""), names.mydata[i], "\n", sep="")
@@ -127,12 +153,12 @@ function(x, ...) {
         colnames(x$tt)[colnames(x$tt) == "OUT"] <- "  OUT "
         print(prettyTable(x$tt))
         if (alloutzero) {
-            cat("\n")
+            if (enter) cat("\n")
             cat(paste("It seems that all outcome values have been coded to zero.",
                       "Suggestion: lower the inclusion score for the presence of the outcome,", 
                       sprintf("the relevant argument is \"incl.cut\" which now has a value of %s.\n", x$options$incl.cut[1]), sep="\n"))
         }
-        cat("\n")
+        if (enter) cat("\n")
     }
 }
 `print.pic` <-
@@ -159,6 +185,7 @@ function(x, ...) {
 }
 `print.qca` <-                                                      
 function(x, ...) {
+    enter <- ifelse (is.element("enter", names(as.list(x$call))), as.list(x$call)$enter, TRUE)
     line.length <- getOption("width")
     if (any(names(x) == "via.web")) {
         line.length <- 10000
@@ -216,7 +243,7 @@ function(x, ...) {
     else {
         nofconditions <- length(x$tt$noflevels)
         if (!all(names(x$tt$tt)[seq(nofconditions)] %in% names(x$tt$recoded.data)[seq(nofconditions)]) & x$options$use.letters) {
-            cat("\n")
+            if (enter) cat("\n")
             names.mydata <- colnames(x$tt$recoded.data)[seq(nofconditions + 1)]
             for (i in seq(nofconditions)) {
                 cat("    ", paste(names(x$tt$tt)[i], ": ", sep=""), names.mydata[i], "\n", sep="")
@@ -224,11 +251,11 @@ function(x, ...) {
         }
     }
     if (details) {
-        if (!x$options$print.truth.table) cat("\n")
+        if (!x$options$print.truth.table & enter) cat("\n")
         cat("n OUT = 1/0/C:", paste(x$numbers[1:3], collapse="/"), "\n")
         cat("  Total      :", x$numbers[4], "\n")
     }
-    if (!mqca) {
+    if (!mqca & enter) {
         cat("\n")
     }
     if (is.element("i.sol", names(x))) {
@@ -245,14 +272,14 @@ function(x, ...) {
         for (i in seq(length(x$i.sol))) {
             cat(paste(ifelse(i > 1, "\n", ""), "p.sol: ", sep=""))
             cat(prettyString(x$i.sol[[i]]$p.sol, line.length - 7, 7, "+"))
-            cat("\n")
+            if (enter) cat("\n")
             if (x$options$show.cases & x$options$details) {
                 PIchart <- x$i.sol[[i]]$PIchart
                 PIchart <- PIchart[rownames(PIchart) %in% unique(unlist(x$i.sol[[i]]$solution[[1]])), , drop=FALSE]
                 mult.cov <- ifelse(any(colSums(PIchart) > 1), length(unlist(lapply(x$inputcases[colSums(PIchart) > 1], strsplit, split=","))), 0)
                 cat("\nNumber of multiple-covered cases:", mult.cov, "\n")
             }
-            if (!mqca) {
+            if (!mqca & enter) {
                 cat("\n")
             }
             for (sol in seq(length(x$i.sol[[i]]$solution))) {
@@ -308,7 +335,7 @@ function(x, ...) {
                     cat(prettyString(x$solution[[i]], line.length - nchar(prettyNums[i]) - 3, nchar(prettyNums[i]) + 3, "+", sufnec.char[i], outcome), "\n")
                 }
             }
-            if (!mqca & x$options$details) {
+            if (!mqca & x$options$details & enter) {
                 cat("\n")
             }
         }
@@ -316,7 +343,7 @@ function(x, ...) {
             print.pof(x$IC, PRI = PRI, show.cases = x$options$show.cases, line.length=line.length)
         }
     }
-    if (!x$options$details) {
+    if (!x$options$details & enter) {
         cat("\n")
     }
 }

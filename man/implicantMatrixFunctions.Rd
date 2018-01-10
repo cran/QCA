@@ -22,7 +22,7 @@ allExpressions(noflevels, arrange = FALSE, depth = NULL, raw = FALSE, ...)
 
 createMatrix(noflevels, ...)
 
-getRow(row.no, noflevels, zerobased = FALSE)
+getRow(row.no, noflevels, zerobased = FALSE, ...)
 }
 
 \arguments{
