@@ -43,5 +43,6 @@ function(mytable) {
     for (i in seq((ncol(mytable) - any(colnames(mytable) == "lines")))) {
         mytable[, i] <- format(format(mytable[, i]), width=nchars[i], justify="centre")
     }
+    rownames(mytable) <- paste(rownames(mytable), "")
     return(noquote(mytable))
 }

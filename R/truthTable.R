@@ -62,7 +62,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
         stop(simpleError(paste0("Only one outcome is allowed.", ifelse(enter, "\n\n", ""))))
     }
     outcome.copy <- outcome
-    initial.data <- data
+    initial.data <- as.data.frame(data) 
     if (tilde1st(outcome)) {
         neg.out <- TRUE
         outcome <- substring(outcome, 2)

@@ -70,11 +70,15 @@ function(data, ordering = NULL, strict = FALSE, ...) {
     }
     pos <- checkpos(allargs, "include")
     if (length(pos) == 0) {
-        allargs$include = "?"
+        allargs$include <- "?"
     }
     pos <- checkpos(allargs, "all.sol")
     if (length(pos) == 0) {
-        allargs$all.sol = TRUE
+        allargs$all.sol <- TRUE
+    }
+    pos <- checkpos(allargs, "SA")
+    if (length(pos) == 0) {
+        allargs$SA <- FALSE
     }
     minimizeit <- function(allargs) {
         tc <- tryCatch(do.call("minimize", allargs), error = function(e) e)

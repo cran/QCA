@@ -112,10 +112,12 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
                      cov.cut,
                      depth, PACKAGE = "QCA")
     if (nec(relation)) {
-        colnames(CMatrix[[1]]) <- colnames(CMatrix[[2]]) <- c("inclN", "RoN", "covN")
+        setColnames(CMatrix[[1]], c("inclN", "RoN", "covN"))
+        setColnames(CMatrix[[2]], c("inclN", "RoN", "covN"))
     }
     else {
-        colnames(CMatrix[[1]]) <- colnames(CMatrix[[2]]) <- c("inclS", "PRI", "covS")
+        setColnames(CMatrix[[1]], c("inclS", "PRI", "covS"))
+        setColnames(CMatrix[[2]], c("inclS", "PRI", "covS"))
     }
     prev.result <- FALSE
     lexpressions <- nrow(CMatrix[[1]])

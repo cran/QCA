@@ -59,6 +59,7 @@ function(expression = "", data, separate = FALSE) {
     pp <- lapply(pp, function(x) x[retain])
     ppm <- ppm[, retain, drop = FALSE]
     data <- data[, retain, drop = FALSE]
+    colnames(data) <- toupper(colnames(data))
     infodata <- getInfo(cbind(data, YYYYY_YYYYY = 1), conditions = colnames(data))
     if (any(infodata$hastime)) {
         data <- infodata$data[, colnames(data), drop = FALSE]

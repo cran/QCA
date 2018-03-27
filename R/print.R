@@ -269,10 +269,13 @@ function(x, ...) {
             }
         }
         sufnec.char <- rep("", length(sufnec))
-        for (i in seq(length(x$i.sol))) {
-            cat(paste(ifelse(i > 1, "\n", ""), "p.sol: ", sep=""))
-            cat(prettyString(x$i.sol[[i]]$p.sol, line.length - 7, 7, "+"))
+        uniques <- unique(lapply(x$i.sol, function(x) x$solution))
+        for (j in seq(length(uniques))) {
+            indices <- unlist(lapply(x$i.sol, function(x) identical(uniques[[j]], x$solution)))
+            isols <- names(indices)[indices]
+            cat(paste(ifelse(j > 1, "\n", ""), "From ", paste(isols, collapse = ", "), ": ", sep = ""))
             if (enter) cat("\n")
+            i <- which(names(x$i.sol) == isols[1])
             if (x$options$show.cases & x$options$details) {
                 PIchart <- x$i.sol[[i]]$PIchart
                 PIchart <- PIchart[rownames(PIchart) %in% unique(unlist(x$i.sol[[i]]$solution[[1]])), , drop=FALSE]

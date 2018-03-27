@@ -855,10 +855,10 @@ Shiny.addCustomMessageHandler("Rcommand",
                 });
             }
         }
-        histindex = history.length;
         if (history[histindex - 1] != string_command) {
             history[histindex] = string_command;
         }
+        histindex = history.length;
         outres = copy(object, exclude = ["xyplot"]);
         responseR = true;
     }
@@ -1166,7 +1166,7 @@ function console_command(type) {
                         string_command += conditions[i] + ((i == conditions.length - 1)?"\"":", ");
                     }
                 }
-                if (commobj.tt.ic1 != "1") {
+                if (commobj.tt.ic1 != "1" || (commobj.tt.ic0 != "1" && commobj.tt.ic0 != "")) {
                     if (commobj.tt.ic0 == "") {
                         string_command += ", incl.cut = " + commobj.tt.ic1;
                     }
@@ -4555,17 +4555,15 @@ function draw_tt(paper) {
                 input.addEventListener("blur", function(e) {
                     ic1.inlineTextEditing.stopEditing(tasta);
                     if (isNumeric(ic1.attr("text"))) {
-                        commobj.tt.ic1 = ic1.attr("text");
-                        if (commobj.tt.ic1 < commobj.tt.ic0) {
-                            commobj.tt.ic0 = commobj.tt.ic1;
-                            ic0.attr({"text": commobj.tt.ic0});
+                        if (ic1.attr("text") <= 1 && ic1.attr("text") >= 0) {
+                            commobj.tt.ic1 = ic1.attr("text");
+                        }
+                        else {
+                            ic1.attr({"text": commobj.tt.ic1});
                         }
                     }
                     else {
-                        commobj.tt.ic1 = "1";
-                        commobj.tt.ic0 = "";
-                        ic1.attr({"text": "1"});
-                        ic0.attr({"text": ""});
+                        ic1.attr({"text": commobj.tt.ic1});
                     }
                     me.toFront();
                     tasta = "enter";
@@ -4584,17 +4582,21 @@ function draw_tt(paper) {
                 input = ic0.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
                 input.addEventListener("blur", function(e) {
                     ic0.inlineTextEditing.stopEditing(tasta);
-                    commobj.tt.ic0 = ic0.attr("text");
                     if (isNumeric(ic0.attr("text"))) {
-                        commobj.tt.ic0 = ic0.attr("text");
-                        if (commobj.tt.ic1 < commobj.tt.ic0) {
-                            commobj.tt.ic0 = commobj.tt.ic1;
+                        if (ic0.attr("text") <= 1 && ic0.attr("text") >= 0) {
+                            commobj.tt.ic0 = ic0.attr("text");
+                        }
+                        else {
                             ic0.attr({"text": commobj.tt.ic0});
                         }
                     }
                     else {
-                        commobj.tt.ic0 = commobj.tt.ic1;
-                        ic0.attr({"text": commobj.tt.ic0});
+                        if (ic0.attr("text") == "") {
+                            commobj.tt.ic0 = ic0.attr("text");
+                        }
+                        else {
+                            ic0.attr({"text": commobj.tt.ic0});
+                        }
                     }
                     me.toFront();
                     tasta = "enter";
@@ -6694,7 +6696,7 @@ $("#menu_about").click(function() {
     if (!$("#about").length) {
         createDialog(settings["about"]);
         var messages = [
-            "R package: QCA, version 3.1",
+            "R package: QCA, version 3.2",
             "",
             "Author: Adrian Dușa (dusa.adrian@unibuc.ro)",
             "Former coauthors:",

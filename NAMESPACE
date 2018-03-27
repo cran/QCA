@@ -5,7 +5,7 @@ importFrom("utils", "packageDescription", "remove.packages", "capture.output")
 importFrom("stats", "glm", "predict", "quasibinomial", "binom.test", "cutree", "dist", "hclust", "na.omit", "dbinom", "setNames")
 importFrom("grDevices", "dev.cur", "dev.new", "dev.list")
 importFrom("graphics", "abline", "axis", "box", "mtext", "par", "title", "text")
-importFrom("methods", "is", "as")
+importFrom("methods", "is")
 
 useDynLib(QCA, .registration = TRUE)
 
@@ -41,6 +41,7 @@ export(.onAttach,
     modelFit,
     negate,
     pof,
+    pofind,
     prettyTable,
     recode,
     rebuild,

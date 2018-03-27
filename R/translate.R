@@ -45,6 +45,7 @@ function(expression = "", snames = "", noflevels, data) {
             stop(simpleError("Data does not have column names.\n\n"))
         }
         else {
+            snamesorig <- colnames(data)
             colnames(data) <- toupper(colnames(data))
         }
     }
@@ -56,6 +57,7 @@ function(expression = "", snames = "", noflevels, data) {
         }
     }
     if (identical(snames, "")) {
+        snamesorig <- snames
         if (!missing(data)) {
             snames <- colnames(data)
         }
@@ -168,12 +170,18 @@ function(expression = "", snames = "", noflevels, data) {
     else {
         pp <- unlist(strsplit(expression, split = "[+]"))
         if (any(grepl("[*]", expression))) {
-            conds <- sort(unique(toupper(notilde(unlist(strsplit(pp, split="[*]"))))))
+            conds <- unique(notilde(unlist(strsplit(pp, split="[*]"))))
+            if (!all(is.element(conds, c(tolower(conds), toupper(conds))))) {
+                cat("\n")
+                stop(simpleError("Conditions' names cannot contain both lower and upper case letters.\n\n"))
+            }
+            conds <- sort(toupper(conds))
             if (!identical(snames, "")) {
                 if (!missing(data)) {
                     if (all(is.element(conds, snames)) & all(is.element(conds, toupper(colnames(data))))) {
                         infodata <- getInfo(cbind(data, YYYYYYYYY = 1), conditions = snames)
-                        invalid <- !any(infodata$hastime) & any(infodata$noflevels > 2)
+                        valid <- which(infodata$noflevels >= 2)
+                        invalid <- !any(infodata$hastime[valid]) & any(infodata$noflevels[valid] > 2)
                         if (invalid) {
                             cat("\n")
                             stop(simpleError("Expression should be multi-value, since it refers to multi-value data.\n\n"))
@@ -262,6 +270,10 @@ function(expression = "", snames = "", noflevels, data) {
                 }
                     conds <- snames
                 if (all(is.element(toupper(notilde(pp)), snames))) {
+                    if (!all(is.element(notilde(pporig), c(tolower(conds), toupper(conds))))) {
+                        cat("\n")
+                        stop(simpleError("Conditions' names cannot contain both lower and upper case letters.\n\n"))
+                    }
                     retlist <- lapply(pp, function(x) {
                         inx <- as.numeric(identical(x, toupper(x)))
                         if (hastilde(x)) {

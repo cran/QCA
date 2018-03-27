@@ -75,6 +75,9 @@
             other.args[[i]] <- eval.parent(parse(text = funargs[i]), n = 1)
         }
     }
+    if (is.element("name", names(attributes(other.args[[1]])))) {
+        other.args[[1]] <- as.vector(other.args[[1]])
+    }
     if (is.vector(other.args[[1]])) {
         if (any(!unlist(lapply(other.args, function(x) is.numeric(x) | is.logical(x))))) {
             cat("\n")

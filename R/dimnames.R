@@ -26,9 +26,9 @@
 `setColnames` <- function(matrix, colnames) {
     invisible(.Call("setColnames", matrix, colnames))
 }
-`setRownames` <- function(matrix, colnames) {
-    invisible(.Call("setRownames", matrix, colnames))
+`setRownames` <- function(matrix, rownames) {
+    invisible(.Call("setRownames", matrix, rownames))
 }
-`setDimnames` <- function(matrix, list) {
-    invisible(.Call("setDimnames", matrix, colnames))
+`setDimnames` <- function(matrix, nameslist) {
+    invisible(.Call("setDimnames", matrix, nameslist))
 }

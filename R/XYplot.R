@@ -463,7 +463,7 @@
     abline(0, 1, col = "gray")
     plotpoints <- list(x, y, pch = pch, cex = cexpoints, bg = bgpoints) 
     suppressWarnings(do.call("points", c(plotpoints, other.args)))
-    inclcov <- round(pof(xcopy, ycopy, relation = relation)$incl.cov[1, 1:3], 3)
+    inclcov <- round(pof(setms = xcopy, outcome = ycopy, relation = relation)$incl.cov[1, 1:3], 3)
         inclcov[is.na(inclcov)] <- 0
     inclcov <- sprintf("%.3f", inclcov)
     mtext(paste(c("Inclusion:", "Coverage:", ifelse(nec(relation), "Relevance:", "PRI:")),

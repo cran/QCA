@@ -71,7 +71,7 @@ function(model, theory) {
             }
             paste("M", mnum, sep = "")
         }))
-        names(models) <- paste(mnum, rep(names(solutions), each = slengths), sep = "-")
+        names(models) <- paste(mnum, rep(names(solutions), slengths), sep = "-")
     }
     result <- intersections <- vector(mode = "list", length = length(models))
     arglist <- list(snames = snames, use.tilde = use.tilde, noflevels = noflevels)

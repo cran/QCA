@@ -26,7 +26,7 @@
 `minimize` <-
 function(input, include = "", exclude = NULL, dir.exp = "",
          pi.cons = 0, pi.depth = 0, sol.cons = 0, sol.cov = 1, sol.depth = 0,
-         min.pin = TRUE, row.dom = FALSE, all.sol = FALSE,
+         min.pin = FALSE, row.dom = FALSE, all.sol = FALSE,
          details = FALSE, use.tilde = FALSE, method = "CCubes", ...) {
     metacall <- match.call()
     other.args <- list(...)
@@ -464,7 +464,7 @@ function(input, include = "", exclude = NULL, dir.exp = "",
                                 res <- lapply(dir.exp, function(x) return(-1))
                                 equals <- which(pars > 0)
                                 for (k in equals) {
-                                    res[[k]] <- sort(drop(as.numeric(pars[k] - 1)))
+                                    res[[k]] <- sort(drop(as.numeric(pars[k] - 1))) 
                                 }
                                 dir.exp.temp[equals] <- c.expressions[i, equals] - 1
                                 notequals <- setdiff(which(comp > 0), equals)
@@ -485,7 +485,7 @@ function(input, include = "", exclude = NULL, dir.exp = "",
                     }
                     constraint <- p.sol$reduced$expressions[p.sol$solution.list[[1]][[p.s]], , drop=FALSE]
                     names(i.sol)[index] <- paste("C", c.s, "P", p.s, sep="")
-                    EC <- subcols <- sexpr <- matrix(ncol=length(conditions), nrow=0)
+                    EC <- subcols <- sexpr <- matrix(ncol = length(conditions), nrow = 0)
                     colnames(EC) <- colnames(inputt)
                     for (dir.exp.i in seq(nrow(dir.exp.matrix))) {
                         dir.exp.x <- dir.exp.matrix[dir.exp.i, ]

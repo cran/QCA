@@ -34,7 +34,7 @@
     isol <- NULL
     for (i in seq(length(allargs))) {
         x <- allargs[[i]]
-        if (is(allargs[[i]], "qca")) {
+        if (methods::is(allargs[[i]], "qca")) {
             if (identical(snames, "")) {
                 snames <- allargs[[i]]$tt$options$conditions
                 if (allargs[[i]]$options$use.letters) {
@@ -53,7 +53,7 @@
                 allargs[[i]] <- as.vector(unlist(lapply(allargs[[i]]$solution, paste, collapse = " + ")))
             }
         }
-        else if (is(allargs[[i]], "deMorgan")) {
+        else if (methods::is(allargs[[i]], "deMorgan")) {
             isol <- attr(allargs[[i]], "isol")
         }
         if (!is.character(allargs[[i]])) {

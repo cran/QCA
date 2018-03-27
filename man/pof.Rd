@@ -1,25 +1,31 @@
-    \name{pof}
+\name{Parameters of fit}
 
 \alias{pof}
+\alias{pofind}
 
 \title{Calculate parameters of fit}
 
 \description{
-This function returns inclusion (consistency) and coverage, plus PRI for sufficiency
-and RoN for necessity.
+These functions returns inclusion (consistency) and coverage, plus PRI for sufficiency
+and RoN for necessity. The function \bold{\code{pofind()}} is a stripped down version
+of the \bold{\code{pof()}} function, to calculate parameters of fit for single conditions.
 }
 
 \usage{
 pof(setms, outcome, data, relation = "necessity", inf.test = "",
     incl.cut = c(0.75, 0.5), add = NULL, ...)
+pofind(data, outcome, conditions, relation = "necessity",
+    use.tilde = FALSE, ...)
 }
 
 \arguments{
   \item{setms}{A data frame of (calibrated) set memberships, or a matrix of implicants, 
         or a vector of row numbers from the implicant matrix, or a character expression}
+  \item{data}{The calibrated data frame, in case the \bold{\code{outcome}} is a name.}
   \item{outcome}{The name of the outcome column from a calibrated data frame, or
         the actual numerical column from the data frame, representing the outcome.}
-  \item{data}{The calibrated data frame, in case the \bold{\code{outcome}} is a name.}
+  \item{conditions}{A single string containing the conditions' (columns) names
+        separated by commas, or a character vector of conditions' names.}
   \item{relation}{The set relation to \bold{\code{outcome}}, either \bold{\code{"necessity"}}
         or \bold{\code{"sufficiency"}}, partial words like \bold{\code{"suf"}} being
         accepted (see examples).}
@@ -27,15 +33,17 @@ pof(setms, outcome, data, relation = "necessity", inf.test = "",
        only \bold{\code{"binom"}}) and the critical significance level. It can be either
        a vector of length 2, or a single string containing both, separated by a comma.}
   \item{incl.cut}{The inclusion cutoff(s): either a single value for the presence of the
-        output, or a vector of length 2, the second for the absence of the output.}
+        output, or a vector of length 2, the second for the absence of the output. Used
+        only in conjunction with the argument \bold{\code{inf.test}}}
   \item{add}{A function, or a list containing functions, to add more parameters of fit.}
-  \item{...}{Other arguments (mainly for backward compatibility).}
+  \item{use.tilde}{Logical, use tilde to signal the absence of conditions.}
+  \item{...}{Other arguments to be passed to the main function.}
 }
 
 \details{
-This is one of the most flexible functions in the \pkg{QCA} package. Depending on
-particular situations, its arguments can be provided in various formats which are
-automatically recognized and treated accordingly.
+The function \bold{\code{pof()}} is one of the most flexible functions in the
+\pkg{QCA} package. Depending on particular situations, its arguments can be provided
+in various formats which are automatically recognized and treated accordingly.
 
 When specified as a data frame, the argument \bold{\code{setms}} contains any kind
 of set membership scores:
@@ -120,6 +128,9 @@ everything (including the \bold{\code{outcome}}) can be negated using lower case
 with or without a tilde. Lower case letters and a tilde do cancel each other out, for
 example \bold{\code{~X}} is interpreted as \bold{\code{x}}, while \bold{\code{~x}} is
 interpreted as \bold{\code{X}}.
+
+The arguments from function \bold{\code{pofind()}} are passed to the main function
+\bold{\code{pof()}} to calculate parameters of fit.
 
 }
 

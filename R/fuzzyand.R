@@ -75,14 +75,13 @@
             other.args[[i]] <- eval.parent(parse(text = funargs[i]), n = 1)
         }
     }
+    if (is.element("name", names(attributes(other.args[[1]])))) {
+        other.args[[1]] <- as.vector(other.args[[1]])
+    }
     if (is.vector(other.args[[1]])) {
         if (any(!unlist(lapply(other.args, function(x) is.numeric(x) | is.logical(x))))) {
             cat("\n")
             stop(simpleError("Input vectors should be numeric or logical.\n\n"))
-        }
-        if (length(unique(unlist(lapply(other.args, length)))) > 1) {
-            cat("\n")
-            stop(simpleError("Input vectors should have equal lengths.\n\n"))
         }
         other.args <- as.data.frame(other.args)
     }

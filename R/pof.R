@@ -155,6 +155,9 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
             if (is.matrix(data)) {
                 data <- as.data.frame(data)
             }
+            if (is.element("data.frame", class(data))) {
+                data <- as.data.frame(data)
+            }
             verify.qca(data)
             colnames(data) <- toupper(colnames(data))
             for (i in colnames(data)) {
@@ -283,7 +286,7 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
                 outcome <- toupper(outcome)
                 if (tilde1st(outcome)) {
                     neg.out <- TRUE
-                    outcome <- substring(outcome, 2)
+                    outcome <- notilde(outcome)
                 }
                 if (identical(substr(gsub("[[:space:]]|\"", "", funargs$outcome), 1, 2), "1-")) {
                     neg.out <- TRUE
@@ -339,6 +342,9 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
             setms <- data.frame(X = as.vector(setms))
             colnames(setms) <- conditions
             fuzzyop <- TRUE
+        }
+        if (is.element("fuzzy", class(setms))) {
+            setms <- as.vector(setms)
         }
         if (is.data.frame(setms)) {
             if (missing(outcome)) {
@@ -691,6 +697,6 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
         funargs$relation <- relation
         result.list$options <- funargs[-1]
         result.list$options$fuzzyop <- fuzzyop
-        return(structure(result.list, class="pof"))
+        return(structure(result.list, class = "pof"))
     }   
 }

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>pof. QCA 3.1</title>
+<title>pof. QCA 3.2</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.1</a>
+      <a class="brand" href="#">QCA 3.2</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -57,14 +57,17 @@ Adrian Dusa
     <div class="Description">
       <h2>Description</h2>
 
-      <p>This function returns inclusion (consistency), coverage, PRI for sufficiency
-and RoN for necessity.</p>
+      <p>These functions returns inclusion (consistency) and coverage, plus PRI for sufficiency
+and RoN for necessity. The function <b><code>pofind()</code></b> is a stripped down version
+of the <b><code>pof()</code></b> function, to calculate parameters of fit for single conditions.</p>
   
     </div>
     
     <h2>Usage</h2>
     <pre><div>pof(setms, outcome, data, relation = "necessity", inf.test = "",
-    incl.cut = c(0.75, 0.5), add = NULL, ...)</div></pre>
+    incl.cut = c(0.75, 0.5), add = NULL, ...)</div>
+    <div>pofind(data, outcome, conditions, relation = "necessity",
+    use.tilde = FALSE, ...)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -75,15 +78,21 @@ and RoN for necessity.</p>
         or a vector of row numbers from the implicant matrix, or a character expression</td>
         </tr>
         <tr>
+            <td valign="top"><b><code>data</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The calibrated data frame, in case the <b><code>outcome</code></b> is a name.</td>
+        </tr>
+        <tr>
             <td valign="top"><b><code>outcome</code></b></td>
             <td></td><td></td><td></td>
             <td>The name of the outcome column from a calibrated data frame, or
         the actual numerical column from the data frame, representing the outcome.</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>data</code></b></td>
+            <td valign="top"><b><code>conditions</code></b></td>
             <td></td><td></td><td></td>
-            <td>The calibrated data frame, in case the <b><code>outcome</code></b> is a name.</td>
+            <td>A single string containing the conditions' (columns) names
+        separated by commas, or a character vector of conditions' names.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>relation</code></b></td>
@@ -111,16 +120,21 @@ and RoN for necessity.</p>
             <td>A function, or a list containing functions, to add more parameters of fit.</td>
         </tr>
         <tr>
+            <td valign="top"><b><code>use.tilde</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, use tilde to signal the absence of conditions.</td>
+        </tr>
+        <tr>
             <td valign="top"><b><code>...</code></b></td>
             <td></td><td></td><td></td>
-            <td>Other arguments (mainly for backward compatibility).</td>
+            <td>Other arguments to be passed to the main function.</td>
         </tr>
     </table>
 
     <div class="Details">
       <h2>Details</h2>
 
-      <p>This is one of the most flexible functions in the <b><span class = "pkg">QCA</span></b>
+      <p>The function <b><code>pof()</code></b> is one of the most flexible functions in the <b><span class = "pkg">QCA</span></b>
 package. Depending on particular situations, its arguments can be provided in various
 formats which are automatically recognized and treated accordingly.</p>
   
@@ -204,6 +218,10 @@ everything (including the <b><code>outcome</code></b>) can be negated using lowe
 or without a tilde. Lower case letters and a tilde does cancel each other out, for
 example <b><code>~X</code></b> is interpreted as <b><code>x</code></b>, while <b><code>~x</code></b> is interpreted
 as <b><code>X</code></b>.</p>
+
+      <p>The arguments from function <b><code>pofind()</code></b> are passed to the main function
+<b><code>pof()</code></b> to calculate parameters of fit.
+
   
       <p></p>
   

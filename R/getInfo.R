@@ -72,10 +72,17 @@
     }))
     colnames(data) <- colnms
     data[data < 0] <- -1
-    fuzzy.cc <- apply(data[, conditions, drop = FALSE], 2, function(x) any(x %% 1 > 0))
+    fuzzy.cc <- apply(data[, conditions, drop = FALSE], 2, function(x) {
+        if (possibleNumeric(x)) {
+            return(any(x %% 1 > 0))
+        }
+        else {
+            return(FALSE)
+        }
+    })
     hastime <- logical(length(conditions))
     for (i in seq(length(conditions))) {
-        if (!fuzzy.cc[i]) {
+        if (!fuzzy.cc[i] & possibleNumeric(data[, i])) {
             copy.cc <- data[, i]
             if (any(copy.cc < 0)) {
                 hastime[i] <- TRUE

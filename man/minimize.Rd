@@ -20,7 +20,7 @@ and \href{http://dx.doi.org/10.1080/0022250X.2014.897949}{Dusa and Thiem (2015)}
 \usage{
 minimize(input, include = "", exclude = NULL, dir.exp = "",
          pi.cons = 0, pi.depth = 0, sol.cons = 0, sol.cov = 1, sol.depth = 0,
-         min.pin = TRUE, row.dom = FALSE, all.sol = FALSE,
+         min.pin = FALSE, row.dom = FALSE, all.sol = FALSE,
          details = FALSE, use.tilde = FALSE, method = "CCubes", ...)
 }
       
