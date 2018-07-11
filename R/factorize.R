@@ -24,7 +24,11 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `factorize` <- 
-function(input, snames = "", noflevels, pos = FALSE, tilde, ...) {
+function(input, snames = "", noflevels, pos = FALSE, use.tilde = FALSE, ...) {
+    other.args <- list(...)
+    if (any(names(other.args) == "tilde")) {
+        use.tilde <- other.args$tilde
+    }
     pasteit <- function(mat, comrows, cols, comvals) {
         if (!missing(cols)) {
             temp <- mat[comrows, -cols, drop = FALSE]
@@ -36,7 +40,7 @@ function(input, snames = "", noflevels, pos = FALSE, tilde, ...) {
                     return(paste(fname, "{", x, "}", sep = "")[x >= 0])
                 })
             }
-            else if (tilde) {
+            else if (use.tilde) {
                 cf <- paste(ifelse(comvals == 0, "~", ""), colnames(mat)[cols], sep = "")
                 rowsf <- lapply(seq(nrow(temp)), function(x) {
                     x <- temp[x, ]
@@ -86,7 +90,7 @@ function(input, snames = "", noflevels, pos = FALSE, tilde, ...) {
                     paste(paste(names(x), "{", x, "}", sep = "")[x >= 0], collapse = collapse)
                 }), collapse = " + ")
             }
-            else if (tilde) {
+            else if (use.tilde) {
                 pasted <- paste(sapply(seq(nrow(mat)), function(x) {
                     colns <- colnames(mat)
                     colns[mat[x, ] == 0] <- paste("~", colns[mat[x, ] == 0], sep="")
@@ -198,11 +202,12 @@ function(input, snames = "", noflevels, pos = FALSE, tilde, ...) {
     isol <- NULL
     if (methods::is(input, "qca")) {
         collapse <- input$options$collapse
+        noflevels <- input$tt$noflevels
         snames <- input$tt$options$conditions
         if (input$options$use.letters) {
             snames <- LETTERS[seq(length(snames))]
         }
-        if ("i.sol" %in% names(input)) {
+        if (is.element("i.sol", names(input))) {
             elengths <- unlist(lapply(input$i.sol, function(x) length(x$solution)))
             isol <- paste(rep(names(input$i.sol), each = elengths), unlist(lapply(elengths, seq)), sep = "-")
             input <- unlist(lapply(input$i.sol, function(x) {
@@ -219,6 +224,7 @@ function(input, snames = "", noflevels, pos = FALSE, tilde, ...) {
         }
     }
     factorizeit <- function(x, snames, noflevels) {
+        x <- sop(x, snames = snames, noflevels = noflevels)
         trexp <- translate(x, snames = snames, noflevels = noflevels)
         snames <- colnames(trexp)
         getSol(lapply(
@@ -234,8 +240,8 @@ function(input, snames = "", noflevels, pos = FALSE, tilde, ...) {
         }
         collapse <- ifelse(any(grepl("[*]", input)), "*", "")
         mv <- any(grepl("[{]", unlist(input)))
-        if (missing(tilde)) {
-            tilde <- any(hastilde(unlist(input)))
+        if (!use.tilde & any(hastilde(unlist(input)))) {
+            use.tilde <- TRUE
         }
         result <- lapply(input, factorizeit, snames = snames, noflevels = noflevels)
         names(result) <- unname(input)

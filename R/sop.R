@@ -46,6 +46,66 @@
         bl <- simplifyList(bl)
         return(bl)
     }
+    checksubset <- function(mat) {
+        for (i in 1:2) {
+            eqz <- mat[i, ] == 0
+            if (nrow(unique(mat[, !eqz, drop = FALSE])) == 1) {
+                return(3 - i)
+            }
+        }
+        return(NULL)
+    }
+    qmc <- function(implicants, noflevels) {
+        minimized <- logical(nrow(implicants))
+        if (nrow(implicants) > 1) {
+            for (i in seq(nrow(implicants) - 1)) {
+                if (!minimized[i]) {
+                    for (j in seq(i + 1, nrow(implicants))) {
+                        if (!minimized[j]) {
+                            subsetrow <- checksubset(implicants[c(i, j), , drop = FALSE])
+                            if (!is.null(subsetrow)) {
+                                minimized[c(i, j)[subsetrow]] <- TRUE
+                            }
+                        }
+                    }
+                }
+            }
+            implicants <- implicants[!minimized, , drop = FALSE]
+        }
+        if (nrow(implicants) == 1) {
+            return(implicants)
+        }
+        minimized <- TRUE
+        while (any(minimized) & nrow(implicants) > 1) {
+            minimized <- logical(nrow(implicants))
+            tbc <- matrix(nrow = 0, ncol = 2)
+            for (i in seq(nrow(implicants) - 1)) {
+                for (j in seq(i + 1, nrow(implicants))) {
+                    if (sum(implicants[i, ] != implicants[j, ]) == 1) {
+                        tbc <- rbind(tbc, c(i, j))
+                    }
+                }
+            }
+            if (nrow(tbc) > 0) {
+                differences <- t(apply(tbc, 1, function(idx) implicants[idx[1], ] != implicants[idx[2], ]))
+                result <- matrix(nrow = 0, ncol = ncol(differences))
+                for (i in seq.int(nrow(differences))) {
+                    stable.values <- implicants[tbc[i, 1], !differences[i, , drop = FALSE], drop = FALSE]
+                    subset.explain <- apply(implicants[, !differences[i, , drop = FALSE], drop = FALSE], 1, function(x) all(x == stable.values))
+                    if (sum(subset.explain) == noflevels[differences[i, ]]) {
+                        minimized[subset.explain] <- TRUE
+                        minimization.result <- implicants[tbc[i, 1], , drop = FALSE]
+                        minimization.result[differences[i, ]] <- 0
+                        result <- rbind(result, as.vector(minimization.result))
+                    }
+                }
+            }
+            if (sum(minimized) > 0) {
+                implicants <- rbind(implicants[!minimized, ], unique(result))
+            }
+        }
+        return(implicants)
+    }
     bl <- list()
     if (any(hastilde(expression))) {
         use.tilde <- TRUE
@@ -88,51 +148,25 @@
         }))
     }
     bl <- unique(bl[!unlist(lapply(bl, is.null))])
-    redundants <- logical(length(bl))
-    if (length(bl) > 1) {
-        for (i in seq(length(bl) - 1)) {
-            for (j in seq(i + 1, length(bl))) {
-                if (all(bl[[i]] %in% bl[[j]]) & length(bl[[i]]) < length(bl[[j]])) {
-                    redundants[j] <- TRUE
-                }
-                if (all(bl[[j]] %in% bl[[i]]) & length(bl[[j]]) < length(bl[[i]])) {
-                    redundants[i] <- TRUE
-                }
-            }
-        }
+    bl <- paste(unlist(lapply(bl, paste, collapse = "*")), collapse = " + ")
+    if (identical(bl, "")) {
+        return(bl)
     }
-    bl <- bl[!redundants]
-    if (length(bl) > 0) {
-        bl <- bl[order(unlist(lapply(bl, length)))]
+    bl <- translate(bl, snames = snames, noflevels = noflevels)
+    expressions <- matrix(nrow = 0, ncol = ncol(bl))
+    for (i in seq(nrow(bl))) {
+        expressions <- rbind(expressions, as.matrix(expand.grid(lapply(bl[i, ], function(x) {
+            asNumeric(splitstr(x)) + 1
+        }))))
     }
-    if (!identical(snames, "")) {
-        bl <- unique(unlist(lapply(bl, function(x) {
-            paste(x[order(match(toupper(notilde(x)), toupper(snames)))], collapse = "*")
-        })))
-        if (any(blsn <- is.element(toupper(notilde(bl)), toupper(snames)))) {
-            bl[blsn] <- bl[blsn][order(match(toupper(notilde(bl[blsn])), toupper(snames)))]
-        }
+    if (missing(noflevels)) {
+        noflevels <- apply(expressions, 2, max)
     }
-    else {
-        bl <- unique(unlist(lapply(bl, function(x) paste(x[order(notilde(x))], collapse = "*"))))
+    expressions <- qmc(expressions, noflevels)
+    expressions <- expressions[order(apply(expressions, 1, function(x) sum(x > 0))), , drop = FALSE]
+    expressions <- writePrimeimp(expressions, mv = multivalue, use.tilde = use.tilde)
+    if (sl) {
+        expressions <- gsub("[*]", "", expressions)
     }
-    if (multivalue) {
-        blt <- as.vector(apply(translate(bl, snames = snames, noflevels = noflevels), 1, function(x) {
-            x <- x[x >= 0]
-            return(as.vector(paste(names(x), "{", x, "}", sep = "", collapse = "*")))
-        }))
-        if (identical(bl, blt)) {
-            if (sl) {
-                bl <- gsub("[*]", "", bl)
-            }
-            return(paste(bl, collapse = " + "))
-        }
-        return(Recall(paste(blt, collapse = " + ")))
-    }
-    else {
-        if (sl) {
-            bl <- gsub("[*]", "", bl)
-        }
-        return(paste(bl, collapse = " + "))
-    }
+    return(paste(expressions, collapse = " + "))
 }

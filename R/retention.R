@@ -53,8 +53,8 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     }
     total <- cpos + cneg
     udata <- udata[total >= n.cut, , drop = FALSE]
-    cpos <- cpos[total >= n.cut]
-    cneg <- cneg[total >= n.cut]
+    cpos  <- cpos[total >= n.cut]
+    cneg  <- cneg[total >= n.cut]
     total <- total[total >= n.cut]
     calculatePairs <- function(x, n.pert, type = "deletion") {
         pairsxl <- combinations(nrow(udata), min(x, nrow(udata)))

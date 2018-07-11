@@ -24,8 +24,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 .onAttach <- function(...) {
-    msg <- paste("  Dusa, Adrian (2007) User manual for the QCA(GUI) package in R.",
-                 "  Journal of Business Research 60(5), 576-586.", sep="\n")
+    msg <- paste("  Dusa, Adrian (2019) QCA with R. A Comprehensive Resource.",
+                 "  Springer International Publishing.", sep="\n")
     msg <- paste(msg, "\n\nTo run the graphical user interface, use: runGUI()\n", sep="")
     if (!grepl("there is no package called", tryCatch(find.package("QCApro"), error = function(e) e))) {
         msg <- paste(msg, "\nNOTE: Found multiple functions and object type conflicts in the fork package QCApro.",

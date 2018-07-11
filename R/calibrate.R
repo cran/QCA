@@ -44,28 +44,30 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
         cat("\n")
         stop(simpleError("Unknown calibration type.\n\n"))
     }
-    if (!(method %in% c("direct", "indirect"))) {
+    if (!(method %in% c("direct", "indirect", "TFR"))) {
         cat("\n")
         stop(simpleError("Unknown calibration method.\n\n"))
     }
-    if (all(is.na(thresholds))) {
-        cat("\n")
-        stop(simpleError("Threshold value(s) not specified.\n\n"))
-    }
-    if (is.character(thresholds) & length(thresholds) == 1) {
-        thresholds <- splitstr(thresholds)
-    }
-    if (possibleNumeric(thresholds)) {
-        nmsths <- NULL
-        if (!is.null(names(thresholds))) {
-            nmsths <- names(thresholds)
+    if (method != "TFR") {
+        if(all(is.na(thresholds))) {
+            cat("\n")
+            stop(simpleError("Threshold value(s) not specified.\n\n"))
         }
-        thresholds <- asNumeric(thresholds)
-        names(thresholds) <- nmsths
-    }
-    else {
-        cat("\n")
-        stop(simpleError("Thresholds must be numeric.\n\n"))
+        if (is.character(thresholds) & length(thresholds) == 1) {
+            thresholds <- splitstr(thresholds)
+        }
+        if (possibleNumeric(thresholds)) {
+            nmsths <- NULL
+            if (!is.null(names(thresholds))) {
+                nmsths <- names(thresholds)
+            }
+            thresholds <- asNumeric(thresholds)
+            names(thresholds) <- nmsths
+        }
+        else {
+            cat("\n")
+            stop(simpleError("Thresholds must be numeric.\n\n"))
+        }
     }
     if (type == "crisp") {
         if (any(thresholds < min(x) | thresholds > max(x))) {
@@ -281,7 +283,7 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
             fs[fs > 0.9999] <- 1
             return(fs)
         }
-        else {
+        else if (method == "indirect") {
             thresholds <- sort(thresholds)
             values <- round(seq(0, 1, by = 1 / length(thresholds)), 3)
             y <- rep(0, length(x))
@@ -293,6 +295,10 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
             fs[fs < 0.0001] <- 0
             fs[fs > 0.9999] <- 1
             return(fs)
+        }
+        else if (method == "TFR") {
+            E <- ecdf(x)
+            return(pmax(0, (E(x) - E(1)) / (1 - E(1))))
         }
     }
 }

@@ -38,8 +38,8 @@ function positionSpinner() {
             "width": $("#result").width(),
             "height": $("#result").height() - 20
         });
-        $("#background").position({my: "left top", at: "left top", of: result, collision: "flip"});
-        $("#spinner").position({my: "left top", at: "left+" + ($("#result").width() / 2 - 40) + "px top+" + ((($("#result").height() - 20) / 2) - 40) + "px", of: result, collision: "flip"});
+        $("#background").position({my: "left top", at: "left top", of: result, collision: "none"});
+        $("#spinner").position({my: "left top", at: "left+" + ($("#result").width() / 2 - 40) + "px top+" + ((($("#result").height() - 20) / 2) - 40) + "px", of: result, collision: "none"});
     }
 }
 function createSpinner() {
@@ -197,7 +197,7 @@ var settings = {
     load: {
         name:      "load",
         title:     "Load data from attached packages",
-        position:  {my: "left top", at: "left+5px top+33px", of: window, collision: "flip"},
+        position:  {my: "left top", at: "left+5px top+33px", of: window, collision: "none"},
         resizable: false,
         width:     420,
         height:    275,
@@ -220,14 +220,14 @@ var settings = {
     import: {
         name:      "import",
         title:     "Import from text file",
-        position:  {my: "left top", at: "left+5px top+33px", of: window, collision: "flip"},
+        position:  {my: "left top", at: "left+5px top+33px", of: window, collision: "none"},
         resizable: false,
         width:     645,
         height:    433,
         inside:    {
-            path: {border: true, left: 260, top:  62, width: 375, height:  40},
-            dirs: {border: true, left: 254, top:  80, width: 375, height: 300},
-            cols: {border: true, left:  14, top: 260, width: 225, height: 120}
+            cols: {border: true, left:  14, top: 260, width: 225, height: 120},
+            path: {border: true, left: 254, top:  62, width: 375, height:  40},
+            dirs: {border: true, left: 254, top:  80, width: 375, height: 300}
         },
         reset: function(x) {
             x = (x == "import")?"read_table":x;
@@ -250,14 +250,14 @@ var settings = {
     export: {
         name:      "export",
         title:     "Export to text file",
-        position:  {my: "left top", at: "left+5px top+33px", of: window, collision: "flip"},
+        position:  {my: "left top", at: "left+5px top+33px", of: window, collision: "none"},
         resizable: false,
         width:     600,
-        height:    375,
+        height:    380,
         inside: {
-            dataset: {border: true, left:  18, top: 238, width: 195, height:  80},
-            path:    {border: true, left: 230, top:  60, width: 355, height:  40},
-            dirs:    {border: true, left: 230, top:  78, width: 355, height: 240}
+            dataset: {border: true, left:  18, top: 243, width: 195, height:  80},
+            path:    {border: true, left: 230, top:  65, width: 355, height:  40},
+            dirs:    {border: true, left: 230, top:  83, width: 355, height: 240}
         },
         reset: function(x) {
             if (commobj[x] === void 0) {
@@ -278,7 +278,7 @@ var settings = {
     data_editor: {
         name:      "data_editor",
         title:     "Data editor",
-        position:  {my: "left top", at: "left+" + testX + "px top+" + testY + "px", of: window, collision: "flip"},
+        position:  {my: "left top", at: "left+" + testX + "px top+" + testY + "px", of: window, collision: "none"},
         resizable: true,
         width:     200, 
         height:    150, 
@@ -301,7 +301,7 @@ var settings = {
     calibrate: {
         name:      "calibrate",
         title:     "Calibrate",
-        position:  {my: "left top", at: "left+80px top+33px", of: window, collision: "flip"},
+        position:  {my: "left top", at: "left+80px top+33px", of: window, collision: "none"},
         resizable: true,
         width:     500,
         height:    390,
@@ -345,7 +345,7 @@ var settings = {
     recode: {
         name:      "recode",
         title:     "Recode",
-        position:  {my: "left top", at: "left+80px top+33px", of: window, collision: "flip"},
+        position:  {my: "left top", at: "left+80px top+33px", of: window, collision: "none"},
         resizable: false,
         width:     515,
         height:    340,
@@ -373,7 +373,7 @@ var settings = {
     findRows: {
         name:      "findRows",
         title:     "Find incoherent configurations",
-        position:  {my: "left top", at: "left+170px top+33px", of: window, collision: "flip"},
+        position:  {my: "left top", at: "left+170px top+33px", of: window, collision: "none"},
         resizable: false,
         width:     464,
         height:    222,
@@ -399,7 +399,7 @@ var settings = {
     tt: {
         name:      "tt",
         title:     "Truth table",
-        position:  {my: "left top", at: "left+170px top+33px", of: window, collision: "flip"},
+        position:  {my: "left top", at: "left+170px top+33px", of: window, collision: "none"},
         resizable: false,
         width:     464,
         height:    360,
@@ -438,7 +438,7 @@ var settings = {
     minimize: {
         name:       "minimize",
         title:      "Quine-McCluskey minimization",
-        position:   {my: "left top", at: "left+170px top+33px", of: window, collision: "flip"},
+        position:   {my: "left top", at: "left+170px top+33px", of: window, collision: "none"},
         resizable:  false,
         width:      464,
         height:     467,
@@ -485,7 +485,7 @@ var settings = {
     xyplot: {
         name:      "xyplot",
         title:     "XY plot",
-        position:  {my: "left top", at: "left+240px top+33px", of: window, collision: "flip"},
+        position:  {my: "left top", at: "left+240px top+33px", of: window, collision: "none"},
         resizable: true,
         width:     720,
         height:    567,
@@ -520,7 +520,7 @@ var settings = {
     venn: {
         name:      "venn",
         title:     "Venn diagram",
-        position:  {my: "left top", at: "left+240px top+33px", of: window, collision: "flip"},
+        position:  {my: "left top", at: "left+240px top+33px", of: window, collision: "none"},
         resizable: true,
         width:     430,
         height:    500,
@@ -530,14 +530,14 @@ var settings = {
     saveRplot: {
         name:       "saveRplot",
         title:      "Save R plot window",
-        position:   {my: "left top", at: "left+5px top+33px", of: window, collision: "flip"},
+        position:   {my: "left top", at: "left+5px top+33px", of: window, collision: "none"},
         resizable:  false,
-        width:      655,
+        width:      630,
         height:     400,
         inside: {
             preview: {border: false, left:   0, top:  20, width: 240, height: 250},
-            path:    {border: false, left: 240, top:  62, width: 400, height:  40},
-            dirs:    {border: true,  left: 240, top:  80, width: 400, height: 260}
+            path:    {border: true, left: 240, top:  62, width: 375, height:  40},
+            dirs:    {border: true,  left: 240, top:  80, width: 375, height: 260}
         },
         reset: function(x) {
             if (commobj[x] === void 0) {
@@ -553,7 +553,7 @@ var settings = {
     about: {
         name:       "about",
         title:      "About this software",
-        position:   {my: "left top", at: "left+300px top+33px", of: window, collision: "flip"},
+        position:   {my: "left top", at: "left+300px top+33px", of: window, collision: "none"},
         resizable:  false,
         width:      455,
         height:     440 + 10*(navigator.browserType == "Firefox")
@@ -561,7 +561,7 @@ var settings = {
     changes: {
         name:       "changes",
         title:      "Change log",
-        position:   {my: "left top", at: "left+300px top+33px", of: window, collision: "flip"},
+        position:   {my: "left top", at: "left+300px top+33px", of: window, collision: "none"},
         resizable:  false,
         width:      550,
         height:     420 + 10*(navigator.browserType == "Firefox")
@@ -1468,7 +1468,10 @@ function console_command(type) {
     }
     $("#command_main").html(strwrap(string_command, cpl.command));
 }
-function click_col(dialog, identifier, col, others = true) {
+function click_col(dialog, identifier, col, others) {
+    if (missing(others)) {
+        others = true;
+    }
     if (getKeys(colclicks).indexOf(dialog) < 0) {
         colclicks[dialog] = new Object;
     }
@@ -1781,12 +1784,13 @@ function strwrap(str, width, prefix, html) {
     str = str.replace("csv(", "£");
     str = str.replace("table(", "§");
     str = str.replace(/\s/g, "∞");
+    str = str.replace(/\//g, "±");
     var toreturn;
-    var crev = {"£": "csv(", "§": "table(", "∞":(html?"&nbsp;":" "), "≠": " "};
+    var crev = {"£": "csv(", "§": "table(", "∞":(html?"&nbsp;":" "), "±": "/", "≠": " "};
     if (str.length > width) {
         var q = 0;
         for (var p = width; p > 1; p--) {
-            if (["£", "§", "∞"].indexOf(str[p]) >= 0 && q == 0) {
+            if (["£", "§", "∞", "±"].indexOf(str[p]) >= 0 && q == 0) {
                 q = p;
             }
         }
@@ -1794,13 +1798,13 @@ function strwrap(str, width, prefix, html) {
             var left = str.substring(0, q + (str[q] != "∞"));
             var right = prefix + str.substring(q + 1);
             toreturn = left + (html?"<br>":"\n") + strwrap(right, width, prefix);
-            toreturn = toreturn.replace(/£|§|∞|≠/g, function(x) {return crev[x]});
+            toreturn = toreturn.replace(/£|§|∞|±|≠/g, function(x) {return crev[x]});
             return (toreturn);
         }
         else {
             var q = 0;
             for (var p = 1; p < str.length; p++) {
-                if (["£", "§", "∞"].indexOf(str[p]) >= 0 && q == 0) {
+                if (["£", "§", "∞", "±"].indexOf(str[p]) >= 0 && q == 0) {
                     q = p;
                 }
             }
@@ -1808,14 +1812,14 @@ function strwrap(str, width, prefix, html) {
                 var left = str.substring(0, q + (str[q] != "∞"));
                 var right = prefix + str.substring(q + 1);
                 toreturn = left + (html?"<br>":"\n") + strwrap(right, width, prefix);
-                return (toreturn.replace(/£|§|∞|≠/g, function(x) {return crev[x]}));
+                return (toreturn.replace(/£|§|∞|±|≠/g, function(x) {return crev[x]}));
             }
             else {
-                return (str.replace(/£|§|∞|≠/g, function(x) {return crev[x]}))
+                return (str.replace(/£|§|∞|±|≠/g, function(x) {return crev[x]}))
             }
         }
     }
-    return (str.replace(/£|§|∞|≠/g, function(x) {return crev[x]}));
+    return (str.replace(/£|§|∞|±|≠/g, function(x) {return crev[x]}));
 }
 function getTextHeight(text, width) {
     input2 = document.createElement("textarea");
@@ -2218,7 +2222,12 @@ function draw_import(paper) {
     var stx = 13;
     var sty = 10;
     sat(paper.text(stx + 5, sty + 15, "Separator:"));
-    var radios = paper.radio(stx + 11, sty + 40, 0, ["comma", "space", "tab", "other, please specify:"]);
+    var radios = paper.radio({
+        x: stx + 11,
+        y: sty + 40,
+        whichChecked: 0,
+        labels: ["comma", "space", "tab", "other, please specify:"],
+    });
     radios.cover[0].click(function() {
         commobj.read_table.sep = ",";
         if (dirfile.filename != "") {
@@ -2291,7 +2300,12 @@ function draw_import(paper) {
         this.attr({'cursor':''});
     });
     sat(paper.text(stx + 140, sty + 15, "Decimal:"));
-    var decimal = paper.radio(stx + 150, sty + 40, 0, ["dot", "comma"]);
+    var decimal = paper.radio({
+        x: stx + 150,
+        y: sty + 40,
+        whichChecked: 0,
+        labels: ["dot", "comma"],
+    });
     decimal.cover[0].click(function() {
         commobj.read_table.dec = ".";
         if (dirfile.filename != "") {
@@ -2310,7 +2324,12 @@ function draw_import(paper) {
             checkIfDataLoadedInR();
         }
     });
-    var header = paper.checkBox(stx + 5, sty + 142, commobj.read_table.header, "Column names in the file header");
+    var header = paper.checkBox({
+        x: stx + 5,
+        y: sty + 142,
+        isChecked: commobj.read_table.header,
+        label: "Column names in the file header",
+    });
     header.cover.click(function() {
         commobj.read_table.header = header.isChecked;
         if (dirfile.filename != "") {
@@ -2348,11 +2367,11 @@ function draw_import(paper) {
         }, true);
     });
     sat(paper.text(stx + 5, sty + 218, "Preview column names:"));
-    sat(paper.text(stx + 248, sty + 15, "Directory:"));
-    paper.stdir_text = sat(paper.text(stx + 317, sty + 15, commobj.read_table.row_names),
-                        {"clip": (stx + 315) + ", " + (sty + 5) + ", 307, 20"});
+    sat(paper.text(stx + 241, sty + 15, "Directory:"));
+    paper.stdir_text = sat(paper.text(stx + 309, sty + 15, ""),
+                        {"clip": (stx + 306) + ", " + (sty + 5) + ", 308, 20"});
     paper.inlineTextEditing(paper.stdir_text);
-    var stdir_rect = paper.rect(stx + 312, sty + 5, 307, 20)
+    var stdir_rect = paper.rect(stx + 304, sty + 5, 314, 20)
         .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
         .click(function(e) {
             e.stopPropagation();
@@ -2425,8 +2444,14 @@ function draw_import(paper) {
                 }
             }
         })
-    var objname = paper.checkBox(stx + 1, sty + 373, commobj.read_table.nameit, "Assign");
+    var objname = paper.checkBox({
+        x: stx + 1,
+        y: sty + 373,
+        isChecked: commobj.read_table.nameit,
+        label: "Assign",
+    });
     objname.cover.click(function() {
+            console.log(1);
         if (this.isChecked) {
             objname.label[0].attr({"text": "Assign to:"});
             if (paper.objnametext.attr("text") == "") {
@@ -2495,8 +2520,13 @@ function draw_export(paper) {
         paper.clear();
         var stx = 13;
         var sty = 10;
-        sat(paper.text(stx + 5, sty + 10, "Separator:"));
-        var radios = paper.radio(stx + 11, sty + 35, 0, ["comma", "space", "tab", "other, please specify:"]);
+        sat(paper.text(stx + 5, sty + 15, "Separator:"));
+        var radios = paper.radio({
+            x: stx + 11,
+            y: sty + 40,
+            whichChecked: 0,
+            labels: ["comma", "space", "tab", "other, please specify:"],
+        });
         radios.cover[0].click(function() {
             commobj["export"].sep = ",";
             console_command("export");
@@ -2509,9 +2539,9 @@ function draw_export(paper) {
             commobj["export"].sep = "tab";
             console_command("export");
         });
-        var other = sat(paper.text(stx + 170, sty + 111, ""),
-                        {"clip": (stx + 165) + "," + (sty + 106) + ",35,20"});
-        var other_rect = paper.rect(stx + 165, sty + 101, 37, 20, 3).attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"});
+        var other = sat(paper.text(stx + 170, sty + 116, ""),
+                        {"clip": (stx + 165) + "," + (sty + 111) + ",35,20"});
+        var other_rect = paper.rect(stx + 165, sty + 106, 37, 20, 3).attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"});
         paper.inlineTextEditing(other);
         var other_clicked = false;
         other_rect.click(function(e) {
@@ -2535,7 +2565,12 @@ function draw_export(paper) {
         other_rect.mouseout(function() {
             this.attr({'cursor':''});
         });
-        var header = paper.checkBox(stx + 5, sty + 140, commobj["export"].header, "Write column names");
+        var header = paper.checkBox({
+            x: stx + 5,
+            y: sty + 145,
+            isChecked: commobj["export"].header,
+            label: "Write column names",
+        });
         header.cover.click(function() {
             commobj["export"].header = header.isChecked;
             console_command("export");
@@ -2547,10 +2582,10 @@ function draw_export(paper) {
             }
         });
         var caseidset = paper.set();
-        caseidset.push(sat(paper.text(stx + 30, sty + 170, "Cases ID:")));
-        var caseid = sat(paper.text(stx + 107, sty + 170, commobj["export"].caseid),
-                         {"clip": (stx + 107) + ", " + (sty + 160) + ", 98, 20"});
-        var caseid_rect = paper.rect(stx + 102, sty + 160, 100, 20, 3).attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"});
+        caseidset.push(sat(paper.text(stx + 30, sty + 175, "Cases ID:")));
+        var caseid = sat(paper.text(stx + 107, sty + 175, commobj["export"].caseid),
+                         {"clip": (stx + 107) + ", " + (sty + 165) + ", 98, 20"});
+        var caseid_rect = paper.rect(stx + 102, sty + 165, 100, 20, 3).attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"});
         paper.inlineTextEditing(caseid);
         caseid_rect.click(function(e) {
             e.stopPropagation();
@@ -2568,9 +2603,9 @@ function draw_export(paper) {
         caseidset.push(caseid, caseid_rect);
         sat(paper.text(stx + 5, sty + 198, "Dataset:"));
         sat(paper.text(stx + 5, sty + 317, "New file:"));
-        paper.newname = sat(paper.text(stx + 74, sty + 318, commobj["export"].filename),
-                            {"clip": (stx + 69) + ", " + (sty + 308) + ", 188, 20"});
-        var newname_rect = paper.rect(stx + 69, sty + 308, 190, 20, 3).attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"});
+        paper.newname = sat(paper.text(stx + 74, sty + 323, commobj["export"].filename),
+                            {"clip": (stx + 69) + ", " + (sty + 313) + ", 188, 20"});
+        var newname_rect = paper.rect(stx + 69, sty + 313, 190, 20, 3).attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"});
         paper.inlineTextEditing(paper.newname);
         newname_rect.click(function(e) {
             e.stopPropagation();
@@ -2591,7 +2626,12 @@ function draw_export(paper) {
                 tasta = "enter";
             }, true);
         });
-        paper.ovr = paper.checkBox(stx + 270, sty + 312, 1, "Overwrite?");
+        paper.ovr = paper.checkBox({
+            x: stx + 270,
+            y: sty + 317,
+            isChecked: true,
+            label: "Overwrite?",
+        });
         paper.ovr.hideIt();
         if (dirfile.files.indexOf(commobj["export"].filename) >= 0) {
             paper.ovr.showIt();
@@ -2603,9 +2643,43 @@ function draw_export(paper) {
             paper.ovr.hideIt();
             console_command("export");
         });
-        sat(paper.text(stx + 247, sty + 10, "Choose directory:"));
-        sat(paper.text(stx + 515, sty + 318.5, "Export"));
-        var export_rect = paper.rect(stx + 497, sty + 306, 75, 25)
+        sat(paper.text(stx + 217, sty + 15, "Directory:"));
+        paper.stdir_text = sat(paper.text(stx + 286, sty + 15, ""),
+                            {"clip": (stx + 283) + ", " + (sty + 5) + ", 286, 20"});
+        paper.inlineTextEditing(paper.stdir_text);
+        var stdir_rect = paper.rect(stx + 281, sty + 5, 292, 20)
+            .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
+            .click(function(e) {
+                e.stopPropagation();
+                var temp = paper.stdir_text.attr("text");
+                var BBox = this.getBBox();
+                input = paper.stdir_text.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
+                input.addEventListener("blur", function(e) {
+                    paper.stdir_text.inlineTextEditing.stopEditing(tasta);
+                    if (paper.stdir_text.attr("text") != temp) {
+                        if (paper.stdir_text.attr("text") == "") {
+                            paper.glow.hide();
+                            dirfile_chosen[2] = "";
+                        }
+                        else {
+                            dirfile_chosen[0] = "dir";
+                            dirfile_chosen[1] = "__stdir__";
+                            dirfile_chosen[2] = paper.stdir_text.attr("text");
+                            pathcopy = dirfile.filepath;
+                            Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
+                            printDirsWhenPathChanges();
+                        }
+                    }
+                    tasta = "enter";
+                }, true);
+            });
+        paper.glow = stdir_rect.glow({
+            color: "#ff0000",
+            width: 4
+        });
+        paper.glow.hide();
+        sat(paper.text(stx + 515, sty + 323.5, "Export"));
+        var export_rect = paper.rect(stx + 497, sty + 311, 75, 25)
             .attr({"stroke-width": 1.25, fill: "#ffffff", "fill-opacity": 0})
             .click(function(e) {
                 e.stopPropagation();
@@ -2633,8 +2707,14 @@ function draw_saveRplot(paper) {
         var noplot = sat(paper.text(stx + 55, sty + 125, "No R plot window"));
         var filetypes = ["PNG", "BMP", "JPEG", "TIFF", "SVG", "PDF"];
         sat(paper.text(stx + 10, sty + 253, "Type:"));
-        var radios = paper.radio(stx + 60, sty + 253, 0, filetypes,
-                                 vertspace = [0, 25, 50, 0, 25, 50], horspace = [0, 0, 0, 75, 75, 75]);
+        var radios = paper.radio({
+            x: stx + 60,
+            y: sty + 253,
+            whichChecked: 0,
+            labels: filetypes,
+            vertspace: [0, 25, 50, 0, 25, 50],
+            horspace: [0, 0, 0, 75, 75, 75],
+        });
         radios.cover[0].click(function() {
             commobj.saveRplot.type = "png";
             if (commobj.saveRplot.filename !== "") {
@@ -2729,16 +2809,55 @@ function draw_saveRplot(paper) {
                 tasta = "enter";
             }, true);
         });
-        paper.ovr = paper.checkBox(stx + 236, sty + 338, 1, "Overwrite?");
+        paper.ovr = paper.checkBox({
+            x: stx + 236,
+            y: sty + 338,
+            isChecked: true,
+            label: "Overwrite?",
+        });
         paper.ovr.cover.click(function() {
             paper.filename.text.attr({"text": ""});
             commobj.saveRplot.filename = "";
             paper.ovr.check();
             paper.ovr.hideIt();
         });
-        sat(paper.text(stx + 257, sty + 17, "Choose directory:"));
-        sat(paper.text(stx + 574, sty + 343.5, "Save"));
-        var saveRplot_rect = paper.rect(stx + 552, sty + 331, 75, 25)
+        sat(paper.text(stx + 227, sty + 15, "Directory:"));
+        paper.stdir_text = sat(paper.text(stx + 297, sty + 15, ""),
+                            {"clip": (stx + 294) + ", " + (sty + 5) + ", 307, 20"});
+        paper.inlineTextEditing(paper.stdir_text);
+        var stdir_rect = paper.rect(stx + 292, sty + 5, 313, 20)
+            .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
+            .click(function(e) {
+                e.stopPropagation();
+                var temp = paper.stdir_text.attr("text");
+                var BBox = this.getBBox();
+                input = paper.stdir_text.inlineTextEditing.startEditing(BBox.x + 1, BBox.y + 21 - 1*(navigator.browserType == "Firefox"), BBox.width - 2, BBox.height - 2);
+                input.addEventListener("blur", function(e) {
+                    paper.stdir_text.inlineTextEditing.stopEditing(tasta);
+                    if (paper.stdir_text.attr("text") != temp) {
+                        if (paper.stdir_text.attr("text") == "") {
+                            paper.glow.hide();
+                            dirfile_chosen[2] = "";
+                        }
+                        else {
+                            dirfile_chosen[0] = "dir";
+                            dirfile_chosen[1] = "__stdir__";
+                            dirfile_chosen[2] = paper.stdir_text.attr("text");
+                            pathcopy = dirfile.filepath;
+                            Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
+                            printDirsWhenPathChanges();
+                        }
+                    }
+                    tasta = "enter";
+                }, true);
+            });
+        paper.glow = stdir_rect.glow({
+            color: "#ff0000",
+            width: 4
+        });
+        paper.glow.hide();
+        sat(paper.text(stx + 549, sty + 343.5, "Save"));
+        var saveRplot_rect = paper.rect(stx + 527, sty + 331, 75, 25)
             .attr({"stroke-width": 1.25, fill: "#ffffff", "fill-opacity": 0})
             .click(function(e) {
                 e.stopPropagation();
@@ -3077,7 +3196,12 @@ if ($("#calibrate").length) {
     sat(paper.text(18, 23, "Dataset:"));
     sat(paper.text(18, 153, "Choose condition:"));
     var stx = 153, sty = 32;
-    var crfuz = paper.radio(stx + 15, sty, 1*(commobj.calibrate.type == "fuzzy"), ["crisp", "fuzzy"]);
+    var crfuz = paper.radio({
+        x: stx + 15,
+        y: sty,
+        whichChecked: 1*(commobj.calibrate.type == "fuzzy"),
+        labels: ["crisp", "fuzzy"],
+    });
     crfuz.cover[0].click(function() {
         paper.crfuz = 0;
         commobj.calibrate.type = "crisp";
@@ -3160,7 +3284,12 @@ if ($("#calibrate").length) {
             }
         }
     }
-    paper.findth = paper.checkBox(stx + 109, sty - 5, commobj.calibrate.findth, "find thresholds");
+    paper.findth = paper.checkBox({
+        x: stx + 109,
+        y: sty - 5,
+        isChecked: commobj.calibrate.findth,
+        label: "find thresholds",
+    });
     paper.findth.cover.click(function() {
         commobj.calibrate.findth = paper.findth.isChecked;
         if (getKeys(colclicks).indexOf("calibrate") >= 0) {
@@ -3173,14 +3302,24 @@ if ($("#calibrate").length) {
             }
         }
     });
-    var jitter = paper.checkBox(stx + 109, sty + 20, commobj.calibrate.jitter, "jitter points");
+    var jitter = paper.checkBox({
+        x: stx + 109, 
+        y: sty + 20,
+        isChecked: commobj.calibrate.jitter,
+        label: "jitter points",
+    });
     jitter.cover.click(function() {
         commobj.calibrate.jitter = jitter.isChecked;
         if (commobj.calibrate.x != "") {
             drawPointsAndThresholds();
         }
     });
-    var logistic = paper.checkBox(stx + 9, sty + 58, commobj.calibrate.logistic, "logistic");
+    var logistic = paper.checkBox({
+        x: stx + 9,
+        y: sty + 58,
+        isChecked: commobj.calibrate.logistic,
+        label: "logistic",
+    });
     logistic.cover.click(function() {
         commobj.calibrate.logistic = logistic.isChecked;
         if (logistic.isChecked) {
@@ -3216,7 +3355,12 @@ if ($("#calibrate").length) {
             });
         }));
     paper.inlineTextEditing(idmtext);
-    var ecdf = paper.checkBox(stx + 9, sty + 83, commobj.calibrate.ecdf, "ecdf");
+    var ecdf = paper.checkBox({
+        x: stx + 9,
+        y: sty + 83,
+        isChecked: commobj.calibrate.ecdf,
+        label: "ecdf",
+    });
     ecdf.cover.click(function() {
         commobj.calibrate.ecdf = ecdf.isChecked;
         if (commobj.calibrate.ecdf) {
@@ -3236,7 +3380,12 @@ if ($("#calibrate").length) {
         showFuzzy();
         console_command("calibrate");
     });
-    var sbell = paper.radio(stx + 115, sty, 1 - commobj.calibrate.end, ["s-shaped", "bell-shaped"]);
+    var sbell = paper.radio({
+        x: stx + 115,
+        y: sty, 
+        whichChecked: 1 - commobj.calibrate.end, 
+        labels: ["s-shaped", "bell-shaped"],
+    });
     sbell.cover[0].click(function() {
         showFuzzy();
         console_command("calibrate");
@@ -3245,7 +3394,12 @@ if ($("#calibrate").length) {
         showFuzzy();
         console_command("calibrate");
     });
-    var incdec = paper.radio(stx + 250, sty, 1 - commobj.calibrate.increasing, ["increasing", "decreasing"]);
+    var incdec = paper.radio({
+        x: stx + 250, 
+        y: sty, 
+        whichChecked: 1 - commobj.calibrate.increasing, 
+        labels: ["increasing", "decreasing"],
+    });
     incdec.cover[0].click(function() {
         commobj.calibrate.increasing = true;
         changeLabels();
@@ -3531,7 +3685,12 @@ if ($("#calibrate").length) {
     }
     changeLabels();
     stx = 13, sty = 265;
-    var newcond = paper.checkBox(stx + 3, sty + 75, !commobj.calibrate.same, "into new condition");
+    var newcond = paper.checkBox({
+        x: stx + 3,
+        y: sty + 75,
+        isChecked: !commobj.calibrate.same,
+        label: "into new condition",
+    });
     newcond.label[0].remove();
     newcond.label = new Array(2);
     newcond.label[0] = sat(paper.text(stx + 27, sty + 73, "calibrate into"));
@@ -3630,7 +3789,12 @@ if ($("#recode").length) {
     var stx = 13, sty = 10;
     sat(paper.text(stx + 5, sty + 13, "Dataset:"), {"text": 0});
     sat(paper.text(stx + 5, sty + 123, "Choose condition:"), {"text": 0});
-    paper.newcond = paper.checkBox(stx + 1, sty + 280, !commobj.recode.same, "into new condition");
+    paper.newcond = paper.checkBox({
+        x: stx + 1,
+        y: sty + 280,
+        isChecked: !commobj.recode.same,
+        label: "into new condition",
+    });
     paper.newcond.label[0].remove();
     paper.newcond.label = new Array(2);
     paper.newcond.label[0] = sat(paper.text(stx + 25, sty + 278, "recode into"), {"text": 0});
@@ -3679,14 +3843,20 @@ if ($("#recode").length) {
     paper.newv.covers = new Array();
     paper.text(stx - 6, sty, "Old value(s):").attr({"text-anchor": "start", "font-size": "14px"});
     paper.text(stx + 175, sty, "New value:").attr({"text-anchor": "start", "font-size": "14px"});
-    paper.oldradio = paper.radio(stx, sty + vertspace, -1, [
+    paper.oldradio = paper.radio({
+        x: stx,
+        y: sty + vertspace, 
+        whichChecked: -1, 
+        labels: [
             "value",
             "lowest to",
             "\u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 to",
             "\u00a0 \u00a0 \u00a0 \u00a0 \u00a0 \u00a0 to highest",
             "missing",
             "all other values"
-            ], vertspace);
+            ],
+        vertspace: vertspace,
+    });
     paper.oldradio.cover[0].click(function() {
         paper.rules.oldv = paper.oldv.texts.VALUE.attr("text");
     });
@@ -3798,11 +3968,13 @@ if ($("#recode").length) {
         ["M", stx + 140, sty + 15],
         ["L", stx + 140, sty + 240]
     ]).attr({stroke: "#a0a0a0"});
-    paper.newradio = paper.radio(stx + 180, sty + vertspace, -1, [
-            "value",
-            "missing",
-            "copy old value(s)"
-            ], vertspace-10);
+    paper.newradio = paper.radio({
+        x: stx + 180, 
+        y: sty + vertspace,
+        whichChecked: -1,
+        labels: ["value", "missing", "copy old value(s)"],
+        vertspace: vertspace - 10,
+    });
     paper.newradio.cover[0].click(function() {
         paper.rules.newv = paper.newv.texts.VALUE.attr("text");;
     });
@@ -3963,8 +4135,18 @@ if ($("#xyplot").length) {
     paper.dim = 480; 
     paper.offset = 8;
     paper.rdim = paper.dim - 2*paper.offset;
-    paper.negx = paper.checkBox(stx + 89, sty + 120, commobj.xyplot.negx, "negate");
-    paper.negy = paper.checkBox(stx + 89, sty + 235, commobj.xyplot.negy, "negate");
+    paper.negx = paper.checkBox({
+        x: stx + 89,
+        y: sty + 120,
+        isChecked: commobj.xyplot.negx,
+        label: "negate",
+    });
+    paper.negy = paper.checkBox({
+        x: stx + 89,
+        y: sty + 235,
+        isChecked: commobj.xyplot.negy,
+        label: "negate",
+    });
     paper.index = 0;
     var powersof2 = 2;
     paper.negy.cover.click(function() {
@@ -3985,12 +4167,42 @@ if ($("#xyplot").length) {
         scaleplot(paper);
         createLabels(paper);
     });
-    paper.sufnec = paper.radio(stx + 7, sty + 355, ["sufficiency", "necessity"].indexOf(commobj.xyplot.sufnec), ["sufficiency", "necessity"]);
-    paper.pof = paper.checkBox(stx + 1, sty + 405, commobj.xyplot.pof, "parameters of fit");
-    paper.mdguides = paper.checkBox(stx + 1, sty + 430, commobj.xyplot.mdguides, "show middle guides");
-    paper.fill = paper.checkBox(stx + 1, sty + 455, commobj.xyplot.fill, "fill");
-    paper.jitter = paper.checkBox(stx + 50, sty + 455, commobj.xyplot.jitter, "jitter points");
-    paper.labels = paper.checkBox(stx + 1, sty + 480, commobj.xyplot.labels, "show case labels");
+    paper.sufnec = paper.radio({
+        x: stx + 7,
+        y: sty + 355,
+        whichChecked: ["sufficiency", "necessity"].indexOf(commobj.xyplot.sufnec),
+        labels: ["sufficiency", "necessity"],
+    });
+    paper.pof = paper.checkBox({
+        x: stx + 1,
+        y: sty + 405,
+        isChecked: commobj.xyplot.pof,
+        label: "parameters of fit",
+    });
+    paper.mdguides = paper.checkBox({
+        x: stx + 1,
+        y: sty + 430,
+        isChecked: commobj.xyplot.mdguides,
+        label: "show middle guides",
+    });
+    paper.fill = paper.checkBox({
+        x: stx + 1,
+        y: sty + 455,
+        isChecked: commobj.xyplot.fill,
+        label: "fill",
+    });
+    paper.jitter = paper.checkBox({
+        x: stx + 50,
+        y: sty + 455,
+        isChecked: commobj.xyplot.jitter,
+        label: "jitter points",
+    });
+    paper.labels = paper.checkBox({
+        x: stx + 1,
+        y: sty + 480,
+        isChecked: commobj.xyplot.labels,
+        label: "show case labels",
+    });
     paper.sufnec.cover[0].click(function() {
         commobj.xyplot.sufnec = "sufficiency";
         if (xyplotdata.length > 0) {
@@ -4260,7 +4472,12 @@ function draw_venn(paper) {
                     .attr({fill: vcolors[colorsCols[i]]}));
                 colored.push(sat(paper.text(BBox.x + 50*i + 18, BBox.y + BBox.height + 18, colorsCols[i])));
             }
-            var custom = paper.checkBox(10, 10, paper.custom, "custom");
+            var custom = paper.checkBox({
+                x: 10,
+                y: 10,
+                isChecked: paper.custom,
+                label: "custom",
+            });
             custom.cover.click(function() {
                 if (custom.isChecked) {
                     paper.custom = true;
@@ -4433,22 +4650,42 @@ function draw_tt(paper) {
         sat(paper.text(315, 17, "Conditions:"));
         var stx = 14;
         var sty = 175;
-        var neg_out = paper.checkBox(stx, sty, commobj.tt.neg_out, "negate outcome");
+        var neg_out = paper.checkBox({
+            x: stx,
+            y: sty,
+            isChecked: commobj.tt.neg_out,
+            label: "negate outcome",
+        });
         neg_out.cover.click(function() {
             commobj.tt.neg_out = neg_out.isChecked;
             console_command("tt");
         });
-        var complete = paper.checkBox(stx, sty + 25, commobj.tt.complete, "complete");
+        var complete = paper.checkBox({
+            x: stx,
+            y: sty + 25,
+            isChecked: commobj.tt.complete,
+            label: "complete",
+        });
         complete.cover.click(function() {
             commobj.tt.complete = complete.isChecked;
             console_command("tt");
         });
-        var use_letters = paper.checkBox(stx, sty + 50, commobj.tt.use_letters, "use letters");
+        var use_letters = paper.checkBox({
+            x: stx,
+            y: sty + 50,
+            isChecked: commobj.tt.use_letters,
+            label: "use letters",
+        });
         use_letters.cover.click(function() {
             commobj.tt.use_letters = use_letters.isChecked;
             console_command("tt");
         });
-        var show_cases = paper.checkBox(stx, sty + 75, commobj.tt.show_cases, "show cases");
+        var show_cases = paper.checkBox({
+            x: stx,
+            y: sty + 75,
+            isChecked: commobj.tt.show_cases,
+            label: "show cases",
+        });
         show_cases.cover.click(function() {
             commobj.tt.show_cases = show_cases.isChecked;
             if (commobj.tt.show_cases) {
@@ -4459,7 +4696,12 @@ function draw_tt(paper) {
             }
             console_command("tt");
         });
-        var dcc = paper.checkBox(stx + 20.6, sty + 100, commobj.tt.dcc, "deviant cases");
+        var dcc = paper.checkBox({
+            x: stx + 20.6,
+            y: sty + 100,
+            isChecked: commobj.tt.dcc,
+            label: "deviant cases",
+        });
         dcc.cover.click(function() {
             commobj.tt.dcc = dcc.isChecked;
             console_command("tt");
@@ -4505,7 +4747,12 @@ function draw_tt(paper) {
             paper.rects[3 + i].top = stx + 200 - 4;
             paper.rects[3 + i].bottom = stx + 250 - 4;
             paper.sortsets[i].push(paper.rects[3 + i]);
-            paper.decrease[i] = paper.checkBox(stx + 248, paper.coordsy[i] + 5, commobj.tt.sort_by[keys[i]], "");
+            paper.decrease[i] = paper.checkBox({
+                x: stx + 248,
+                y: paper.coordsy[i] + 5,
+                isChecked: commobj.tt.sort_by[keys[i]],
+                label: "",
+            });
             paper.decrease[i].cover.name = keys[i];
             paper.decrease[i].cover.click(function() {
                 commobj.tt.sort_by[this.name] = this.isChecked;
@@ -4605,7 +4852,12 @@ function draw_tt(paper) {
             });
         paper.inlineTextEditing(ic0);
         var stx = 13, sty = 0;
-        var objname = paper.checkBox(stx, sty + 309, commobj.tt.nameit, "Assign");
+        var objname = paper.checkBox({
+            x: stx,
+            y: sty + 309,
+            isChecked: commobj.tt.nameit,
+            label: "Assign",
+        });
         objname.cover.click(function() {
             if (this.isChecked) {
                 objname.label[0].attr({"text": "Assign to:"});
@@ -4681,7 +4933,14 @@ function draw_minimize(paper) {
                 copyclicks = copy(tempclicks);
             }
         }
-        var dsource = paper.radio(30, 18, 1*(commobj.minimize.source == "tt"), ["Dataset", "TT"], [0, 0], [0, 80]);
+        var dsource = paper.radio({
+            x: 30,
+            y: 18,
+            whichChecked: 1*(commobj.minimize.source == "tt"),
+            labels: ["Dataset", "TT"],
+            vertspace: [0, 0],
+            horspace: [0, 80],
+        });
         dsource.cover[0].click(function() { 
             commobj.minimize.source = "data";
             backup();
@@ -4752,6 +5011,8 @@ function draw_minimize(paper) {
                     rects[0].attr({fill: "#eeeeee", stroke: "none"});
                     texts[0].attr({"text-anchor": "start", "font-size": "14px", fill: "black"});
                     commobj.minimize.include[0] = "";
+                    commobj.minimize.exclude = "";
+                    paper.exclude.text.attr({"text": ""});
                 }
                 else {
                     rects[0].attr({fill: "#79a74c", stroke: "none"});
@@ -4787,26 +5048,51 @@ function draw_minimize(paper) {
                 input.addEventListener("blur", function(e) {
                     paper.exclude.text.inlineTextEditing.stopEditing(tasta);
                     commobj.minimize.exclude = paper.exclude.text.attr("text");
+                    if (commobj.minimize.exclude != "") {
+                        commobj.minimize.pi_cons = "0";
+                        commobj.minimize.sol_cons = "0";
+                        paper.sol_cons.text.attr({"text": "0"});
+                        paper.pi_cons.text.attr({"text": "0"});
+                        rects[0].attr({fill: "#79a74c", stroke: "none"});
+                        texts[0].attr({"text-anchor": "start", "font-size": "14px", fill: "white"});
+                        commobj.minimize.include[0] = "?";
+                    }
+                    filldirexp();
                     me.toFront();
                     tasta = "enter";
                     console_command("minimize");
                 });
         });
-        paper.neg_out = paper.checkBox(stx + 147, sty + 10 + 3, commobj.minimize.neg_out, "negate outcome");
+        paper.neg_out = paper.checkBox({
+            x: stx + 147,
+            y: sty + 10 + 3,
+            isChecked: commobj.minimize.neg_out,
+            label: "negate outcome",
+        });
         paper.neg_out.cover.click(function() {
             if (this.active) {
                 commobj.minimize.neg_out = paper.neg_out.isChecked;
                 console_command("minimize");
             }
         });
-        paper.use_letters = paper.checkBox(stx + 147, sty + 35 + 3, commobj.minimize.use_letters, "use letters");
+        paper.use_letters = paper.checkBox({
+            x: stx + 147,
+            y: sty + 35 + 3,
+            isChecked: commobj.minimize.use_letters,
+            label: "use letters",
+        });
         paper.use_letters.cover.click(function() {
             if (this.active) {
                 commobj.minimize.use_letters = paper.use_letters.isChecked;
                 console_command("minimize");
             }
         });
-        paper.show_cases = paper.checkBox(stx + 147, sty + 60 + 3, commobj.minimize.show_cases, "show cases");
+        paper.show_cases = paper.checkBox({
+            x: stx + 147,
+            y: sty + 60 + 3,
+            isChecked: commobj.minimize.show_cases,
+            label: "show cases",
+        });
         paper.show_cases.cover.click(function() {
             if (this.active) {
                 commobj.minimize.show_cases = paper.show_cases.isChecked;
@@ -4967,17 +5253,32 @@ function draw_minimize(paper) {
                 console_command("minimize");
             });
         });
-        var all_sol = paper.checkBox(stx + 147, sty + 12 + 100, commobj.minimize.all_sol, "maximal solutions");
+        var all_sol = paper.checkBox({
+            x: stx + 147,
+            y: sty + 12 + 100,
+            isChecked: commobj.minimize.all_sol,
+            label: "maximal solutions",
+        });
         all_sol.cover.click(function() {
             commobj.minimize.all_sol = all_sol.isChecked;
             console_command("minimize");
         });
-        var row_dom = paper.checkBox(stx + 147, sty + 12 + 125, commobj.minimize.row_dom, "row dominance");
+        var row_dom = paper.checkBox({
+            x: stx + 147,
+            y: sty + 12 + 125,
+            isChecked: commobj.minimize.row_dom,
+            label: "row dominance",
+        });
         row_dom.cover.click(function() {
             commobj.minimize.row_dom = row_dom.isChecked;
             console_command("minimize");
         });
-        var details = paper.checkBox(stx + 147, sty + 162, commobj.minimize.details, "show details");
+        var details = paper.checkBox({
+            x: stx + 147,
+            y: sty + 162,
+            isChecked: commobj.minimize.details,
+            label: "show details",
+        });
         details.cover.click(function() {
             commobj.minimize.details = details.isChecked;
             if (commobj.minimize.source == "data") {
@@ -4993,7 +5294,12 @@ function draw_minimize(paper) {
         if (!commobj.minimize.details && commobj.minimize.source == "data") {
             paper.show_cases.deactivate();
         }
-        var use_tilde = paper.checkBox(stx + 147, sty + 12 + 175, commobj.minimize.use_tilde, "use tilde");
+        var use_tilde = paper.checkBox({
+            x: stx + 147,
+            y: sty + 12 + 175,
+            isChecked: commobj.minimize.use_tilde,
+            label: "use tilde",
+        });
         use_tilde.cover.click(function() {
             commobj.minimize.use_tilde = use_tilde.isChecked;
             console_command("minimize");
@@ -5003,7 +5309,12 @@ function draw_minimize(paper) {
         paper.soldepth.label({"label": "Solution depth", "x": -32, "y": 0, "anchor": "end"}); 
         paper.pidepth = paper.counter({"x": stx + 402, "y": sty + 18 + 200, "startval": 0, "maxval": 9, "width": 18, "textheight": txtheight});
         paper.pidepth.label({"label": "PI depth", "x": -32, "y": 0, "anchor": "end"});
-        var objname = paper.checkBox(stx - 4, sty + 218 + 25, commobj.minimize.nameit, "Assign");
+        var objname = paper.checkBox({
+            x: stx - 4,
+            y: sty + 218 + 25,
+            isChecked: commobj.minimize.nameit,
+            label: "Assign",
+        });
         objname.cover.click(function() {
             if (this.isChecked) {
                 objname.label[0].attr({"text": "Assign to:"});
@@ -5161,11 +5472,37 @@ function draw_findRows(paper) {
         paper.clear();
         sat(paper.text(19, 17, "Truth table:"));
         var type = new Array(4);
-        type[0] = paper.checkBox(170, 30, commobj.findRows.type[0], "Select All");
-        type[1] = paper.checkBox(170, 55, commobj.findRows.type[1], "Expression subsets:");
-        type[2] = paper.checkBox(170, 110, commobj.findRows.type[2], "Contradictory simplifying assumptions");
-        type[3] = paper.checkBox(170, 135, commobj.findRows.type[3], "Simultaneous subset relations");
-        var remainders = paper.checkBox(430, 55, commobj.findRows.remainders, "remainders only", 1);
+        type[0] = paper.checkBox({
+            x: 170,
+            y: 30,
+            isChecked: commobj.findRows.type[0],
+            label: "Select All",
+        });
+        type[1] = paper.checkBox({
+            x: 170,
+            y: 55,
+            isChecked: commobj.findRows.type[1],
+            label: "Expression subsets:",
+        });
+        type[2] = paper.checkBox({
+            x: 170,
+            y: 110,
+            isChecked: commobj.findRows.type[2],
+            label: "Contradictory simplifying assumptions",
+        });
+        type[3] = paper.checkBox({
+            x: 170,
+            y: 135,
+            isChecked: commobj.findRows.type[3],
+            label: "Simultaneous subset relations",
+        });
+        var remainders = paper.checkBox({
+            x: 430,
+            y: 55,
+            isChecked: commobj.findRows.remainders,
+            label: "remainders only",
+            pos: 1,
+        });
         var shade = paper.rect(195 - 5, 88 - 10, 255, 20, 3).attr({fill: "#000000", stroke: "none", "fill-opacity": "0.2"});
         var type1_TB = textbox(paper, {x: 195, y: 88, width: 255, height: 20, text: commobj.findRows.expression});
         paper.inlineTextEditing(type1_TB.text);
@@ -5261,7 +5598,12 @@ function draw_findRows(paper) {
         remainders.cover.click(function() {
             commobj.findRows.remainders = remainders.isChecked;
         });
-        var objname = paper.checkBox(14, 170, commobj.findRows.nameit, "Assign");
+        var objname = paper.checkBox({
+            x: 14,
+            y: 170,
+            isChecked: commobj.findRows.nameit,
+            label: "Assign",
+        });
         objname.cover.click(function() {
             if (this.isChecked) {
                 objname.label[0].attr({"text": "Assign to:"});
@@ -5432,7 +5774,7 @@ function doWhenDataPointsAreReturned() {
     }
 }
 function drawPointsAndThresholds() {
-    if (colclicks.calibrate !== void 0) { 
+    if (colclicks.calibrate !== void 0) {
         thsetter_content.remove();
         thsetter_content = papers["calibrate"]["main"].set().attr({stroke: "#a0a0a0"});
         if (poinths.vals.length > 0) {
@@ -5440,8 +5782,8 @@ function drawPointsAndThresholds() {
             var pointsmax = max(poinths.vals);
             var mint = (any(isNumeric(commobj.calibrate.thresholds), "==", true) ? min(commobj.calibrate.thresholds) : pointsmin);
             var maxt = (any(isNumeric(commobj.calibrate.thresholds), "==", true) ? max(commobj.calibrate.thresholds) : pointsmax);
-            var minv = min([pointsmin, poinths.prettyx[0], ((papers["calibrate"]["main"].crfuz == 0) ? pointsmin : mint)]);
-            var maxv = max([pointsmax, poinths.prettyx[poinths.prettyx.length - 1], ((papers["calibrate"]["main"].crfuz == 0) ? pointsmax : maxt)]);
+            var minv = min([pointsmin, poinths.prettyx[0],                          ((papers["calibrate"]["main"].crfuz == 0) ? pointsmin : min([mint, pointsmin]))]);
+            var maxv = max([pointsmax, poinths.prettyx[poinths.prettyx.length - 1], ((papers["calibrate"]["main"].crfuz == 0) ? pointsmax : max([maxt, pointsmax]))]);
             var lm = 165;
             var rm = $("#calibrate").width() - 20;
             var thy = 304;
@@ -5511,8 +5853,8 @@ function drawPointsAndThresholds() {
                             ["L", position, thy],
                             ["L", position, thy - 120]
                         ]).attr({"stroke-width": 1, fill: "#cb2626", stroke: "#cb2626"});
-                        handles[i].min = ((papers["calibrate"]["main"].crfuz == 0) ? pointsmin : mint);
-                        handles[i].max = ((papers["calibrate"]["main"].crfuz == 0) ? pointsmax : maxt);
+                        handles[i].min = ((papers["calibrate"]["main"].crfuz == 0) ? pointsmin : min([pointsmin, mint]));
+                        handles[i].max = ((papers["calibrate"]["main"].crfuz == 0) ? pointsmax : max([pointsmax, maxt]));
                         handles[i].name = i;
                         handles[i].left = (rm - lm)*(handles[i].min - minv)/(maxv - minv) + lm;
                         handles[i].right = (rm - lm)*(handles[i].max - minv)/(maxv - minv) + lm;
@@ -5752,7 +6094,9 @@ function printWhenOutputChanges() {
 function print_dirs() {
     if ($("#import").length) {
         if (dirfile.filename == "error!") {
-            papers["import"]["main"].glow.show();
+            if (papers["import"]["main"].stdir_text.attr("text") != "") {
+                papers["import"]["main"].glow.show();
+            }
         }
         else {
             papers["import"]["main"].glow.hide();
@@ -5765,7 +6109,7 @@ function print_dirs() {
                 Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
                 printDirsWhenPathChanges();
             }
-            setPath(papers["import"]["path"], dirfile.wd);
+            setPath(papers["import"]["path"], dirfile.wd, settings["import"]["inside"]["path"]["width"]);
             var rw = 400; 
             papers["import"]["dirs"].clear();
             var i, aaa, bbb, ccc, toprint, printplus;
@@ -5868,209 +6212,227 @@ function print_dirs() {
         }
     }
     if ($("#export").length) {
-        papers["export"]["path"].goToDir = function(dir) {
-            dirfile_chosen[0] = "dir";
-            dirfile_chosen[1] = dir;
-            pathcopy = dirfile.filepath;
-            Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
-            printDirsWhenPathChanges();
-        }
-        setPath(papers["export"]["path"], dirfile.wd);
-        var rw = 400; 
-        papers["export"]["dirs"].clear();
-        var i, aaa, bbb, ccc, extoprint, printplus;
-        var row = 10;
-        var fill_opacity = 0.3;
-        var exrects_back = papers["export"]["dirs"].set();
-        var extexts = papers["export"]["dirs"].set();
-        var exrects = papers["export"]["dirs"].set();
-        var expluses = papers["export"]["dirs"].set();
-        var x = 30; 
-        var exdirs_length = 1*((dirfile.dirs === null)?0:dirfile.dirs.length);
-        var exfiles_length = 1*((dirfile.files === null)?0:dirfile.files.length);
-        var exclicked = -1;
-        papers["export"]["main"].ovr.hideIt();
-        if (dirfile.files != void 0) {
-            if (dirfile.files.indexOf(commobj["export"].filename) >= 0) {
-                papers["export"]["main"].ovr.showIt();
+        if (dirfile.filename == "error!") {
+            if (papers["export"]["main"].stdir_text.attr("text") != "") {
+                papers["export"]["main"].glow.show();
             }
         }
-        console_command("export");
-        for (i = 0; i < (1 + exdirs_length + exfiles_length); i++) {
-            printplus = false;
-            bbb = papers["export"]["dirs"].rect(0, row - 10, rw, 20);
-            bbb.id = i;
-            exrects_back.push(bbb);
-            if (i == 0) {
-                extoprint = "..";
-                expluses.push(papers["export"]["dirs"].text(0, 0, ""));
+        else {
+            papers["export"]["main"].glow.hide();
+            papers["export"]["main"].stdir_text.attr({"text": ""});
+            papers["export"]["path"].goToDir = function(dir) {
+                dirfile_chosen[0] = "dir";
+                dirfile_chosen[1] = dir;
+                pathcopy = dirfile.filepath;
+                Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
+                printDirsWhenPathChanges();
             }
-            else {
-                if (i < (exdirs_length + 1)) {
-                    printplus = true;
-                    extoprint = dirfile.dirs[i - 1];
+            setPath(papers["export"]["path"], dirfile.wd, settings["export"]["inside"]["path"]["width"]);
+            var rw = 400; 
+            papers["export"]["dirs"].clear();
+            var i, aaa, bbb, ccc, extoprint, printplus;
+            var row = 10;
+            var fill_opacity = 0.3;
+            var exrects_back = papers["export"]["dirs"].set();
+            var extexts = papers["export"]["dirs"].set();
+            var exrects = papers["export"]["dirs"].set();
+            var expluses = papers["export"]["dirs"].set();
+            var x = 30; 
+            var exdirs_length = 1*((dirfile.dirs === null)?0:dirfile.dirs.length);
+            var exfiles_length = 1*((dirfile.files === null)?0:dirfile.files.length);
+            var exclicked = -1;
+            papers["export"]["main"].ovr.hideIt();
+            if (dirfile.files.length != 0) {
+                if (dirfile.files.indexOf(commobj["export"].filename) >= 0) {
+                    papers["export"]["main"].ovr.showIt();
+                }
+            }
+            console_command("export");
+            for (i = 0; i < (1 + exdirs_length + exfiles_length); i++) {
+                printplus = false;
+                bbb = papers["export"]["dirs"].rect(0, row - 10, rw, 20);
+                bbb.id = i;
+                exrects_back.push(bbb);
+                if (i == 0) {
+                    extoprint = "..";
+                    expluses.push(papers["export"]["dirs"].text(0, 0, ""));
                 }
                 else {
-                    extoprint = dirfile.files[i - exdirs_length - 1];
+                    if (i < (exdirs_length + 1)) {
+                        printplus = true;
+                        extoprint = dirfile.dirs[i - 1];
+                    }
+                    else {
+                        extoprint = dirfile.files[i - exdirs_length - 1];
+                    }
                 }
-            }
-            if (printplus) {
-                expluses.push(papers["export"]["dirs"].text(x - 20, row, "+").attr({"text-anchor": "start", "font-size": "14px"}));
-            }
-            aaa = sat(papers["export"]["dirs"].text(x, row, extoprint));
-            extexts.push(aaa);
-            ccc = papers["export"]["dirs"].rect(0, row - 10, rw, 20);
-            ccc.id = i;
-            ccc.txt = (i == 0)?(".."):(extoprint);
-            ccc.click(function() {
-                    expluses.forEach(function(e) {
-                        e.attr({fill: "#000000"});
+                if (printplus) {
+                    expluses.push(papers["export"]["dirs"].text(x - 20, row, "+").attr({"text-anchor": "start", "font-size": "14px"}));
+                }
+                aaa = sat(papers["export"]["dirs"].text(x, row, extoprint));
+                extexts.push(aaa);
+                ccc = papers["export"]["dirs"].rect(0, row - 10, rw, 20);
+                ccc.id = i;
+                ccc.txt = (i == 0)?(".."):(extoprint);
+                ccc.click(function() {
+                        expluses.forEach(function(e) {
+                            e.attr({fill: "#000000"});
+                        });
+                        if (exclicked >= 0 && exclicked != this.id) {
+                            exrects_back[exclicked].attr({fill: "#e6f2da", "stroke-opacity": 0, "fill-opacity": 1*(exclicked % 2 === 0)});
+                            extexts[exclicked].attr({fill: "#000000"});
+                        }
+                        exclicked = this.id;
+                        exrects_back[this.id].attr({fill: "#79a74c", "stroke-opacity": 0, "fill-opacity": 1});
+                        extexts[this.id].attr({fill: "#ffffff"});
+                        if (this.id < (exdirs_length + 1)) {
+                            expluses[this.id].attr({fill: "#ffffff"});
+                        }
+                        if (this.id > exdirs_length) { 
+                            papers["export"]["main"].newname.attr({"text": this.txt});
+                            commobj["export"].filename = this.txt;
+                            papers["export"]["main"].ovr.showIt();
+                        }
+                    })
+                    .dblclick(function() {
+                        dirfile_chosen[0] = (this.id < (exdirs_length + 1))?"dir":"file";
+                        dirfile_chosen[1] = (this.txt == "..")?((dirfile_chosen[1] == "..")?"...":".."):this.txt;
+                        if (dirfile_chosen[0] == "dir") {
+                            pathcopy = dirfile.filepath;
+                            Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
+                            consoleIfPathChanges();
+                            printDirsWhenPathChanges();
+                        }
                     });
-                    if (exclicked >= 0 && exclicked != this.id) {
-                        exrects_back[exclicked].attr({fill: "#e6f2da", "stroke-opacity": 0, "fill-opacity": 1*(exclicked % 2 === 0)});
-                        extexts[exclicked].attr({fill: "#000000"});
-                    }
-                    exclicked = this.id;
-                    exrects_back[this.id].attr({fill: "#79a74c", "stroke-opacity": 0, "fill-opacity": 1});
-                    extexts[this.id].attr({fill: "#ffffff"});
-                    if (this.id < (exdirs_length + 1)) {
-                        expluses[this.id].attr({fill: "#ffffff"});
-                    }
-                    if (this.id > exdirs_length) { 
-                        papers["export"]["main"].newname.attr({"text": this.txt});
-                        commobj["export"].filename = this.txt;
-                        papers["export"]["main"].ovr.showIt();
-                    }
-                })
-                .dblclick(function() {
-                    dirfile_chosen[0] = (this.id < (exdirs_length + 1))?"dir":"file";
-                    dirfile_chosen[1] = (this.txt == "..")?((dirfile_chosen[1] == "..")?"...":".."):this.txt;
-                    if (dirfile_chosen[0] == "dir") {
-                        pathcopy = dirfile.filepath;
-                        Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
-                        consoleIfPathChanges();
-                        printDirsWhenPathChanges();
-                    }
-                });
-            exrects.push(ccc);
-            row += 20;
+                exrects.push(ccc);
+                row += 20;
+            }
+            exrects_back.forEach(function(e) {
+                e.attr({fill: (e.id % 2 === 0)?"#e6f2da":"#ffffff", "stroke-opacity": 0, "fill-opacity": 1});
+            });
+            exrects.forEach(function(e) {
+                e.attr({fill: "#ffffff", "stroke-opacity": 0, "fill-opacity": 0});
+            });
+            exrects_back.toBack();
+            exrects.toFront();
+            canvas_height = Math.max(400, exrects.getBBox().height);
+            $(papers["export"]["dirs"].canvas).height(canvas_height);
+            $("#export_dirs").css({height: canvas_height});
+                $("#export_dirs").scrollTop(0);
         }
-        exrects_back.forEach(function(e) {
-            e.attr({fill: (e.id % 2 === 0)?"#e6f2da":"#ffffff", "stroke-opacity": 0, "fill-opacity": 1});
-        });
-        exrects.forEach(function(e) {
-            e.attr({fill: "#ffffff", "stroke-opacity": 0, "fill-opacity": 0});
-        });
-        exrects_back.toBack();
-        exrects.toFront();
-        canvas_height = Math.max(400, exrects.getBBox().height);
-        $(papers["export"]["dirs"].canvas).height(canvas_height);
-        $("#export_dirs").css({height: canvas_height});
-            $("#export_dirs").scrollTop(0);
     }
     if ($("#saveRplot").length) {
-        papers["saveRplot"]["path"].goToDir = function(dir) {
-            dirfile_chosen[0] = "dir";
-            dirfile_chosen[1] = dir;
-            pathcopy = dirfile.filepath;
-            Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
-            printDirsWhenPathChanges();
-        }
-        setPath(papers["saveRplot"]["path"], dirfile.wd);
-        var rw = 400; 
-        papers["saveRplot"]["dirs"].clear();
-        if (savetexts !== void 0) {
-            savetexts.remove();
-        }
-        var aaa, bbb, ccc, svtoprint, printplus;
-        var row = 10;
-        var fill_opacity = 0.3;
-        var saverects_back = papers["saveRplot"]["dirs"].set();
-        var savetexts = papers["saveRplot"]["dirs"].set();
-        var saverects = papers["saveRplot"]["dirs"].set();
-        var savepluses = papers["saveRplot"]["dirs"].set();
-        var x = 30; 
-        var savedirs_length = 1*((dirfile.dirs === null)?0:dirfile.dirs.length);
-        var savefiles_length = 1*((dirfile.files === null)?0:dirfile.files.length);
-        var svclicked = -1;
-        papers["saveRplot"]["main"].ovr.hideIt();
-        if (dirfile.files !== void 0) {
-            if (dirfile.files.indexOf((commobj["saveRplot"].filename + "." + commobj["saveRplot"].type)) >= 0) {
-                papers["saveRplot"]["main"].ovr.showIt();
+        if (dirfile.filename == "error!") {
+            if (papers["saveRplot"]["main"].stdir_text.attr("text") != "") {
+                papers["saveRplot"]["main"].glow.show();
             }
         }
-        console_command("saveRplot");
-        for (var i = 0; i < (1 + savedirs_length + savefiles_length); i++) {
-            printplus = false;
-            bbb = papers["saveRplot"]["dirs"].rect(0, row - 10, rw, 20);
-            bbb.id = i;
-            saverects_back.push(bbb);
-            if (i == 0) {
-                svtoprint = "..";
-                savepluses.push(papers["saveRplot"]["dirs"].text(0, 0, ""));
+        else {
+            papers["saveRplot"]["main"].glow.hide();
+            papers["saveRplot"]["main"].stdir_text.attr({"text": ""});
+            papers["saveRplot"]["path"].goToDir = function(dir) {
+                dirfile_chosen[0] = "dir";
+                dirfile_chosen[1] = dir;
+                pathcopy = dirfile.filepath;
+                Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
+                printDirsWhenPathChanges();
             }
-            else {
-                if (i < (savedirs_length + 1)) {
-                    printplus = true;
-                    svtoprint = dirfile.dirs[i - 1];
+            setPath(papers["saveRplot"]["path"], dirfile.wd, settings["saveRplot"]["inside"]["path"]["width"]);
+            var rw = 400; 
+            papers["saveRplot"]["dirs"].clear();
+            if (savetexts !== void 0) {
+                savetexts.remove();
+            }
+            var aaa, bbb, ccc, svtoprint, printplus;
+            var row = 10;
+            var fill_opacity = 0.3;
+            var saverects_back = papers["saveRplot"]["dirs"].set();
+            var savetexts = papers["saveRplot"]["dirs"].set();
+            var saverects = papers["saveRplot"]["dirs"].set();
+            var savepluses = papers["saveRplot"]["dirs"].set();
+            var x = 30; 
+            var savedirs_length = 1*((dirfile.dirs === null)?0:dirfile.dirs.length);
+            var savefiles_length = 1*((dirfile.files === null)?0:dirfile.files.length);
+            var svclicked = -1;
+            papers["saveRplot"]["main"].ovr.hideIt();
+            if (dirfile.files.length != 0) {
+                if (dirfile.files.indexOf((commobj["saveRplot"].filename + "." + commobj["saveRplot"].type)) >= 0) {
+                    papers["saveRplot"]["main"].ovr.showIt();
+                }
+            }
+            console_command("saveRplot");
+            for (var i = 0; i < (1 + savedirs_length + savefiles_length); i++) {
+                printplus = false;
+                bbb = papers["saveRplot"]["dirs"].rect(0, row - 10, rw, 20);
+                bbb.id = i;
+                saverects_back.push(bbb);
+                if (i == 0) {
+                    svtoprint = "..";
+                    savepluses.push(papers["saveRplot"]["dirs"].text(0, 0, ""));
                 }
                 else {
-                    svtoprint = dirfile.files[i - savedirs_length - 1];
+                    if (i < (savedirs_length + 1)) {
+                        printplus = true;
+                        svtoprint = dirfile.dirs[i - 1];
+                    }
+                    else {
+                        svtoprint = dirfile.files[i - savedirs_length - 1];
+                    }
                 }
-            }
-            if (printplus) {
-                savepluses.push(papers["saveRplot"]["dirs"].text(x - 20, row, "+").attr({"text-anchor": "start", "font-size": "14px"}));
-            }
-            aaa = sat(papers["saveRplot"]["dirs"].text(x, row, svtoprint));
-            savetexts.push(aaa);
-            ccc = papers["saveRplot"]["dirs"].rect(0, row - 10, rw, 20);
-            ccc.id = i;
-            ccc.txt = (i == 0)?(".."):(svtoprint);
-            ccc.click(function() {
-                    savepluses.forEach(function(e) {
-                        e.attr({fill: "#000000"});
+                if (printplus) {
+                    savepluses.push(papers["saveRplot"]["dirs"].text(x - 20, row, "+").attr({"text-anchor": "start", "font-size": "14px"}));
+                }
+                aaa = sat(papers["saveRplot"]["dirs"].text(x, row, svtoprint));
+                savetexts.push(aaa);
+                ccc = papers["saveRplot"]["dirs"].rect(0, row - 10, rw, 20);
+                ccc.id = i;
+                ccc.txt = (i == 0)?(".."):(svtoprint);
+                ccc.click(function() {
+                        savepluses.forEach(function(e) {
+                            e.attr({fill: "#000000"});
+                        });
+                        if (svclicked >= 0 && svclicked != this.id) {
+                            saverects_back[svclicked].attr({fill: "#e6f2da", "stroke-opacity": 0, "fill-opacity": 1*(svclicked % 2 === 0)});
+                            savetexts[svclicked].attr({fill: "#000000"});
+                        }
+                        svclicked = this.id;
+                        saverects_back[this.id].attr({fill: "#79a74c", "stroke-opacity": 0, "fill-opacity": 1});
+                        savetexts[this.id].attr({fill: "#ffffff"});
+                        if (this.id < (savedirs_length + 1)) {
+                            savepluses[this.id].attr({fill: "#ffffff"});
+                        }
+                        if (this.id > savedirs_length) { 
+                            papers["saveRplot"]["main"].filename.attr({"text": this.txt});
+                            commobj.saveRplot.filename = this.txt;
+                            papers["saveRplot"]["main"].ovr.showIt();
+                        }
+                    })
+                    .dblclick(function() {
+                        dirfile_chosen[0] = (this.id < (savedirs_length + 1))?"dir":"file";
+                        dirfile_chosen[1] = (this.txt == "..")?((dirfile_chosen[1] == "..")?"...":".."):this.txt;
+                        if (dirfile_chosen[0] == "dir") {
+                            pathcopy = dirfile.filepath;
+                            Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
+                            consoleIfPathChanges();
+                            printDirsWhenPathChanges();
+                        }
                     });
-                    if (svclicked >= 0 && svclicked != this.id) {
-                        saverects_back[svclicked].attr({fill: "#e6f2da", "stroke-opacity": 0, "fill-opacity": 1*(svclicked % 2 === 0)});
-                        savetexts[svclicked].attr({fill: "#000000"});
-                    }
-                    svclicked = this.id;
-                    saverects_back[this.id].attr({fill: "#79a74c", "stroke-opacity": 0, "fill-opacity": 1});
-                    savetexts[this.id].attr({fill: "#ffffff"});
-                    if (this.id < (savedirs_length + 1)) {
-                        savepluses[this.id].attr({fill: "#ffffff"});
-                    }
-                    if (this.id > savedirs_length) { 
-                        papers["saveRplot"]["main"].filename.attr({"text": this.txt});
-                        commobj.saveRplot.filename = this.txt;
-                        papers["saveRplot"]["main"].ovr.showIt();
-                    }
-                })
-                .dblclick(function() {
-                    dirfile_chosen[0] = (this.id < (savedirs_length + 1))?"dir":"file";
-                    dirfile_chosen[1] = (this.txt == "..")?((dirfile_chosen[1] == "..")?"...":".."):this.txt;
-                    if (dirfile_chosen[0] == "dir") {
-                        pathcopy = dirfile.filepath;
-                        Shiny.onInputChange("dirfile_chosen", dirfile_chosen);
-                        consoleIfPathChanges();
-                        printDirsWhenPathChanges();
-                    }
-                });
-            saverects.push(ccc);
-            row += 20;
+                saverects.push(ccc);
+                row += 20;
+            }
+            saverects_back.forEach(function(e) {
+                e.attr({fill: (e.id % 2 === 0)?"#e6f2da":"#ffffff", "stroke-opacity": 0, "fill-opacity": 1});
+            });
+            saverects.forEach(function(e) {
+                e.attr({fill: "#ffffff", "stroke-opacity": 0, "fill-opacity": 0});
+            });
+            saverects_back.toBack();
+            saverects.toFront();
+            canvas_height = Math.max(400, saverects.getBBox().height);
+            $(papers["saveRplot"]["dirs"].canvas).height(canvas_height);
+            $("#saveRplot_dirs").css({height: canvas_height});
+                $("#saveRplot_dirs").scrollTop(0);
         }
-        saverects_back.forEach(function(e) {
-            e.attr({fill: (e.id % 2 === 0)?"#e6f2da":"#ffffff", "stroke-opacity": 0, "fill-opacity": 1});
-        });
-        saverects.forEach(function(e) {
-            e.attr({fill: "#ffffff", "stroke-opacity": 0, "fill-opacity": 0});
-        });
-        saverects_back.toBack();
-        saverects.toFront();
-        canvas_height = Math.max(400, saverects.getBBox().height);
-        $(papers["saveRplot"]["dirs"].canvas).height(canvas_height);
-        $("#saveRplot_dirs").css({height: canvas_height});
-            $("#saveRplot_dirs").scrollTop(0);
     }
 }
 function updateWhenDataChanged() {
@@ -6343,7 +6705,10 @@ function makePapers(obj) {
 }
 $("#menu_load").click(function() {
     pingit();
-    if (!$("#load").length) {
+    if ($("#load").length) {
+        showDialogToFront(settings["load"]);
+    }
+    else {
         current_command = "load";
         createDialog(settings["load"]);
         makePapers(settings["load"]);
@@ -6355,7 +6720,10 @@ $("#menu_load").click(function() {
 });
 $("#menu_import").click(function() {
     pingit();
-    if (!$("#import").length) {
+    if ($("#import").length) {
+        showDialogToFront(settings["import"]);
+    }
+    else {
         current_command = "import";
         createDialog(settings["import"]);
         makePapers(settings["import"]);
@@ -6367,7 +6735,10 @@ $("#menu_import").click(function() {
 });
 $("#menu_export").click(function() {
     pingit();
-    if (!$("#export").length) {
+    if ($("#export").length) {
+        showDialogToFront(settings["export"]);
+    }
+    else {
         current_command = "export";
         createDialog(settings["export"]);
         makePapers(settings["export"]);
@@ -6379,7 +6750,12 @@ $("#menu_export").click(function() {
 });
 function openDataEditor(dataset) {
     pingit();
-    if (!$("#data_editor").length) {
+    if ($("#data_editor").length) {
+        showDialogToFront(settings["data_editor"]);
+        click_col("data_editor", "dataset", dataset, others = false);
+        print_data();
+    }
+    else {
         var vscrollbar = false, hscrollbar = false;
         if (info["data"] !== null && dataset != "") {
             vscrollbar = info["data"][dataset].nrows - 1 > visiblerows;
@@ -6526,10 +6902,6 @@ function openDataEditor(dataset) {
             }, 100));
         });
     }
-    else {
-        click_col("data_editor", "dataset", dataset, others = false);
-        print_data();
-    }
 }
 $("#menu_data_editor").click(function() {
     openDataEditor(commobj["data_editor"].dataset);
@@ -6538,7 +6910,10 @@ $("#menu_data_editor").click(function() {
 });
 $("#menu_calibrate").click(function() {
     pingit();
-    if (!$("#calibrate").length) {
+    if ($("#calibrate").length) {
+        showDialogToFront(settings["calibrate"]);
+    }
+    else {
         createDialog(settings["calibrate"]);
         makePapers(settings["calibrate"]);
         thsetter_content = papers["calibrate"]["main"].set();
@@ -6567,7 +6942,10 @@ $("#menu_calibrate").click(function() {
 });
 $("#menu_recode").click(function() {
     pingit();
-    if (!$("#recode").length) {
+    if ($("#recode").length) {
+        showDialogToFront(settings["recode"]);
+    }
+    else {
         createDialog(settings["recode"]);
         makePapers(settings["recode"]);
         refresh_cols("recode");
@@ -6578,7 +6956,10 @@ $("#menu_recode").click(function() {
 });
 $("#menu_create_tt").click(function() {
     pingit();
-    if (!$("#tt").length) {
+    if ($("#tt").length) {
+        showDialogToFront(settings["tt"]);
+    }
+    else {
         createDialog(settings["tt"]);
         makePapers(settings["tt"]);
         refresh_cols("tt");
@@ -6589,7 +6970,10 @@ $("#menu_create_tt").click(function() {
 });
 $("#menu_find_rows").click(function() {
     pingit();
-    if (!$("#findRows").length) {
+    if ($("#findRows").length) {
+        showDialogToFront(settings["findRows"]);
+    }
+    else {
         createDialog(settings["findRows"]);
         makePapers(settings["findRows"]);
         refresh_cols("findRows");
@@ -6601,7 +6985,10 @@ $("#menu_find_rows").click(function() {
 });
 $("#menu_minimize").click(function() {
     pingit();
-    if (!$("#minimize").length) {
+    if ($("#minimize").length) {
+        showDialogToFront(settings["minimize"]);
+    }
+    else {
         createDialog(settings["minimize"]);
         makePapers(settings["minimize"]);
         draw_minimize(papers["minimize"]["main"]);
@@ -6615,7 +7002,10 @@ $("#menu_minimize").click(function() {
 });
 $("#menu_xyplot").click(function() {
     pingit();
-    if (!$("#xyplot").length) {
+    if ($("#xyplot").length) {
+        showDialogToFront(settings["xyplot"]);
+    }
+    else {
         createDialog(settings["xyplot"]);
         makePapers(settings["xyplot"]);
         refresh_cols("xyplot");
@@ -6645,7 +7035,10 @@ $("#menu_xyplot").click(function() {
 });
 $("#menu_venn").click(function() {
     pingit();
-    if (!$("#venn").length) {
+    if ($("#venn").length) {
+        showDialogToFront(settings["venn"]);
+    }
+    else {
         createDialog(settings["venn"]);
         makePapers(settings["venn"]);
         draw_venn(papers["venn"]["main"]);
@@ -6682,7 +7075,10 @@ $("#menu_venn").click(function() {
 });
 $("#menu_saveRplot").click(function() {
     pingit();
-    if (!$("#saveRplot").length) {
+    if ($("#saveRplot").length) {
+        showDialogToFront(settings["saveRplot"]);
+    }
+    else {
         current_command = "saveRplot";
         createDialog(settings["saveRplot"]);
         makePapers(settings["saveRplot"]);
@@ -6693,10 +7089,13 @@ $("#menu_saveRplot").click(function() {
 });
 $("#menu_about").click(function() {
     pingit();
-    if (!$("#about").length) {
+    if ($("#about").length) {
+        showDialogToFront(settings["about"]);
+    }
+    else {
         createDialog(settings["about"]);
         var messages = [
-            "R package: QCA, version 3.2",
+            "R package: QCA, version 3.3",
             "",
             "Author: Adrian Dușa (dusa.adrian@unibuc.ro)",
             "Former coauthors:",
@@ -6719,7 +7118,7 @@ $("#menu_about").click(function() {
             "phenomenon.",
             "",
             "To cite this package in publications, please use:",
-            "        Dușa, Adrian (2018) QCA with R. A Comprehensive Resource.",
+            "        Dușa, Adrian (2019) QCA with R. A Comprehensive Resource.",
             "        Springer International Publishing."
         ];
         for (var i = 0; i < messages.length; i++) {
@@ -6732,7 +7131,10 @@ $("#menu_about").click(function() {
 });
 $("#menu_changes").click(function() {
     pingit();
-    if (!$("#changes").length) {
+    if ($("#changes").length) {
+        showDialogToFront(settings["changes"]);
+    }
+    else {
         createDialog(settings["changes"]);
         function getChanges() {
             updatecounter += 1;
@@ -7010,7 +7412,7 @@ function createDialog(dialogsettings) {
         stop: function() {
             if ($(this).offset().top < 31) {
                 var left = $(this).offset().left;
-                $(this).position({my: "left top", at: "left+" + left + "px top+31px", of: window, collision: "flip"});
+                $(this).position({my: "left top", at: "left+" + left + "px top+31px", of: window, collision: "none"});
             }
             var position = $(this).position();
             settings[dialogsettings.name].position.at = "left+" + position.left + "px top+" + position.top + "px";

@@ -602,7 +602,7 @@ insideBrackets <- function(x, invert = FALSE, type = "{") {
     }
     tml <- typematrix[tml, 1:2]
     gsub(paste("\\", tml, sep = "", collapse = "|"), "",
-         regmatches(x, gregexpr(paste("\\", tml, sep = "", collapse = ".*"), x), invert=invert)[[1]])
+         regmatches(x, gregexpr(paste("\\", tml, sep = "", collapse = ".*"), x), invert = invert)[[1]])
 }
 outsideBrackets <- function(x, type = "{") {
     typematrix <- matrix(c("{", "[", "(", "}", "]", ")", "{}", "[]", "()"), nrow = 3)
@@ -612,7 +612,7 @@ outsideBrackets <- function(x, type = "{") {
     }
     tml <- typematrix[tml, 1:2]
     pattern <- paste("\\", tml, sep = "", collapse = "[[:alnum:]|,]*")
-    unlist(strsplit(gsub("\\s+", " ", trimstr(gsub(pattern, " ", x))), split=" "))
+    unlist(strsplit(gsub("\\s+", " ", trimstr(gsub(pattern, " ", x))), split = " "))
 }
 curlyBrackets <- function(x, outside = FALSE) {
     x <- paste(x, collapse = "+")

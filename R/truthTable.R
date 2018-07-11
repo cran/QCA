@@ -135,7 +135,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     if (any(fuzzy.cc)) {
         if (any(data[, conditions[fuzzy.cc]] == 0.5)) {
             cat("\n")
-            stop(simpleError(paste0("Fuzzy set causal conditions should not have values of 0.5 in the data.", ifelse(enter, "\n\n", ""))))
+            warning("Fuzzy causal conditions should not have values of 0.5 in the data.\n")
         }
         condata[, fuzzy.cc] <- lapply(condata[, fuzzy.cc, drop = FALSE], function(x) as.numeric(x > 0.5))
     }
@@ -148,8 +148,8 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     rownames(tt) <- rownstt
     ipc <- .Call("truthTable", as.matrix(data[, conditions]), data[, outcome], as.matrix(tt), as.numeric(fuzzy.cc), PACKAGE = "QCA")
     colnames(ipc) <- rownstt
-    minmat <- ipc[seq(4, nrow(ipc)), ]
-    ipc <- ipc[1:3, ]
+    minmat <- ipc[seq(4, nrow(ipc)), , drop = FALSE]
+    ipc <- ipc[1:3, , drop = FALSE]
     rownames(minmat) <- rownames(data)
     rownames(ipc) <- c("n", "incl", "PRI")
     exclude <- ipc[1, ] < n.cut

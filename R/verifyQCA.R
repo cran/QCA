@@ -142,7 +142,7 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
         cat("\n")
         stop(simpleError("You haven't specified the outcome set.\n\n"))
     }
-    if (! outcome %in% colnames(data)) {
+    if (!is.element(outcome, colnames(data))) {
         cat("\n")
         stop(simpleError("The outcome's name is not correct.\n\n"))
     }
@@ -150,7 +150,7 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
         if (length(conditions) == 1 & is.character(conditions)) {
             conditions <- splitstr(conditions)
         }
-        if (outcome %in% conditions) {
+        if (is.element(outcome, conditions)) {
             cat("\n")
             stop(simpleError(paste0("Variable \"", outcome, "\" cannot be both outcome _and_ condition!\n\n")))
         }
@@ -165,7 +165,7 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
     }
     else {
         conditions <- colnames(data)
-        conditions <- conditions[conditions != outcome]
+        conditions <- setdiff(conditions, outcome)
     }
     if (any(is.na(data))) {
         checked <- sapply(data, function(x) any(is.na(x)))
@@ -218,11 +218,11 @@ function(data, outcome = "", conditions = "", explain = "",
         if (length(conditions) == 1 & is.character(conditions)) {
             conditions <- splitstr(conditions)
         }
-        if (outcome %in% conditions) {
+        if (is.element(outcome, conditions)) {
             cat("\n")
-            stop(simpleError(paste0("Variable \"", outcome, "\" cannot be both outcome _and_ condition!\n\n")))
+            stop(simpleError(paste0("\"", outcome, "\" cannot be both outcome _and_ condition.\n\n")))
         }
-        if (!all(conditions %in% names(data))) {
+        if (!all(is.element(conditions, names(data)))) {
             cat("\n")
             stop(simpleError("The conditions' names are not correct.\n\n"))
         }

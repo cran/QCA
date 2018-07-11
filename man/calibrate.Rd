@@ -17,7 +17,8 @@ calibrate(x, type = "fuzzy", method = "direct", thresholds = NA,
 \arguments{
   \item{x}{A numerical causal condition.}
   \item{type}{Calibration type, either \bold{\code{"crisp"}} or \bold{\code{"fuzzy"}}.}
-  \item{method}{Calibration method, either \bold{\code{"direct"}} or \bold{\code{"indirect"}}.}
+  \item{method}{Calibration method, either \bold{\code{"direct"}}, \bold{\code{"indirect"}}
+        or \bold{\code{"TFR"}}.}
   \item{thresholds}{A vector of (named) thresholds.}
   \item{logistic}{Calibrate to fuzzy sets using the logistic function.}
   \item{idm}{The set inclusion degree of membership for the logistic function.}
@@ -109,11 +110,15 @@ exist to make them different.
 For the \bold{\code{type = "fuzzy"}} it is also possible to use the \bold{\code{"indirect"}}
 method to calibrate the data, using a procedure first introduced by Ragin (2008). The indirect method
 assumes a vector of thresholds to cut the original data into equal intervals, then it applies
-a (quasi)binomial logistic regression with a fractional polynomial equation. 
+a (quasi)binomial logistic regression with a fractional polynomial equation.
 
 The results are also fuzzy between 0 and 1, but the method is entirely different: it has no anchors
 (specific to the direct method), and it doesn't need to specify a calibration function to calculate
-the scores along with.
+the scores with.
+
+The third method applied to fuzzy calibrations is called \bold{\code{"TFR"}} and calibrates categorical
+data (such as Likert type response scales) to fuzzy values using the Totally Fuzzy and Relative
+method (Chelli and Lemmi, 1995).
 }
 
 \value{
@@ -126,13 +131,17 @@ Adrian Dusa
 }
 
 \references{
+Cheli, B.; Lemmi, A. (1995) \dQuote{A 'Totally' Fuzzy and Relative
+Approach to the Multidimensional Analysis of Poverty}. In \emph{Economic Notes},
+vol.1, pp.115-134.
+
+Dusa, A. (2018) \emph{QCA with R. A Comprehensive Resource}.
+New York: Springer International Publishing.
+
 Ragin, C. (2008) \dQuote{Fuzzy Sets: Calibration Versus Measurement.}
 In \emph{The Oxford Handbook of Political Methodology}, edited by Janet
 Box-Steffensmeier, Henry E. Brady, and David Collier, pp.87-121.
 Oxford: Oxford University Press.
-
-Thiem, A.; Dusa, A. (2013) \emph{Qualitative Comparative Analysis with R: 
-A User's Guide}. New York: Springer.
 }
 
 \examples{
@@ -244,6 +253,14 @@ cinc <- calibrate(inc, method = "indirect",
 
 plot(inc, cinc, main = "Membership scores in the set of high income", 
      xlab = "Raw data", ylab = "Calibrated data")
+     
 
+# calibrating categorical data
+set.seed(12345)
+values <- sample(1:7, 100, replace = TRUE)
+
+TFR <- calibrate(values, method = "TFR")
+
+table(round(TFR, 3))
 }
 \keyword{functions}

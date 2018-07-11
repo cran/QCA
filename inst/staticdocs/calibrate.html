@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>calibrate. QCA 3.2</title>
+<title>calibrate. QCA 3.3</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.2</a>
+      <a class="brand" href="#">QCA 3.3</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -81,7 +81,8 @@ values, using the <dfn>direct</dfn> method of calibration.</p>
         <tr>
             <td valign="top"><b><code>method</code></b></td>
             <td></td><td></td><td></td>
-            <td>Calibration method, either <b><code>"direct"</code></b> or <b><code>"indirect"</code></b>.</td>
+            <td>Calibration method, either <b><code>"direct"</code></b>, <b><code>"indirect"</code></b>,
+            or <b><code>"TFR"</code></b>.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>thresholds</code></b></td>
@@ -268,7 +269,12 @@ a (quasi)binomial logistic regression with a fractional polynomial equation.
   
 <p>The results are also fuzzy between 0 and 1, but the method is entirely different: it has no anchors
 (specific to the direct method), and it doesn't need to specify a calibration function to calculate
-the scores along with.
+the scores with.
+</p>
+  
+<p>The third method applied to fuzzy calibrations is called <b><code>type = "TFR"</code></b> and calibrates
+categorical data (such as Likert type response scales) to fuzzy values using the Totally Fuzzy and Relative
+method (Chelli and Lemmi, 1995).
 </p>
 
       <p></p>
@@ -442,6 +448,19 @@ plot(inc, cinc, main = &quot;Membership scores in the set of high income&quot;,
 
 <p><img src='calibrate-31.svgz' alt='' width='400' height='400' /></p>
 
+
+<div class='input'>
+set.seed(12345)
+values <- sample(1:7, 100, replace = TRUE)
+
+TFR <- calibrate(values, method = "TFR")
+
+table(round(TFR, 3))
+</div>
+
+    0 0.151 0.314 0.477 0.605 0.814     1 
+   14    13    14    14    11    18    16
+</div>
 </pre>
 
 </div>

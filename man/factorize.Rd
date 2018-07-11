@@ -10,7 +10,7 @@ written in SOP - Sum Of Products form.
 }
 
 \usage{
-factorize(input, snames = "", noflevels, pos = FALSE, tilde, ...)
+factorize(input, snames = "", noflevels, pos = FALSE, use.tilde = FALSE, ...)
 }
 
 \arguments{
@@ -19,7 +19,7 @@ factorize(input, snames = "", noflevels, pos = FALSE, tilde, ...)
   \item{snames}{A string containing the sets' names, separated by commas.}
   \item{noflevels}{Numerical vector containing the number of levels for each set.}
   \item{pos}{Logical, if possible factorize using product(s) of sums.}
-  \item{tilde}{Logical, use a tilde to negate the sets.}
+  \item{use.tilde}{Logical, use a tilde to negate the sets.}
   \item{...}{Other arguments (mainly for backwards compatibility).}
 }
 
@@ -45,6 +45,8 @@ If \bold{\code{input}} is an object of class \code{"qca"} (the result of the
 \bold{\code{\link{minimize}()}} function), a factorization is performed
 for each of the minimized solutions.
 
+The argument \bold{\code{use.tilde}} is automatically activated if the input contains
+a tilde to negate conditions.
 }
 
 \value{

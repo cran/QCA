@@ -66,7 +66,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         stop(simpleError("The relationship should be \"necessity\", \"sufficiency\", \"sufnec\" or \"necsuf\".\n\n"))
     }
     relationcopy <- relation
-    if (relation %in% c("sufnec", "necsuf")) {
+    if (is.element(relation, c("sufnec", "necsuf"))) {
         cov.cut <- incl.cut
     }
     if (relation == "sufnec") {

@@ -42,6 +42,7 @@ function(x, file = "", ...) {
             }
         }
     }
+    Call[["x"]] <- x
     if (any(names(export.args) == "row.names")) {
         warning("The argument \"row.names\" is set to FALSE by default.", domain = NA)
     }

@@ -137,51 +137,51 @@ Raphael.fn.counter = function(options) {
     }
     return(cntr);
 }
-Raphael.fn.checkBox = function(x, y, isChecked, label, pos, dim, fontsize) {
-    if (dim == void 0) {
-        dim = 12;
+Raphael.fn.checkBox = function(options) {
+    if (missing(options.dim)) {
+        options.dim = 12;
     }
-    if (pos == void 0) {
-        pos = 3;
+    if (missing(options.pos)) {
+        options.pos = 3;
     }
-    if (fontsize == void 0) {
-        fontsize = 14;
+    if (missing(options.fontsize)) {
+        options.fontsize = 14;
     }
     var cb = new Array();
     cb.active = true;
     cb.label = new Array(1);
     var txtanchor = "start";
-    var xpos = x;
-    var ypos = y;
-    if (pos == 1) { 
+    var xpos = options.x;
+    var ypos = options.y;
+    if (options.pos == 1) { 
         xpos -= 8;
-        ypos += dim / 2;
+        ypos += options.dim / 2;
         txtanchor = "end";
     }
-    else if (pos == 2) { 
-        xpos += dim / 2;
-        ypos -= dim;
+    else if (options.pos == 2) { 
+        xpos += options.dim / 2;
+        ypos -= options.dim;
         txtanchor = "middle";
     }
-    else if (pos == 3) { 
+    else if (options.pos == 3) { 
         xpos += 20;
-        ypos += dim / 2;
+        ypos += options.dim / 2;
     }
     else { 
-        xpos += dim / 2;
+        xpos += options.dim / 2;
         ypos += 5;
         txtanchor = "middle";
     }
-    cb.label[0] = this.text(xpos, ypos, label)
-        .attr({"text-anchor": txtanchor, "font-size": (fontsize + "px")});
-    cb.box = this.rect(x, y, dim, dim)
-        .attr({fill: isChecked?"#97bd6c":"#eeeeee","stroke-width": 1.2, stroke: "#a0a0a0"});
+    cb.label[0] = this.text(xpos, ypos, options.label)
+        .attr({"text-anchor": txtanchor, "font-size": (options.fontsize + "px")});
+    cb.box = this.rect(options.x, options.y, options.dim, options.dim)
+        .attr({fill: options.isChecked?"#97bd6c":"#eeeeee","stroke-width": 1.2, stroke: "#a0a0a0"});
     cb.chk = this.path([
-        ["M", x + 0.2*dim, y + 0.3*dim],
-        ["l", 0.15*dim*2, 0.2*dim*2],
-        ["l", 0.3*dim*2, -0.45*dim*2]
+        ["M", options.x + 0.2*options.dim, options.y + 0.3*options.dim],
+        ["l", 0.15*2*options.dim, 0.2*2*options.dim],
+        ["l", 0.3*2*options.dim, -0.45*2*options.dim]
     ]).attr({"stroke-width": 2});
-    if (isChecked) {
+    if (options.isChecked) {
         cb.box.attr({fill: "#97bd6c"});
         cb.chk.show();
     }
@@ -189,8 +189,8 @@ Raphael.fn.checkBox = function(x, y, isChecked, label, pos, dim, fontsize) {
         cb.box.attr({fill: "#eeeeee"});
         cb.chk.hide();
     }
-    cb.isChecked = isChecked;
-    cb.cover = this.rect(x, y, dim, dim)
+    cb.isChecked = options.isChecked;
+    cb.cover = this.rect(options.x, options.y, options.dim, options.dim)
         .attr({fill: "#fff", opacity: 0, cursor: "pointer"})
         .click(function() {
             if (cb.active) {
@@ -264,61 +264,61 @@ Raphael.fn.checkBox = function(x, y, isChecked, label, pos, dim, fontsize) {
     }
     return(cb);
 }
-Raphael.fn.radio = function(x, y, whichChecked, labels, vertspace, horspace, lbspace, size, fontsize) {
-    if (size === void 0) {
-        size = 6.5;
+Raphael.fn.radio = function(options) {
+    if (missing(options.size)) {
+        options.size = 6.5;
     }
-    if (vertspace === void 0) {
-        vertspace = 25;
+    if (missing(options.vertspace)) {
+        options.vertspace = 25;
     }
-    if (horspace === void 0) { 
-        horspace = rep(0, labels.length);
+    if (missing(options.horspace)) { 
+        options.horspace = rep(0, options.labels.length);
     }
-    if (lbspace === void 0) {
-        lbspace = 14;
+    if (missing(options.lbspace)) {
+        options.lbspace = 14;
     }
-    if (fontsize === void 0) {
-        fontsize = 14;
+    if (missing(options.fontsize)) {
+        options.fontsize = 14;
     }
     var rd = new Array();
-    rd.whichChecked = whichChecked;
-    rd.label = new Array(labels.length);
-    rd.cover = new Array(labels.length);
-    rd.circle = new Array(labels.length);
+    rd.whichChecked = options.whichChecked;
+    rd.label = new Array(options.labels.length);
+    rd.cover = new Array(options.labels.length);
+    rd.circle = new Array(options.labels.length);
     rd.fill = this.set();
     var newvert = 0;
-    for (var i = 0; i < labels.length; i++) {
-        rd.label[i] = this.text(x + horspace[i] + lbspace, y + newvert - 1, labels[i]).attr({"text-anchor": "start", "font-size": fontsize+"px"});
-        rd.circle[i] = this.circle(x + horspace[i], y + newvert, size).attr({fill: "#eeeeee", "stroke": "#a0a0a0", "stroke-width": 1.2});
-        rd.cover[i] = this.circle(x + horspace[i], y + newvert, size + 2).attr({fill: "#eeeeee", stroke: "none", "fill-opacity": 0, "cursor": "pointer"});
+    for (var i = 0; i < options.labels.length; i++) {
+        rd.label[i] = this.text(options.x + options.horspace[i] + options.lbspace, options.y + newvert - 1, options.labels[i]).attr({"text-anchor": "start", "font-size": options.fontsize+"px"});
+        rd.circle[i] = this.circle(options.x + options.horspace[i], options.y + newvert, options.size).attr({fill: "#eeeeee", "stroke": "#a0a0a0", "stroke-width": 1.2});
+        rd.cover[i] = this.circle(options.x + options.horspace[i], options.y + newvert, options.size + 2).attr({fill: "#eeeeee", stroke: "none", "fill-opacity": 0, "cursor": "pointer"});
         rd.cover[i].i = i;
         rd.cover[i].click(function() {
             rd.fill.show();
             var BBox = this.getBBox();
-            rd.fill.transform("t" + (BBox.x - x + size + 2) + "," + (BBox.y - y + size + 2));
+            rd.fill.transform("t" + (BBox.x - options.x + options.size + 2) + "," + (BBox.y - options.y + options.size + 2));
             rd.whichChecked = this.i;
         });
-        if (Array.isArray(vertspace)) {
-            newvert = vertspace[i + 1];
+        if (Array.isArray(options.vertspace)) {
+            newvert = options.vertspace[i + 1];
         }
         else {
-            newvert = (i + 1)*vertspace;
+            newvert = (i + 1)*options.vertspace;
         }
     }
-    rd.fill.push(this.circle(x, y, size - 0.5).attr({fill: "#97bd6c", stroke: "none"}));
-    rd.fill.push(this.circle(x, y, size - 4.5).attr({fill: "#000000", stroke: "none"}));
+    rd.fill.push(this.circle(options.x, options.y, options.size - 0.5).attr({fill: "#97bd6c", stroke: "none"}));
+    rd.fill.push(this.circle(options.x, options.y, options.size - 4.5).attr({fill: "#000000", stroke: "none"}));
     if (rd.whichChecked < 0) {
         rd.fill.hide();
     }
     else {
         rd.fill.show();
-        rd.fill.transform("t" + (rd.circle[whichChecked].getBBox().x - x + size) + "," + (rd.circle[whichChecked].getBBox().y - y + size));
+        rd.fill.transform("t" + (rd.circle[options.whichChecked].getBBox().x - options.x + options.size) + "," + (rd.circle[options.whichChecked].getBBox().y - options.y + options.size));
     }
     rd.moveTo = function(pos) {
         rd.fill.show();
         rd.whichChecked = pos;
         var BBox = rd.cover[pos].getBBox();
-        rd.fill.transform("t" + (BBox.x - x + size + 2) + "," + (BBox.y - y + size + 2));
+        rd.fill.transform("t" + (BBox.x - options.x + options.size + 2) + "," + (BBox.y - options.y + options.size + 2));
     }
     rd.hideIt = function() {
         for (var i = 0; i < rd.cover.length; i++) {
@@ -342,6 +342,9 @@ Raphael.fn.radio = function(x, y, whichChecked, labels, vertspace, horspace, lbs
         }
     }
     return(rd);
+}
+function missing(obj) {
+    return(obj === void 0);
 }
 function isNumeric0(n) {
     if (n.length == 0) {
@@ -407,8 +410,14 @@ function copy(obj, exclude) {
         return clone;
     }
 }
-function sortArray(x, empty = "last") {
-	var sorted = x.slice();
+function sortArray(obj, options) {
+    if (missing(options)) {
+        options = {};
+    }
+    if (options.emptylast == void 0) {
+        options.emptylast = true;
+    }
+	var sorted = obj.slice();
 	var sortlen = sorted.length;
 	for (var i = 0, j; i < sortlen; i++) {
 	    
@@ -432,16 +441,16 @@ function sortArray(x, empty = "last") {
 		sorted[j + 1] = tmp1;
 	}
 	
-	if (empty == "last") {
-	    x = rep("", sortlen);
+	if (options.emptylast) {
+	    obj = rep("", sortlen);
 	    var position = 0;
 	    for (var i = 0; i < sortlen; i++) {
 	        if (sorted[i] != "") {
-	            x[position] = sorted[i];
+	            obj[position] = sorted[i];
 	            position += 1;
 	        }
 	    }
-	    return x;
+	    return obj;
 	}
 	
 	return sorted;
@@ -577,7 +586,7 @@ function round(x, y) {
     return(Math.round(x*y)/y);
 }
 function all(obj, rule, value) {
-    if (value === void 0) {
+    if (missing(value)) {
         value = "";
     }
     var check = true;
@@ -610,7 +619,7 @@ function all(obj, rule, value) {
     return(check);
 }
 function any(obj, rule, value) {
-    if (value === void 0) {
+    if (missing(value)) {
         value = "";
     }
     var check = false;
@@ -647,6 +656,9 @@ function rep(rule, times) {
     return(result);
 }
 function unique(obj) {
+    if (!Array.isArray(obj)) {
+        return(null);
+    }
     var uniques = new Array();
     var present;
     for (var i = 0; i < obj.length; i++) {
@@ -658,6 +670,9 @@ function unique(obj) {
 }
 function min(obj) { 
     var minval = null;
+    if (!Array.isArray(obj)) {
+        return(minval);
+    }
     for (var i = 0; i < obj.length; i++) {
         if (obj[i] !== null && isNumeric(obj[i])) {
             if (minval === null) {
@@ -674,6 +689,9 @@ function min(obj) {
 }
 function max(obj) { 
     var maxval = null;
+    if (!Array.isArray(obj)) {
+        return(maxval);
+    }
     for (var i = 0; i < obj.length; i++) {
         if (obj[i] !== null && isNumeric(obj[i])) {
             if (maxval === null) {
@@ -688,11 +706,29 @@ function max(obj) {
     }
     return(maxval);
 }
-function paste(obj, from, to, sep) {
-    var result = obj[from];
-    if (from < to) {
-        for (var i = from + 1; i < to + 1; i++) {
-            result += obj[i];
+function paste(obj, options) {
+    if (Array.isArray(obj)) { 
+        if (obj.length == 0) return("");
+    }
+    else {
+        return("");
+    }
+    if (missing(options)) {
+        options = {};
+    }
+    if (missing(options.sep)) {
+        options.sep = " ";
+    }
+    if (missing(options.from)) {
+        options.from = 0;
+    }
+    if (missing(options.to)) {
+        options.to = obj.length - 1;
+    }
+    var result = obj[options.from];
+    if (options.from < options.to) {
+        for (var i = options.from + 1; i < options.to + 1; i++) {
+            result += options.sep + obj[i];
         }
     }
     return(result);
@@ -925,7 +961,7 @@ function createLabels(paper) {
         paper.labelsset.hide();
     }
 }
-function setPath(paper, wd) {
+function setPath(paper, wd, width) {
     paper.clear();
     var wds = wd.split("/");
     var x = 1;
@@ -964,14 +1000,14 @@ function setPath(paper, wd) {
     };
     function dragMoveLarge(group) {
         return function(dx, dy) {
-            if (groupWidth > 400) {
+            if (groupWidth > (width + 50)) {
                 var newX = dx - lastX;
                 if (groupX + dx > 0) {
                     newX = 0 - groupX - lastX;
                 }
-                if (groupX + dx < (400 - groupWidth)) {
-                    newX = (400 - groupWidth) - (groupX + lastX);
-                    lastX = (400 - groupWidth) - groupX;
+                if (groupX + dx < (width - groupWidth)) {
+                    newX = (width - groupWidth) - (groupX + lastX);
+                    lastX = (width - groupWidth) - groupX;
                 }
                 else {
                     lastX += newX;
@@ -1269,7 +1305,10 @@ function caretPosition(jqueryItem) {
         return sel.text.length - selLen;
     }
 }
-function getStyle(fresh = false) {
+function getStyle(fresh) {
+    if (missing(fresh)) {
+        fresh = false;
+    }
     var oStyle = {
         background: 'none',
         width: (fresh?651:(($("#txtcommand").length)?($("#txtcommand").width()):651)) + 'px',
@@ -1289,4 +1328,25 @@ function getStyle(fresh = false) {
         sStyle += z + ':' + oStyle[z] + ';';
     }
     return(sStyle);
+}
+function escapeText( s ) {
+	if ( !s ) {
+		return "";
+	}
+	s = s + "";
+	
+	return s.replace( /['"<>&]/g, function( s ) {
+		switch ( s ) {
+		case "'":
+			return "&#039;";
+		case "\"":
+			return "&quot;";
+		case "<":
+			return "&lt;";
+		case ">":
+			return "&gt;";
+		case "&":
+			return "&amp;";
+		}
+	});
 }

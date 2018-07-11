@@ -52,12 +52,8 @@ listFiles <- function(dirpath, filetype = "*") {
                 result$files <- found[!isdir]
             }
         }
-        if (length(result$dirs) == 1) {
-            result$dirs <- as.matrix(result$dirs)
-        }
-        if (length(result$files) == 1) {
-            result$files <- as.matrix(result$files)
-        }
+        result$dirs <- as.list(result$dirs)
+        result$files <- as.list(result$files)
     }
     resfilename <- ""
     if (!identical(filepath, "")) {
@@ -700,7 +696,7 @@ shinyServer(function(input, output, session) {
                 }
                 else {
                     current_dirs <- listFiles(current_path)$dirs
-                    if (dfchosen[2] %in% current_dirs) {
+                    if (is.element(dfchosen[2], current_dirs)) {
                         pathtobe <- file.path(current_path, dfchosen[2])
                         if (length(list.files(pathtobe)) > 0) {
                             current_path <<- pathtobe

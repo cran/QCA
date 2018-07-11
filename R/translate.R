@@ -87,9 +87,13 @@ function(expression = "", snames = "", noflevels, data) {
     if (any(grepl(",", gsub(",[0-9]", "", expression)))) {
         expression <- splitstr(expression)
     }
+    arglist <- list(snames = snames)
+    if (!missing(noflevels)) {
+        arglist$noflevels <- noflevels
+    }
     expression <- unlist(lapply(expression, function(x) {
         if (grepl("[(|)]", x)) {
-            x <- sop(x, snames = snames, noflevels = noflevels) 
+            x <- do.call("sop", c(list(expression = x), arglist)) 
         }
         return(x)
     }))
@@ -175,7 +179,7 @@ function(expression = "", snames = "", noflevels, data) {
                 cat("\n")
                 stop(simpleError("Conditions' names cannot contain both lower and upper case letters.\n\n"))
             }
-            conds <- sort(toupper(conds))
+            conds <- sort(unique(toupper(conds)))
             if (!identical(snames, "")) {
                 if (!missing(data)) {
                     if (all(is.element(conds, snames)) & all(is.element(conds, toupper(colnames(data))))) {
