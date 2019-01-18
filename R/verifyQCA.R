@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Adrian Dusa
+# Copyright (c) 2019, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -239,75 +239,91 @@ function(data, outcome = "", conditions = "", explain = "",
     }
 }
 `verify.dir.exp` <-
-function(data, outcome, conditions, dir.exp = "") {
+function(data, outcome, conditions, noflevels, dir.exp = "") {
     if (identical(dir.exp, "")) {
         return(dir.exp)
     }
     else {
-        delc <- vector("list", length = length(conditions))
-        names(delc) <- conditions
-        for (i in seq(length(delc))) {
-            values <- sort(unique(data[, conditions[i]]))
-            if (is.factor(values)) {
-                values <- as.character(values)
+        multivalue <- any(grepl("[{|}]", dir.exp))
+        if (is.character(dir.exp)) {
+            dir.exp <- gsub(dashes(), "-", dir.exp)
+        }
+        oldway <- unlist(strsplit(gsub("[-|;|,|[:space:]]", "", dir.exp), split = ""))
+        if (possibleNumeric(oldway) | length(oldway) == 0) {
+            if (length(dir.exp) == 1) {
+                dir.exp <- splitstr(dir.exp)
             }
-            values <- setdiff(values, c("-", "dc", "?"))
-            if (possibleNumeric(values)) {
-                values <- asNumeric(values)
-                if (any(values %% 1 > 0)) { 
-                    max.value <- 1
-                }
-                else {
-                    max.value <- max(values)
-                }
+            expression <- NULL
+            if (length(dir.exp) != length(conditions)) {
+                cat("\n")
+                stop(simpleError("Number of expectations does not match number of conditions.\n\n"))
+            }
+            del <- strsplit(as.character(dir.exp), split = ";")
+            if (is.null(names(dir.exp))) {
+                names(del) <- conditions
             }
             else {
-                max.value <- values[length(values)]
+                if (length(names(dir.exp)) != length(conditions)) {
+                    cat("\n")
+                    stop(simpleError("All directional expectations should have names, or none at all.\n\n"))
+                }
+                else if (length(setdiff(names(dir.exp), conditions)) > 0) {
+                    cat("\n")
+                    stop(simpleError("Incorect names of the directional expectations.\n\n"))
+                }
+                names(del) <- names(dir.exp)
+                del <- del[conditions]
             }
-            delc[[i]] <- rep(0, as.numeric(max.value) + 1)
-            names(delc[[i]]) <- seq(0, as.numeric(max.value))
-        }
-        if (length(dir.exp) == 1 & is.character(dir.exp)) {
-            dir.exp <- splitstr(dir.exp)
-        }
-        if (length(dir.exp) != length(conditions)) {
-            cat("\n")
-            stop(simpleError("Number of expectations does not match number of conditions.\n\n"))
-        }
-        del <- strsplit(as.character(dir.exp), split=";")
-        if (!is.null(names(dir.exp))) {
-            if (length(names(dir.exp)) != length(conditions)) {
-                cat("\n")
-                stop(simpleError("All directional expectations should have names, or none at all.\n\n"))
+            for (i in seq(length(del))) {
+                values <- del[[i]]
+                if (any(values != "-")) {
+                    values <- asNumeric(setdiff(values, "-"))
+                    if (length(setdiff(values, seq(noflevels[i]) - 1)) > 0) {
+                        cat("\n")
+                        errmessage <- paste("Values specified in the directional expectations do not appear in the data, for condition \"", conditions[i], "\".\n\n", sep="")
+                        stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+                    }
+                    else {
+                        expression <- c(expression, paste(conditions[i], "{", paste(values, collapse = ","), "}", sep = ""))
+                    }
+                }
             }
-            else if (length(setdiff(names(dir.exp), conditions)) > 0) {
-                cat("\n")
-                stop(simpleError("Incorect names of the directional expectations.\n\n"))
-            }
-            names(del) <- names(dir.exp)
-            del <- del[conditions]
+            multivalue <- TRUE
+            dir.exp <- expression
         }
         else {
-            names(del) <- conditions
-        }
-        for (i in seq(length(del))) {
-            values <- del[[i]]
-            if (all(values %in% c("-", "dc"))) {
-                delc[[i]][names(delc[[i]])] <- 0
-            }
-            else {
-                values <- setdiff(values, c("-", "dc"))
-                if (length(setdiff(values, names(delc[[i]])) > 0)) {
-                    cat("\n")
-                    errmessage <- paste("Values specified in the directional expectations do not appear in the data, for condition \"", conditions[i], "\".\n\n", sep="")
-                    stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+            if (length(dir.exp) == 1) {
+                if (!grepl("[+]", dir.exp) &  grepl("[,]", dir.exp)) {
+                    if (multivalue) {
+                        values <- curlyBrackets(dir.exp)
+                        atvalues <- paste("@", seq(length(values)), sep = "")
+                        for (i in seq(length(values))) {
+                            dir.exp <- gsub(values[i], atvalues[i], dir.exp)
+                        }
+                        dir.exp <- gsub(",", "+", dir.exp)
+                        for (i in seq(length(values))) {
+                            dir.exp <- gsub(atvalues[i], values[i], dir.exp)
+                        }
+                    }
+                    else {
+                        dir.exp <- gsub(",", "+", dir.exp)
+                    }
                 }
-                else {
-                    delc[[i]][as.character(values)] <- 1
-                }
             }
         }
-        return(delc)
+        dir.exp <- paste(dir.exp, collapse = "+") 
+        if (!multivalue) {
+            if (any(noflevels > 2)) {
+                cat("\n")
+                stop(simpleError("For multivalue data, directional expectations should be specified using curly brackets.\n\n"))
+            }
+        }
+        dir.exp <- tryCatch(simplify(dir.exp, snames = conditions, noflevels = noflevels), error = function(e) e, warning = function(w) w)
+        if (!is.character(dir.exp) | identical(dir.exp, "")) {
+            stop(simpleError("Directional expectations cancel each other out to an empty set.\n\n"))
+        }
+        dir.exp <- translate(dir.exp, snames = conditions, noflevels = noflevels)
+        return(matrix(as.integer(dir.exp) + 1L, ncol = ncol(dir.exp)))
     }
 }
 `verify.mqca` <-

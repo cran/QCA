@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Adrian Dusa
+# Copyright (c) 2019, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ combinations <- function (n, k, aloe = 0, zero = FALSE, inC = FALSE) {
     k <- as.integer(k)
     zero <- as.integer(zero)
     if (inC) {
-        .Call("combinations", list(n = n, k = k, aloe = aloe, zero = zero), PACKAGE = "QCA")
+        .Call("C_combinations", list(n = n, k = k, aloe = aloe, zero = zero), PACKAGE = "QCA")
     }
     else {
         aloe <- as.integer(aloe)

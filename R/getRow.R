@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Adrian Dusa
+# Copyright (c) 2019, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -34,5 +34,5 @@ function(row.no, noflevels, zerobased = FALSE, ...) {
     }
     if (!zerobased) {row.no <- row.no - 1}
     mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
-    return(.Call("getRow", list(row.no, noflevels, mbase), PACKAGE = "QCA"))
+    return(.Call("C_getRow", list(row.no, noflevels, mbase), PACKAGE = "QCA"))
 }

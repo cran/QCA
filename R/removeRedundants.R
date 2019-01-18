@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Adrian Dusa
+# Copyright (c) 2019, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -26,5 +26,5 @@
 `removeRedundants` <-
 function(implicants, noflevels) {
     mbase <- rev(c(1, cumprod(rev(noflevels))))[-1]
-    .Call("removeRedundants", implicants, noflevels - 1, mbase, package = "QCA")
+    .Call("C_removeRedundants", implicants, noflevels - 1, mbase, PACKAGE = "QCA")
 }

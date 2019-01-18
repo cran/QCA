@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Adrian Dusa
+# Copyright (c) 2019, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -93,7 +93,7 @@ function(expression = "", snames = "", noflevels, data) {
     }
     expression <- unlist(lapply(expression, function(x) {
         if (grepl("[(|)]", x)) {
-            x <- do.call("sop", c(list(expression = x), arglist)) 
+            x <- do.call("simplify", c(list(expression = x), arglist)) 
         }
         return(x)
     }))
@@ -102,9 +102,9 @@ function(expression = "", snames = "", noflevels, data) {
     expression <- gsub("[[:space:]]", "", expression)
     syscalls <- unlist(lapply(lapply(sys.calls(), as.character), "[[", 1))
     beforemessage <- "Condition"
-    aftermessage <- "don't match the set names from \"snames\" argument"
+    aftermessage <- "does not match the set names from \"snames\" argument"
     if (syscalls[1] != "translate") {
-        if (syscalls[which(syscalls == "translate") - 1] == "validateNames") {
+        if (syscalls[which(syscalls == "translate")[1] - 1] == "validateNames") {
             beforemessage <- "Object"
             aftermessage <- "not found"
         }
@@ -125,12 +125,13 @@ function(expression = "", snames = "", noflevels, data) {
                 conds <- snames
             }
             else {
-                for (i in seq(length(conds))) {
-                    if (!is.element(conds[i], snames)) {
-                        cat("\n")
-                        stop(simpleError(sprintf("%s '%s' %s.\n\n", beforemessage, conds[i], aftermessage)))
-                    }
+                conds <- setdiff(toupper(conds), snames)
+                if (length(conds) > 1) {
+                    beforemessage <- paste(beforemessage, "s", sep = "")
+                    aftermessage <- gsub("does", "do", aftermessage)
                 }
+                cat("\n")
+                stop(simpleError(sprintf("%s '%s' %s.\n\n", beforemessage, paste(conds, collapse = ","), aftermessage)))
             }
         }
         if (any(hastilde(expression))) {
@@ -151,7 +152,7 @@ function(expression = "", snames = "", noflevels, data) {
             }
             empty <- FALSE
             for (i in seq(length(conds))) {
-                if (conds[i] %in% remtilde[dupnot]) { 
+                if (is.element(conds[i], remtilde[dupnot])) { 
                     wdup <- which(remtilde == conds[i])
                     inx[[wdup[1]]] <- intersect(inx[[wdup[1]]], inx[[wdup[2]]])
                     if (length(wdup) > 2) {
@@ -170,6 +171,11 @@ function(expression = "", snames = "", noflevels, data) {
             return(ret)
         })
         names(retlist) <- pporig
+        retlist <- retlist[!unlist(lapply(retlist, function(x) any(unlist(lapply(x, length)) == 0)))]
+        if (length(retlist) == 0) {
+            cat("\n")
+            stop(simpleError("The result is an empty set.\n\n"))
+        }
     }
     else {
         pp <- unlist(strsplit(expression, split = "[+]"))
@@ -196,12 +202,13 @@ function(expression = "", snames = "", noflevels, data) {
                     conds <- snames
                 }
                 else {
-                    for (i in seq(length(conds))) {
-                        if (!is.element(conds[i], snames)) {
-                            cat("\n")
-                            stop(simpleError(sprintf("%s '%s' %s.\n\n", beforemessage, conds[i], aftermessage)))
-                        }
+                    conds <- setdiff(toupper(conds), snames)
+                    if (length(conds) > 1) {
+                        beforemessage <- paste(beforemessage, "s", sep = "")
+                        aftermessage <- gsub("does", "do", aftermessage)
                     }
+                    cat("\n")
+                    stop(simpleError(sprintf("%s '%s' %s.\n\n", beforemessage, paste(conds, collapse = ","), aftermessage)))
                 }
             }
             retlist <- lapply(pp, function(x) {
@@ -236,7 +243,7 @@ function(expression = "", snames = "", noflevels, data) {
             conds <- sort(unique(toupper(notilde(pp))))
             if (!missing(data)) {
                 if (all(is.element(conds, snames)) & all(is.element(conds, toupper(colnames(data))))) {
-                    if (any(getNoflevels(data[, conds]) > 2)) {
+                    if (any(getLevels(data[, conds]) > 2)) {
                         cat("\n")
                         stop(simpleError("Expression should be multi-value, since it refers to multi-value data.\n\n"))
                     }
@@ -248,12 +255,13 @@ function(expression = "", snames = "", noflevels, data) {
                         conds <- snames
                     }
                     else {
-                        for (i in seq(length(conds))) {
-                            if (!is.element(conds[i], snames)) {
-                                cat("\n")
-                                stop(simpleError(sprintf("%s '%s' %s.\n\n", beforemessage, conds[i], aftermessage)))
-                            }
+                        conds <- setdiff(toupper(conds), snames)
+                        if (length(conds) > 1) {
+                            beforemessage <- paste(beforemessage, "s", sep = "")
+                            aftermessage <- gsub("does", "do", aftermessage)
                         }
+                        cat("\n")
+                        stop(simpleError(sprintf("%s '%s' %s.\n\n", beforemessage, paste(conds, collapse = ","), aftermessage)))
                     }
                 }
                 retlist <- lapply(pp, function(x) {
@@ -293,7 +301,7 @@ function(expression = "", snames = "", noflevels, data) {
                 else {
                     if (all(nchar(snames) == 1)) {
                         retlist <- lapply(pp, function(x) {
-                            x <- unlist(strsplit(x, split=""))
+                            x <- unlist(strsplit(x, split = ""))
                             if (!all(is.element(tocheck <- toupper(x[!hastilde(x)]), toupper(conds)))) {
                                 for (i in seq(length(tocheck))) {
                                     if (!is.element(tocheck[i], conds)) {
@@ -322,7 +330,7 @@ function(expression = "", snames = "", noflevels, data) {
                             }
                             empty <- FALSE
                             for (i in seq(length(conds))) {
-                                if (conds[i] %in% remtilde[dupnot]) { 
+                                if (is.element(conds[i], remtilde[dupnot])) { 
                                     if (length(unique(unlist(inx[which(remtilde == conds[i])]))) > 1) {
                                         empty <- TRUE
                                     }

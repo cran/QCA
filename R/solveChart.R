@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Adrian Dusa
+# Copyright (c) 2019, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -43,13 +43,13 @@ function(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, ...) {
         row.numbers <- rowDominance(chart)
         chart <- chart[row.numbers, ]
     }
-    if (findmin(chart) == 0) {
+    if (findmin(chart) == 0) { 
         cat("\n")
         stop(simpleError("The PI chart cannot be solved.\n\n"))
     }
     if (all(dim(chart) > 1)) {
         if (is.null(depth)) depth <- 0L
-        output <- .Call("solveChart", t(matrix(as.logical(chart), nrow = nrow(chart))), all.sol, as.integer(depth), PACKAGE = "QCA")
+        output <- .Call("C_solveChart", t(matrix(as.logical(chart), nrow = nrow(chart))), all.sol, as.integer(depth), PACKAGE = "QCA")
         output[output == 0] <- NA
     }
     else {
@@ -58,5 +58,7 @@ function(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, ...) {
             output <- t(output)
         }
     }
-    return(matrix(row.numbers[output], nrow=nrow(output)))
+    output <- matrix(as.integer(row.numbers[output]), nrow = nrow(output))
+    output[is.na(output)] <- 0L
+    return(output)
 }

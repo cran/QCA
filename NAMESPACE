@@ -1,11 +1,12 @@
 import(shiny)
 import(venn)
 import(fastdigest)
-importFrom("utils", "packageDescription", "remove.packages", "capture.output")
+importFrom("utils", "packageDescription", "remove.packages", "capture.output", "data", "loadhistory", "savehistory")
 importFrom("stats", "glm", "predict", "quasibinomial", "binom.test", "cutree", "dist", "hclust", "na.omit", "dbinom", "setNames")
 importFrom("grDevices", "dev.cur", "dev.new", "dev.list")
 importFrom("graphics", "abline", "axis", "box", "mtext", "par", "title", "text")
 importFrom("methods", "is")
+importFrom("fastdigest", "fastdigest")
 
 useDynLib(QCA, .registration = TRUE)
 
@@ -32,8 +33,8 @@ export(.onAttach,
     fuzzyand,
     fuzzyor,
     getInfo,
+    getLevels,
     getRow,
-    getNoflevels,
     intersection,
     makeChart,
     minimize,
@@ -51,8 +52,10 @@ export(.onAttach,
     setRownames,
     setColnames,
     setDimnames,
+    simplify,
     solveChart,
     sop,
+    sortExpressions,
     superSubset,
     translate,
     truthTable,
@@ -68,9 +71,9 @@ export(.onAttach,
     verify.tt,
     Xplot,
     XYplot,
-    
+
     possibleNumeric,
-    
+
     dashes,
     hastilde,
     tilde1st,
@@ -97,14 +100,17 @@ export(.onAttach,
     outsideBrackets,
     curlyBrackets,
     roundBrackets,
-    
+
     getSolution,
     prettyString,
     rowDominance,
     sortMatrix,
     sortVector,
     writePrimeimp,
-    writeSolution
+    writeSolution,
+
+    # Electron-js specific
+    GUIcall
 )
 
 S3method(print, "aE")
@@ -122,4 +128,3 @@ S3method(print, "qca")
 S3method(print, "sS")
 S3method(print, "translate")
 S3method(print, "tt")
-

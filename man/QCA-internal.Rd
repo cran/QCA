@@ -80,8 +80,8 @@
 \alias{suf}
 \alias{splitstr}
 \alias{getInfo}
+\alias{getLevels}
 \alias{getName}
-\alias{getNoflevels}
 \alias{getBigList}
 \alias{splitMainComponents}
 \alias{splitBrackets}
@@ -106,18 +106,22 @@
 \alias{writeSolution}
 \alias{prettyString}
 \alias{rowDominance}
+\alias{sortExpressions}
 \alias{sortVector}
 \alias{sortMatrix}
 \alias{writePrimeimp}
 
 
+\alias{GUIcall}
+
+
 \title{Internal Functions}
 
 \description{
-  The above functions are internal in the QCA package which are not designed to 
-  be called directly by the user. All of them are used by the \code{minimize} function, 
-  except \code{sortMatrix} which is used by \code{allExpressions}. The verification 
-  and error messages have been moved to the internal functions \code{verify.data} 
+  The above functions are internal in the QCA package which are not designed to
+  be called directly by the user. All of them are used by the \code{minimize} function,
+  except \code{sortMatrix} which is used by \code{allExpressions}. The verification
+  and error messages have been moved to the internal functions \code{verify.data}
   and \code{verify.tt}.
 }
 

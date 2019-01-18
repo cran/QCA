@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Adrian Dusa
+# Copyright (c) 2019, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -39,14 +39,18 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     if (cov.cut > 0) {
         cov.cut <- cov.cut - .Machine$double.eps ^ 0.5
     }
+    if (identical(outcome, "")) {
+        cat("\n")
+        stop(simpleError("The outcome was not specified.\n\n"))
+    }
     outcome <- toupper(outcome)
     if (tilde1st(outcome)) {
         neg.out <- TRUE
         outcome <- substring(outcome, 2)
     }
-    if (! toupper(curlyBrackets(outcome, outside=TRUE)) %in% toupper(colnames(data))) {
+    if (!is.element(toupper(curlyBrackets(outcome, outside=TRUE)), toupper(colnames(data)))) {
         cat("\n")
-        stop(simpleError("Inexisting outcome name.\n\n"))
+        stop(simpleError("The outcome name does not exist in the data.\n\n"))
     }
     if (grepl("\\{|\\}", outcome)) {
         outcome.value <- curlyBrackets(outcome)
@@ -102,7 +106,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     if (is.null(depth)) {
         depth <- nofconditions
     }
-    CMatrix <- .Call("superSubset",
+    CMatrix <- .Call("C_superSubset",
                      as.matrix(data[, conditions]),
                      noflevels,
                      as.numeric(fc),
@@ -136,7 +140,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         lexprnec <- nrow(CMatrix[[2]])
         if (lexprnec + lexpressions == 0) {
             cat("\n")
-            stop(simpleError(paste("\nThere are no combinations with incl.cut = ", round(incl.cut, 3), " and cov.cut = ", round(cov.cut, 3), "\n\n", sep="")))
+            stop(simpleError(paste("\nThere are no configurations, using these cutoff values.\n\n", sep="")))
         }
         if (lexprnec > 0) {
             result.matrix2 <- CMatrix[[4]]

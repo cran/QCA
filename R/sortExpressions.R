@@ -23,13 +23,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`findmin` <-
-function(chart) {
-    if (!methods::is(chart, "pic")) {
-        if (!is.matrix(chart) | (!is.logical(chart) & length(setdiff(chart, 0:1)) > 0)) {
-            cat("\n")
-            stop(simpleError("The input should be a logical matrix. See function makeChart()\n\n"))
+`sortExpressions` <- function(mat) {
+    for (i in rev(seq(ncol(mat)))) {
+        mat <- mat[order(mat[, i], decreasing = TRUE), , drop = FALSE]
+        if (length(wx <- which(mat[, i] > 0)) > 0) {
+            rest <- if (max(wx) == nrow(mat)) NULL else seq(max(wx) + 1, nrow(mat))
+            mat <- mat[c(order(mat[wx, i]), rest), , drop = FALSE]
         }
     }
-    return(.Call("C_findmin", t(matrix(as.logical(chart), nrow = nrow(chart))), FALSE, PACKAGE = "QCA"))
+    return(mat[order(apply(mat, 1, function(x) sum(x > 0))), , drop = FALSE])
 }

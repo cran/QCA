@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Adrian Dusa
+# Copyright (c) 2019, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,7 +23,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`sop` <- function(expression, snames = "", use.tilde = FALSE, noflevels) {
+`simplify` <- function(expression, snames = "", noflevels, use.tilde = FALSE) {
     syscalls <- unlist(lapply(sys.calls(), deparse))
     if (any(withdata <- grepl("with\\(", syscalls))) {
         snames <- get(unlist(strsplit(gsub("with\\(", "", syscalls), split = ","))[1], envir = length(syscalls) - which(withdata))
@@ -35,6 +35,25 @@
         verify.multivalue(expression, snames = snames, noflevels = noflevels) 
     }
     sl <- ifelse(identical(snames, ""), FALSE, ifelse(all(nchar(snames) == 1), TRUE, FALSE))
+    if (!grepl("[+]", expression) & grepl("[,]", expression)) {
+        if (multivalue) {
+            values <- curlyBrackets(expression)
+            atvalues <- paste("@", seq(length(values)), sep = "")
+            for (i in seq(length(values))) {
+                expression <- gsub(values[i], atvalues[i], expression)
+            }
+            expression <- gsub(",", "+", expression)
+            for (i in seq(length(values))) {
+                expression <- gsub(atvalues[i], values[i], expression)
+            }
+        }
+        else {
+            oldway <- unlist(strsplit(gsub("[-|;|,|[:space:]]", "", expression), split = ""))
+            if (!possibleNumeric(oldway) & length(oldway) > 0) {
+                expression <- gsub(",", "+", expression)
+            }
+        }
+    }
     getbl <- function(expression) {
         bl <- splitMainComponents(gsub("[[:space:]]", "", expression))
         bl <- splitBrackets(bl)
@@ -55,37 +74,37 @@
         }
         return(NULL)
     }
-    qmc <- function(implicants, noflevels) {
-        minimized <- logical(nrow(implicants))
-        if (nrow(implicants) > 1) {
-            for (i in seq(nrow(implicants) - 1)) {
-                if (!minimized[i]) {
-                    for (j in seq(i + 1, nrow(implicants))) {
-                        if (!minimized[j]) {
-                            subsetrow <- checksubset(implicants[c(i, j), , drop = FALSE])
-                            if (!is.null(subsetrow)) {
-                                minimized[c(i, j)[subsetrow]] <- TRUE
-                            }
-                        }
-                    }
-                }
-            }
-            implicants <- implicants[!minimized, , drop = FALSE]
+    qmc <- function(implicants, nrowexp) {
+        noflevels <- rep(2, ncol(implicants))
+        if (nrowexp == 1) {
+            return(implicants[1, , drop = FALSE])
         }
-        if (nrow(implicants) == 1) {
-            return(implicants)
+        minimized <- rep(TRUE, nrow(implicants))
+        first <- nrow(implicants) > nrowexp
+        if (first) {
+            minimized[seq(nrowexp)] <- FALSE
         }
-        minimized <- TRUE
+        else {
+            minimized <- TRUE
+        }
         while (any(minimized) & nrow(implicants) > 1) {
-            minimized <- logical(nrow(implicants))
+            if (first) {
+                irows <- seq(nrowexp)
+            }
+            else {
+                minimized <- logical(nrow(implicants))
+                irows <- seq(nrow(implicants) - 1)
+            }
             tbc <- matrix(nrow = 0, ncol = 2)
-            for (i in seq(nrow(implicants) - 1)) {
+            for (i in irows) {
                 for (j in seq(i + 1, nrow(implicants))) {
                     if (sum(implicants[i, ] != implicants[j, ]) == 1) {
                         tbc <- rbind(tbc, c(i, j))
                     }
                 }
             }
+            first <- FALSE
+            result <- NULL
             if (nrow(tbc) > 0) {
                 differences <- t(apply(tbc, 1, function(idx) implicants[idx[1], ] != implicants[idx[2], ]))
                 result <- matrix(nrow = 0, ncol = ncol(differences))
@@ -101,7 +120,10 @@
                 }
             }
             if (sum(minimized) > 0) {
-                implicants <- rbind(implicants[!minimized, ], unique(result))
+                implicants <- implicants[!minimized, ]
+                if (!is.null(result)) {
+                    implicants <- rbind(implicants, unique(result))
+                }
             }
         }
         return(implicants)
@@ -123,8 +145,8 @@
             if (!multivalue) {
                 if (any(tx)) {
                     x <- notilde(x)
-                    uptx <- x[tx] %in% toupper(x)
-                    lotx <- x[tx] %in% tolower(x)
+                    uptx <- is.element(x[tx], toupper(x))
+                    lotx <- is.element(x[tx], tolower(x))
                     x[tx[uptx]] <- tolower(x[tx[uptx]])
                     x[tx[lotx]] <- toupper(x[tx[lotx]])
                 }
@@ -137,7 +159,7 @@
                 if (use.tilde) {
                     tx <- hastilde(cx)
                     x <- notilde(cx)
-                    lotx <- x %in% tolower(x)
+                    lotx <- is.element(x, tolower(x))
                     tx[lotx] <- !tx[lotx]
                     x <- toupper(x)
                     x[tx] <- paste("~", x[tx], sep = "")
@@ -152,21 +174,88 @@
     if (identical(bl, "")) {
         return(bl)
     }
-    bl <- translate(bl, snames = snames, noflevels = noflevels)
+    tlist <- list(expression = bl, snames = snames)
+    if (!missing(noflevels)) tlist$noflevels <- noflevels
+    bl <- do.call("translate", tlist)
     expressions <- matrix(nrow = 0, ncol = ncol(bl))
+    colnames(expressions) <- colnames(bl)
+    mint <- rownames(bl) 
     for (i in seq(nrow(bl))) {
         expressions <- rbind(expressions, as.matrix(expand.grid(lapply(bl[i, ], function(x) {
             asNumeric(splitstr(x)) + 1
         }))))
     }
-    if (missing(noflevels)) {
-        noflevels <- apply(expressions, 2, max)
+    `unite` <- function(x) {
+        apply(x, 2, function(x) {
+            if (all(x != 0)) {
+                if (max(x) - min(x) == 1) {
+                    return(0)
+                }
+                else { 
+                    return(x[1]) 
+                }
+            }
+            else {
+                return(max(x))
+            }
+        })
     }
-    expressions <- qmc(expressions, noflevels)
-    expressions <- expressions[order(apply(expressions, 1, function(x) sum(x > 0))), , drop = FALSE]
-    expressions <- writePrimeimp(expressions, mv = multivalue, use.tilde = use.tilde)
+    if (!multivalue) {
+        nrowexp <- nrow(expressions)
+        if (nrowexp > 1) {
+            combs <- combinations(nrowexp, 2)
+            for (i in seq(ncol(combs))) {
+                submat <- expressions[combs[, i], ]
+                ints <- apply(submat, 2, function(x) all(as.logical(x)))
+                if (any(ints)) {
+                    sums <- apply(submat, 1, function(x) sum(as.logical(x)))
+                    notequals <- apply(submat, 2, function(x) x[1] != x[2])
+                    if (max(sums) - min(sums) == 1 & sum(notequals) == 2) {
+                        expressions <- rbind(expressions, apply(submat, 2, function(x) {
+                            if (any(x == 0)) {
+                                return(max(x))
+                            }
+                            else {
+                                return(x[which.min(sums)])
+                            }
+                        }))
+                    }
+                }
+            }
+            expressions <- qmc(expressions, nrowexp)
+        }
+    }
+    if (all(expressions == 0)) {
+        cat("\n")
+        stop(simpleError("The result is an empty set.\n\n"))
+    }
+    if (nrow(expressions) > 1) {
+        minimized <- logical(nrow(expressions))
+        for (i in seq(nrow(expressions) - 1)) {
+            if (!minimized[i]) {
+                for (j in seq(i + 1, nrow(expressions))) {
+                    if (!minimized[j]) {
+                        subsetrow <- checksubset(expressions[c(i, j), , drop = FALSE])
+                        if (!is.null(subsetrow)) {
+                            minimized[c(i, j)[subsetrow]] <- TRUE
+                        }
+                    }
+                }
+            }
+        }
+        expressions <- expressions[!minimized, , drop = FALSE]
+    }
+    expressions <- writePrimeimp(sortExpressions(expressions),
+                                 mv = multivalue, use.tilde = use.tilde)
     if (sl) {
         expressions <- gsub("[*]", "", expressions)
     }
+    mlist <- list(primes = expressions, configs = mint)
+    if (!missing(noflevels)) mlist$noflevels <- noflevels
+    if (!identical(snames, "")) mlist$snames <- snames
     return(paste(expressions, collapse = " + "))
+}
+`sop` <- function(...) {
+    .Deprecated(msg = "Function sop() is deprecated, and has been renamed to simplify()\n")
+    simplify(...)
 }
