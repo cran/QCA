@@ -27,7 +27,7 @@
 function(noflevels, ...) {
     other.args <- list(...)
     RAM <- 2
-    if ("RAM" %in% names(other.args)) {
+    if (is.element("RAM", names(other.args))) {
         if (length(other.args$RAM) == 1) {
             if (is.numeric(other.args$RAM) & other.args$RAM > 0) {
                 RAM <- other.args$RAM
@@ -35,11 +35,11 @@ function(noflevels, ...) {
         }
     }
     arrange <- FALSE
-    if ("arrange" %in% names(other.args)) {
+    if (is.element("arrange", names(other.args))) {
         arrange <- other.args$arrange
     }
     depth <- length(noflevels)
-    if ("depth" %in% names(other.args)) {
+    if (is.element("depth", names(other.args))) {
         if (!is.null(other.args$depth)) {
             if (is.numeric(other.args$depth)) {
                 depth <- other.args$depth

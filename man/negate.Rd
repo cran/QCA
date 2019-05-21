@@ -10,15 +10,15 @@ Function to negate a SOP expression.
 }
 
 \usage{
-negate(expression, snames = "", noflevels, use.tilde = FALSE)
+negate(input, snames = "", noflevels = NULL, use.tilde = FALSE)
 }
 
 \arguments{
-  \item{expression}{A string representing a SOP expression, or a minimization
+  \item{input}{A string representing a SOP expression, or a minimization
         object of class \code{"qca"}.}
   \item{snames}{A string containing the sets' names, separated by commas.}
   \item{noflevels}{Numerical vector containing the number of levels for each set.}
-  \item{use.tilde}{Logical, use tilde for negation with bivalent variables.}
+  \item{use.tilde}{Logical, use a tilde to negate the sets.}
 }
 
 \details{
@@ -39,9 +39,9 @@ In "normal" language, these would be written as:
 Based on these two laws, any Boolean expression written in disjunctive normal form
 can be transformed into its negation.
 
-It is also possible to negate all models and solutions from the result of a
-Boolean minimization from function \bold{\code{\link{minimize}()}}. The resulting object, of
-class \code{"qca"}, is automatically recognised by this function.
+It is also possible to negate all models and solutions from the result of a Boolean
+minimization from function \bold{\code{\link[QCA]{minimize}()}} in package \bold{\code{QCA}}.
+The resulting object, of class \code{"qca"}, is automatically recognised by this function.
 
 In a SOP expression, the products should normally be split by using a star \bold{\code{*}}
 sign, otherwise the sets' names will be considered the individual letters in alphabetical
@@ -49,17 +49,13 @@ order, unless they are specified via \bold{\code{snames}}.
 
 To negate multilevel expressions, the argument \bold{\code{noflevels}} is required.
 
+It is entirely possible to obtain multiple negations of a single expression, since the
+result of the negation is passed to function \bold{\code{\link[QCA]{simplify}()}}.
 }
 
 \value{
-A list with the following two components:
-
-\tabular{rl}{
-  \bold{initial} \tab {The initial expression.}\cr
-  \bold{negated} \tab {The negation of the initial expression.}\cr
-}
-
-If \bold{\code{expression}} is an object of type \code{"qca"}, the result is a list of solutions.
+A character vector when the input is a SOP expresison, or a named list for minimization
+input objects, each component containing all possible negations of the model(s).
 }
 
 \author{
@@ -71,7 +67,7 @@ Ragin, Charles C. 1987. \emph{The Comparative Method: Moving beyond Qualitative
 and Quantitative Strategies}. Berkeley: University of California Press.
 }
 
-\seealso{\code{\link{minimize}}}
+\seealso{\code{\link[QCA]{minimize}}}
 
 \examples{
 
@@ -83,7 +79,6 @@ negate("AB*EF + ~CD*EF")
 
 
 # using an object of class "qca" produced with minimize()
-data(LC)
 cLC <- minimize(LC, outcome = "SURV")
 
 negate(cLC)
@@ -93,7 +88,6 @@ negate(cLC)
 pLC <- minimize(LC, outcome = "SURV", include = "?")
 
 negate(pLC)
-
 }
 
 \keyword{functions}

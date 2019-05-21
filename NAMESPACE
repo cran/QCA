@@ -1,7 +1,8 @@
 import(shiny)
 import(venn)
 import(fastdigest)
-importFrom("utils", "packageDescription", "remove.packages", "capture.output", "data", "loadhistory", "savehistory")
+import(admisc)
+importFrom("utils", "packageDescription", "remove.packages", "capture.output", "data", "loadhistory", "savehistory", "tail")
 importFrom("stats", "glm", "predict", "quasibinomial", "binom.test", "cutree", "dist", "hclust", "na.omit", "dbinom", "setNames")
 importFrom("grDevices", "dev.cur", "dev.new", "dev.list")
 importFrom("graphics", "abline", "axis", "box", "mtext", "par", "title", "text")
@@ -12,13 +13,10 @@ useDynLib(QCA, .registration = TRUE)
 
 export(.onAttach,
     allExpressions,
-    agteb,
-    alteb,
     as.panel,
-    asNumeric,
     calibrate,
     causalChain,
-    combinations,
+    combint,
     compute,
     createMatrix,
     deMorgan,
@@ -43,8 +41,6 @@ export(.onAttach,
     negate,
     pof,
     pofind,
-    prettyTable,
-    recode,
     rebuild,
     removeRedundants,
     retention,
@@ -53,11 +49,9 @@ export(.onAttach,
     setColnames,
     setDimnames,
     simplify,
-    solveChart,
     sop,
-    sortExpressions,
+    solveChart,
     superSubset,
-    translate,
     truthTable,
     uninstall,
     validateNames,
@@ -67,40 +61,13 @@ export(.onAttach,
     verify.inf.test,
     verify.qca,
     verify.mqca,
-    verify.multivalue,
     verify.tt,
     Xplot,
     XYplot,
 
-    possibleNumeric,
-
-    dashes,
-    hastilde,
-    tilde1st,
-    notilde,
-    trimstr,
     nec,
     suf,
-    splitstr,
     getName,
-    getBigList,
-    splitMainComponents,
-    splitBrackets,
-    removeSingleStars,
-    splitPluses,
-    splitStars,
-    splitTildas,
-    solveBrackets,
-    simplifyList,
-    negateValues,
-    removeDuplicates,
-    getNonChars,
-    splitProducts,
-    insideBrackets,
-    outsideBrackets,
-    curlyBrackets,
-    roundBrackets,
-
     getSolution,
     prettyString,
     rowDominance,
@@ -125,6 +92,6 @@ S3method(print, "panel")
 S3method(print, "pic")
 S3method(print, "pof")
 S3method(print, "qca")
+S3method(print, "simplify")
 S3method(print, "sS")
-S3method(print, "translate")
 S3method(print, "tt")

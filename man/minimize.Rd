@@ -13,7 +13,7 @@ Quine-McCluskey, the enhanced Quine-McCluskey and the latest Consistency Cubes
 algorithm that is built for performance.
 
 All algorithms return the same, exact solutions, see
-\href{http://dx.doi.org/10.13140/RG.2.2.36359.19361/4}{Dusa (2017)}
+\href{http://dx.doi.org/10.32614/RJ-2018-080}{Dusa (2018)}
 and \href{http://dx.doi.org/10.1080/0022250X.2014.897949}{Dusa and Thiem (2015)}.
 }
 
@@ -85,9 +85,9 @@ It can be specified as a vector of truth table line numbers, or as a matrix of
 causal combinations.
 
 The argument \bold{\code{dir.exp}} is used to specify directional expectations, as
-described by Ragin (2003). They can be specified using SOP expressions, which opens
-up the possibility to experiment with conjunctural directional expectations. Don't care
-conditions are simply left unspecified.
+described by Ragin (2003). They can be specified using SOP (sum of products)
+expressions, which opens up the possibility to experiment with conjunctural
+directional expectations. Don't care conditions are simply left unspecified.
 
 Activating the \bold{\code{details}} argument has the effect of printing parameters
 of fit for each prime implicant and each overall solution, the essential prime
@@ -100,7 +100,7 @@ a sufficiency relation with the outcome, using a tilde sign \bold{\code{"~"}}. I
 is ignored if the data is multivalent.
 
 By default, the package \pkg{QCA} employes a different search algorithm based on Consistency
-Cubes (Dusa, 2017), analysing all possible combinations of causal conditions and all
+Cubes (Dusa, 2018), analysing all possible combinations of causal conditions and all
 possible combinations of their respective levels. The structure of the input dataset
 (number of causal conditions, number of levels, number of unique rows in the truth
 table) has a direct implication on the search time, as all of those characteristics
@@ -135,7 +135,7 @@ disjunctions of \bold{\code{k}} prime implicants which do cover those configurat
 
 The argument \bold{\code{min.pin}} introduces an additional
 parameter to control when to stop the search for prime implicants. It is based on the
-observation by \href{http://dx.doi.org/10.13140/RG.2.2.36359.19361/4}{Dusa (2017)} that
+observation by \href{https://doi.org/10.32614/RJ-2018-080}{Dusa (2018)} that
 out of the entire set of non redundant prime implicants, only a subset actually contribute
 to solving the chart with disjunctions of \bold{\code{k}} PIs. The search depth can be
 shortened at the level where the next subset of PIs do not contribute to solving the
@@ -207,12 +207,12 @@ Adrian Dusa
 \references{
 Cebotari, V.; Vink, M.P. (2013) \dQuote{A Configurational Analysis of Ethnic
 Protest in Europe}. \emph{International Journal of Comparative Sociology}
-vol.54, no.4, pp.298-324.
+vol.54, no.4, pp.298-324, DOI:
+\href{http://dx.doi.org/10.1177/0020715213508567}{10.1177/0020715213508567}.
 
 Cebotari, V.; Vink, M.P. (2015) \dQuote{Replication Data for: A configurational
 analysis of ethnic protest in Europe}, Harvard Dataverse, V2, DOI:
-\href{http://dx.doi.org/10.7910/DVN/PT2IB9}{10.7910/DVN/PT2IB9},
-
+\href{http://dx.doi.org/10.7910/DVN/PT2IB9}{10.7910/DVN/PT2IB9}.
 
 Cronqvist, L.; Berg-Schlosser, D. (2009) \dQuote{Multi-Value QCA (mvQCA)}, in
 Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods. Qualitative
@@ -223,10 +223,12 @@ Multivalue Output Functions With eQMC} \emph{Journal of Mathematical Sociology}
 vol.39, no.2, pp.92-108,\cr
 DOI: \href{http://dx.doi.org/10.1080/0022250X.2014.897949}{10.1080/0022250X.2014.897949}.
 
-Dusa, A. (2017) \dQuote{Consistency Cubes: A Fast, Efficient Method for Boolean
-Minimization}, unpublished working paper on
-\href{https://www.researchgate.net/profile/Adrian_Dusa}{ResearchGate}, DOI:
-\href{http://dx.doi.org/10.13140/RG.2.2.36359.19361/1}{RG.2.2.36359.19361/1}
+Dusa, A. (2018) \dQuote{Consistency Cubes: A Fast, Efficient Method for Boolean
+Minimization}, R Journal vol.10, issue 2, pp. 357-370, DOI:
+\href{http://dx.doi.org/10.32614/RJ-2018-080}{10.32614/RJ-2018-080}
+
+Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}. 
+Springer International Publishing.
 
 Ragin, C. (2003) \emph{Recent Advances in Fuzzy-Set Methods and Their Application to Policy Questions}.
 WP 2003-9, \href{http://www.compasss.org/wpseries/Ragin2003a.pdf}{COMPASSS}.
@@ -237,7 +239,8 @@ Qualitative Comparative Analysis (QCA) and Related Techniques}, SAGE.
 
 Ragin, C.C.; Strand, S.I. (2008) \dQuote{Using Qualitative Comparative 
 Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).} 
-\emph{Sociological Methods & Research} vol.36, no.4, pp.431-441.
+\emph{Sociological Methods & Research} vol.36, no.4, pp.431-441, DOI:
+\href{http://dx.doi.org/10.1177/0049124107313903}{10.1177/0049124107313903}.
 
 Rihoux, B.; De Meur, G. (2009) \dQuote{Crisp Sets Qualitative Comparative Analysis
 (mvQCA)}, in Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods.
@@ -248,11 +251,9 @@ Qualitative Comparative Analysis (QCA) and Related Techniques}, SAGE.
 \seealso{\code{\link{truthTable}}, \code{\link{factorize}}}
 
 \examples{
-
-    
+      
 # -----
 # Lipset binary crisp data
-data(LC)
 
 # the associated truth table
 ttLC <- truthTable(LC, "SURV", sort.by = "incl, n", show.cases = TRUE)
@@ -290,7 +291,6 @@ pLCn
 
 # -----
 # Lipset multi-value crisp data (Cronqvist & Berg-Schlosser 2009, p.80)
-data(LM)
 
 # truth table 
 ttLM <- truthTable(LM, "SURV", conditions = "DEV, URB, LIT, IND",
@@ -312,9 +312,10 @@ minimize(ttLMn, details = TRUE)
 # parsimonious solution, positive output
 minimize(ttLMn, include = "?", details = TRUE)
 
+
 # -----
 # Lipset fuzzy sets data (Ragin 2009, p.112)
-data(LF)
+
 # truth table using a very low inclusion cutoff
 ttLF <- truthTable(LF, "SURV", incl.cut = 0.8,
         sort.by = "incl", show.cases = TRUE)
@@ -337,7 +338,6 @@ minimize(ttLF, include = "?", details = TRUE,
 
 # -----
 # Cebotari & Vink (2013, 2015)
-data(CVF) 
 
 ttCVF <- truthTable(CVF, outcome = "PROTEST", incl.cut = 0.8,
                     sort.by = "incl, n", show.cases = TRUE)
@@ -367,7 +367,6 @@ for(i in 1:4) {
 # which will automatically be passed to truthTable() as an intermediary
 # step before the minimization
 
-data(RS)
 minimize(RS, outcome = "REC", details = TRUE)
 
 }

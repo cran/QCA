@@ -70,18 +70,18 @@ function(primes = "", configs = "", snames = "", mv = FALSE,
     else if (!prmat & !comat) {
         if (!identical(snames, "")) {
             if (length(snames) == 1 & is.character(snames)) {
-                snames <- splitstr(snames)
+                snames <- admisc::splitstr(snames)
             }
         }
         noflevels <- rep(2, length(snames))
         if (is.element("noflevels", names(other.args))) {
             noflevels <- other.args$noflevels
         }
-        tconfigs <- attr(translate(configs, snames, noflevels), "retlist")
+        tconfigs <- attr(admisc::translate(configs, snames, noflevels, retlist = TRUE), "retlist")
         if (identical(snames, "")) {
             snames <- names(tconfigs[[1]])
         }
-        tprimes <- attr(translate(primes, snames, noflevels), "retlist")
+        tprimes <- attr(admisc::translate(primes, snames, noflevels, retlist = TRUE), "retlist")
         mtrx <- matrix(FALSE, nrow = length(tprimes), ncol = length(tconfigs))
         for (i in seq(nrow(mtrx))) {
             for (j in seq(ncol(mtrx))) {

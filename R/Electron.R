@@ -78,7 +78,7 @@
                     collapse <- "`, `"
                     prefix <- "`"
                 }
-                if (is.logical(x[[i]])) x[[i]] <- QCA::recode(x[[i]], "TRUE = true; FALSE = false")
+                if (is.logical(x[[i]])) x[[i]] <- admisc::recode(x[[i]], "TRUE = true; FALSE = false")
                 result <- paste(result,
                     ifelse (is.null(nms[i]), 
                         sprintf(ifelse(length(x[[i]]) > 1, " [ %s%s%s ]", "%s%s%s"), prefix, paste(x[[i]], collapse = collapse), prefix),
@@ -162,7 +162,7 @@
                         ncols = ncold,
                         rownames = rownames(x),
                         colnames = colnames(x),
-                        numerics = as.vector(unlist(lapply(x, QCA::possibleNumeric))),
+                        numerics = as.vector(unlist(lapply(x, admisc::possibleNumeric))),
                         calibrated = as.vector(unlist(lapply(x, function(x) {
                             all(na.omit(x) >= 0 & na.omit(x) <= 1)
                         }))),
@@ -183,7 +183,7 @@
                     if (x$options$use.letters) {
                         cnds <- LETTERS[seq(length(cnds))]
                     }
-                    x$options$outcome <- list(notilde(x$options$outcome))
+                    x$options$outcome <- list(admisc::notilde(x$options$outcome))
                     if (length(x$options$incl.cut) == 1) {
                         x$options$incl.cut <- list(x$options$incl.cut)
                     }
@@ -194,7 +194,7 @@
                         components <- c(components, "id", "tt")
                     }
                     x$colnames <- colnames(x$initial.data)
-                    x$numerics <- as.vector(unlist(lapply(x$initial.data, QCA::possibleNumeric)))
+                    x$numerics <- as.vector(unlist(lapply(x$initial.data, admisc::possibleNumeric)))
                     return(x[components])
                 })
             }

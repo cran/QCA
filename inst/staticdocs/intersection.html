@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>intersection. QCA 3.4</title>
+<title>intersection. QCA 3.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.4</a>
+      <a class="brand" href="#">QCA 3.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -63,7 +63,7 @@ disjunctions), or even entire minimization objects, and finds their intersection
     </div>
     
     <h2>Usage</h2>
-    <pre><div>intersection(..., snames&nbsp;=&nbsp;"", use.tilde = FALSE, noflevels)</div></pre>
+    <pre><div>intersection(..., snames&nbsp;=&nbsp;"", use.tilde = FALSE, noflevels = NULL)</div></pre>
     
     <h2>Arguments</h2>
     
@@ -116,7 +116,7 @@ expressions use the same notation.</p>
 of the causal conditions (set names) in the original dataset, otherwise it sorts the causal
 conditions in alphabetical order.</p>
   
-      <p>For minimzation objects of class <b><code>"qca"</code></b>, the number of levels,
+      <p>For minimization objects of class <b><code>"qca"</code></b>, the number of levels,
 and the set names are automatically detected.</p>
   
     </div>
@@ -133,7 +133,6 @@ Quantitative Strategies</em>. Berkeley: University of California Press.</p>
     <pre class="examples">
 
 <div class='input'># using minimization objects
-data(LF)
 ttLF  &lt;- truthTable(LF, outcome = &quot;SURV&quot;, incl.cut = 0.8)
 
 pLF  &lt;- minimize(ttLF, include = &quot;?&quot;)
@@ -146,19 +145,18 @@ intersection(pLF, &quot;DEV*STB&quot;)
 </div>
 <div class='output'>E1: (DEV*ind + URB*STB)*DEV*STB
   I1: DEV*ind*STB + DEV*URB*STB
+
 </div>
 
-<div class='input'>
-
-# negating the model
+<div class='input'># negating the model
 intersection(negate(pLF), &quot;DEV*STB&quot;)
 </div>
 <div class='output'>E1: (dev*urb + dev*stb + urb*IND + IND*stb)*DEV*STB
   I1: DEV*IND*STB*urb
+
 </div>
 
-<div class='input'>
-# in Ragin&#39;s (1987) book, the equation E = SG + LW is the result
+<div class='input'># in Ragin&#39;s (1987) book, the equation E = SG + LW is the result
 # of the Boolean minimization for the ethnic political mobilization.
 
 # intersecting the reactive ethnicity perspective (R = lw)
@@ -167,42 +165,41 @@ intersection(&quot;lw&quot;, &quot;SG + LW&quot;, snames = &quot;S, L, W, G&quot
 </div>
 <div class='output'>E1: lw(SG + LW)
   I1: SlwG
+
 </div>
 
-<div class='input'>
-
-# resources for size and wealth (C = SW) with E (page 145)
+<div class='input'># resources for size and wealth (C = SW) with E (page 145)
 intersection(&quot;SW&quot;, &quot;SG + LW&quot;, snames = &quot;S, L, W, G&quot;)
 </div>
 <div class='output'>E1: SW(SG + LW)
   I1: SWG + SLW
-</div>
-<div class='input'>
 
-# and factorized
+</div>
+<div class='input'># and factorized
 factorize(intersection(&quot;SW&quot;, &quot;SG + LW&quot;, snames = &quot;S, L, W, G&quot;))
 </div>
 <div class='output'>M1: SWG + SLW 
   F1: SW(G + L) 
-</div>
-<div class='input'>
 
-# developmental perspective (D = Lg) and E (page 146)
+</div>
+<div class='input'># developmental perspective (D = Lg) and E (page 146)
 intersection(&quot;Lg&quot;, &quot;SG + LW&quot;, snames = &quot;S, L, W, G&quot;)
 </div>
 <div class='output'>E1: Lg(SG + LW)
   I1: LWg
-</div>
-<div class='input'>
 
-# subnations that exhibit ethic political mobilization (E) but were
+</div>
+<div class='input'># subnations that exhibit ethic political mobilization (E) but were
 # not hypothesized by any of the three theories (page 147)
 # ~H = ~(lw + SW + Lg)
 
 intersection(negate(&quot;lw + SW + Lg&quot;), &quot;SG + LW&quot;, snames = &quot;S, L, W, G&quot;)
 </div>
-<div class='output'>E1: (GLs + GLw + GsW + lsW)(SG + LW)
+<div class='output'>E1: (GLs + GLw + lsW)(SG + LW)
   I1: sLWG + SLwG
+
+E2: (GLw + GsW + lsW)(SG + LW)
+  I2: sLWG + SLwG
 </div>
 </pre>
   </div>

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>negate. QCA 3.4</title>
+<title>negate. QCA 3.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.4</a>
+      <a class="brand" href="#">QCA 3.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -62,7 +62,7 @@ Adrian Dusa
     </div>
     
     <h2>Usage</h2>
-<pre><div>negate(expression, snames = "", noflevels, use.tilde = FALSE)</div></pre>
+<pre><div>negate(expression, snames = "", noflevels = NULL, use.tilde = FALSE)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -121,26 +121,18 @@ letters in alphabetical order, unless they are specified via <b><code>snames</co
   
       <p>To negate multilevel expressions, the argument <b><code>noflevels</code></b> is required.</p>
   
-      <p></p>
+      <p>It is entirely possible to obtain multiple negations of a single expression, since the
+          result of the negation is passed to function <b><code><a href='SOPexpression.html'>simplify()</a></code></b>.</p>
   
+      <p></p>
     </div>
 
     <div class="Value">
       <h2>Value</h2>
 
       <p><dl>
-A list with the following two components:</p>
-  
-      <p><table><tr><td>
-  <b>initial</b> </td>
-</tr><tr><td> The initial expression.</td>
-</tr><tr><td>
-  <b>negated</b> </td>
-</tr><tr><td> The negation of the initial expression.</td>
-</tr></table></p>
-  
-      <p>If <b><code>expression</code></b> is an object of type <code>&quot;qca&quot;</code>, the
-result is a list of solutions.
+          A character vector when the input is a SOP expresison, or a named list for minimization
+          input objects, each component containing all possible negations of the model(s).
 </dl></p>
   
     </div>
@@ -160,8 +152,7 @@ and Quantitative Strategies</em>. Berkeley: University of California Press.</p>
 negate(&quot;AC + B~C&quot;, snames = &quot;A, B, C&quot;)
 </div>
 <div class='output'>
-S1: AC + B~C
-  N1: ~A~B + ~AC + ~B~C 
+N1: ~AC + ~B~C
 </div>
 
 <div class='input'>
@@ -169,20 +160,18 @@ S1: AC + B~C
 negate(&quot;AB*EF + ~CD*EF&quot;)
 </div>
 <div class='output'>
-S1: AB*EF + ~CD*EF
-  N1: ~EF + ~AB*CD 
+N1: ~EF + ~AB*CD 
 
 </div>
 <div class='input'>
 
 # using an object of class &quot;qca&quot; produced with minimize()
-data(LC)
 cLC &lt;- minimize(LC, outcome = &quot;SURV&quot;, include = &quot;?&quot;)
 
 negate(cLC)
 </div>
 <div class='output'>
-S1: DEV*urb*LIT*STB + DEV*LIT*IND*STB
+M1: DEV*urb*LIT*STB + DEV*LIT*IND*STB
   N1: dev + lit + stb + URB*ind
 
 </div>
@@ -194,7 +183,7 @@ pLC &lt;- minimize(LC, outcome = &quot;SURV&quot;, include = &quot;?&quot;)
 negate(pLC)
 </div>
 <div class='output'>
-S1: DEV*STB
+M1: DEV*STB
   N1: dev + stb
 
 </div></pre>

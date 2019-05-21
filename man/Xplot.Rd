@@ -60,8 +60,6 @@ Adrian Dusa
 \examples{
 
 # Lipset's raw data
-data(LR)
-
 # plot the DEV (level of developent) causal condition
 Xplot(LR$DEV)
 

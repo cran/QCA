@@ -63,10 +63,10 @@
             if (grepl("Error", testit)) {
                 x <- as.vector(deparse(funargs["x"]))
             }
-            else if (hastilde(testit)) {
+            else if (admisc::hastilde(testit)) {
                 negated[1] <- TRUE
-                if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", notilde(testit))), n = 1)) {
-                    x <- 1 - eval.parent(parse(text = sprintf("get(\"%s\")", notilde(testit))), n = 1)
+                if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", admisc::notilde(testit))), n = 1)) {
+                    x <- 1 - eval.parent(parse(text = sprintf("get(\"%s\")", admisc::notilde(testit))), n = 1)
                 }
                 else {
                     x <- testit
@@ -99,10 +99,10 @@
                 if (grepl("Error", testit)) {
                     y <- deparse(funargs["y"])
                 }
-                else if (hastilde(testit)) {
+                else if (admisc::hastilde(testit)) {
                     negated[2] <- TRUE
-                    if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", notilde(testit))), n = 1)) {
-                        y <- 1 - eval.parent(parse(text = sprintf("get(\"%s\")", notilde(testit))), n = 1)
+                    if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", admisc::notilde(testit))), n = 1)) {
+                        y <- 1 - eval.parent(parse(text = sprintf("get(\"%s\")", admisc::notilde(testit))), n = 1)
                     }
                     else {
                         y <- testit
@@ -122,7 +122,7 @@
     }
     if (is.character(x)) {
         if (length(x) == 1) {
-            x <- splitstr(x)
+            x <- admisc::splitstr(x)
         }
         if (length(x) == 1) {
             x <- unlist(strsplit(x, split = "=>"))
@@ -130,13 +130,13 @@
                 x <- unlist(strsplit(x, split = "<="))
                 if (length(x) > 1) {
                     relation <- "necessity"
-                    y <- trimstr(x[2])
-                    x <- trimstr(x[1])
+                    y <- admisc::trimstr(x[2])
+                    x <- admisc::trimstr(x[1])
                 }
             }
             else {
-                y <- trimstr(x[2])
-                x <- trimstr(x[1])
+                y <- admisc::trimstr(x[2])
+                x <- admisc::trimstr(x[1])
             }
             if (missing(y)) {
                 cat("\n")
@@ -192,32 +192,32 @@
     else if (!missing(y)) {
         if (length(x) > 1 & is.numeric(x)) { 
             oneminus <- identical(unname(substring(gsub("[[:space:]]", "", funargs[1]), 1, 2)), "1-")
-            if (any((hastilde(funargs[1])    & !tilde1st(funargs[1])) | 
+            if (any((admisc::hastilde(funargs[1])    & !admisc::tilde1st(funargs[1])) | 
                     (grepl("1-", funargs[1]) & !oneminus)
                    )) {
                 cat("\n")
                 stop(simpleError(paste("Incorrect expression in \"", funargs[1], "\".\n\n", sep = "")))
             }
-            negated[1] <- oneminus | tilde1st(funargs[1])
+            negated[1] <- oneminus | admisc::tilde1st(funargs[1])
             xname <- "X"
             tc <- capture.output(tryCatch(getName(funargs[1]), error = function(e) e, warning = function(w) w))
             if (!grepl("simpleError", tc)) {
-                xname <- notilde(getName(funargs[1]))
+                xname <- admisc::notilde(getName(funargs[1]))
             }
         }
         if (length(y) > 1 & is.numeric(y)) { 
             oneminus <- identical(unname(substring(gsub("[[:space:]]", "", funargs[2]), 1, 2)), "1-")
-            if (any((hastilde(funargs[2])    & !tilde1st(funargs[2])) | 
+            if (any((admisc::hastilde(funargs[2])    & !admisc::tilde1st(funargs[2])) | 
                     (grepl("1-", funargs[2]) & !oneminus)
                    )) {
                 cat("\n")
                 stop(simpleError(paste("Incorrect expression in \"", funargs[2], "\".\n\n", sep = "")))
             }
-            negated[2] <- oneminus | tilde1st(funargs[2])
+            negated[2] <- oneminus | admisc::tilde1st(funargs[2])
             yname <- "Y"
             tc <- capture.output(tryCatch(getName(funargs[2]), error = function(e) e, warning = function(w) w))
             if (!grepl("simpleError", tc)) {
-                yname <- notilde(getName(funargs[2]))
+                yname <- admisc::notilde(getName(funargs[2]))
             }
         }
         if (length(y) == 1 & is.character(y)) {

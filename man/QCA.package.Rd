@@ -21,7 +21,7 @@ understood by quantitative researchers).
 
 The Quine-McCluskey minimization algorithms implemented in this package are
 mathematically exact, as described by Dusa (2007b), Dusa (2010), Dusa and Thiem (2015)
-and Dusa (2017). They all return the same, relevant set of prime implicants for \dfn{csQCA}
+and Dusa (2018). They all return the same, relevant set of prime implicants for \dfn{csQCA}
 (binary crisp sets QCA), \dfn{mvQCA} (multi-value QCA) and \dfn{fsQCA} (fuzzy-sets QCA).
 
 Between versions 1.0-0 and up to version 1.1-3, the package welcomed a second co-author
@@ -48,15 +48,16 @@ gained a web-based command console to offer a complete experience of available f
 
 Version 3.0 brings major improvements and additions, most notably the
 implementation of a new minimization algorithm called CCubes (Consistency Cubes), that is
-hundreds of times faster than the previous eQMC. 
+hundreds of times faster than the previous eQMC. Starting with version 3.5, it is possible to
+specify conjunctural directional expectations in the minimization function.
 }
 
 \details{
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 3.4\cr
-    Date:    \tab 2019-01-18\cr
+    Version: \tab 3.5\cr
+    Date:    \tab 2019-05-21\cr
     License: \tab GPL (>= 2)\cr
     }
 }
@@ -102,10 +103,9 @@ Multivalue Output Functions With eQMC} \emph{Journal of Mathematical Sociology}
 vol.39, no.2, pp.92-108,\cr
 DOI: \href{http://dx.doi.org/10.1080/0022250X.2014.897949}{10.1080/0022250X.2014.897949}
 
-Dusa, A. (2017) \dQuote{Consistency Cubes: A Fast, Efficient Method for Boolean
-Minimization}, unpublished working paper on
-\href{https://www.researchgate.net/profile/Adrian_Dusa}{ResearchGate}, DOI:
-\href{http://dx.doi.org/10.13140/RG.2.2.36359.19361/4}{RG.2.2.36359.19361/1}
+Dusa, A. (2018) \dQuote{Consistency Cubes: A Fast, Efficient Method for Boolean
+Minimization}, R Journal, DOI:
+\href{http://dx.doi.org/10.32614/RJ-2018-080}{10.32614/RJ-2018-080}
 
 Ragin, C.C. (1987) \emph{The Comparative Method: Moving beyond Qualitative and 
 Quantitative Strategies}. Berkeley: University of California Press.

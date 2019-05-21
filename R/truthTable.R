@@ -35,7 +35,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     enter <- ifelse (is.element("enter", names(other.args)), other.args$enter, TRUE)
     ic0 <- 1
     if (is.character(incl.cut) & length(incl.cut) == 1) {
-        incl.cut <- splitstr(incl.cut)
+        incl.cut <- admisc::splitstr(incl.cut)
     }
     ic1 <- incl.cut[1]
     if (length(incl.cut) > 1) {
@@ -63,41 +63,37 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     }
     outcome.copy <- outcome
     initial.data <- as.data.frame(data) 
-    if (tilde1st(outcome)) {
-        neg.out <- TRUE
-        outcome <- substring(outcome, 2)
-    }
     if (!identical(outcome, "")) {
-        if (!is.element(toupper(curlyBrackets(outcome, outside = TRUE)), colnames(data))) {
+        if (!is.element(toupper(admisc::curlyBrackets(admisc::notilde(outcome), outside = TRUE)), colnames(data))) {
             cat("\n")
             stop(simpleError(paste0("Inexisting outcome name.", ifelse(enter, "\n\n", ""))))
         }
     }
     if (grepl("[{|}]", outcome)) {
-        outcome.value <- curlyBrackets(outcome)
-        outcome <- curlyBrackets(outcome, outside = TRUE)
-        data[, toupper(outcome)] <- is.element(data[, toupper(outcome)], splitstr(outcome.value)) * 1
+        outcome.value <- admisc::curlyBrackets(outcome)
+        outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
+        data[, toupper(admisc::notilde(outcome))] <- is.element(data[, toupper(admisc::notilde(outcome))], admisc::splitstr(outcome.value)) * 1
     }
     if (identical(conditions, "")) {
-        conditions <- setdiff(colnames(data), outcome)
+        conditions <- toupper(setdiff(colnames(data), admisc::notilde(outcome)))
     }
     else {
         if (is.character(conditions) & length(conditions) == 1) {
-            conditions <- splitstr(conditions)
+            conditions <- admisc::splitstr(conditions)
         }
     }
     if (is.character(sort.by) & length(sort.by) == 1 & !identical(sort.by, "")) {
-        sort.by <- splitstr(sort.by)
+        sort.by <- admisc::splitstr(sort.by)
     }
     decreasing <- TRUE 
     if (is.element("decreasing", names(other.args))) {
         decreasing <- other.args$decreasing
     }
     if (is.character(decreasing) & length(decreasing) == 1) {
-        decreasing <- splitstr(decreasing)
+        decreasing <- admisc::splitstr(decreasing)
     }
     if (!identical(inf.test, "")) {
-        inf.test <- splitstr(inf.test)
+        inf.test <- admisc::splitstr(inf.test)
     }
     if (is.matrix(data)) {
         if (is.null(colnames(data))) {
@@ -109,17 +105,19 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         }
         data <- as.data.frame(data)
         for (i in seq(ncol(data))) {
-            if (possibleNumeric(data[, i])) {
-                data[, i] <- asNumeric(data[, i])
+            if (admisc::possibleNumeric(data[, i])) {
+                data[, i] <- admisc::asNumeric(data[, i])
             }
         }
         initial.data <- data
     }
-    verify.tt(data, outcome, conditions, complete, show.cases, ic1, ic0, inf.test)
-    data <- data[, c(conditions, outcome)]
+    verify.tt(data, admisc::notilde(outcome), conditions, complete, show.cases, ic1, ic0, inf.test)
     colnames(data) <- toupper(colnames(data))
-    conditions <- toupper(conditions)
-    outcome <- toupper(outcome)
+    data <- data[, c(conditions, admisc::notilde(outcome))]
+    if (admisc::tilde1st(outcome)) {
+        data[, admisc::notilde(outcome)] <- 1 - data[, admisc::notilde(outcome)]
+    }
+    outcome <- admisc::notilde(outcome)
     if (neg.out) {
         data[, outcome] <- 1 - data[, outcome]
     }
@@ -152,14 +150,14 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     ipc <- ipc[1:3, , drop = FALSE]
     rownames(minmat) <- rownames(data)
     rownames(ipc) <- c("n", "incl", "PRI")
-    exclude <- ipc[1, ] < n.cut | ipc[3, ] < pri.cut
+    exclude <- ipc[1, ] < n.cut 
     if (sum(!exclude) == 0) {
         cat("\n")
         stop(simpleError(paste0("There are no configurations, using these cutoff values.", ifelse(enter, "\n\n", ""))))
     }
     tt$OUT <- "?"
-    tt$OUT[!exclude] <- as.numeric(ipc[2, !exclude] >= (ic1 - .Machine$double.eps ^ 0.5))
-    tt$OUT[ipc[2, !exclude] <= (ic1 - .Machine$double.eps ^ 0.5) & ipc[2, !exclude] >= (ic0 - .Machine$double.eps ^ 0.5)] <- "C"
+    tt$OUT[!exclude] <- 1 * (admisc::agteb(ipc[2, !exclude], ic1) & admisc::agteb(ipc[3, !exclude], pri.cut))
+    tt$OUT[ipc[2, !exclude] < ic1 & admisc::agteb(ipc[2, !exclude], ic0)] <- "C"
     tt <- cbind(tt, t(ipc))
     cases <- sapply(rownstt, function(x) {
         paste(rownames(data)[line.data == x], collapse = ",")
@@ -172,8 +170,8 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     cases <- cases[!exclude]
     DCC <- DCC[!exclude]
     excluded <- tt[exclude, , drop = FALSE]
-    excluded$OUT <- as.numeric(ipc[2, exclude] >= (ic1 - .Machine$double.eps ^ 0.5))
-    excluded$OUT[ipc[2, exclude] < ic1 & ipc[2, exclude] >= (ic0 - .Machine$double.eps ^ 0.5)]  <- "C"
+    excluded$OUT <- 1 * (admisc::agteb(ipc[2, exclude], ic1) & admisc::agteb(ipc[3, exclude], pri.cut))
+    excluded$OUT[ipc[2, exclude] < ic1 & admisc::agteb(ipc[2, exclude], ic0)]  <- "C"
     if (length(conditions) < 8) {
         ttc <- as.data.frame(matrix(nrow = prod(noflevels), ncol = ncol(tt)))
         colnames(ttc) <- colnames(tt)
@@ -269,7 +267,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         else {
             tt$cases <- cases
         }
-    numerics <- unlist(lapply(initial.data, possibleNumeric))
+    numerics <- unlist(lapply(initial.data, admisc::possibleNumeric))
     colnames(initial.data)[!numerics] <- initialcols[!numerics]
     x <- list(tt = tt, indexes = rownstt, noflevels = as.vector(noflevels),
               initial.data = initial.data, recoded.data = data, cases = cases, DCC = DCC, minmat = minmat,

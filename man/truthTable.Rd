@@ -26,7 +26,7 @@ truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut
   \item{n.cut}{The minimum number of cases under which a truth table row is 
         declared as a remainder.}
   \item{pri.cut}{The minimal score for the \bold{\code{PRI}} - proportional reduction in
-        inconsistency, under which a truth table row is declared as a remainder.}
+        inconsistency, under which a truth table row is declared as negative.}
   \item{complete}{Logical, print complete truth table.}
   \item{use.letters}{Logical, use letters instead of causal conditions' names.}
   \item{show.cases}{Logical, print case names.}
@@ -59,8 +59,9 @@ zero).
 
 The outcome can be negated using a tilde operator \bold{\code{~X}}. The logical
 argument \bold{\code{neg.out}} is now deprecated, but still backwards compatible.
-Replaced by the tilde in front of the outcome name, it controls whether
-\bold{\code{outcome}} is to be explained or its negation.
+Replaced by the tilde in front of the outcome name, it controls whether \bold{\code{outcome}}
+is to be explained or its negation. Note that using both \bold{\code{neg.out = TRUE}} and a
+tilde \bold{\code{~}} in the outcome name cancel each other out.
 
 If the outcome column is multi-value, the argument \bold{\code{outcome}} should use
 the standard curly-bracket notation \bold{\code{X{value}}}. Multiple values are
@@ -68,10 +69,6 @@ allowed, separated by a comma (for example \bold{\code{X{1,2}}}). Negation of th
 outcome can also be performed using the tilde \bold{\code{~}} operator, for example
 \bold{\code{~X{1,2}}}, which is interpreted as: "all values in X except 1 and 2"
 and it becomes the new outcome to be explained.
-
-Using both \bold{\code{neg.out = TRUE}} and a tilde \bold{\code{~}} in the outcome
-name don't cancel each other out, either one (or even both) signaling if the
-\bold{\code{outcome}} should be negated.
 
 The argument \bold{\code{conditions}} specifies the causal conditions' names among the other
 columns in the data. When this argument is not specified, all other columns except for
@@ -82,7 +79,7 @@ A good practice advice is to specify both \bold{\code{outcome}} and
 to negate outcomes using lower case letters, a situation where it really does
 matter how the outcome and/or conditions are specified.
 
-The argument \bold{\code{incl.cut}} replaces the (deprecated, but still backwards
+The argument \bold{\code{incl.cut}} replaces both (deprecated, but still backwards
 compatible) former arguments \bold{\code{incl.cut1}} and \bold{\code{incl.cut0}}.
 Most of the analyses use the inclusion cutoff for the presence of the output
 (code \bold{\code{"1"}}). When users need both inclusion cutoffs (see below),
@@ -102,18 +99,20 @@ If not specifically declared, the argument \bold{\code{ic0}} is automatically se
 equal to \bold{\code{ic1}}, but otherwise \bold{\code{ic0}} should always be lower
 than \bold{\code{ic1}}.
 
-Using these two cutoffs, the observed combinations are coded with:
+Using these two cutoffs, as well as \bold{\code{pri.cut}} the observed combinations are
+coded with:
 
 \tabular{rl}{
-\bold{\code{"1"}} \tab if they have an inclusion score above \bold{\code{ic1}}\cr \cr
+\bold{\code{"1"}} \tab if they have an inclusion score of at least \bold{\code{ic1}}\cr
+                  \tab and a PRI score of at least \bold{\code{pri.cut}}\cr \cr
 \bold{\code{"C"}} \tab if they have an inclusion score below \bold{\code{ic1}} and
-                       above \bold{\code{ic0}} (contradiction)\cr \cr
-\bold{\code{"0"}} \tab if they have an inclusion score below \bold{\code{ic0}}\cr
+                       at least \bold{\code{ic0}} (contradiction)\cr \cr
+\bold{\code{"0"}} \tab if they have an inclusion score below \bold{\code{ic0}} or \cr
+                  \tab a PRI score below \bold{\code{pri.cut}}
 }
 
 The argument \bold{\code{n.cut}} specifies the frequency threshold under which a truth
-table row is coded as a remainder, irrespective of its inclusion score. The sample
-happens with the \bold{\code{pri.cut}}, that establishes a minimal cutoff for the PRI.
+table row is coded as a remainder, irrespective of its inclusion score.
 
 When argument \bold{\code{show.cases}} is set to \bold{\code{TRUE}}, the case names will be
 printed at their corresponding row in the truth table. The resulting object always contains
@@ -196,6 +195,9 @@ Cronqvist, L.; Berg-Schlosser, D. (2009) \dQuote{Multi-Value QCA (mvQCA)}, in
 Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods. Qualitative
 Comparative Analysis (QCA) and Related Techniques}, SAGE.
 
+Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}. 
+Springer International Publishing.
+
 Lipset, S.M. (1959) \dQuote{Some Social Requisites of Democracy: Economic Development
 and Political Legitimacy}, \emph{American Political Science Review} vol.53, pp.69-105.
 
@@ -212,9 +214,6 @@ Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).}
 Schneider, C.Q.; Wagemann, C. (2012) \emph{Set-Theoretic Methods 
 for the Social Sciences: A Guide to Qualitative Comparative Analysis (QCA)}. 
 Cambridge: Cambridge University Press.
-
-Thiem, A.; Dusa, A. (2013) \emph{Qualitative Comparative Analysis with R: 
-A User's Guide}. New York: Springer.
 }
 
 \seealso{\code{\link{minimize}}}
@@ -222,7 +221,6 @@ A User's Guide}. New York: Springer.
 \examples{
 # -----
 # Lipset binary crisp data
-data(LC)
 ttLC <- truthTable(LC, "SURV")
 
 # inspect the truth table
@@ -247,7 +245,6 @@ truthTable(LC, "SURV", complete = TRUE, sort.by = "incl-, n+")
 
 # -----
 # Lipset multi-value crisp data (Cronqvist & Berg-Schlosser 2009, p.80)
-data(LM)
 truthTable(LM, "SURV", sort.by = "incl")
 
 # using a frequency cutoff equal to 2 cases
@@ -260,7 +257,6 @@ ttLM$excluded
 
 # -----
 # Cebotari & Vink fuzzy data
-data(CVF)
 ttCVF <- truthTable(CVF, "PROTEST", incl.cut = 0.8, sort.by = "incl")
 
 # view the Venn diagram for this truth table
@@ -279,8 +275,6 @@ truthTable(CVF, "PROTEST", incl.cut = c(0.8, 0.75), sort.by = "incl")
 
 # -----
 # Ragin and Strand data with temporal QCA
-data(RS)
-
 # truth table containing the "-" placeholder as a "don't care"
 truthTable(RS, "REC")
 

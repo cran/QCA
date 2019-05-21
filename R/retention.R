@@ -33,7 +33,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
         conditions <- names(data)[-which(names(data) == outcome)]
     }
     else {
-        conditions <- splitstr(conditions)
+        conditions <- admisc::splitstr(conditions)
     }
     data <- data[, c(conditions, outcome)]
     udata <- unique(data[, conditions])
@@ -57,7 +57,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     cneg  <- cneg[total >= n.cut]
     total <- total[total >= n.cut]
     calculatePairs <- function(x, n.pert, type = "deletion") {
-        pairsxl <- combinations(nrow(udata), min(x, nrow(udata)))
+        pairsxl <- admisc::combnk(nrow(udata), min(x, nrow(udata)))
         nofsetsxl <- 0
         for (j in seq(ncol(pairsxl))) {
             cposneg <- NULL

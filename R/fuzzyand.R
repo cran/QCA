@@ -38,9 +38,9 @@
     tildenegated <- badnames <- cols <- logical(length(funargs))
     for (i in seq(length(funargs))) {
         badnames[i] <- grepl("\\(|:", funargs[i])
-        cols[i] <- getName(notilde(funargs[i]))
-        tildenegated[i] <- tilde1st(funargs[i])
-        funargs[i] <- notilde(funargs[i])
+        cols[i] <- getName(admisc::notilde(funargs[i]))
+        tildenegated[i] <- admisc::tilde1st(funargs[i])
+        funargs[i] <- admisc::notilde(funargs[i])
     }
     if (sum(badnames) > 0) {
         if (sum(badnames) > length(LETTERS) | any(is.element(cols, LETTERS))) {
@@ -52,17 +52,9 @@
     }
     for (i in seq(length(funargs))) {
         tc <- tryCatch(eval.parent(parse(text = funargs[i])), error = function(e) e, warning = function(w) w)
-        tc <- capture.output(dim(tc))[1]
-        if (identical(substring(gsub("[[:space:]]", "", tc), 1, 9), "function(")) {
-            tc <- simpleError("simpleError")
-        }
-        if (grepl("simpleError", tc)) {
+        if (is.function(tc) | inherits(tc, "error")) {
             tc <- tryCatch(eval.parent(parse(text = toupper(funargs[i]))), error = function(e) e, warning = function(w) w)
-            tc <- capture.output(dim(tc))[1]
-            if (identical(substring(gsub("[[:space:]]", "", tc), 1, 9), "function(")) {
-                tc <- simpleError("simpleError")
-            }
-            if (grepl("simpleError", tc)) {
+            if (is.function(tc) | inherits(tc, "error")) {
                 cat("\n")
                 stop(simpleError(sprintf("Object '%s' not found.\n\n", funargs[i])))
             }

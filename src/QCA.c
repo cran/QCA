@@ -407,6 +407,7 @@ static R_INLINE SEXP simplifyChart(SEXP pichart, int *survrows, int *survcols, i
     }
     int c = 0;
     while (c < picols && *keep_searching) {
+        sortcol[c] = c;
         colsums[c] = 0;
         for (int r = 0; r < pirows; r++) {
             colsums[c] += p_pichart[c * pirows + r];
@@ -416,7 +417,6 @@ static R_INLINE SEXP simplifyChart(SEXP pichart, int *survrows, int *survcols, i
         if (!p_cols[c]) {
             --(*survcols);
         }
-        sortcol[c] = c;
         if (colsums[c] == pirows) {
             *keep_searching = FALSE;
             *survcols = 0; 
@@ -439,7 +439,7 @@ static R_INLINE SEXP simplifyChart(SEXP pichart, int *survrows, int *survcols, i
             if (p_cols[sortcol[c1]]) {
                 for (int c2 = c1 + 1; c2 < picols; c2++) {
                     if (p_cols[sortcol[c2]]) {
-                        if (colsums[sortcol[c1]] > colsums[sortcol[c2]]) {
+                        if (colsums[sortcol[c1]] >= colsums[sortcol[c2]]) {
                             Rboolean itcovers = TRUE; 
                             int r = 0;
                             while (r < pirows && itcovers) {
@@ -559,7 +559,7 @@ static R_INLINE SEXP transpose(SEXP matrix) {
     UNPROTECT(1);
     return(out);
 }
-static R_INLINE Rboolean allcovered(int p_basemat[], int pirows, int foundPI) {
+static R_INLINE Rboolean allCovered(int p_basemat[], int pirows, int foundPI) {
     Rboolean allrows = TRUE;
     int r = 0;
     while (r < pirows && allrows) {
@@ -598,7 +598,7 @@ static R_INLINE SEXP resize(SEXP obj, int len) {
     UNPROTECT(1);
     return(obj);
 }
-static R_INLINE Rboolean all_different(int mat[], int rows, int endrow, int col, int c) {
+static R_INLINE Rboolean allDifferent(int mat[], int rows, int endrow, int col, int c) {
     Rboolean same = FALSE;
     int r = 0;
     while (r < endrow && !same) {
@@ -628,7 +628,7 @@ static R_INLINE int getmin(SEXP pichart, int foundPI, int sol[]) {
     int survcpos[foundPI]; 
     int totcols  = foundPI;
     Rboolean keep_searching = TRUE;
-    if (allcovered(p_basemat, pirows, foundPI)) { 
+    if (allCovered(p_basemat, pirows, foundPI)) { 
         int survrows = pirows;
         int survcols = foundPI;
         Rboolean identical = FALSE;
@@ -662,7 +662,7 @@ static R_INLINE int getmin(SEXP pichart, int foundPI, int sol[]) {
                 p_estimat[c * survrows + 0] = c; 
             }
             int sums[survcols];
-            int tocheck = survcols;
+            int tocheck = survcols; 
             newminrows = 1;
             while (newminrows < nofrows && keep_searching) {
                 int newcheck = 0;
@@ -672,7 +672,7 @@ static R_INLINE int getmin(SEXP pichart, int foundPI, int sol[]) {
                     int c = 0;
                     while (c < survcols && keep_searching) {
                         sums[c] = 0;
-                        if (all_different(p_estimat, survrows, newminrows, tc, c)) {
+                        if (allDifferent(p_estimat, survrows, newminrows, tc, c)) {
                             for (int r = 0; r < survrows; r++) {
                                 sums[c] += 1 * (p_coverage[tc * survrows + r] || p_basemat[c * survrows + r]);
                             }
@@ -695,11 +695,11 @@ static R_INLINE int getmin(SEXP pichart, int foundPI, int sol[]) {
                                 }
                                 newcheck++;
                                 if (newcheck == estimcheck) {
-                                    estimcheck *= 2;
-                                    SET_VECTOR_ELT(usage, 3, temp = resize(temp, survrows * estimcheck));
-                                    p_temp = INTEGER(temp);
-                                    SET_VECTOR_ELT(usage, 3, tempcov = resize(tempcov, survrows * estimcheck));
-                                    p_tempcov = LOGICAL(tempcov);
+                                    estimcheck *= 2; 
+                                        SET_VECTOR_ELT(usage, 3, temp = resize(temp, survrows * estimcheck));
+                                        p_temp = INTEGER(temp);
+                                        SET_VECTOR_ELT(usage, 3, tempcov = resize(tempcov, survrows * estimcheck));
+                                        p_tempcov = LOGICAL(tempcov);
                                 }
                             }    
                         }
@@ -726,7 +726,8 @@ static R_INLINE int getmin(SEXP pichart, int foundPI, int sol[]) {
             }
         }
     }
-    int totsol = mincols + newminrows;
+    int totsol;
+        totsol = mincols + newminrows;
     UNPROTECT(1);
     return(totsol);
 }
@@ -777,94 +778,126 @@ SEXP C_solveChart(SEXP pichart, SEXP allsol, SEXP vdepth) {
     int picols = ncols(pichart); 
     int sol[picols];
     int k = getmin(pichart, picols, sol);
-    int depth = INTEGER(coerceVector(vdepth, INTSXP))[0];
-    if (depth > 0 && depth < k) depth = k;
-    int solfound = 0;
-    if (k == picols && solfound == 0) {
-        SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(INTSXP, k, 1));
-        p_temp2 = INTEGER(temp2);
-        for (int i = 0; i < k; i++) {
-            p_temp2[i] = i + 1;
-        }
-        solfound = 1;
-    }
-    if (solfound == 0) {
-        if (LOGICAL(allsol)[0]) {
-            SET_VECTOR_ELT(usage, 0, indmat = allocMatrix(INTSXP, picols, pirows));
-            p_indmat = INTEGER(indmat);
-            memset(p_indmat, 0, picols * pirows * sizeof(int));
-            SET_VECTOR_ELT(usage, 3, mintpis = allocVector(INTSXP, pirows));
-            p_mintpis = INTEGER(mintpis);
-            memset(p_mintpis, 0, pirows * sizeof(int));
-            for (int r = 0; r < pirows; r++) {
-                for (int c = 0; c < picols; c++) {
-                    if (p_pichart[c * pirows + r]) {
-                         p_indmat[r * picols + p_mintpis[r]] = c;
-                         p_mintpis[r]++;
-                    }
-                }
-            }
-            SET_VECTOR_ELT(usage, 1, temp1 = allocMatrix(INTSXP, picols, p_mintpis[0]));
-            p_temp1 = INTEGER(temp1);
-            memset(p_temp1, 0, p_mintpis[0] * picols * sizeof(int));
-            for (int i = 0; i < p_mintpis[0]; i++) {
-                p_temp1[i * picols + p_indmat[i]] = 1;
-            }
-            int temp1cols = p_mintpis[0];
-            for (int i = 1; i < pirows; i++) {
-                SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(INTSXP, picols, temp1cols * p_mintpis[i]));
-                p_temp2 = INTEGER(temp2);
-                for (int j = 0; j < p_mintpis[i]; j++) {
-                    memcpy(&p_temp2[j * temp1cols * picols], p_temp1, temp1cols * picols * sizeof(int));
-                    for (int tc = 0; tc < temp1cols; tc++) {
-                        p_temp2[(j * temp1cols + tc) * picols + p_indmat[i * picols + j]] = 1;
-                    }
-                }
-                int temp2cols = ncols(temp2);
-                SET_VECTOR_ELT(usage, 4, cols = allocVector(LGLSXP, temp2cols));
-                p_cols = LOGICAL(cols);
-                memset(p_cols, TRUE, temp2cols * sizeof(int));
-                int survcols = temp2cols;
-                superRows(p_temp2, picols, &survcols, p_cols);
-                SET_VECTOR_ELT(usage, 1, temp1 = allocMatrix(INTSXP, picols, survcols));
-                p_temp1 = INTEGER(temp1);
-                memcpy(p_temp1, p_temp2, picols * survcols * sizeof(int));
-                temp1cols = survcols;
-            }
-            SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(INTSXP, picols, temp1cols));
+    if (k > 0) {
+        int depth = INTEGER(coerceVector(vdepth, INTSXP))[0];
+        if (depth > 0 && depth < k) depth = k;
+        int solfound = 0;
+        if (k == picols && solfound == 0) {
+            SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(INTSXP, k, 1));
             p_temp2 = INTEGER(temp2);
-            memset(p_temp2, 0, picols * temp1cols * sizeof(int));
-            SET_VECTOR_ELT(usage, 4, cols = allocVector(INTSXP, temp1cols));
-            p_cols = INTEGER(cols);
-            memset(p_cols, 0, temp1cols * sizeof(int));
-            int maxr = 0;
-            for (int c = 0; c < temp1cols; c++) {
-                for (int r = 0; r < picols; r++) {
-                    if (p_temp1[c * picols + r]) {
-                        p_temp2[c * picols + p_cols[c]] = r + 1;
-                        p_cols[c]++;
-                    }
-                    if (maxr < p_cols[c]) {
-                        maxr = p_cols[c];
+            for (int i = 0; i < k; i++) {
+                p_temp2[i] = i + 1;
+            }
+            solfound = 1;
+        }
+        int nck = choose(picols, k);
+        if (nck == NA_INTEGER) {
+            solfound = 1;
+            SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(REALSXP, k, 1));
+            double *p_tempreal = REAL(temp2);
+            for (int i = 0; i < k; i++) {
+                p_tempreal[i] = sol[i] + 1;
+            }
+            int tempcopy;
+            for (int r1 = 0; r1 < k; r1++) {
+                for (int r2 = r1 + 1; r2 < k; r2++) {
+                    if (p_tempreal[r1] > p_tempreal[r2]) {
+                        tempcopy = p_tempreal[r2];
+                        p_tempreal[r2] = p_tempreal[r1];
+                        p_tempreal[r1] = tempcopy;
                     }
                 }
             }
-            SET_VECTOR_ELT(usage, 1, temp1 = allocMatrix(INTSXP, maxr, temp1cols));
-            p_temp1 = INTEGER(temp1);
-            for (int c = 0; c < temp1cols; c++) {
-                for (int r = 0; r < maxr; r++) {
-                    p_temp1[c * maxr + r] = p_temp2[c * picols + r];
+        }
+        if (solfound == 0) {
+            if (LOGICAL(allsol)[0]) {
+                SET_VECTOR_ELT(usage, 0, indmat = allocMatrix(INTSXP, picols, pirows));
+                p_indmat = INTEGER(indmat);
+                memset(p_indmat, 0, picols * pirows * sizeof(int));
+                SET_VECTOR_ELT(usage, 3, mintpis = allocVector(INTSXP, pirows));
+                p_mintpis = INTEGER(mintpis);
+                memset(p_mintpis, 0, pirows * sizeof(int));
+                for (int r = 0; r < pirows; r++) {
+                    for (int c = 0; c < picols; c++) {
+                        if (p_pichart[c * pirows + r]) {
+                            p_indmat[r * picols + p_mintpis[r]] = c;
+                            p_mintpis[r]++;
+                        }
+                    }
                 }
-            }
-            int temp;
-            int order[temp1cols];
-            for (int c = 0; c < temp1cols; c++) {
-                order[c] = c;
-            }
-            for (int r = maxr - 1; r >= 0; r--) {
+                SET_VECTOR_ELT(usage, 1, temp1 = allocMatrix(INTSXP, picols, p_mintpis[0]));
+                p_temp1 = INTEGER(temp1);
+                memset(p_temp1, 0, p_mintpis[0] * picols * sizeof(int));
+                for (int i = 0; i < p_mintpis[0]; i++) {
+                    p_temp1[i * picols + p_indmat[i]] = 1;
+                }
+                int temp1cols = p_mintpis[0];
+                for (int i = 1; i < pirows; i++) {
+                    SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(INTSXP, picols, temp1cols * p_mintpis[i]));
+                    p_temp2 = INTEGER(temp2);
+                    for (int j = 0; j < p_mintpis[i]; j++) {
+                        memcpy(&p_temp2[j * temp1cols * picols], p_temp1, temp1cols * picols * sizeof(int));
+                        for (int tc = 0; tc < temp1cols; tc++) {
+                            p_temp2[(j * temp1cols + tc) * picols + p_indmat[i * picols + j]] = 1;
+                        }
+                    }
+                    int temp2cols = ncols(temp2);
+                    SET_VECTOR_ELT(usage, 4, cols = allocVector(LGLSXP, temp2cols));
+                    p_cols = LOGICAL(cols);
+                    memset(p_cols, TRUE, temp2cols * sizeof(int));
+                    int survcols = temp2cols;
+                    superRows(p_temp2, picols, &survcols, p_cols);
+                    SET_VECTOR_ELT(usage, 1, temp1 = allocMatrix(INTSXP, picols, survcols));
+                    p_temp1 = INTEGER(temp1);
+                    memcpy(p_temp1, p_temp2, picols * survcols * sizeof(int));
+                    temp1cols = survcols;
+                }
+                SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(INTSXP, picols, temp1cols));
+                p_temp2 = INTEGER(temp2);
+                memset(p_temp2, 0, picols * temp1cols * sizeof(int));
+                SET_VECTOR_ELT(usage, 4, cols = allocVector(INTSXP, temp1cols));
+                p_cols = INTEGER(cols);
+                memset(p_cols, 0, temp1cols * sizeof(int));
+                int maxr = 0;
+                for (int c = 0; c < temp1cols; c++) {
+                    for (int r = 0; r < picols; r++) {
+                        if (p_temp1[c * picols + r]) {
+                            p_temp2[c * picols + p_cols[c]] = r + 1;
+                            p_cols[c]++;
+                        }
+                        if (maxr < p_cols[c]) {
+                            maxr = p_cols[c];
+                        }
+                    }
+                }
+                SET_VECTOR_ELT(usage, 1, temp1 = allocMatrix(INTSXP, maxr, temp1cols));
+                p_temp1 = INTEGER(temp1);
+                for (int c = 0; c < temp1cols; c++) {
+                    for (int r = 0; r < maxr; r++) {
+                        p_temp1[c * maxr + r] = p_temp2[c * picols + r];
+                    }
+                }
+                int temp;
+                int order[temp1cols];
+                for (int c = 0; c < temp1cols; c++) {
+                    order[c] = c;
+                }
+                for (int r = maxr - 1; r >= 0; r--) {
+                    for (int c1 = 0; c1 < temp1cols; c1++) {
+                        for (int c2 = c1 + 1; c2 < temp1cols; c2++) {
+                            if (p_temp1[order[c1] * maxr + r] > p_temp1[order[c2] * maxr + r]) {
+                                temp = order[c2];
+                                for (int i = c2; i > c1; i--) {
+                                    order[i] = order[i - 1];
+                                }
+                                order[c1] = temp;
+                            }
+                        }
+                    }
+                }
                 for (int c1 = 0; c1 < temp1cols; c1++) {
                     for (int c2 = c1 + 1; c2 < temp1cols; c2++) {
-                        if (p_temp1[order[c1] * maxr + r] > p_temp1[order[c2] * maxr + r]) {
+                        if (p_cols[order[c1]] > p_cols[order[c2]]) {
                             temp = order[c2];
                             for (int i = c2; i > c1; i--) {
                                 order[i] = order[i - 1];
@@ -873,77 +906,70 @@ SEXP C_solveChart(SEXP pichart, SEXP allsol, SEXP vdepth) {
                         }
                     }
                 }
+                SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(INTSXP, maxr, temp1cols));
+                p_temp2 = INTEGER(temp2);
+                for (int c = 0; c < temp1cols; c++) {
+                    for (int r = 0; r < maxr; r++) {
+                        p_temp2[c * maxr + r] = p_temp1[order[c] * maxr + r];
+                    }
+                }
             }
-            for (int c1 = 0; c1 < temp1cols; c1++) {
-                for (int c2 = c1 + 1; c2 < temp1cols; c2++) {
-                    if (p_cols[order[c1]] > p_cols[order[c2]]) {
-                        temp = order[c2];
-                        for (int i = c2; i > c1; i--) {
-                            order[i] = order[i - 1];
+            else {
+                int estimsol = 10;
+                SET_VECTOR_ELT(usage, 1, temp1 = allocMatrix(INTSXP, k, estimsol));
+                p_temp1 = INTEGER(temp1);
+                memset(p_temp1, 0, k * estimsol * sizeof(int));
+                int tempk[k];
+                for (int i = 0; i < k; i++) {
+                    tempk[i] = i; 
+                }
+                tempk[k - 1] -= 1; 
+                int e = 0;
+                int h = k;
+                Rboolean last = (picols == k);
+                while ((tempk[0] != picols - k) || last) {
+                    increment(k, &e, &h, picols + last, tempk, 0);
+                    last = FALSE;
+                    Rboolean allrows = TRUE;
+                    int r = 0;
+                    while (r < pirows && allrows) {
+                        Rboolean covered = FALSE;
+                        int c = 0;
+                        while (c < k && !covered) {
+                            covered = p_pichart[tempk[c] * pirows + r];
+                            c++;
                         }
-                        order[c1] = temp;
+                        allrows = covered;
+                        r++;
+                    }
+                    if (allrows) {
+                        for (int c = 0; c < k; c++) {
+                            p_temp1[solfound * k + c] = tempk[c] + 1;
+                        }
+                        solfound++;
+                        if (solfound == estimsol) {
+                            estimsol *= 2;
+                            SET_VECTOR_ELT(usage, 2, temp2 = duplicate(temp1));
+                            p_temp2 = INTEGER(temp2);
+                            SET_VECTOR_ELT(usage, 1, temp1 = allocMatrix(INTSXP, k, estimsol));
+                            p_temp1 = INTEGER(temp1);
+                            memset(p_temp1, 0, k * estimsol * sizeof(int));
+                            memcpy(p_temp1, p_temp2, k * solfound * sizeof(int));
+                        }
                     }
                 }
-            }
-            SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(INTSXP, maxr, temp1cols));
-            p_temp2 = INTEGER(temp2);
-            for (int c = 0; c < temp1cols; c++) {
-                for (int r = 0; r < maxr; r++) {
-                    p_temp2[c * maxr + r] = p_temp1[order[c] * maxr + r];
-                }
+                SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(INTSXP, k, solfound));
+                p_temp2 = INTEGER(temp2);
+                memcpy(p_temp2, p_temp1, k * solfound * sizeof(int));
             }
         }
-        else {
-            int estimsol = 10;
-            SET_VECTOR_ELT(usage, 1, temp1 = allocMatrix(INTSXP, k, estimsol));
-            p_temp1 = INTEGER(temp1);
-            memset(p_temp1, 0, k * estimsol * sizeof(int));
-            int tempk[k];
-            for (int i = 0; i < k; i++) {
-                tempk[i] = i; 
-            }
-            tempk[k - 1] -= 1; 
-            int e = 0;
-            int h = k;
-            Rboolean last = (picols == k);
-            while ((tempk[0] != picols - k) || last) {
-                increment(k, &e, &h, picols + last, tempk, 0);
-                last = FALSE;
-                Rboolean allrows = TRUE;
-                int r = 0;
-                while (r < pirows && allrows) {
-                    Rboolean covered = FALSE;
-                    int c = 0;
-                    while (c < k && !covered) {
-                        covered = p_pichart[tempk[c] * pirows + r];
-                        c++;
-                    }
-                    allrows = covered;
-                    r++;
-                }
-                if (allrows) {
-                    for (int c = 0; c < k; c++) {
-                        p_temp1[solfound * k + c] = tempk[c] + 1;
-                    }
-                    solfound++;
-                    if (solfound == estimsol) {
-                        estimsol *= 2;
-                        SET_VECTOR_ELT(usage, 2, temp2 = duplicate(temp1));
-                        p_temp2 = INTEGER(temp2);
-                        SET_VECTOR_ELT(usage, 1, temp1 = allocMatrix(INTSXP, k, estimsol));
-                        p_temp1 = INTEGER(temp1);
-                        memset(p_temp1, 0, k * estimsol * sizeof(int));
-                        memcpy(p_temp1, p_temp2, k * solfound * sizeof(int));
-                    }
-                }
-            }
-            SET_VECTOR_ELT(usage, 2, temp2 = allocMatrix(INTSXP, k, solfound));
-            p_temp2 = INTEGER(temp2);
-            memcpy(p_temp2, p_temp1, k * solfound * sizeof(int));
-        }
+        UNPROTECT(1);
+        return(temp2);
     }
-    UNPROTECT(1);
-    return(temp2);
+    else {
+        UNPROTECT(1);
+        return(R_NilValue);
+    }
 }
 static R_INLINE Rboolean altb(double a, double b) {
     return (b - a) > ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * DBL_EPSILON);
@@ -1196,7 +1222,7 @@ static R_INLINE void fill_mbase(int mbase[], int tempk[], int noflevels[], int k
         mbase[c] = mbase[c - 1] * noflevels[tempk[c - 1]];
     }
 }
-static R_INLINE void get_decimals(int posrows, int negrows, int k, int decpos[], int decneg[], int p_posmat[], int p_negmat[], int tempk[], int mbase[]) {
+static R_INLINE void getDecimals(int posrows, int negrows, int k, int decpos[], int decneg[], int p_posmat[], int p_negmat[], int tempk[], int mbase[]) {
     for (int r = 0; r < posrows; r++) {
         decpos[r] = 0;
         for (int c = 0; c < k; c++) {
@@ -1210,7 +1236,7 @@ static R_INLINE void get_decimals(int posrows, int negrows, int k, int decpos[],
         }
     }
 }
-static R_INLINE void get_uniques(int posrows, int *found, int decpos[], Rboolean possiblePI[], int possiblePIrows[]) {
+static R_INLINE void getUniques(int posrows, int *found, int decpos[], Rboolean possiblePI[], int possiblePIrows[]) {
     for (int r = 1; r < posrows; r++) {
         int prev = 0;
         Rboolean unique = TRUE; 
@@ -1273,7 +1299,7 @@ SEXP C_Cubes(SEXP list) {
     get_noflevels(noflevels, p_tt, nconds, ttrows);
     int foundPI = 0;
     int prevfoundPI = 0;
-    int estimpi = 10;
+    int estimpi = 10000;
     SET_VECTOR_ELT(usage, 3, pichart = allocMatrix(LGLSXP, posrows, estimpi));
     p_pichart = LOGICAL(pichart);
     memset(p_pichart, FALSE, posrows * estimpi * sizeof(int));
@@ -1304,14 +1330,13 @@ SEXP C_Cubes(SEXP list) {
     memset(p_indx, 0, pidepth * estimpi * sizeof(int));
     int pospicons = getpos(list, "pi.cons");
     double picons = (pospicons >= 0) ? (REAL(VECTOR_ELT(list, pospicons))[0]) : 0;
-    int k = 1;
-    Rboolean morePIfound = TRUE;
+    Rboolean morePIfound = FALSE;
     Rboolean foundX = TRUE; 
     int minPIs = 0;
     int depthcol = 0; 
     int posdata = getpos(list, "data");
     int posfs = getpos(list, "fs");
-    while (k <= pidepth && morePIfound && foundX) {
+    for (int k = 1; k <= pidepth; k++) {
         morePIfound = FALSE; 
         int mbase[k];
         mbase[0] = 1; 
@@ -1325,15 +1350,15 @@ SEXP C_Cubes(SEXP list) {
         Rboolean last = (nconds == k);
             while ((tempk[0] != nconds - k) || last) {
                 increment(k, &e, &h, nconds + last, tempk, 0);
-                last = FALSE;
+                last = FALSE; 
                 fill_mbase(mbase, tempk, noflevels, k);
-                get_decimals(posrows, neresizes, k, decpos, decneg, p_posmat, p_negmat, tempk, mbase);
+                getDecimals(posrows, neresizes, k, decpos, decneg, p_posmat, p_negmat, tempk, mbase);
                 int possiblePIrows[posrows];
                 possiblePIrows[0] = 0; 
                 Rboolean possiblePI[posrows];
                 possiblePI[0] = TRUE; 
                 int found = 1;
-                get_uniques(posrows, &found, decpos, possiblePI, possiblePIrows);
+                getUniques(posrows, &found, decpos, possiblePI, possiblePIrows);
                 int compare = found;
                 if (picons > 0) {
                     int val[k];
@@ -1429,7 +1454,7 @@ SEXP C_Cubes(SEXP list) {
                     minPIs = checkmin;
                 }
             }
-            else {
+            else if (checkmin == 0) {
                 morePIfound = TRUE;
             }
         }
@@ -1441,8 +1466,11 @@ SEXP C_Cubes(SEXP list) {
         }
         else {
             foundPI = prevfoundPI;
+            break;
         }
-        k += 1;
+        if (!morePIfound) {
+            break;
+        }
     }
     SEXP dimnames, ttcolnms,  colnms;
     SET_VECTOR_ELT(usage, 6, dimnames = allocVector(VECSXP, 2));
@@ -1519,17 +1547,17 @@ SEXP C_Cubes(SEXP list) {
             }
             SET_VECTOR_ELT(out, 2,
                 solveChartCons(result, 
-                               ck, 
-                               indx, 
-                               VECTOR_ELT(list, posdata), 
-                               VECTOR_ELT(list, posfs), 
-                               ((nrows(pic) < ncols(pic)) ? nrows(pic) : ncols(pic)), 
-                               REAL(VECTOR_ELT(list, posolcons))[0], 
-                               REAL(VECTOR_ELT(list, posolcov))[0], 
-                               LOGICAL(VECTOR_ELT(list, posallsol))[0], 
-                               soldepth
-                              )
-                          );
+                            ck, 
+                            indx, 
+                            VECTOR_ELT(list, posdata), 
+                            VECTOR_ELT(list, posfs), 
+                            ((nrows(pic) < ncols(pic)) ? nrows(pic) : ncols(pic)), 
+                            REAL(VECTOR_ELT(list, posolcons))[0], 
+                            REAL(VECTOR_ELT(list, posolcov))[0], 
+                            LOGICAL(VECTOR_ELT(list, posallsol))[0], 
+                            soldepth
+                            )
+                        );
         }
         else {
             int sol[foundPI];
@@ -2356,51 +2384,6 @@ SEXP C_removeRedundants(SEXP rowno, SEXP noflevels, SEXP mbase) {
         return(final);
     }
 }
-SEXP C_combinations(SEXP list) {
-    int nconds, k, aloe, zero;
-    nconds = INTEGER(VECTOR_ELT(list, 0))[0];
-    k = INTEGER(VECTOR_ELT(list, 1))[0];
-    aloe = INTEGER(VECTOR_ELT(list, 2))[0] - 1;
-    zero = INTEGER(VECTOR_ELT(list, 3))[0];
-    int nck = 1;
-    for (int i = 1; i <= k; i++) {
-        nck *= nconds - (k - i);
-        nck /=  i;
-    }
-    SEXP usage = PROTECT(allocVector(VECSXP, 2));
-    SEXP out;
-    SET_VECTOR_ELT(usage, 0, out = allocMatrix(INTSXP, k, nck));
-    int *p_out = INTEGER(out);
-    int tempk[k];
-    for (int i = 0; i < k; i++) {
-        tempk[i] = i;
-    }
-    tempk[k - 1] -= 1;
-    int e = 0;
-    int h = k;
-    Rboolean last = (nconds == k);
-    int found = 0;
-    while ((tempk[0] != nconds - k) || last) {
-        increment(k, &e, &h, nconds + last, tempk, aloe);
-        last = FALSE;
-        for (int i = 0; i < k; i++) {
-            p_out[found * k + i] = tempk[i] + zero;
-        }
-        found += 1;
-    }
-    if (found < nck) {
-        SEXP copy;
-        SET_VECTOR_ELT(usage, 1, copy = duplicate(out));
-        int *p_copy = INTEGER(copy);
-        SET_VECTOR_ELT(usage, 0, out = allocMatrix(INTSXP, k, found));
-        p_out = INTEGER(out);
-        for (int i = 0; i < found * k; i++) {
-            p_out[i] = p_copy[i];
-        }
-    }
-    UNPROTECT(1);
-    return(out);
-}
 SEXP C_findSubsets(SEXP rowno, SEXP noflevels, SEXP mbase, SEXP max) {
     int *prowno, *pnoflevels, *pmbase, *pmax, lmbase, lmbasei, i, j, k, lungime, flag, templung, *ptemp1, *ptemp2;
     SEXP temp1, temp2;
@@ -2472,6 +2455,126 @@ SEXP C_findSubsets(SEXP rowno, SEXP noflevels, SEXP mbase, SEXP max) {
     }
     UNPROTECT(1);
     return(temp1);
+}
+SEXP C_pof(SEXP x, SEXP y, SEXP nec) {
+    SEXP pmin, max_ec;
+    SEXP usage = PROTECT(allocVector(VECSXP, 5));
+    SET_VECTOR_ELT(usage, 0, x = coerceVector(x, REALSXP));
+    SET_VECTOR_ELT(usage, 1, y = coerceVector(y, REALSXP));
+    double *p_x = REAL(x);
+    double *p_y = REAL(y);
+    int nrows_x = nrows(x);
+    int ncols_x = ncols(x);
+    SET_VECTOR_ELT(usage, 2, pmin = allocMatrix(REALSXP, nrows_x, ncols_x));
+    double *p_pmin = REAL(pmin);
+    SET_VECTOR_ELT(usage, 3, max_ec = allocMatrix(REALSXP, nrows_x, ncols_x));
+    double *p_max_ec = REAL(max_ec);
+    double sum_y = 0;
+    double sum_x[ncols_x];
+    double sum_neg_x[ncols_x];
+    double sum_pmin[ncols_x];
+    double sum_pmin_negy[ncols_x];
+    double sum_neg_pmin[ncols_x];
+    double sum_min_max_ec[ncols_x];
+    for (int c = 0; c < ncols_x; c++) {
+        sum_x[c] = 0;
+        sum_neg_x[c] = 0;
+        sum_pmin[c] = 0;
+        sum_neg_pmin[c] = 0;
+        sum_min_max_ec[c] = 0;
+    }
+    for (int r = 0; r < nrows_x; r++) {
+        sum_y += p_y[r];
+        for (int c = 0; c < ncols_x; c++) {
+            sum_x[c] += p_x[c * nrows_x + r];
+            sum_neg_x[c] += 1 - p_x[c * nrows_x + r];
+            p_pmin[c * nrows_x + r] = (p_x[c * nrows_x + r] < p_y[r]) ? p_x[c * nrows_x + r] : p_y[r];
+            sum_pmin[c] += p_pmin[c * nrows_x + r];
+            sum_neg_pmin[c] += 1 - p_pmin[c * nrows_x + r];
+            sum_pmin_negy[c] += (p_pmin[c * nrows_x + r] < (1 - p_y[r])) ? p_pmin[c * nrows_x + r] : (1 - p_y[r]);
+            p_max_ec[c * nrows_x + r] = 0;
+        }
+    }
+    for (int r = 0; r < nrows_x; r++) {
+        for (int c = 0; c < ncols_x - 1; c++) { 
+            for (int cu = 0; cu < ncols_x - 1; cu++) {
+                if (cu != c) {
+                    if (p_max_ec[c * nrows_x + r] < p_pmin[cu * nrows_x + r]) {
+                        p_max_ec[c * nrows_x + r] = p_pmin[cu * nrows_x + r];
+                    }
+                }
+            }
+        }
+    }
+    for (int r = 0; r < nrows_x; r++) {
+        for (int c = 0; c < ncols_x - 1; c++) {
+            sum_min_max_ec[c] += (p_pmin[c * nrows_x + r] < p_max_ec[c * nrows_x + r]) ? p_pmin[c * nrows_x + r]: p_max_ec[c * nrows_x + r];
+        }
+    }
+    SEXP inclcov;
+    SET_VECTOR_ELT(usage, 4, inclcov = allocMatrix(REALSXP, ncols_x, 4));
+    double *p_inclcov = REAL(inclcov);
+    for (int c = 0; c < ncols_x; c++) {
+        if (LOGICAL(nec)[0]) {
+            p_inclcov[c] = sum_pmin[c] / sum_y;
+            p_inclcov[ncols_x + c] = sum_neg_x[c] / sum_neg_pmin[c];
+            p_inclcov[2 * ncols_x + c] = sum_pmin[c] / sum_x[c];
+            p_inclcov[3 * ncols_x + c] = 0; 
+        }
+        else {
+            p_inclcov[c] = sum_pmin[c] / sum_x[c];
+            p_inclcov[ncols_x + c] = (sum_pmin[c] - sum_pmin_negy[c]) / (sum_x[c] - sum_pmin_negy[c]);
+            p_inclcov[2 * ncols_x + c] = sum_pmin[c] / sum_y;
+            p_inclcov[3 * ncols_x + c] = p_inclcov[2 * ncols_x + c] - (sum_min_max_ec[c] / sum_y);
+        }
+    }
+    UNPROTECT(1);
+    return(inclcov);
+}
+SEXP C_combnk(SEXP list) {
+    int nconds, k, aloe, zerobased;
+    nconds = INTEGER(VECTOR_ELT(list, 0))[0];
+    k = INTEGER(VECTOR_ELT(list, 1))[0];
+    aloe = INTEGER(VECTOR_ELT(list, 2))[0] - 1;
+    zerobased = INTEGER(VECTOR_ELT(list, 3))[0];
+    int nck = 1;
+    for (int i = 1; i <= k; i++) {
+        nck *= nconds - (k - i);
+        nck /=  i;
+    }
+    SEXP usage = PROTECT(allocVector(VECSXP, 2));
+    SEXP out;
+    SET_VECTOR_ELT(usage, 0, out = allocMatrix(INTSXP, k, nck));
+    int *p_out = INTEGER(out);
+    int tempk[k];
+    for (int i = 0; i < k; i++) {
+        tempk[i] = i;
+    }
+    tempk[k - 1] -= 1;
+    int e = 0;
+    int h = k;
+    Rboolean last = (nconds == k);
+    int found = 0;
+    while ((tempk[0] != nconds - k) || last) {
+        increment(k, &e, &h, nconds + last, tempk, aloe);
+        last = FALSE;
+        for (int i = 0; i < k; i++) {
+            p_out[found * k + i] = tempk[i] + 1 - zerobased;
+        }
+        found += 1;
+    }
+    if (found < nck) {
+        SEXP copy;
+        SET_VECTOR_ELT(usage, 1, copy = duplicate(out));
+        int *p_copy = INTEGER(copy);
+        SET_VECTOR_ELT(usage, 0, out = allocMatrix(INTSXP, k, found));
+        p_out = INTEGER(out);
+        for (int i = 0; i < found * k; i++) {
+            p_out[i] = p_copy[i];
+        }
+    }
+    UNPROTECT(1);
+    return(out);
 }
 SEXP C_getEC(SEXP aleabune, SEXP veverita, SEXP catelus, SEXP ursulet, SEXP ratusca, SEXP ametist) {
     SEXP usage = PROTECT(allocVector(VECSXP, 6));

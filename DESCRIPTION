@@ -1,6 +1,6 @@
 Package: QCA
-Version: 3.4
-Date: 2019-01-18
+Version: 3.5
+Date: 2019-05-21
 Title: Qualitative Comparative Analysis
 Authors@R: c(person("Adrian", "Dusa", role = c("aut", "cre", "cph"),
                     email = "dusa.adrian@unibuc.ro"),
@@ -19,7 +19,8 @@ Authors@R: c(person("Adrian", "Dusa", role = c("aut", "cre", "cph"),
              person("Alrik", "Thiem", role = "aut",
                     comment = "from version 1.0-0 up to version 1.1-3"))
 Depends: R (>= 3.0.0)
-Imports: venn (>= 1.2), shiny, methods, fastdigest
+LazyData: yes
+Imports: admisc (> 0.1), fastdigest, methods, shiny, venn (>= 1.2)
 Description: An extensive set of functions to perform Qualitative Comparative Analysis:
              crisp sets ('csQCA'), temporal ('tQCA'), multi-value ('mvQCA')
              and fuzzy sets ('fsQCA'), using a GUI - graphical user interface.
@@ -28,7 +29,7 @@ Description: An extensive set of functions to perform Qualitative Comparative An
              minimal causal combination that explains a given phenomenon.
 License: GPL (>= 2)
 NeedsCompilation: yes
-Packaged: 2019-01-18 08:14:27 UTC; dusadrian
+Packaged: 2019-05-21 18:55:22 UTC; dusadrian
 Author: Adrian Dusa [aut, cre, cph],
   jQuery Foundation [cph] (jQuery library and jQuery UI library),
   jQuery contributors [ctb, cph] (jQuery library; authors listed in
@@ -40,4 +41,4 @@ Author: Adrian Dusa [aut, cre, cph],
   Alrik Thiem [aut] (from version 1.0-0 up to version 1.1-3)
 Maintainer: Adrian Dusa <dusa.adrian@unibuc.ro>
 Repository: CRAN
-Date/Publication: 2019-01-18 09:10:03 UTC
+Date/Publication: 2019-05-21 19:40:07 UTC

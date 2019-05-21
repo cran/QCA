@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>translate, compute, simplify. QCA 3.4</title>
+<title>compute, simplify. QCA 3.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.4</a>
+      <a class="brand" href="#">QCA 3.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -49,7 +49,7 @@ Adrian Dusa
         
       </header>
       
-      <h1>Functions to interpret a DNF/SOP expression</h1>
+      <h1>Interpret SOP/DNF expressions: compute, simplify</h1>
 
 <div class="row">
   <div class="span8">
@@ -57,20 +57,17 @@ Adrian Dusa
     <div class="Description">
       <h2>Description</h2>
 
-      <p>These functions interpret an expression written in a DNF (disjunctive normal form), also known as
-SOP (sum of products) form, for both crisp and multivalue QCA. The function <b><code><a href=''>translate()</a></code></b>
-translates the expression into a standard (canonical) SOP form using a matrix of implicants, while
-<b><code><a href=''>compute()</a></code></b> uses the first to compute the scores based on a particular
-data input.</p>
+      <p>These functions interpret an expression written in a SOP - sum of products (or in canonical
+DNF - disjunctive normal form), for both crisp and multivalue QCA. The function <b><code><a href=''>compute()</a></code></b>
+tcalculates set membership scores based on a SOP expression applied to a calibrated data set.</p>
   
       <p>For crisp sets notation, upper case letters are considered the presence of that causal
 condition, and lower case letters are considered the absence of the respective causal
 condition. Tilde is recognized as a negation, even in combination with upper/lower letters.</p>
   
-      <p>Functions similar to <b><code><a href=''>translate()</a></code></b> and
-<b><code><a href=''>compute()</a></code></b> have initially been written by Lewandowski (2015)
-but the actual code in these functions has been completely re-written to integrate it with the
-package <b><span class = "pkg">QCA</span></b>, and expanded with more extensive functionality (see details and examples below).</p>
+      <p>A function similar to <b><code><a href=''>compute()</a></code></b> was initially written
+by Lewandowski (2015) but the actual code in these functions has been completely re-written and
+expanded with more extensive functionality (see details and examples below).</p>
   
       <p>The function <b><code><a href=''>simplify()</a></code></b> transforms any expression
 (most notably a POS product of sums) into a simpler sum of products, minimizing it to the simplest
@@ -80,8 +77,7 @@ examples presented by Ragin (1987: 144-147), and extended to multi-value sets.</
     </div>
     
     <h2>Usage</h2>
-<pre><div>translate(expression = &quot;&quot;, snames = &quot;&quot;, noflevels, data)</div>
-<div>compute(expression = &quot;&quot;, data, separate = FALSE)</div>
+<pre><div>compute(expression = &quot;&quot;, data, separate = FALSE)</div>
 <div>simplify(expression = &quot;&quot;, snames = "", noflevels, use.tilde = FALSE)</div></pre>
     
     <h2>Arguments</h2>
@@ -121,10 +117,11 @@ examples presented by Ragin (1987: 144-147), and extended to multi-value sets.</
     <div class="Details">
       <h2>Details</h2>
 
-      <p>A DNF - disjunctive normal form is also known as a SOP - sum of products, or in other
-words a &quot;union of intersections&quot;, for example <b><code>A*D + B*c</code></b>.</p>
+      <p>An expression written in SOP - sum of products, is a &quot;union of intersections&quot;, for example
+<b><code>A*B + B*c</code></b>.The DNF - disjunctive normal form is also a sum of products, with the restriction
+that each product has to contain all literals. The equivalent expression is: <b><code>A*B*c + A*B*c + a*B*c</code></b></p>
   
-      <p>The same expression can be written in multivalue notation: <b><code>A{1}*D{1} + B{1}*C{0}</code></b>.
+      <p>The same expression can be written in multivalue notation: <b><code>A{1}*B{1} + B{1}*C{0}</code></b>.
 Both types of expressions are valid, and yield the same result on the same dataset.</p>
   
       <p>For multivalue notation, causal conditions are expected as upper case letters, and they will be
@@ -162,9 +159,9 @@ deep in the space of the conditions' names, at the cost of slowing down for a hi
 conditions. For this reason, an arbitrary limit of 7 causal <b><code>snames</code></b> is imposed, to write an
 expression with.</p>
 
-      <p>For the function <b><code><a href=''>simplify()</a></code></b>, if a tilde is present in the expression, the argument
-<b><code>use.tilde</code></b> is automatically activated. For Boolean expressions, the simplest equivalent
-logical expression can result in the empty set, if the conditions cancel each other out.</p>
+      <p>For the function <b><code><a href=''>simplify()</a></code></b>, if a tilde is present in the expression,
+the argument <b><code>use.tilde</code></b> is automatically activated. For Boolean expressions, the simplest
+equivalent logical expression can result in the empty set, if the conditions cancel each other out.</p>
   
     </div>
 
@@ -172,27 +169,9 @@ logical expression can result in the empty set, if the conditions cancel each ot
       <h2>Value</h2>
 
       <p><dl>
-For the function <b><code><a href=''>translate()</a></code></b>, a matrix containing the implicants on the
-rows and the set names on the columns, with the following codes:
-<br>
-<table>
-    <tr>
-        <td>&nbsp;0 </td>
-        <td> absence of a causal condition</td>
-    </tr>
-    <tr>
-        <td>&nbsp;1 </td>
-        <td> presence of a causal condition</td>
-    </tr>
-    <tr>
-        <td>-1 </td>
-        <td> causal condition was eliminated</td>
-    </tr>
-</table>
-<br>
-The matrix was also assigned a class <code>"translate"</code>, to avoid printing the -1 codes when signaling
-a minimized condition. The mode of this matrix is character, to allow printing multiple levels
-in the same cell, such as &quot;1,2&quot;
+For the function <b><code><a href=''>compute()</a></code></b>, a vector of set membership values.
+
+For function <b><code><a href=''>simplify()</a></code></b>, a character expression.
 </dl></p>
   
     </div>
@@ -208,180 +187,7 @@ Quantitative Strategies</em>. Berkeley: University of California Press.</p>
     
     <h2 id="examples">Examples</h2>
     <pre class="examples"><div class='input'>
-translate(&quot;A + B*C&quot;)
-</div>
-<div class='output'>
-      A  B  C 
-A     1       
-B*C      1  1 
-
-</div>
-<div class='input'>
-# same thing in multivalue notation
-translate(&quot;A{1} + B{1}*C{1}&quot;)
-</div>
-<div class='output'>
-            A  B  C 
-A{1}        1       
-B{1}*C{1}      1  1 
-
-</div>
-<div class='input'>
-# using upper/lower letters
-translate(&quot;A + b*C&quot;)
-</div>
-<div class='output'>
-      A  B  C 
-A     1       
-b*C      0  1 
-
-</div>
-<div class='input'>
-# the negation with tilde is recognised
-translate(&quot;~A + b*C&quot;)
-</div>
-<div class='output'>
-      A  B  C 
-~A    0       
-b*C      0  1 
-
-</div>
-<div class='input'>
-# even in combination of upper/lower letters
-translate(&quot;~A + ~b*C&quot;)
-</div>
-<div class='output'>
-       A  B  C 
-~A     0       
-~b*C      1  1 
-
-</div>
-<div class='input'>
-# and even for multivalue variables
-# in multivalue notation, the product sign * is redundant
-translate(&quot;C{1} + T{2} + T{1}V{0} + C{0}&quot;)
-</div>
-<div class='output'>
-           C  T  V 
-C{1}       1       
-T{2}          1    
-T{1}V{0}      1  0 
-C{0}       0       
-
-</div>
-<div class='input'>
-# negation of multivalue sets requires the number of levels
-translate(&quot;~A{1} + ~B{0}*C{1}&quot;, noflevels = c(2, 2, 2))
-</div>
-<div class='output'>
-             A  B  C 
-~A{1}        0       
-~B{0}*C{1}      1  1 
-
-</div>
-<div class='input'>
-# multiple values can be specified
-translate(&quot;C{1} + T{1,2} + T{1}V{0} + C{0}&quot;)
-</div>
-<div class='output'>
-           C  T    V 
-C{1}       1       
-T{1,2}        1,2    
-T{1}V{0}      1    0 
-C{0}       0       
-
-</div>
-<div class='input'>
-# or even negated
-translate(&quot;C{1} + ~T{1,2} + T{1}V{0} + C{0}&quot;, snames = &quot;C, T, V&quot;, noflevels = c(2,3,2))
-</div>
-<div class='output'>
-           C  T  V 
-C{1}       1       
-~T{1,2}       0    
-T{1}V{0}      1  0 
-C{0}       0       
-
-</div>
-<div class='input'>
-
-
-# if the expression does not contain the product sign *
-# snames are required to complete the translation 
-translate(&quot;AB + cD&quot;, snames = &quot;A, B, C, D&quot;)
-</div>
-<div class='output'>
-     A  B  C  D 
-AB   1  1       
-cD         0  1 
-
-</div>
-<div class='input'>
-
-
-# otherwise snames are not required
-translate(&quot;PER*FECT + str*ing&quot;)
-</div>
-<div class='output'>
-           FECT ING PER STR
-PER*FECT    1        1     
-str*ing          0       0 
-
-</div>
-<div class='input'>
-# snames are required
-translate(&quot;PERFECT + string&quot;, snames = &quot;PER, FECT, STR, ING&quot;)
-</div>
-<div class='output'>
-          PER FECT STR ING
-PERFECT    1   1          
-string              0   0 
-
-</div>
-
-<div class='input'>
-# it works even with overlapping columns
-# SU overlaps with SUB in SUBER, but the result is still correct
-translate(&quot;SUBER + subset&quot;, &quot;SU, BER, SUB, SET&quot;)
-</div>
-<div class='output'>
-         SU BER SUB SET
-SUBER    1   1         
-subset           0   0 
-
-</div>
-<div class='input'>
-
-# error because combinations of condition names clash (not run)
-translate(&quot;SUPER + subset&quot;, &quot;SUP, ER, SU, PER, SUB, SET&quot;)
-
-
-# to print _all_ codes from the standard output matrix
-(obj &lt;- translate(&quot;A + b*C&quot;))
-</div>
-<div class='output'>
-      A  B  C 
-A     1       
-b*C      0  1 
-
-</div>
-<div class='input'>
-
-print(obj, original = TRUE) # also prints the -1 code
-</div>
-<div class='output'>
-       A  B  C
-A      1 -1 -1
-b*C   -1  0  1
-
-</div>
-
-<div class='input'>
-
-
-
 # for compute()
-data(LF)
 compute(&quot;DEV*ind + URB*STB&quot;, data = LF)
 </div>
 <div class='output'>
@@ -421,7 +227,7 @@ compute(&quot;DEV*ind + URB*STB&quot;, data = LF, separate = TRUE)
 simplify("(A + B)(A + ~B)")
 </div>
 <div class='output'>
-[1] "A"
+S1: A
 </div>
 
 <div class='input'>
@@ -429,7 +235,7 @@ simplify("(A + B)(A + ~B)")
 simplify("(URB + LIT*~DEV)(~LIT + ~DEV)", snames = "DEV, URB, LIT")
 </div>
 <div class='output'>
-[1] "URB*~LIT + ~DEV*URB + ~DEV*LIT"
+S1: ~DEV*LIT + URB*~LIT
 </div>
 
 <div class='input'>
@@ -437,7 +243,7 @@ simplify("(URB + LIT*~DEV)(~LIT + ~DEV)", snames = "DEV, URB, LIT")
 simplify("(A{1} + ~B{0})(B{1} + C{0})", snames = "A, B, C", noflevels = c(2, 3, 2))
 </div>
 <div class='output'>
-[1] "A{1}*C{0} + B{1} + B{1,2}*C{0}"
+S1: B{1} + A{1}C{0} + B{2}C{0}
 </div>
 
 <div class='input'>
@@ -450,7 +256,7 @@ simplify("(A{1} + ~B{0})(B{1} + C{0})", snames = "A, B, C", noflevels = c(2, 3, 
 simplify("lw(SG + LW)", snames = "S, L, W, G")
 </div>
 <div class='output'>
-[1] "SlwG"
+S1: SlwG
 </div>
 
 <div class='input'>
@@ -458,7 +264,7 @@ simplify("lw(SG + LW)", snames = "S, L, W, G")
 simplify("SW(SG + LW)", snames = "S, L, W, G")
 </div>
 <div class='output'>
-[1] "SWG + SLW"
+S1: SLW + SWG
 </div>
 
 <div class='input'>
@@ -474,7 +280,7 @@ F1: SW(G + L)
 simplify("Lg(SG + LW)", snames = "S, L, W, G", use.tilde = TRUE)
 </div>
 <div class='output'>
-[1] "LW~G"
+S1: LW~G
 </div>
 
 <div class='input'>
@@ -485,7 +291,7 @@ simplify("Lg(SG + LW)", snames = "S, L, W, G", use.tilde = TRUE)
 simplify("(GLs + GLw + GsW + lsW)(SG + LW)", snames = "S, L, W, G")
 </div>
 <div class='output'>
-[1] "sLWG + SLwG"
+S1: sLWG + SLwG
 </div>
 
 <div class='input'></div></pre>

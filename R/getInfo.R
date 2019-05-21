@@ -56,7 +56,7 @@
             return(x[x < 0])
         }
         else {
-            return(as.character(x[x %in% c("-", "dc")]))
+            return(as.character(x[is.element(x, c("-", "dc"))]))
         }
     })))
     if (length(dc.code) == 0) {
@@ -67,15 +67,15 @@
         stop(simpleError("Multiple \"Don't care\" codes found.\n\n"))
     }
     colnms <- colnames(data)
-    data <- as.data.frame(lapply(data, function(x) {
+    data[] <- lapply(data, function(x) {
         x <- as.character(x)
         x[x == dc.code] <- -1
-        return(asNumeric(x))
-    }))
+        return(admisc::asNumeric(x))
+    })
     colnames(data) <- colnms
     data[data < 0] <- -1
     fuzzy.cc <- apply(data[, conditions, drop = FALSE], 2, function(x) {
-        if (possibleNumeric(x)) {
+        if (admisc::possibleNumeric(x)) {
             return(any(x %% 1 > 0))
         }
         else {
@@ -84,7 +84,7 @@
     })
     hastime <- logical(length(conditions))
     for (i in seq(length(conditions))) {
-        if (!fuzzy.cc[i] & possibleNumeric(data[, i])) {
+        if (!fuzzy.cc[i] & admisc::possibleNumeric(data[, i])) {
             copy.cc <- data[, i]
             if (any(copy.cc < 0)) {
                 hastime[i] <- TRUE
@@ -97,8 +97,5 @@
     noflevels[noflevels == 1] <- 2
     noflevels[fuzzy.cc] <- 2
     noflevels <- as.integer(noflevels)
-    if (length(conditions) == ncol(data)) {
-        return(noflevels)
-    }
     return(list(data = data, fuzzy.cc = fuzzy.cc, hastime = hastime, dc.code = dc.code, noflevels = as.numeric(noflevels)))
 }

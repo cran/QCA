@@ -33,8 +33,8 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
     if (is.element("p", names(other.args))) {
         below <- other.args$p
     }
-    if (possibleNumeric(x)) {
-        x <- asNumeric(x) 
+    if (admisc::possibleNumeric(x)) {
+        x <- admisc::asNumeric(x) 
     }
     else {
         cat("\n")
@@ -54,14 +54,14 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
             stop(simpleError("Threshold value(s) not specified.\n\n"))
         }
         if (is.character(thresholds) & length(thresholds) == 1) {
-            thresholds <- splitstr(thresholds)
+            thresholds <- admisc::splitstr(thresholds)
         }
-        if (possibleNumeric(thresholds)) {
+        if (admisc::possibleNumeric(thresholds)) {
             nmsths <- NULL
             if (!is.null(names(thresholds))) {
                 nmsths <- names(thresholds)
             }
-            thresholds <- asNumeric(thresholds)
+            thresholds <- admisc::asNumeric(thresholds)
             names(thresholds) <- nmsths
         }
         else {

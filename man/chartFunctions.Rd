@@ -45,7 +45,7 @@ on the columns. Such a chart is produced by \bold{\code{makeChart()}}, and it is
 visually determine which prime implicants (if any) are essential.
 
 When \bold{\code{primes}} and \bold{\code{configs}} are character, the individual sets
-are identified using the function \bold{\code{\link{translate}()}}, using the SOP - Sum Of
+are identified using the function \bold{\code{\link[admisc]{translate}()}}, using the SOP - Sum Of
 Products form, which needs the set names in the absence of any other information. If
 products are formed using the standard \bold{\code{*}} operator, specifying the set names
 is not mandatory.
@@ -101,7 +101,6 @@ quantitative strategies}, Berkeley: University of California Press
 }
 
 \examples{
-
 # non-standard products, it needs the set names
 chart <- makeChart("A, B, c", "ABC, Abc, AbC, aBc", snames =  "A,B,C")
 chart
@@ -121,7 +120,6 @@ solveChart(chart)
 #      [,1]   [,2]
 # [1,]    1      1
 # [2,]    2      3
-
 
 # Quine's example, page 528
 rows <- "AB, BC, Ac, aC, abd, bcd"

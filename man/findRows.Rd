@@ -94,7 +94,6 @@ Adrian Dusa
 
 \examples{
 # Lipset's binary crisp version
-data(LC)
 ttLC <- truthTable(LC, "SURV", show.cases = TRUE)
 
 findRows("DEV*ind*STB", ttLC)
@@ -104,7 +103,6 @@ findRows("DEV*ind*STB", ttLC, remainders = FALSE)
 
 
 # Lipset's fuzzy version
-data(LF)
 ttLF <- truthTable(LF, outcome = "SURV", incl.cut = 0.8)
 
 findRows(obj = ttLF, type = 2) # contradictory simplifying assumptions

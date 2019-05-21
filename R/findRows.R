@@ -44,8 +44,8 @@ function(expression = "", obj, remainders = TRUE, type = 1, ...) {
             call <- as.list(obj$call)[-1]
             call$data <- obj$initial.data
             if (obj$options$neg.out) {
-                if (tilde1st(call$outcome)) {
-                    call$outcome <- notilde(call$outcome)
+                if (admisc::tilde1st(call$outcome)) {
+                    call$outcome <- admisc::notilde(call$outcome)
                 }
             }
             else {
@@ -82,7 +82,7 @@ function(expression = "", obj, remainders = TRUE, type = 1, ...) {
     CSA <- NULL
     SSR <- NULL
     if (any(is.element(type, 0:1))) {
-        trexp <- attr(translate(paste(expression, collapse = "+"), snames = conditions), "retlist")
+        trexp <- attr(admisc::translate(paste(expression, collapse = "+"), snames = conditions, retlist = TRUE), "retlist")
         result <- matrix(ncol = length(trexp[[1]]), nrow = 0)
         if (is.matrix(obj)) {
             noflevels <- getLevels(obj)

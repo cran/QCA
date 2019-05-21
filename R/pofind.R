@@ -41,8 +41,8 @@ function(data, outcome = "", conditions = "", relation = "necessity",
     verify.qca(data)
     for (i in seq(ncol(data))) {
         if (!is.numeric(data[, i])) {
-            if (possibleNumeric(data[, i])) {
-                data[, i] <- asNumeric(data[, i])
+            if (admisc::possibleNumeric(data[, i])) {
+                data[, i] <- admisc::asNumeric(data[, i])
             }
         }
     }
@@ -52,7 +52,7 @@ function(data, outcome = "", conditions = "", relation = "necessity",
         stop(simpleError("The outcome name should not contain both lower and upper case letters.\n\n"))
     }
     origoutcome <- outcome
-    outcome <- toupper(notilde(curlyBrackets(outcome, outside = TRUE)))
+    outcome <- toupper(admisc::notilde(admisc::curlyBrackets(outcome, outside = TRUE)))
     if (!is.element(outcome, colnames(data))) {
         cat("\n")
         stop(simpleError("Outcome not found in the data.\n\n"))
@@ -61,7 +61,7 @@ function(data, outcome = "", conditions = "", relation = "necessity",
         conditions <- setdiff(colnames(data), outcome)
     }
     else {
-        conditions <- toupper(splitstr(conditions))
+        conditions <- toupper(admisc::splitstr(conditions))
         if (any(!is.element(conditions, colnames(data)))) {
             cat("\n")
             stop(simpleError("Conditions not found in the data.\n\n"))
@@ -89,7 +89,7 @@ function(data, outcome = "", conditions = "", relation = "necessity",
                     data = data,
                     relation = relation,
                     ... = ...)
-    result <- do.call("pof", pofargs)
+    result <- do.call(pof, pofargs)
     result$incl.cov <- result$incl.cov[-nrow(result$incl.cov), , drop = FALSE]
     result$options$setms <- result$options$setms[, -ncol(result$options$setms), drop = FALSE]
     if (is.element("covU", colnames(result$incl.cov))) {

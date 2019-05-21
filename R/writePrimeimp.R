@@ -36,7 +36,7 @@ function(mymat, mv = FALSE, use.tilde = FALSE, collapse = "*", snames = "") {
     }
     chars <- snames[col(mymat)]
     if (mv) {
-        chars <- matrix(paste(chars, "{", mymat - 1, "}", sep=""), nrow = nrow(mymat))
+        chars <- matrix(paste(chars, "{", mymat - 1, "}", sep = ""), nrow = nrow(mymat))
     }
     else {
         lochars <- if (use.tilde) paste0("~", chars) else tolower(chars)

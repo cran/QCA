@@ -27,12 +27,11 @@
 function(data, outcome = "", conditions = "", relation = "necessity", incl.cut = 1,
     cov.cut = 0, ron.cut = 0, pri.cut = 0, use.tilde = FALSE, use.letters = FALSE,
     depth = NULL, add = NULL, ...) {
-    memcare <- FALSE 
     funargs <- lapply(match.call(), deparse)
     other.args <- list(...)
     colnames(data) <- toupper(colnames(data))
         neg.out <- FALSE
-        if ("neg.out" %in% names(other.args)) {
+        if (is.element("neg.out", names(other.args))) {
             neg.out <- other.args$neg.out
         }
     incl.cut <- incl.cut - .Machine$double.eps ^ 0.5
@@ -44,24 +43,24 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         stop(simpleError("The outcome was not specified.\n\n"))
     }
     outcome <- toupper(outcome)
-    if (tilde1st(outcome)) {
+    if (admisc::tilde1st(outcome)) {
         neg.out <- TRUE
         outcome <- substring(outcome, 2)
     }
-    if (!is.element(toupper(curlyBrackets(outcome, outside=TRUE)), toupper(colnames(data)))) {
+    if (!is.element(toupper(admisc::curlyBrackets(outcome, outside=TRUE)), toupper(colnames(data)))) {
         cat("\n")
         stop(simpleError("The outcome name does not exist in the data.\n\n"))
     }
     if (grepl("\\{|\\}", outcome)) {
-        outcome.value <- curlyBrackets(outcome)
-        outcome <- curlyBrackets(outcome, outside=TRUE)
-        data[, toupper(outcome)] <- as.numeric(data[, toupper(outcome)] %in% splitstr(outcome.value))
+        outcome.value <- admisc::curlyBrackets(outcome)
+        outcome <- admisc::curlyBrackets(outcome, outside=TRUE)
+        data[, toupper(outcome)] <- as.numeric(is.element(data[, toupper(outcome)], admisc::splitstr(outcome.value)))
     }
     if (identical(conditions, "")) {
         conditions <- names(data)[-which(names(data) == outcome)]
     }
     else {
-        conditions <- splitstr(conditions)
+        conditions <- admisc::splitstr(conditions)
     }
     conditions <- toupper(conditions)
     verify.data(data, outcome, conditions)
@@ -87,7 +86,6 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     if (neg.out) {
         data[, outcome] <- 1 - data[, outcome]
     }
-    fc <- apply(data[, conditions, drop = FALSE], 2, function(x) any(x %% 1 > 0))
     if (mv <- any(data[, conditions] > 1)) {
         use.tilde <- FALSE
     }
@@ -100,6 +98,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         collapse <- ifelse(mv | use.tilde, "*", "")
     }
     noflevels <- apply(data[, conditions, drop = FALSE], 2, max) + 1L
+    fc <- apply(data[, conditions, drop = FALSE], 2, function(x) any(x %% 1 > 0))
     noflevels[fc] <- 2
     mbase <- c(rev(cumprod(rev(noflevels + 1L))), 1)[-1]
     noflevels[noflevels == 1] <- 2 
@@ -185,6 +184,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     }
     result <- result[tokeep, , drop = FALSE]
     mins <- mins[, tokeep, drop = FALSE]
+    attr(mins, "conditions") <- conditions 
     if (nrow(result) == 0) {
         cat("\n")
         stop(simpleError(paste("There are no combinations with", ifelse(nec(relation), paste("ron.cut =", round(ron.cut, 3)), paste("pri.cut =", round(pri.cut, 3))), "\n\n")))
@@ -202,9 +202,9 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         }
         result <- cbind(result, toadd)
     }
-    out.list <- list(incl.cov=result, coms=mins, use.letters=use.letters)
+    out.list <- list(incl.cov = result, coms = mins, use.letters = use.letters)
     if (use.letters & !alreadyletters) {
-        out.list$letters=replacements
+        out.list$letters <- replacements
     }
     out.list$options <- list(
         outcome = outcome,
@@ -216,5 +216,5 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         use.tilde = use.tilde,
         use.letters = use.letters
     )
-    return(structure(out.list, class="sS"))
+    return(structure(out.list, class = "sS"))
 }

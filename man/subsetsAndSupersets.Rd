@@ -159,7 +159,8 @@ implicant.
 \references{
 Cebotari, V.; Vink, M.P. (2013) \dQuote{A Configurational Analysis of Ethnic
 Protest in Europe}. \emph{International Journal of Comparative Sociology}
-vol.54, no.4, pp.298-324.
+vol.54, no.4, pp.298-324, DOI:
+\href{http://dx.doi.org/10.1177/0020715213508567}{10.1177/0020715213508567}.
 
 Cebotari, Victor; Vink, Maarten Peter (2015) \emph{Replication Data for: A
 configurational analysis of ethnic protest in Europe}, Harvard Dataverse, V2,
@@ -169,7 +170,8 @@ Dusa, A. (2007) \emph{Enhancing Quine-McCluskey}.
 \href{http://www.compasss.org/wpseries/Dusa2007b.pdf}{WP 2007-49, COMPASSS}.
 
 Dusa, Adrian (2010) \dQuote{A Mathematical Approach to the Boolean Minimization 
-Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113.
+Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113, DOI:
+\href{http://dx.doi.org/10.1007/s11135-008-9183-x}{10.1007/s11135-008-9183-x}.
 
 Lipset, S. M. (1959) \dQuote{Some Social Requisites of Democracy: Economic Development
 and Political Legitimacy}, \emph{American Political Science Review} vol.53, pp.69-105.
@@ -184,7 +186,6 @@ Cambridge: Cambridge University Press.
 \examples{
     
 # Lipset binary crisp sets
-data(LC)
 ssLC <- superSubset(LC, "SURV")
 
 require(venn)
@@ -194,12 +195,9 @@ x = list("SURV" = which(LC$SURV == 1),
 venn(x, cexil = 0.7)
 
 # Lipset multi-value sets
-data(LM)
 superSubset(LM, "SURV")
 
 # Cebotari & Vink (2013) fuzzy data
-data(CVF)
-
 # all necessary combinations with at least 0.9 inclusion and 0.6 coverage cut-offs
 ssCVF <- superSubset(CVF, outcome = "PROTEST", incl.cut = 0.90, cov.cut = 0.6)
 ssCVF

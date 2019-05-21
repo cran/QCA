@@ -110,12 +110,10 @@ Adrian Dusa
 \seealso{\code{\link{minimize}}, \code{\link{truthTable}}}
 
 \examples{
-\dontrun{ 
+\dontrun{
 # The following examples assume the package cna is installed
-
 library(cna)
-data(d.educate)
-cna(d.educate, what = "a")
+cna(d.educate, what = "a")}
 
 # same results with
 cc <- causalChain(d.educate)
@@ -125,26 +123,27 @@ cc
 cc$E$IC
 
 
+\dontrun{
 # another example, function cna() requires specific complexity depths
-data(d.women)
-cna(d.women, maxstep = c(3, 4, 9), what = "a")
+cna(d.women, maxstep = c(3, 4, 9), what = "a")}
 
 # same results with, no specific depths are required
 causalChain(d.women)
 
 
+\dontrun{
 # multivalue data require a different function in package cna
-data(d.pban)
 mvcna(d.pban, ordering = list(c("C", "F", "T", "V"), "PB"),
-      cov = 0.95, maxstep = c(6, 6, 10), what = "a")
+      cov = 0.95, maxstep = c(6, 6, 10), what = "a")}
 
 # same results again, simpler command
 causalChain(d.pban, ordering = "C, F, T, V < PB", sol.cov = 0.95)
 
 
+\dontrun{
 # specifying a lower consistency threshold for the solutions
 mvcna(d.pban, ordering = list(c("C", "F", "T", "V"), "PB"), con = .93,
-      maxstep = c(6, 6, 10), what = "a")
+      maxstep = c(6, 6, 10), what = "a")}
 
 # same thing with
 causalChain(d.pban, ordering = "C, F, T, V < PB", pi.cons = 0.93,
@@ -154,16 +153,16 @@ causalChain(d.pban, ordering = "C, F, T, V < PB", pi.cons = 0.93,
 # setting consistency thresholds for the PIs, solutions and also
 # a coverage threshold for the solution (note that an yet another
 # function for fuzzy sets is needed in package cna)
-data(d.autonomy)
+
 dat2 <- d.autonomy[15:30, c("AU","RE", "CN", "DE")]
+\dontrun{
 fscna(dat2, ordering = list("AU"), con = .9, con.msc = .85, cov = .85,
-      what = "a")
+      what = "a")}
 
 # again, the same results using the same function:
 causalChain(dat2, ordering = "AU", sol.cons = 0.9, pi.cons = 0.85,
             sol.cov = 0.85)
 
-}
 }
 
 \keyword{functions}

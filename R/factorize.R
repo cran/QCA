@@ -24,12 +24,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `factorize` <- 
-function(input, snames = "", noflevels, pos = FALSE, use.tilde = FALSE, ...) {
+function(input, snames = "", noflevels = NULL, pos = FALSE, use.tilde = FALSE, ...) {
     other.args <- list(...)
     if (any(names(other.args) == "tilde")) {
         use.tilde <- other.args$tilde
     }
-    pasteit <- function(mat, comrows, cols, comvals) {
+    `pasteit` <- function(mat, comrows, cols, comvals, mv = FALSE, use.tilde = FALSE, collapse = "") {
         if (!missing(cols)) {
             temp <- mat[comrows, -cols, drop = FALSE]
             if (mv) {
@@ -107,11 +107,11 @@ function(input, snames = "", noflevels, pos = FALSE, use.tilde = FALSE, ...) {
         }
         return(pasted)
     }
-    getFacts <- function(mat) {
+    `getFacts` <- function(mat, mv = FALSE, use.tilde = FALSE, collapse = "") {
         cfound <- FALSE
         result <- list()
         for (cc in seq(ncol(mat))) {
-            allcols <- combinations(ncol(mat), cc)
+            allcols <- admisc::combnk(ncol(mat), cc)
             for (cols in seq(ncol(allcols))) {
                 temp <- mat[, allcols[, cols], drop = FALSE]
                 uniq <- unique(temp)
@@ -123,9 +123,15 @@ function(input, snames = "", noflevels, pos = FALSE, use.tilde = FALSE, ...) {
                         if (sum(comrows) > 1) {
                             cfound <- TRUE
                             rows <- rows | comrows
-                            pasted <- pasteit(mat, comrows, allcols[, cols], unname(uniq[i, ]))
+                            pasted <- pasteit(  mat = mat,
+                                                comrows = comrows,
+                                                cols = allcols[, cols],
+                                                comvals = unname(uniq[i, ]),
+                                                mv = mv,
+                                                use.tilde = use.tilde,
+                                                collapse = collapse)
                             if (sum(rows) < nrow(mat)) {
-                                result[[length(result) + 1]] <- Recall(mat[!rows, , drop = FALSE])
+                                result[[length(result) + 1]] <- Recall(mat[!rows, , drop = FALSE], mv = mv, use.tilde = use.tilde, collapse = collapse)
                                 names(result)[length(result)] <- pasted
                             }
                             else {
@@ -139,14 +145,23 @@ function(input, snames = "", noflevels, pos = FALSE, use.tilde = FALSE, ...) {
         }
         if (!cfound) {
             result <- list(NA)
-            names(result) <- pasteit(mat)
+            names(result) <- pasteit(mat = mat, mv = mv, use.tilde = use.tilde, collapse = collapse)
         }
         return(result)
     }
-    getSol <- function(sol, collapse, pos) {
+    `getSol` <- function(sol, pos = FALSE, snames = "", noflevels = NULL, mv = FALSE, use.tilde = FALSE, collapse = "") {
         pospos <- FALSE
         sol <- lapply(unique(lapply(sol, sort)), function(x) {
-            x <- strsplit(x, split = "@")
+            x <- lapply(strsplit(x, split = "@"), function(x) {
+                for (i in seq(length(x))) {
+                    xi <- unlist(strsplit(x[i], split = " \\+ "))
+                    for (j in seq(length(xi))) {
+                        xi[j] <- pasteit(translate(xi[j], snames = snames), mv = mv, use.tilde = use.tilde, collapse = collapse)
+                    }
+                    x[i] <- paste(xi, collapse = " + ")
+                }
+                return(x)
+            })
             if (pos) {
                 tbl <- table(unlist(x))
                 if (any(tbl > 1)) {
@@ -189,7 +204,7 @@ function(input, snames = "", noflevels, pos = FALSE, use.tilde = FALSE, ...) {
                     if (length(y) == 1) {
                         return(y)
                     }
-                    paste(y[1], collapse, "(", y[2], ")", sep="")
+                    paste(y[1], collapse, "(", simplify(y[2], snames = snames, noflevels = noflevels), ")", sep="")
                 }))
             }
             return(x)
@@ -199,13 +214,31 @@ function(input, snames = "", noflevels, pos = FALSE, use.tilde = FALSE, ...) {
         }))
         return(sol)
     }
+    `factorizeit` <- function(x, pos = FALSE, snames = "", noflevels = NULL, mv = FALSE, use.tilde = FALSE, collapse = "") {
+        if (grepl("[(|)]", x)) {
+            x <- admisc::expandBrackets(x, snames = snames, noflevels = noflevels)
+        }
+        trexp <- translate(x, snames = snames, noflevels = noflevels)
+        snames <- colnames(trexp)
+        getSol(lapply(
+            names(unlist(getFacts(mat = trexp, mv = mv, use.tilde = use.tilde, collapse = collapse))),
+            function(x) {
+                unlist(strsplit(x, split = "[.]"))
+            }
+        ), pos = pos, snames = snames, noflevels = noflevels, mv = mv, use.tilde = use.tilde, collapse = collapse)
+    }
     isol <- NULL
+    collapse <- NULL
     if (methods::is(input, "qca")) {
-        collapse <- input$options$collapse
         noflevels <- input$tt$noflevels
         snames <- input$tt$options$conditions
         if (input$options$use.letters) {
             snames <- LETTERS[seq(length(snames))]
+        }
+        star <- any(nchar(snames) > 1)
+        collapse <- ""
+        if (star) {
+            collapse <- "*"
         }
         if (is.element("i.sol", names(input))) {
             elengths <- unlist(lapply(input$i.sol, function(x) length(x$solution)))
@@ -217,33 +250,32 @@ function(input, snames = "", noflevels, pos = FALSE, use.tilde = FALSE, ...) {
         else {
             input <- unlist(lapply(input$solution, paste, collapse = " + "))
         }
+        if (!star) {
+            input <- gsub("[*]", "", input)
+        }
     }
     else if (methods::is(input, "deMorgan")) {
         if (any(attributes(input) == "snames")) {
             snames <- attr(input, "snames")
         }
-    }
-    factorizeit <- function(x, snames, noflevels) {
-        x <- simplify(x, snames = snames, noflevels = noflevels)
-        trexp <- translate(x, snames = snames, noflevels = noflevels)
-        snames <- colnames(trexp)
-        getSol(lapply(
-            names(unlist(getFacts(trexp))),
-            function(x) {
-                unlist(strsplit(x, split = "[.]"))
-            }
-        ), collapse = collapse, pos = pos)
+        if (is.list(input)) {
+            input <- unlist(input)
+        }
     }
     if (is.character(input)) {
         if (!identical(snames, "")) {
-            snames <- splitstr(snames)
+            snames <- admisc::splitstr(snames)
         }
-        collapse <- ifelse(any(grepl("[*]", input)), "*", "")
+        if (is.null(collapse)) {
+            collapse <- ifelse(any(grepl("[*]", input)), "*", "")
+        }
         mv <- any(grepl("[{]", unlist(input)))
         if (!use.tilde & any(hastilde(unlist(input)))) {
             use.tilde <- TRUE
         }
-        result <- lapply(input, factorizeit, snames = snames, noflevels = noflevels)
+        result <- lapply(input, function(x) {
+            factorizeit(x, pos = pos, snames = snames, noflevels = noflevels, mv = mv, use.tilde = use.tilde, collapse = collapse)
+        })
         names(result) <- unname(input)
         if (!identical(snames, "")) {
             attr(result, "snames") <- snames

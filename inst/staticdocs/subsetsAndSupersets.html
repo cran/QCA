@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>superSubset, findSubsets, findSupersets. QCA 3.4</title>
+<title>superSubset, findSubsets, findSupersets. QCA 3.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.4</a>
+      <a class="brand" href="#">QCA 3.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -68,8 +68,8 @@ or supersets, of a (prime) implicant or an initial causal configuration.</p>
 <pre><div>superSubset(data, outcome = "", conditions = "", relation = "necessity",
             incl.cut = 1, cov.cut = 0, ron.cut = 0, pri.cut = 0, use.tilde = FALSE,
             use.letters = FALSE, depth = NULL, add = NULL, ...)</div>
-<div>findSubsets(noflevels, input, stop)</div>
-<div>findSupersets(noflevels, input)</div></pre>
+<div>findSubsets(noflevels, input, stop, ...)</div>
+<div>findSupersets(noflevels, input, ...)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -278,8 +278,9 @@ to all possible subsets, or supersets, of a (prime) implicant.</p>
 
     <p>Cebotari, V.; Vink, M.P. (2013) &#147;A Configurational Analysis of Ethnic
 Protest in Europe&#148;. <em>International Journal of Comparative Sociology</em>
-vol.54, no.4, pp.298-324.</p>
-  
+vol.54, no.4, pp.298-324, DOI:
+<a href = 'http://dx.doi.org/10.1177/0020715213508567'>10.1177/0020715213508567</a>.</p>
+              
     <p>Cebotari, Victor; Vink, Maarten Peter (2015) <em>Replication Data for: A
 configurational analysis of ethnic protest in Europe</em>, Harvard Dataverse, V2,
 DOI: <a href = 'http://dx.doi.org/10.7910/DVN/PT2IB9'>http://dx.doi.org/10.7910/DVN/PT2IB9</a></p>
@@ -288,7 +289,8 @@ DOI: <a href = 'http://dx.doi.org/10.7910/DVN/PT2IB9'>http://dx.doi.org/10.7910/
 2007-49. URL: <a href = 'http://www.compasss.org/wpseries/Dusa2007b.pdf'>http://www.compasss.org/wpseries/Dusa2007b.pdf</a>.</p>
   
     <p>Dusa, Adrian (2010) &#147;A Mathematical Approach to the Boolean Minimization 
-Problem.&#148; <em>Quality & Quantity</em> vol.44, no.1, pp.99-113.</p>
+Problem.&#148; <em>Quality & Quantity</em> vol.44, no.1, pp.99-113,
+DOI: <a href = 'http://dx.doi.org/10.1007/s11135-008-9183-x'>http://dx.doi.org/10.1007/s11135-008-9183-x</a>.</p>
   
     <p>Lipset, S. M. (1959) &#147;Some Social Requisites of Democracy: Economic Development
 and Political Legitimacy&#148;, <em>American Political Science Review</em> vol.53, pp.69-105.</p>
@@ -301,7 +303,6 @@ Cambridge: Cambridge University Press.</p>
     
     <h2 id="examples">Examples</h2>
     <pre class="examples"><div class='input'># Lipset binary crisp sets
-data(LC)
 ssLC &lt;- superSubset(LC, &quot;SURV&quot;)
 
 require(venn)
@@ -310,11 +311,10 @@ x = list(&quot;SURV&quot; = which(LC$SURV == 1),
          &quot;LIT&quot; = which(ssLC$coms[, 2] == 1))
 venn(x, cexil = 0.7)
 </div>
-<p><img src='subsetsAndSupersets-2.svgz' alt='' width='400' height='400' /></p>
+<p><img src='img/subsetsAndSupersets-2.svg' alt='' width='400' height='400' /></p>
 <div class='input'>
 
 # Lipset multi-value sets
-data(LM)
 superSubset(LM, &quot;SURV&quot;)
 </div>
 <div class='output'>
@@ -332,8 +332,6 @@ superSubset(LM, &quot;SURV&quot;)
 <div class='input'>
 
 # Cebotari &amp; Vink (2013) fuzzy data
-data(CVF)
-
 # all necessary combinations with at least 0.9 inclusion and 0.6 coverage cut-off
 ssCVF &lt;- superSubset(CVF, outcome = &quot;PROTEST&quot;, incl.cut = 0.90, cov.cut = 0.6)
 ssCVF

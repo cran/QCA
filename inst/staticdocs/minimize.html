@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>minimize. QCA 3.4</title>
+<title>minimize. QCA 3.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.4</a>
+      <a class="brand" href="#">QCA 3.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -64,7 +64,7 @@ Quine-McCluskey, the enhanced Quine-McCluskey and the latest Consistency Cubes
 algorithm that is built for performance.</p>
 
 <p>All algorithms return the same, exact solutions, see
-<a href = "http://dx.doi.org/10.13140/RG.2.2.36359.19361/4">Dusa (2017)</a> and
+<a href = "http://dx.doi.org/10.32614/RJ-2018-080">Dusa (2018)</a> and
 <a href = "http://dx.doi.org/10.1080/0022250X.2014.897949">Dusa and Thiem (2015)</a></p>
   
     </div>
@@ -396,34 +396,45 @@ the following components:</p>
     <div class="References">
       <h2>References</h2>
 
-      <p>Cebotari, V.; Vink, M.P. (2013) &#147;A Configurational Analysis of Ethnic
+    <p>Cebotari, V.; Vink, M.P. (2013) &#147;A Configurational Analysis of Ethnic
 Protest in Europe&#148;. <em>International Journal of Comparative Sociology</em>
-vol.54, no.4, pp.298-324.</p>
+vol.54, no.4, pp.298-324, DOI:
+<a href = 'http://dx.doi.org/10.1177/0020715213508567'>10.1177/0020715213508567</a>.</p>
   
-      <p>Cebotari, V.; Vink, M.P. (2015) &#147;Replication Data for: A configurational
+    <p>Cebotari, V.; Vink, M.P. (2015) &#147;Replication Data for: A configurational
 analysis of ethnic protest in Europe&#148;, Harvard Dataverse, V2, DOI:
 <a href = 'http://dx.doi.org/10.7910/DVN/PT2IB9'>10.7910/DVN/PT2IB9</a></p>
   
-      <p>Cronqvist, L.; Berg-Schlosser, D. (2009) &#147;Multi-Value QCA (mvQCA)&#148;, in
+    <p>Cronqvist, L.; Berg-Schlosser, D. (2009) &#147;Multi-Value QCA (mvQCA)&#148;, in
 Rihoux, B.; Ragin, C. (eds.) <em>Configurational Comparative Methods. Qualitative
 Comparative Analysis (QCA) and Related Techniques</em>, SAGE.</p>
   
-      <p>Dusa, A.; Thiem, A. (2015) &#147;Enhancing the Minimization of Boolean and
+    <p>Dusa, A.; Thiem, A. (2015) &#147;Enhancing the Minimization of Boolean and
 Multivalue Output Functions With eQMC&#148; <em>Journal of Mathematical Sociology</em>
-vol.39, no.2, pp.92-108.</p>
+vol.39, no.2, pp.92-108, DOI:
+<a href = 'http://dx.doi.org/10.1080/0022250X.2014.897949'>10.1080/0022250X.2014.897949</a>.</p>
   
-      <p>Ragin, C.C. (2003) <em>Recent Advances in Fuzzy-Set Methods and Their Application to Policy Questions</em>.
+    <p>Dusa, A. (2018) &#147;Consistency Cubes: A Fast, Efficient Method for Boolean
+Minimization&#148; <em>R Journal</em>
+vol.10, no.2, pp.357-370, DOI:
+<a href = 'http://dx.doi.org/10.32614/RJ-2018-080'>10.32614/RJ-2018-080</a>.</p>
+  
+    <p>Dusa, A. (2019) <em>QCA with R. A Comprehensive Resource</em>.
+Springer International Publishing.</p>
+
+    <p>Ragin, C.C. (2003) <em>Recent Advances in Fuzzy-Set Methods and Their Application to Policy Questions</em>.
 <a href = 'http://www.compasss.org/wpseries/Ragin2003a.pdf'>WP 2003-9, COMPASSS</a>.</p>
   
-      <p>Ragin, C.C. (2009) &#147;Qualitative Comparative Analysis Using Fuzzy-Sets (fsQCA)&#148;,
+    <p>Ragin, C.C. (2009) &#147;Qualitative Comparative Analysis Using Fuzzy-Sets (fsQCA)&#148;,
 in Rihoux, B.; Ragin, C. (eds.) <em>Configurational Comparative Methods.
 Qualitative Comparative Analysis (QCA) and Related Techniques</em>, SAGE.</p>
   
-      <p>Ragin, C.C.; Strand, S.I. (2008) &#147;Using Qualitative Comparative 
+    <p>Ragin, C.C.; Strand, S.I. (2008) &#147;Using Qualitative Comparative 
 Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).&#148; 
-<em>Sociological Methods & Research</em> vol.36, no.4, pp.431-441.</p>
+<em>Sociological Methods & Research</em> vol.36, no.4, pp.431-441, DOI:
+<a href = 'http://dx.doi.org/10.1177/0049124107313903'>10.1177/0049124107313903</a>.</p>
   
-      <p>Rihoux, B.; De Meur, G. (2009) &#147;Crisp Sets Qualitative Comparative Analysis
+    <p>Rihoux, B.; De Meur, G. (2009) &#147;Crisp Sets Qualitative Comparative Analysis
 (mvQCA)&#148;, in Rihoux, B.; Ragin, C. (eds.) <em>Configurational Comparative Methods.
 Qualitative Comparative Analysis (QCA) and Related Techniques</em>, SAGE.</p>
   
@@ -434,7 +445,6 @@ Qualitative Comparative Analysis (QCA) and Related Techniques</em>, SAGE.</p>
     <h2 id="examples">Examples</h2>
     <pre class="examples"><div class='input'># -----
 # Lipset binary crisp data
-data(LC)
 
 # the associated truth table
 ttLC &lt;- truthTable(LC, &quot;SURV&quot;, sort.by = &quot;incl, n&quot;)
@@ -471,7 +481,7 @@ M1: DEV*urb*LIT*STB + DEV*LIT*IND*STB &lt;=&gt; SURV
 library(venn)
 venn(cLC)
 </div>
-<p><img src='minimize-1.svgz' alt='' width='400' height='400' /></p>
+<p><img src='img/minimize-1.svg' alt='' width='400' height='400' /></p>
 <div class='input'>
 # add details and case names
 minimize(ttLC, details = TRUE, show.cases = TRUE)
@@ -568,7 +578,6 @@ M1: dev + stb &lt;=&gt; surv
 
 # -----
 # Lipset multi-value crisp data (Cronqvist &amp; Berg-Schlosser 2009, p.80)
-data(LM)
 
 # truth table 
 ttLM &lt;- truthTable(LM, &quot;SURV&quot;, conditions = &quot;DEV, URB, LIT, IND&quot;,
@@ -662,7 +671,6 @@ M1: DEV{0} + DEV{1}*URB{0}*IND{1} =&gt; ~SURV{1}
 
 # -----
 # Lipset fuzzy sets data (Ragin 2009, p.112)
-data(LF)
 
 # truth table using a very low inclusion cutoff
 ttLF &lt;- truthTable(LF, &quot;SURV&quot;, incl.cut = 0.8,
@@ -754,9 +762,9 @@ M1:    DEV*URB*STB + DEV*ind*STB => SURV
 </div>
 <div class='input'>
 
+
 # -----
 # Cebotari &amp; Vink (2013, 2015)
-data(CVF) 
 
 ttCVF &lt;- truthTable(CVF, outcome = &quot;PROTEST&quot;, incl.cut = 0.8,
 	                show.cases = TRUE, sort.by = &quot;incl, n&quot;)
@@ -833,30 +841,32 @@ for(i in 1:4) {
     XYplot(pims[, i], CVF$PROTEST, cex.axis = 0.6)
 }
 </div>
-<p><img src='minimize-2.svgz' alt='' width='600' height='600'/></p>
+<p><img src='img/minimize-2.svg' alt='' width='600' height='600'/></p>
 <div class='input'>
 
 # -----
-# temporal QCA (Ragin &amp; Strand 2008)
-data(RS)
-minimize(RS, outcome = &quot;REC&quot;, details = TRUE, show.cases = TRUE)
+# temporal QCA (Ragin & Strand 2008) serving the input as a dataset,
+# which will automatically be passed to truthTable() as an intermediary
+# step before the minimization
+
+minimize(RS, outcome = &quot;REC&quot;, details = TRUE)
 </div>
 <div class='output'>
   OUT: outcome value
     n: number of cases in configuration
  incl: sufficiency inclusion score
 
-    P  E  A  S  EBA OUT n  incl  PRI   cases   
- 3  0  0  0  0   -   0  3  0.000 0.000 15,16,17
-15  0  1  0  0   -   0  1  0.000 0.000 14      
-22  0  1  1  1   0   1  1  1.000 1.000 13      
-27  1  0  0  0   -   0  1  0.000 0.000 12      
-30  1  0  0  1   -   0  3  0.000 0.000 9,10,11 
-36  1  0  1  1   -   0  2  0.000 0.000 7,8     
-42  1  1  0  1   -   1  1  1.000 1.000 6       
-44  1  1  1  0   1   1  2  1.000 1.000 4,5     
-46  1  1  1  1   0   1  1  1.000 1.000 3       
-47  1  1  1  1   1   1  2  1.000 1.000 1,2     
+     P  E  A  EBA S    OUT    n  incl  PRI  
+ 5   0  0  0   -  0     0     3  0.000 0.000
+17   0  1  0   -  0     0     1  0.000 0.000
+20   0  1  1   0  1     1     1  1.000 1.000
+29   1  0  0   -  0     0     1  0.000 0.000
+30   1  0  0   -  1     0     3  0.000 0.000
+36   1  0  1   -  1     0     2  0.000 0.000
+42   1  1  0   -  1     1     1  1.000 1.000
+44   1  1  1   0  1     1     1  1.000 1.000
+45   1  1  1   1  0     1     2  1.000 1.000
+46   1  1  1   1  1     1     2  1.000 1.000   
 
 n OUT = 1/0/C: 7/10/0 
   Total      : 17 
@@ -865,12 +875,12 @@ Number of multiple-covered cases: 3
 
 M1: P*E*S + P*E*A*EBA + E*A*eba*S &lt;=&gt; REC
 
-              inclS  PRI    covS   covU   cases 
---------------------------------------------------- 
-1  P*E*S      1.000  1.000  0.571  0.143  6; 3; 1,2 
-2  P*E*A*EBA  1.000  1.000  0.571  0.286  4,5; 1,2 
-3  E*A*eba*S  1.000  1.000  0.286  0.143  13; 3 
---------------------------------------------------- 
+              inclS  PRI    covS   covU  
+---------------------------------------- 
+1  P*E*S      1.000  1.000  0.571  0.143 
+2  P*E*A*EBA  1.000  1.000  0.571  0.286 
+3  E*A*eba*S  1.000  1.000  0.286  0.143 
+---------------------------------------- 
    M1         1.000  1.000  1.000 
 
 </div>

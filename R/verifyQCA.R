@@ -71,10 +71,10 @@ function(data) {
         }
         checkNumUncal <- lapply(data, function(x) {
             x <- setdiff(x, c("-", "dc", "?"))
-            pn <- possibleNumeric(x)
+            pn <- admisc::possibleNumeric(x)
             uncal <- mvuncal <- FALSE
             if (pn) {
-                y <- asNumeric(x)
+                y <- admisc::asNumeric(x)
                 if (any(y > 1) & any(abs(y - round(y)) >= .Machine$double.eps^0.5)) {
                     uncal <- TRUE
                 }
@@ -117,7 +117,7 @@ function(data) {
         }
     }
     else if (is.vector(data)) {
-        if (!possibleNumeric(data)) {
+        if (!admisc::possibleNumeric(data)) {
             cat("\n")
             stop(simpleError("Non numeric input.\n\n"))
         }
@@ -148,7 +148,7 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
     }
     if (!identical(conditions, "")) {
         if (length(conditions) == 1 & is.character(conditions)) {
-            conditions <- splitstr(conditions)
+            conditions <- admisc::splitstr(conditions)
         }
         if (is.element(outcome, conditions)) {
             cat("\n")
@@ -181,7 +181,7 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
     data <- as.data.frame(lapply(data, function(x) {
         x <- as.character(x)
         x[x %in% c("-", "dc", "?")] <- -1
-        return(asNumeric(x))
+        return(admisc::asNumeric(x))
     }))
     verify.qca(data)
     verify.inf.test(inf.test, data)
@@ -216,7 +216,7 @@ function(data, outcome = "", conditions = "", explain = "",
     }
     if (!identical(conditions, "")) {
         if (length(conditions) == 1 & is.character(conditions)) {
-            conditions <- splitstr(conditions)
+            conditions <- admisc::splitstr(conditions)
         }
         if (is.element(outcome, conditions)) {
             cat("\n")
@@ -239,24 +239,25 @@ function(data, outcome = "", conditions = "", explain = "",
     }
 }
 `verify.dir.exp` <-
-function(data, outcome, conditions, noflevels, dir.exp = "") {
+function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
+    if (is.null(enter)) enter <- "\n"
     if (identical(dir.exp, "")) {
         return(dir.exp)
     }
     else {
         multivalue <- any(grepl("[{|}]", dir.exp))
         if (is.character(dir.exp)) {
-            dir.exp <- gsub(dashes(), "-", dir.exp)
+            dir.exp <- gsub(admisc::dashes(), "-", dir.exp)
         }
         oldway <- unlist(strsplit(gsub("[-|;|,|[:space:]]", "", dir.exp), split = ""))
-        if (possibleNumeric(oldway) | length(oldway) == 0) {
+        if (admisc::possibleNumeric(oldway) | length(oldway) == 0) {
             if (length(dir.exp) == 1) {
-                dir.exp <- splitstr(dir.exp)
+                dir.exp <- admisc::splitstr(dir.exp)
             }
             expression <- NULL
             if (length(dir.exp) != length(conditions)) {
-                cat("\n")
-                stop(simpleError("Number of expectations does not match number of conditions.\n\n"))
+                cat(enter)
+                stop(simpleError(paste0("Number of expectations does not match number of conditions.", enter, enter)))
             }
             del <- strsplit(as.character(dir.exp), split = ";")
             if (is.null(names(dir.exp))) {
@@ -264,12 +265,12 @@ function(data, outcome, conditions, noflevels, dir.exp = "") {
             }
             else {
                 if (length(names(dir.exp)) != length(conditions)) {
-                    cat("\n")
-                    stop(simpleError("All directional expectations should have names, or none at all.\n\n"))
+                    cat(enter)
+                    stop(simpleError(paste0("All directional expectations should have names, or none at all.", enter, enter)))
                 }
                 else if (length(setdiff(names(dir.exp), conditions)) > 0) {
-                    cat("\n")
-                    stop(simpleError("Incorect names of the directional expectations.\n\n"))
+                    cat(enter)
+                    stop(simpleError(paste0("Incorect names of the directional expectations.", enter, enter)))
                 }
                 names(del) <- names(dir.exp)
                 del <- del[conditions]
@@ -277,11 +278,11 @@ function(data, outcome, conditions, noflevels, dir.exp = "") {
             for (i in seq(length(del))) {
                 values <- del[[i]]
                 if (any(values != "-")) {
-                    values <- asNumeric(setdiff(values, "-"))
+                    values <- admisc::asNumeric(setdiff(values, "-"))
                     if (length(setdiff(values, seq(noflevels[i]) - 1)) > 0) {
-                        cat("\n")
+                        cat(enter)
                         errmessage <- paste("Values specified in the directional expectations do not appear in the data, for condition \"", conditions[i], "\".\n\n", sep="")
-                        stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+                        stop(simpleError(paste0(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = ""), enter, enter)))
                     }
                     else {
                         expression <- c(expression, paste(conditions[i], "{", paste(values, collapse = ","), "}", sep = ""))
@@ -295,7 +296,7 @@ function(data, outcome, conditions, noflevels, dir.exp = "") {
             if (length(dir.exp) == 1) {
                 if (!grepl("[+]", dir.exp) &  grepl("[,]", dir.exp)) {
                     if (multivalue) {
-                        values <- curlyBrackets(dir.exp)
+                        values <- admisc::curlyBrackets(dir.exp)
                         atvalues <- paste("@", seq(length(values)), sep = "")
                         for (i in seq(length(values))) {
                             dir.exp <- gsub(values[i], atvalues[i], dir.exp)
@@ -314,26 +315,31 @@ function(data, outcome, conditions, noflevels, dir.exp = "") {
         dir.exp <- paste(dir.exp, collapse = "+") 
         if (!multivalue) {
             if (any(noflevels > 2)) {
-                cat("\n")
-                stop(simpleError("For multivalue data, directional expectations should be specified using curly brackets.\n\n"))
+                cat(enter)
+                stop(simpleError(paste0("For multivalue data, directional expectations should be specified using curly brackets.", enter, enter)))
             }
         }
-        dir.exp <- tryCatch(simplify(dir.exp, snames = conditions, noflevels = noflevels), error = function(e) e, warning = function(w) w)
-        if (!is.character(dir.exp) | identical(dir.exp, "")) {
-            stop(simpleError("Directional expectations cancel each other out to an empty set.\n\n"))
+        dir.exp <- tryCatch(simplify(expression = dir.exp, snames = conditions, noflevels = noflevels, dir.exp = TRUE), error = function(e) e, warning = function(w) w)
+        if (length(dir.exp) > 1) {
+            cat(enter)
+            stop(simpleError(paste0("Ambiguous directional expectations.", enter, enter)))
         }
-        dir.exp <- translate(dir.exp, snames = conditions, noflevels = noflevels)
+        if (identical(dir.exp, "")) {
+            cat(enter)
+            stop(simpleError(paste0("Directional expectations cancel each other out to an empty set.", enter, enter)))
+        }
+        dir.exp <- admisc::translate(dir.exp, snames = conditions, noflevels = noflevels)
         return(matrix(as.integer(dir.exp) + 1L, ncol = ncol(dir.exp)))
     }
 }
 `verify.mqca` <-
 function(allargs) {
     data <- allargs$input
-    outcome <- splitstr(allargs$outcome)
+    outcome <- admisc::splitstr(allargs$outcome)
     mvoutcome <- grepl("[{]", outcome) 
     if (any(mvoutcome)) {
-        outcome.value <- curlyBrackets(outcome)
-        outcome <- curlyBrackets(outcome, outside = TRUE)
+        outcome.value <- admisc::curlyBrackets(outcome)
+        outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
         if (length(setdiff(outcome, names(data))) > 0) {
             outcome <- setdiff(outcome, names(data))
             cat("\n")
@@ -342,7 +348,7 @@ function(allargs) {
         }
         for (i in seq(length(outcome))) {
             if (mvoutcome[i]) {
-                mvnot <- setdiff(splitstr(outcome.value[i]), unique(data[, outcome[i]]))
+                mvnot <- setdiff(admisc::splitstr(outcome.value[i]), unique(data[, outcome[i]]))
                 if (length(mvnot) > 0) {
                     cat("\n")
                     errmessage <- sprintf("Value(s) %s not found in the outcome \"%s\".\n\n", paste(mvnot, collapse = ","), outcome[i])
@@ -376,7 +382,7 @@ function(allargs) {
         conditions <- names(data)
     }
     else {
-        conditions <- splitstr(conditions)
+        conditions <- admisc::splitstr(conditions)
     }
     if (length(setdiff(outcome, conditions)) > 0) {
         outcome <- setdiff(outcome, conditions)
@@ -406,69 +412,6 @@ function(allargs) {
                 errmessage <- "The second value of inf.test should be a number between 0 and 1.\n\n"
                 stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
             }
-        }
-    }
-}
-`verify.multivalue` <- function(expression, snames = "", noflevels, data) {
-    if (length(unlist(gregexpr("[{]+", expression))) != length(unlist(gregexpr("[}]+", expression)))) {
-        cat("\n")
-        stop(simpleError("Incorrect expression, opened and closed brackets don't match.\n\n"))
-    }
-    tempexpr <- gsub("[*|,|;|(|)]", "", expression)
-    pp <- unlist(strsplit(tempexpr, split="[+]"))
-    insb <- curlyBrackets(gsub("[*|(|)]", "", expression))
-    tempexpr <- curlyBrackets(tempexpr, outside=TRUE)
-    if (length(insb) != length(tempexpr)) {
-        cat("\n")
-        stop(simpleError("Incorrect expression, some snames don't have brackets.\n\n"))
-    }
-    if (any(grepl("[a-zA-Z]", gsub("[,|;]", "", insb)))) {
-        cat("\n")
-        stop(simpleError("Invalid {multi}values, levels should be numeric.\n\n"))
-    }
-    conds <- sort(unique(toupper(notilde(curlyBrackets(pp, outside = TRUE)))))
-    if (missing(data)) {
-        if (missing(noflevels)) {
-            if (any(hastilde(expression))) {
-                cat("\n")
-                stop(simpleError("Negating a multivalue condition requires the number of levels.\n\n"))
-            }
-        }
-        else {
-            if (identical(snames, "")) {
-                cat("\n")
-                stop(simpleError("Cannot verify the number of levels without the set names.\n\n"))
-            }
-            snames <- splitstr(snames)
-            noflevels <- splitstr(noflevels)
-            if (length(snames) != length(noflevels)) {
-                cat("\n")
-                stop(simpleError("Length of the set names differs from the length of the number of levels.\n\n"))
-            }
-            for (i in seq(length(tempexpr))) {
-                if (!is.element(notilde(tempexpr[i]), snames)) {
-                    cat("\n")
-                    stop(simpleError(sprintf("Condition %s not present in the set names.\n\n", tempexpr[i])))
-                }
-                if (max(asNumeric(splitstr(insb[i]))) > noflevels[match(notilde(tempexpr[i]), snames)] - 1) {
-                    cat("\n")
-                    stop(simpleError(sprintf("Levels outside the number of levels for condition %s.\n\n", tempexpr[i])))
-                }
-            }
-        }
-    }
-    else { 
-        if (identical(snames, "")) {
-            if (length(setdiff(conds, colnames(data))) > 0) {
-                cat("\n")
-                stop(simpleError("Parts of the expression don't match the column names from \"data\" argument.\n\n"))
-            }
-        }
-    }
-    if (!identical(snames, "")) {
-        if (length(setdiff(conds, toupper(splitstr(snames)))) > 0) {
-            cat("\n")
-            stop(simpleError("Parts of the expression don't match the set names from \"snames\" argument.\n\n"))
         }
     }
 }

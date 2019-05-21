@@ -24,39 +24,54 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `negate` <-
-function(expression, snames = "", noflevels, use.tilde = FALSE) {
-    if (!missing(noflevels)) {
-        noflevels <- splitstr(noflevels)
+function(input, snames = "", noflevels = NULL, use.tilde = FALSE) {
+    if (!is.null(noflevels)) {
+        noflevels <- admisc::splitstr(noflevels)
     }
     isol <- NULL
-    if (methods::is(expression, "qca")) {
-        snames <- expression$tt$options$conditions
-        if (expression$options$use.letters) {
+    minimized <- methods::is(input, "qca")
+    if (minimized) {
+        snames <- input$tt$options$conditions
+        star <- any(nchar(snames) > 1)
+        if (input$options$use.letters) {
             snames <- LETTERS[seq(length(snames))]
+            star <- FALSE
         }
-        noflevels <- expression$tt$noflevels
-        if ("i.sol" %in% names(expression)) {
-            elengths <- unlist(lapply(expression$i.sol, function(x) length(x$solution)))
-            isol <- paste(rep(names(expression$i.sol), each = elengths), unlist(lapply(elengths, seq)), sep = "-")
-            expression <- unlist(lapply(expression$i.sol, function(x) {
+        noflevels <- input$tt$noflevels
+        if (is.element("i.sol", names(input))) {
+            elengths <- unlist(lapply(input$i.sol, function(x) length(x$solution)))
+            isol <- paste(rep(names(input$i.sol), each = elengths), unlist(lapply(elengths, seq)), sep = "-")
+            input <- unlist(lapply(input$i.sol, function(x) {
                 lapply(x$solution, paste, collapse = " + ")
             }))
         }
         else {
-            expression <- unlist(lapply(expression$solution, paste, collapse = " + "))
+            input <- unlist(lapply(input$solution, paste, collapse = " + "))
+        }
+        if (!star) {
+            input <- gsub("[*]", "", input)
         }
     }
-    if (is.character(expression)) {
-        star <- any(grepl("[*]", expression))
-        if (any(hastilde(expression))) {
+    if (is.character(input)) {
+        star <- any(grepl("[*]", input))
+        if (!identical(snames, "")) {
+            snames <- admisc::splitstr(snames)
+            if (any(nchar(snames) > 1)) {
+                star <- TRUE
+            }
+        }
+        if (any(hastilde(input))) {
             use.tilde <- TRUE
         }
-        mv <- any(grepl("[{|}]", expression))
-        negateit <- function(x, snames, noflevels) {
-            x <- simplify(x, snames = snames, noflevels = noflevels)
-            trexp <- translate(x, snames = snames, noflevels = noflevels)
+        mv <- any(grepl("[{|}]", input))
+        if (mv) start <- FALSE
+        negateit <- function(x, snames = "", noflevels = NULL) {
+            callist <- list(expression = x)
+            if (!missing(snames)) callist$snames <- snames
+            if (!is.null(noflevels)) callist$noflevels <- noflevels
+            trexp <- do.call(admisc::translate, callist)
             snames <- colnames(trexp)
-            if (missing(noflevels)) {
+            if (is.null(noflevels)) {
                 noflevels <- rep(2, ncol(trexp))
             }
             snoflevels <- lapply(noflevels, function(x) seq(x) - 1)
@@ -65,7 +80,7 @@ function(expression, snames = "", noflevels, use.tilde = FALSE) {
                 x <- x[wx]
                 nms <- names(x)
                 x <- sapply(seq_along(x), function(i) {
-                    paste(setdiff(snoflevels[wx][[i]], splitstr(x[i])), collapse = ",")
+                    paste(setdiff(snoflevels[wx][[i]], admisc::splitstr(x[i])), collapse = ",")
                 })
                 if (mv) {
                     return(paste("(", paste(nms, "{", x, "}", sep = "", collapse = " + "), ")", sep = ""))
@@ -75,9 +90,9 @@ function(expression, snames = "", noflevels, use.tilde = FALSE) {
                     return(paste("(", paste(nms, collapse = " + ", sep = ""), ")", sep = ""))
                 }
             }), collapse = "")
-            negated <- simplify(negated, snames = snames, noflevels = noflevels)
+                negated <- admisc::expandBrackets(negated, snames = snames, noflevels = noflevels)
             if (use.tilde & !mv) {
-                trneg <- translate(negated, snames = snames, noflevels = noflevels)
+                trneg <- admisc::translate(negated, snames = snames, noflevels = noflevels)
                 negated <- paste(apply(trneg, 1, function(x) {
                     wx <- which(x >= 0)
                     x <- x[wx]
@@ -89,16 +104,21 @@ function(expression, snames = "", noflevels, use.tilde = FALSE) {
             if (!star) {
                 negated <- gsub("[*]", "", negated)
             }
-            return(negated)
+            callist$expression <- negated
+            return(do.call(simplify, callist))
         }
-        result <- unlist(lapply(expression, negateit, snames = snames, noflevels = noflevels))
-        attr(result, "expressions") <- expression
+        result <- lapply(input, negateit, snames = snames, noflevels = noflevels)
+        names(result) <- unname(input)
+        if (!minimized) {
+            attr(result, "expressions") <- input
+        }
         if (!identical(snames, "")) {
             attr(result, "snames") <- snames
         }
         if (!is.null(isol)) {
             attr(result, "isol") <- isol
         }
+        attr(result, "minimized") <- minimized
         class(result) <- c("character", "deMorgan")
         return(result)
     }

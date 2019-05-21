@@ -33,10 +33,8 @@ Adrian Dusa
 
 
 \examples{
-
 # -----
 # Cebotari & Vink (2013, 2015)
-data(CVF)
 
 # DEMOC*GEOCON*NATPRIDE
 with(CVF, fuzzyand(DEMOC, GEOCON, NATPRIDE))

@@ -23,13 +23,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`intersection` <- function(..., snames = "", use.tilde = FALSE, noflevels) {
+`intersection` <- function(..., snames = "", use.tilde = FALSE, noflevels = NULL) {
     allargs <- list(...)
     if (length(allargs) == 0) {
         cat("\n")
         stop(simpleError("Nothing to intersect.\n\n"))
     }
-    snames <- splitstr(snames)
+    snames <- admisc::splitstr(snames)
     sl <- ifelse(identical(snames, ""), FALSE, ifelse(all(nchar(snames) == 1), TRUE, FALSE))
     isol <- NULL
     for (i in seq(length(allargs))) {
@@ -42,7 +42,7 @@
                 }
             }
             use.tilde <- allargs[[i]]$options$use.tilde
-            if ("i.sol" %in% names(x)) {
+            if (is.element("i.sol", names(x))) {
                 elengths <- unlist(lapply(allargs[[i]]$i.sol, function(x) length(x$solution)))
                 isol <- paste(rep(names(allargs[[i]]$i.sol), each = elengths), unlist(lapply(elengths, seq)), sep = "-")
                 allargs[[i]] <- as.vector(unlist(lapply(allargs[[i]]$i.sol, function(x) {
@@ -54,7 +54,15 @@
             }
         }
         else if (methods::is(allargs[[i]], "deMorgan")) {
-            isol <- attr(allargs[[i]], "isol")
+            isol <- attr(x, "isol")
+            allargs[[i]] <- unlist(x)
+            if (!is.null(attr(x, "snames"))) {
+                attr(allargs[[i]], "snames") <- attr(x, "snames")
+            }
+            if (!is.null(attr(x, "isol"))) {
+                attr(allargs[[i]], "isol") <- attr(x, "isol")
+            }
+            attr(allargs[[i]], "minimized") <- attr(x, "minimized")
         }
         if (!is.character(allargs[[i]])) {
             cat("\n")
@@ -62,7 +70,7 @@
         }
     }
     arglist <- list(snames = snames, use.tilde = use.tilde)
-    if (!missing(noflevels)) {
+    if (!is.null(noflevels)) {
         arglist$noflevels <- noflevels
     }
     combs <- createMatrix(unlist(lapply(allargs, length)))
@@ -92,7 +100,7 @@
         }
         expressions[i] <- paste(expression, collapse = "")
         expressions[i] <- gsub("\\*\\(", "(", expressions[i])
-        result[i] <- do.call("simplify", c(list(expressions[i]), arglist))
+        result[i] <- do.call(admisc::expandBrackets, c(list(expressions[i]), arglist))
     }
     if (sl) {
         for (i in seq(length(expressions))) {

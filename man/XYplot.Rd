@@ -117,8 +117,6 @@ Methods and Research} vol.45, no.3, pp.536-568, DOI:
 \examples{
 
 # Cebotari & Vink (2013)
-data(CVF)
-
 # necessity relation between NATPRIDE and PROTEST
 XYplot(CVF[, 5:6])
 

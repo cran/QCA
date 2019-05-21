@@ -41,7 +41,7 @@ function(data, ordering = NULL, strict = FALSE, ...) {
         allargs$incl.cut <- 0.5
     }
     verify.qca(data)
-    noflevels  <- getInfo(data, colnames(data), colnames(data)[1])
+    noflevels  <- getLevels(data)
     mv <- noflevels > 2
     names(noflevels) <- names(mv) <- colnames(data)
     if (class(ordering) == "character") {
@@ -55,7 +55,7 @@ function(data, ordering = NULL, strict = FALSE, ...) {
                 stop(simpleError("Causal ordering character \"<\" requires a single string.\n\n"))
             }
         }
-        ordering <- lapply(ordering, splitstr)
+        ordering <- lapply(ordering, admisc::splitstr)
     }
     if (length(allout <- unlist(ordering)) > 0) {
         if (length(setdiff(toupper(allout), toupper(colnames(data)))) > 0) {
@@ -64,6 +64,7 @@ function(data, ordering = NULL, strict = FALSE, ...) {
         }
     }
     allargs <- c(list(input = data), allargs)
+    allargs$causalChain <- TRUE
     checkpos <- function(x, arg) {
         pos <- pmatch(names(allargs), arg)
         return(pos[!is.na(pos)])

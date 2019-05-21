@@ -58,7 +58,7 @@ Cambridge: Cambridge University Press.
 
 \examples{
 # Lipset fuzzy version data
-data(LF)
+
 ttLF <- truthTable(LF, outcome = "SURV", incl.cut = 0.8)
 
 

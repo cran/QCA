@@ -32,6 +32,9 @@ function(expressions, mv, use.tilde, collapse, inputt, row.dom, initial, all.sol
     if (is.list(expressions)) {
         mtrx <- expressions[[2]]
         sol.matrix <- expressions[[3]]
+        if (ncol(sol.matrix) == 1 & is.double(sol.matrix)) {
+            warning(simpleWarning("The PI chart is too complex, only the first minimal solution returned.\n\n"))
+        }
         if (is.null(sol.matrix)) {
             if (enter) cat("\n")
             stop(simpleError(paste("There are no solutions, given these constraints.", ifelse(enter, "\n\n", ""))))
@@ -96,6 +99,7 @@ function(expressions, mv, use.tilde, collapse, inputt, row.dom, initial, all.sol
         tokeep <- sort(unique(as.vector(unique(sol.matrix))))
         all.PIs <- rownames(mtrx)[tokeep]
         solm <- sol.matrix
+        sol.matrix[sol.matrix == 0] <- NA
         sol.matrix <- matrix(rownames(mtrx)[sol.matrix], nrow = nrow(sol.matrix))
         reduced$expressions <- reduced$expressions[tokeep, , drop = FALSE]
         solution.list <- writeSolution(sol.matrix, mtrx)
