@@ -144,7 +144,7 @@
             }
             else if (!is.character(y)) {
                 cat("\n")
-                stop(simpleError("x and y should be both column names from the data.\n\n"))
+                stop(simpleError("Unknown x and/or y arguments.\n\n"))
             }
         }
         else {
@@ -174,8 +174,8 @@
             cat("\n")
             stop(simpleError(paste("Incorrect expression in \"", paste(c(x, y)[checks], collapse = "\" and \""), "\".\n\n", sep = "")))
         }
-        x <- compute(x, data = data)
-        y <- compute(y, data = data)
+        x <- admisc::compute(x, data = data)
+        y <- admisc::compute(y, data = data)
         negated <- logical(2)
     }
     else if (is.data.frame(x) | is.matrix(x)) {
@@ -235,7 +235,7 @@
                 cat("\n")
                 stop(simpleError(paste("Incorrect expression in \"", y, "\".\n\n", sep = "")))
             }
-            y <- compute(y, data = data)
+            y <- admisc::compute(y, data = data)
             negated[2] <- FALSE
         }
     }

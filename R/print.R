@@ -84,7 +84,7 @@
                                     preamble <- sprintf("M%s-%s:", i, sol)
                                     preamble <- paste(preamble, paste(rep(" ", 7 - nchar(preamble)), collapse=""), sep="")
                                     cat(preamble)
-                                    cat(prettyString(x$i.sol[[i]]$solution[[sol]], line.length - 7, 7, "+", "<=>", outcome), "\n")
+                                    cat(admisc::prettyString(x$i.sol[[i]]$solution[[sol]], line.length - 7, 7, "+", "<=>", outcome), "\n")
                                 }
                             }
                         }
@@ -96,7 +96,7 @@
                     if (length(x$solution) == 1) {
                         sufnec <- all(admisc::agteb(x$IC$sol.incl.cov[c(1, 3)], c(sol.cons, sol.cov)))
                         if (sufnec) {
-                            cat(paste("M1: ", prettyString(x$solution[[1]], line.length - 4, 4, "+", "<=>", outcome), "\n", sep=""))
+                            cat(paste("M1: ", admisc::prettyString(x$solution[[1]], line.length - 4, 4, "+", "<=>", outcome), "\n", sep=""))
                             toreturn <- TRUE
                         }
                     }
@@ -127,134 +127,9 @@
         cat("There are no causal chains in this data.\n\n")
     }
 }
-`print.deMorgan` <- function(x, ...) {
-    prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
-    pM <- paste("M", prettyNums, sep = "")
-    if (!is.null(isol <- attr(x, "isol"))) {
-        pM <- paste(pM, isol, sep = "-")
-    }
-    pM <- paste(pM, ": ", sep = "")
-    cat("\n")
-    if (length(x) == 1 & !attr(x, "minimized")) {
-        fx <- x[[1]]
-        if (is.null(fx)) {
-            cat("No negation possible.\n")
-        }
-        else {
-            for (j in seq(length(fx))) {
-                prettyNumsFact <- formatC(seq(length(fx)), digits = nchar(length(fx)) - 1, flag = 0)
-                cat(paste("N", prettyNumsFact[j], ": ", sep = ""))
-                flength <- nchar(prettyNumsFact[j]) + 1
-                strvctr <- unlist(strsplit(fx[j], split = " + "))
-                cat(prettyString(strvctr, getOption("width") - flength, flength, "+"), "\n", sep = "")
-            }
-            cat("\n")
-        }
-    }
-    else {
-        for (i in seq(length(x))) {
-            cat(paste(pM[i], names(x)[i], sep = ""), "\n")
-            fx <- x[[i]]
-            if (is.null(fx)) {
-                cat("No negation possible.\n")
-            }
-            else {
-                for (j in seq(length(fx))) {
-                    prettyNumsFact <- formatC(seq(length(fx)), digits = nchar(length(fx)) - 1, flag = 0)
-                    cat(paste("  N", prettyNumsFact[j], ": ", sep = ""))
-                    flength <- nchar(prettyNumsFact[j]) + 3
-                    strvctr <- unlist(strsplit(fx[j], split = " + "))
-                    cat(prettyString(strvctr, getOption("width") - flength, flength, "+"), "\n", sep = "")
-                }
-                cat("\n")
-            }
-        }
-    }
-}
-`print.simplify` <- function(x, ...) {
-    prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
-    cat("\n")
-    if (all(x == "")) {
-        cat("S1: \"\"\n")
-    }
-    else {
-        for (i in seq(length(x))) {
-            cat(paste("S", prettyNums[i], ": ", sep = ""))
-            flength <- nchar(prettyNums[i]) + 1
-            strvctr <- unlist(strsplit(x[i], split = " + "))
-            cat(prettyString(strvctr, getOption("width") - flength, flength, "+"), "\n")
-        }
-    }
-    cat("\n")
-}
-`print.factorize` <- function(x, ...) {
-    prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
-    pM <- paste("M", prettyNums, sep = "")
-    if (!is.null(isol <- attr(x, "isol"))) {
-        pM <- paste(pM, isol, sep = "-")
-    }
-    pM <- paste(pM, ": ", sep = "")
-    cat("\n")
-    if (length(x) == 1) {
-        fx <- x[[1]]
-        if (is.null(fx)) {
-            cat("No factorization possible.\n")
-        }
-        else {
-            for (j in seq(length(fx))) {
-                prettyNumsFact <- formatC(seq(length(fx)), digits = nchar(length(fx)) - 1, flag = 0)
-                cat(paste("F", prettyNumsFact[j], ": ", sep = ""))
-                flength <- nchar(prettyNumsFact[j]) + 1
-                strvctr <- unlist(strsplit(fx[j], split = " + "))
-                cat(prettyString(strvctr, getOption("width") - flength, flength, "+"), "\n", sep = "")
-            }
-            cat("\n")
-        }
-    }
-    else {
-        for (i in seq(length(x))) {
-            cat(paste(pM[i], names(x)[i], sep = ""), "\n")
-            fx <- x[[i]]
-            if (is.null(fx)) {
-                cat("No factorization possible.\n")
-            }
-            else {
-                for (j in seq(length(fx))) {
-                    prettyNumsFact <- formatC(seq(length(fx)), digits = nchar(length(fx)) - 1, flag = 0)
-                    cat(paste("  F", prettyNumsFact[j], ": ", sep = ""))
-                    flength <- nchar(prettyNumsFact[j]) + 3
-                    strvctr <- unlist(strsplit(fx[j], split = " + "))
-                    cat(prettyString(strvctr, getOption("width") - flength, flength, "+"), "\n", sep = "")
-                }
-                cat("\n")
-            }
-        }
-    }
-}
 `print.fuzzy` <- function(x, ...) {
     attr(x, "name") <- NULL
     print(unclass(x))
-    cat("\n")
-}
-`print.intersection` <- function(x, ...) {
-    prettyNums <- formatC(seq(length(x)), digits = nchar(length(x)) - 1, flag = 0)
-    pI <- paste("E", prettyNums, sep="")
-    pO <- paste("  I", prettyNums, sep="")
-    if (!is.null(isol <- attr(x, "isol"))) {
-        pI <- paste(pI, isol, sep = "-")
-        pO <- paste(pO, isol, sep = "-")
-    }
-    pI <- paste(pI, ": ", sep = "")
-    pO <- paste(pO, ": ", sep = "")
-    expressions <- attr(x, "expressions")
-    ncharSI <- max(nchar(pI))
-    for (i in seq(length(x))) {
-        cat("\n", pI[i], sep = "")
-        cat(prettyString(expressions[i], getOption("width") - ncharSI, ncharSI, "+"))
-        cat("\n", pO[i], sep = "")
-        cat(prettyString(x[i], getOption("width") - ncharSI, ncharSI, "+"))
-        cat("\n")
-    }
     cat("\n")
 }
 `print.modelFit` <- function(x, ...) {
@@ -380,32 +255,32 @@
         prettyNums <- format(seq(nrow.incl.cov))
         for (i in seq(ncol(incl.cov))) {
             NAs <- is.na(incl.cov[, i])
-            incl.cov[!NAs, i] <- formatC(incl.cov[!NAs, i], digits=3, format="f")
+            incl.cov[!NAs, i] <- formatC(incl.cov[!NAs, i], digits = 3, format = "f")
             incl.cov[NAs, i] <- "  -  "
         }
-        colnames(incl.cov) <- format(colnames(incl.cov))
+        colnames(incl.cov) <- format(colnames(incl.cov), justify = "centre")
         if (essentials) {
             which.essential <- seq(length(which(essential.PIs.rows)))
             prettyNums.e <- prettyNums[which.essential]
             prettyNums <- prettyNums[-which.essential]
-            incl.cov.e <- incl.cov[essential.PIs.rows, , drop=FALSE]
-            incl.cov <- incl.cov[!essential.PIs.rows, , drop=FALSE]
+            incl.cov.e <- incl.cov[essential.PIs.rows, , drop = FALSE]
+            incl.cov <- incl.cov[!essential.PIs.rows, , drop = FALSE]
             for (i in seq(ind.len)) {
-                unique.coverages <- formatC(x$individual[[i]]$incl.cov$covU[is.element(rownames(x$individual[[i]]$incl.cov), essential.PIs)], digits=3, format="f")
-                incl.cov.e <- cbind(incl.cov.e, S=unique.coverages, stringsAsFactors=FALSE)
+                unique.coverages <- formatC(x$individual[[i]]$incl.cov$covU[is.element(rownames(x$individual[[i]]$incl.cov), essential.PIs)], digits = 3, format = "f")
+                incl.cov.e <- cbind(incl.cov.e, S = unique.coverages, stringsAsFactors = FALSE)
                 x$individual[[i]]$incl.cov <- x$individual[[i]]$incl.cov[!is.element(rownames(x$individual[[i]]$incl.cov), essential.PIs), ]
             }
         }
         for (i in seq(ind.len)) {
-            incl.cov <- cbind(incl.cov, "     ", stringsAsFactors=FALSE)
-            colnames(incl.cov)[ncol(incl.cov)] <- format(ifelse(ind.len < line.length, paste("(M", i, ")", sep=""), paste("M", i, sep="")), width=5)
+            incl.cov <- cbind(incl.cov, "     ", stringsAsFactors = FALSE)
+            colnames(incl.cov)[ncol(incl.cov)] <- format(ifelse(ind.len < line.length, paste("(M", i, ")", sep=""), paste("M", i, sep = "")), width = 5)
             if (length(x$individual[[i]]$incl.cov$covU) > 0) {
-                incl.cov[rownames(x$individual[[i]]$incl.cov), ncol(incl.cov)] <- formatC(x$individual[[i]]$incl.cov$covU, digits=3, format="f")
+                incl.cov[rownames(x$individual[[i]]$incl.cov), ncol(incl.cov)] <- formatC(x$individual[[i]]$incl.cov$covU, digits = 3, format = "f")
             }
         }
         sol.incl.cov <- matrix(unlist(lapply(x$individual, "[", "sol.incl.cov")),
                                nrow = length(x$individual), ncol = 3, byrow = TRUE)
-        rownames(sol.incl.cov) <- paste("M", seq(length(x$individual)), sep="")
+        rownames(sol.incl.cov) <- paste("M", seq(length(x$individual)), sep = "")
         sol.exists <- TRUE
     }
     else {
@@ -414,7 +289,7 @@
         nchar.nrow <- nchar(nrow.incl.cov)
         prettyNums <- format(seq(nrow.incl.cov))
         incl.cov[incl.cov == "  NA"] <- "     "
-        colnames(incl.cov) <- format(colnames(incl.cov))
+        colnames(incl.cov) <- format(colnames(incl.cov), justify = "centre")
         if (x$options$show.cases) {
             max.nchar.cases <- max(5, max(nchar(encodeString(incl.cov$cases)))) 
             cases.column <- TRUE
@@ -539,7 +414,7 @@
                     for (i in seq(nrow(incl.cov.e))) {
                         cat(paste(prettyNums.e[i], paste(rownames(incl.cov.e)[i], " "), sep = "  "))
                         cases <- unlist(strsplit(incl.cov.e.cases[i], split = "; ", useBytes = TRUE))
-                        cat(prettyString(cases, getOption("width") - nchar.rownames - nchar.nrow - 4, nchar.rownames + nchar.nrow + 4, ";", cases = TRUE))
+                        cat(admisc::prettyString(cases, getOption("width") - nchar.rownames - nchar.nrow - 4, nchar.rownames + nchar.nrow + 4, ";", cases = TRUE))
                         cat("\n")
                     }
                     cat(paste(rep("-", nchar.rownames + nchar.nrow + 9), collapse = ""), "\n")
@@ -547,7 +422,7 @@
                 for (i in seq(nrow(incl.cov))) {
                     cat(paste(prettyNums[i], paste(rownames(incl.cov)[i], " "), sep = "  "))
                     cases <- unlist(strsplit(incl.cov.cases[i], split="; ", useBytes = TRUE))
-                    cat(prettyString(cases, getOption("width") - nchar.rownames - nchar.nrow - 4, nchar.rownames + nchar.nrow + 4, ";", cases = TRUE))
+                    cat(admisc::prettyString(cases, getOption("width") - nchar.rownames - nchar.nrow - 4, nchar.rownames + nchar.nrow + 4, ";", cases = TRUE))
                     cat("\n")
                 }
                 cat(paste(rep("-", nchar.rownames + nchar.nrow + 9), collapse = ""), "\n\n")
@@ -556,6 +431,9 @@
     }
     else {
         ncols <- floor((line.length - nchar.rownames)/7)
+        if (ncols < 0) {
+            stop(simpleError("Too complex to print. Try using single letters for all conditions.\n"))
+        }
         chunks <- ceiling(ncol(incl.cov)/ncols)
         colsplits <- seq(1, ncol(incl.cov), by=ncols)
         for (chunk in seq(chunks)) {
@@ -642,7 +520,7 @@
                             for (i in seq(nrow(incl.cov.e.temp))) {
                                 cat(paste(prettyNums[i], paste(rownames(incl.cov.e.temp)[i], " "), sep = "  "))
                                 cases <- unlist(strsplit(incl.cov.e.cases[i], split = "; ", useBytes = TRUE))
-                                cat(prettyString(cases, getOption("width") - nchar.rownames - 2, nchar.rownames + 2, ";", cases = TRUE))
+                                cat(admisc::prettyString(cases, getOption("width") - nchar.rownames - 2, nchar.rownames + 2, ";", cases = TRUE))
                                 cat("\n")
                             }
                             cat(sep.row, "\n")
@@ -650,7 +528,7 @@
                         for (i in seq(nrow(incl.cov.temp))) {
                             cat(paste(prettyNums[i], paste(rownames(incl.cov.temp)[i], " "), sep = "  "))
                             cases <- unlist(strsplit(incl.cov.cases[i], split = "; ", useBytes = TRUE))
-                            cat(prettyString(cases, getOption("width") - nchar.rownames - 2, nchar.rownames + 2, ";", cases = TRUE))
+                            cat(admisc::prettyString(cases, getOption("width") - nchar.rownames - 2, nchar.rownames + 2, ";", cases = TRUE))
                             cat("\n")
                         }
                         cat(sep.row, "\n")
@@ -791,10 +669,10 @@
                 if (length(x$i.sol[[i]]$essential) > 0) {
                     xsol <- xsol[!is.element(xsol, x$i.sol[[i]]$essential)]
                     xsol <- paste(paste(x$i.sol[[i]]$essential, collapse="@"), ifelse(length(xsol) > 0, paste("@(", paste(xsol, collapse="@"), ")", sep=""), ""), sep="")
-                    cat(prettyString(unlist(strsplit(xsol, split="@")), line.length - 7, 7, "+", sufnec.char[i], outcome), "\n")
+                    cat(admisc::prettyString(unlist(strsplit(xsol, split="@")), line.length - 7, 7, "+", sufnec.char[i], outcome), "\n")
                 }
                 else {
-                    cat(prettyString(x$i.sol[[i]]$solution[[sol]], line.length - 7, 7, "+", sufnec.char[i], outcome), "\n")
+                    cat(admisc::prettyString(x$i.sol[[i]]$solution[[sol]], line.length - 7, 7, "+", sufnec.char[i], outcome), "\n")
                 }
             }
             if (x$options$details) {
@@ -812,7 +690,7 @@
         if (length(x$solution) == 1) {
             sufnec <- all(admisc::agteb(x$IC$sol.incl.cov[3], sol.cov))
             sufnec <- paste(ifelse(sufnec, "<", ""), "=>", sep="")
-            cat(sprintf("M1: %s\n", prettyString(x$solution[[1]], line.length - 4, 4, "+", sufnec, outcome)))
+            cat(sprintf("M1: %s\n", admisc::prettyString(x$solution[[1]], line.length - 4, 4, "+", sufnec, outcome)))
         }
         else {
             prettyNums <- formatC(seq(length(x$solution)), digits = nchar(length(x$solution)) - 1, flag = 0)
@@ -828,10 +706,10 @@
                 if (length(x$essential) > 0) {
                     xsol <- xsol[!is.element(xsol, x$essential)]
                     xsol <- paste(paste(x$essential, collapse="@"), ifelse(length(xsol) > 0, paste("@(", paste(xsol, collapse="@"), ")", sep=""), ""), sep="")
-                    cat(prettyString(unlist(strsplit(xsol, split="@")), line.length - nchar(prettyNums[i]) - 3, nchar(prettyNums[i]) + 3, "+", sufnec.char[i], outcome), "\n")
+                    cat(admisc::prettyString(unlist(strsplit(xsol, split="@")), line.length - nchar(prettyNums[i]) - 3, nchar(prettyNums[i]) + 3, "+", sufnec.char[i], outcome), "\n")
                 }
                 else {
-                    cat(prettyString(x$solution[[i]], line.length - nchar(prettyNums[i]) - 3, nchar(prettyNums[i]) + 3, "+", sufnec.char[i], outcome), "\n")
+                    cat(admisc::prettyString(x$solution[[i]], line.length - nchar(prettyNums[i]) - 3, nchar(prettyNums[i]) + 3, "+", sufnec.char[i], outcome), "\n")
                 }
             }
             if (!mqca & x$options$details & enter) {
@@ -862,18 +740,18 @@
     cat("\n")
     prettyNums <- format(seq(nrow(incl.cov)))
     rownames(incl.cov) <- format(rownames(incl.cov))
-    colnames(incl.cov) <- format(colnames(incl.cov), width=5)
+    colnames(incl.cov) <- format(colnames(incl.cov), justify = "centre", width = 5)
     for (i in seq(ncol(incl.cov))) {
         NAs <- is.na(incl.cov[, i])
-        incl.cov[!NAs, i] <- formatC(incl.cov[!NAs, i], digits=3, format="f")
+        incl.cov[!NAs, i] <- formatC(incl.cov[!NAs, i], digits = 3, format = "f")
         incl.cov[NAs, i] <- "  -  "
     }
     nchar.rownames <- nchar(rownames(incl.cov)[1])
-    cat(paste(c(paste(rep(" ", nchar.rownames + nchar(nrow(incl.cov)) + 2), collapse=""), format(colnames(incl.cov))), collapse="  "), "\n")
+    cat(paste(c(paste(rep(" ", nchar.rownames + nchar(nrow(incl.cov)) + 2), collapse = ""), format(colnames(incl.cov), justify = "centre")), collapse = "  "), "\n")
     sep.row <- paste(rep("-", nchar.rownames + nchar(nrow(incl.cov)) + 7 * ncol(incl.cov) + 2), collapse="")
     cat(sep.row, "\n")
     for (i in seq(nrow(incl.cov))) {
-        cat(paste(prettyNums[i], paste(c(rownames(incl.cov)[i], incl.cov[i, ]), collapse="  "), sep="  "), "\n")
+        cat(paste(prettyNums[i], paste(c(rownames(incl.cov)[i], incl.cov[i, ]), collapse = "  "), sep="  "), "\n")
     }
     cat(sep.row, "\n")
     cat("\n")

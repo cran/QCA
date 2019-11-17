@@ -5,13 +5,9 @@
 \alias{as.panel}
 \alias{combint}
 \alias{minimizeLoop}
-\alias{negateLoop}
 \alias{print.aE}
 \alias{print.chain}
-\alias{print.deMorgan}
-\alias{print.factorize}
 \alias{print.fuzzy}
-\alias{print.intersection}
 \alias{print.modelFit}
 \alias{print.mqca}
 \alias{print.panel}
@@ -26,7 +22,6 @@
 \alias{setColnames}
 \alias{setDimnames}
 \alias{uninstall}
-\alias{validateNames}
 \alias{verify.data}
 \alias{verify.dir.exp}
 \alias{verify.minimize}
@@ -76,9 +71,6 @@
 
 \alias{nec}
 \alias{suf}
-\alias{splitstr}
-\alias{getInfo}
-\alias{getLevels}
 \alias{getName}
 
 
@@ -89,9 +81,6 @@
 \alias{sortMatrix}
 \alias{sortVector}
 \alias{writePrimeimp}
-
-
-\alias{GUIcall}
 
 
 \title{Internal Functions}

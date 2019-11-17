@@ -25,8 +25,8 @@
 
 library(shiny)
 library(QCA)
+library(admisc)
 library(tools)
-library(fastdigest)
 library(venn)
 setwd(Sys.getenv("userwd"))
 options(help_type = "html")
@@ -291,7 +291,7 @@ tryCatchWEM <- function(expr) {
 }
 continue <- lapply(c("ls(", "'ls"), function(x) {
     x <- unlist(strsplit(unlist(strsplit(tryCatch(eval(parse(text = x)), error = identity)$message, "\n"))[1], ":"))
-    return(trimstr(x[length(x)]))
+    return(admisc::trimstr(x[length(x)]))
 })
 evalparse <- function(foo) {
     forbidden <- "dev.new\\(|plot.new\\(|plot.window\\(|X11\\(|quartz\\(|dev.set\\(|windows\\("
@@ -375,11 +375,11 @@ evalparse <- function(foo) {
                             }
                         }
                     }
-                    x <- trimstr(paste(x, collapse = ""))
+                    x <- admisc::trimstr(paste(x, collapse = ""))
                     x <- gsub("^\\\"", "", x)
                     x <- gsub("\\\"$", "", x)
                     x <- gsub("\\\\\"", "\"", x)
-                    x <- trimstr(x)
+                    x <- admisc::trimstr(x)
                     if (grepl("^eval\\(parse\\(text=", gsub(" ", "", x))) {
                         return(Recall(x))
                     }
@@ -641,6 +641,9 @@ getXYplot <- function(foo) {
         formatC(c(x$incl.cov$inclN, x$incl.cov$covN, x$incl.cov$RoN), format="f", digits = 3)
     })
     return(list(rownames(ev[[foo$dataset]]), ev[[foo$dataset]][, foo$x], ev[[foo$dataset]][, foo$y], rpofsuf, rpofnec))
+}
+numhash <- function(x) {
+    mean(as.integer(charToRaw(paste(capture.output(.Internal(inspect(x))), collapse = ""))))
 }
 warningstack <- NULL
 ev <- new.env(parent = globalenv())
@@ -931,7 +934,7 @@ shinyServer(function(input, output, session) {
     observe({ 
         foo <- input$xyplot
         if (!is.null(foo)) {
-            if (all(c(foo$x, foo$y) %in% names(ev[[foo$dataset]]))) {
+            if (all(is.element(c(foo$x, foo$y), names(ev[[foo$dataset]])))) {
                 session$sendCustomMessage(type = "xyplot", getXYplot(foo))
             }
         }
@@ -946,19 +949,19 @@ shinyServer(function(input, output, session) {
             xyplot_before <- xyplot_after <- ""
             recalibrate <- FALSE
             if (length(foo$calibrate) > 0) {
-                calib_before <- fastdigest(ev[[foo$calibrate$dataset]][, foo$calibrate$x, drop = FALSE])
+                calib_before <- numhash(ev[[foo$calibrate$dataset]][, foo$calibrate$x, drop = FALSE])
                 if (foo$calibrate$thsetter) {
                     recalibrate <- TRUE
                     tocalibrate <- foo$calibrate
                 }
             }
             if (length(foo$xyplot) > 0) {
-                xyplot_before <- fastdigest(ev[[foo$xyplot$dataset]][, c(foo$xyplot$x, foo$xyplot$y), drop = FALSE])
+                xyplot_before <- numhash(ev[[foo$xyplot$dataset]][, c(foo$xyplot$x, foo$xyplot$y), drop = FALSE])
             }
             scrollvh <- lapply(foo$scrollvh, function(x) unlist(x) + 1)
             thinfo <- foo$thinfo
             hashes_before <- lapply(ev, function(x) {
-                fastdigest(x)
+                numhash(x)
             })
             if (length(dev.list()) > 0) {
                 sapply(dev.list(), dev.off)
@@ -1045,13 +1048,13 @@ shinyServer(function(input, output, session) {
                 file.remove("Rplots.pdf")
             }
             hashes_after <- lapply(ev, function(x) {
-                fastdigest(x)
+                numhash(x)
             })
             if (length(foo$calibrate) > 0) {
-                calib_after <- fastdigest(ev[[foo$calibrate$dataset]][, foo$calibrate$x, drop = FALSE])
+                calib_after <- numhash(ev[[foo$calibrate$dataset]][, foo$calibrate$x, drop = FALSE])
             }
             if (length(foo$xyplot) > 0) {
-                xyplot_after <- fastdigest(ev[[foo$xyplot$dataset]][, c(foo$xyplot$x, foo$xyplot$y), drop = FALSE])
+                xyplot_after <- numhash(ev[[foo$xyplot$dataset]][, c(foo$xyplot$x, foo$xyplot$y), drop = FALSE])
             }
             added <- c(added, setdiff(names(hashes_after), names(hashes_before)))
             deleted <- setdiff(names(hashes_before), names(hashes_after))

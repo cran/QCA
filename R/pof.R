@@ -100,12 +100,12 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
         }
         outmtrx <- NA
         if (length(x) > 1) {
-            outmtrx <- validateNames(x[2], snames = snames, data = data)
+            outmtrx <- admisc::validateNames(x[2], snames = snames, data = data)
         }
         if (!is.na(outmtrx) & !is.null(data)) {
             data <- data[, -which(is.element(colnames(data), colnames(outmtrx)))]
         }
-        condmtrx <- validateNames(x[1], snames = snames, data = data)
+        condmtrx <- admisc::validateNames(x[1], snames = snames, data = data)
         return(list(condmtrx = condmtrx, outmtrx = outmtrx, expression = x[1],
             relation = relation, multivalue = multivalue))
     }
@@ -171,7 +171,7 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
         setms <- data.frame(X = setms)
         colnames(setms) <- conditions
         if (condnegated) {
-            info <- getInfo(cbind(setms, Y = 1), conditions = conditions)
+            info <- getInfo(as.data.frame(setms))
             if (info$noflevels > 2) {
                 cat("\n")
                 stop(simpleError("Multi-value objects should be negated using expressions.\n\n"))
@@ -206,12 +206,12 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
                 cat("\n")
                 stop(simpleError("Expression without outcome.\n\n"))
             }
-            setms <- compute(toverify$expression, data = data, separate = TRUE)
+            setms <- admisc::compute(toverify$expression, data = data, separate = TRUE)
         }
         else {
             outcomename <- colnames(toverify$outmtrx)[1]
-            setms <- compute(toverify$expression, data = data[, -which(colnames(data) == outcomename), drop = FALSE], separate = TRUE)
-            outcome <- compute(rownames(toverify$outmtrx)[1], data = data) 
+            setms <- admisc::compute(toverify$expression, data = data[, -which(colnames(data) == outcomename), drop = FALSE], separate = TRUE)
+            outcome <- admisc::compute(rownames(toverify$outmtrx)[1], data = data) 
             checkoutcome <- FALSE
             data <- data[, c(conditions, outcomename), drop = FALSE]
         }
@@ -268,7 +268,7 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
                 error(outcome, type = 2)
             }
             if (outnegated) {
-                info <- getInfo(data.frame(X = outcome, Y = 1), conditions = "X")
+                info <- getInfo(as.data.frame(outcome))
                 if (info$noflevels > 2) {
                     cat("\n")
                     stop(simpleError("Multi-value objects should be negated using expressions.\n\n"))
@@ -289,7 +289,7 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
                 stop(simpleError("Outcome not found in the data.\n\n"))
             }
             verify.qca(data[, which(colnames(data) == outcomename), drop = FALSE])
-            outcome <- compute(outcome, data = data)
+            outcome <- admisc::compute(outcome, data = data)
         }
     }
     if (is.vector(outcome)) {
@@ -360,12 +360,15 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
         cat("\n")
         stop(simpleError("The \"setms\" argument is not standard.\n\n"))
     }
-    if (any(cbind(setms, outcome) > 1)) {
+    if (any(na.omit(cbind(setms, outcome) > 1))) {
         cat("\n")
         stop(simpleError("Set membership scores should be numbers between 0 and 1.\n\n"))
     }
+    notmiss <- apply(cbind(setms, outcome), 1, function(x) !any(is.na(x)))
+    outcome <- outcome[notmiss]
+    setms <- setms[notmiss, , drop = FALSE]
     if (neg.out) {
-        outcome <- QCA::getLevels(outcome) - outcome - 1
+        outcome <- admisc::getLevels(outcome) - outcome - 1
     }
     result.list <- list()
     incl.cov <- .Call("C_pof", as.matrix(cbind(setms, fuzzyor(setms))), outcome, nec(relation), PACKAGE = "QCA")

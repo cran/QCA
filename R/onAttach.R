@@ -32,5 +32,5 @@
                           "\n      To avoid confusion, please uninstall it before using this software, with:\n",
                           "      uninstall(\"QCApro\")", sep="")
     }
-    packageStartupMessage("\nTo cite this package in publications, please use:\n", msg, "\n")
+    packageStartupMessage("\nTo cite package QCA in publications, please use:\n", msg, "\n")
 }

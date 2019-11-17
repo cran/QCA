@@ -74,7 +74,7 @@ function(data) {
             pn <- admisc::possibleNumeric(x)
             uncal <- mvuncal <- FALSE
             if (pn) {
-                y <- admisc::asNumeric(x)
+                y <- na.omit(admisc::asNumeric(x))
                 if (any(y > 1) & any(abs(y - round(y)) >= .Machine$double.eps^0.5)) {
                     uncal <- TRUE
                 }
@@ -249,8 +249,9 @@ function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
         if (is.character(dir.exp)) {
             dir.exp <- gsub(admisc::dashes(), "-", dir.exp)
         }
-        oldway <- unlist(strsplit(gsub("[-|;|,|[:space:]]", "", dir.exp), split = ""))
-        if (admisc::possibleNumeric(oldway) | length(oldway) == 0) {
+        direxpsplit <- unlist(strsplit(gsub("[-|;|,|[:space:]]", "", dir.exp), split = ""))
+        oldway <- admisc::possibleNumeric(direxpsplit) | length(direxpsplit) == 0
+        if (oldway) {
             if (length(dir.exp) == 1) {
                 dir.exp <- admisc::splitstr(dir.exp)
             }
@@ -285,7 +286,7 @@ function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
                         stop(simpleError(paste0(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = ""), enter, enter)))
                     }
                     else {
-                        expression <- c(expression, paste(conditions[i], "{", paste(values, collapse = ","), "}", sep = ""))
+                        expression <- c(expression, paste(conditions[i], "{", values, "}", sep = ""))
                     }
                 }
             }
@@ -319,7 +320,9 @@ function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
                 stop(simpleError(paste0("For multivalue data, directional expectations should be specified using curly brackets.", enter, enter)))
             }
         }
-        dir.exp <- tryCatch(simplify(expression = dir.exp, snames = conditions, noflevels = noflevels, dir.exp = TRUE), error = function(e) e, warning = function(w) w)
+        if (!oldway) {
+            dir.exp <- tryCatch(admisc::simplify(expression = dir.exp, snames = conditions, noflevels = noflevels, dir.exp = TRUE), error = function(e) e, warning = function(w) w)
+        }
         if (length(dir.exp) > 1) {
             cat(enter)
             stop(simpleError(paste0("Ambiguous directional expectations.", enter, enter)))

@@ -6693,16 +6693,6 @@ function dragSortStop(sortoption) {
         console_command("tt");
     }
 }
-function makePapers(obj) {
-    papers[obj.name] = new Array();
-    papers[obj.name]["main"] = Raphael(obj.name + "_main", obj.width, obj.height);
-    if (obj.inside !== undefined) {
-        var keys = getKeys(obj.inside);
-        for (var i = 0; i < keys.length; i++) {
-            papers[obj.name][keys[i]] = Raphael(obj.name + "_" + keys[i], obj.inside[keys[i]].width, obj.inside[keys[i]].height);
-        }
-    }
-}
 $("#menu_load").click(function() {
     pingit();
     if ($("#load").length) {
@@ -6711,7 +6701,7 @@ $("#menu_load").click(function() {
     else {
         current_command = "load";
         createDialog(settings["load"]);
-        makePapers(settings["load"]);
+        makePapers(settings["load"], papers);
         draw_load(papers["load"]["main"]);
         refresh_cols("load");
     }
@@ -6726,7 +6716,7 @@ $("#menu_import").click(function() {
     else {
         current_command = "import";
         createDialog(settings["import"]);
-        makePapers(settings["import"]);
+        makePapers(settings["import"], papers);
         $(papers["import"]["cols"].canvas).height(20);
         draw_import(papers["import"]["main"]);
     }
@@ -6741,7 +6731,7 @@ $("#menu_export").click(function() {
     else {
         current_command = "export";
         createDialog(settings["export"]);
-        makePapers(settings["export"]);
+        makePapers(settings["export"], papers);
         refresh_cols("export");
         draw_export(papers["export"]["main"]);
     }
@@ -6762,7 +6752,7 @@ function openDataEditor(dataset) {
             hscrollbar = info["data"][dataset].ncols - 1 > visiblecols;
         }
         createDialog(settings["data_editor"]);
-        makePapers(settings["data_editor"]);
+        makePapers(settings["data_editor"], papers);
         $("#data_editor").width((visiblecols + 1 + 1)*70 + 1*(vscrollbar?scrollbarsWH:0));
         $("#data_editor").height((visiblerows + 1 + 2)*20 + 1*(hscrollbar?scrollbarsWH:0));
         $("#data_editor").draggable({
@@ -6915,7 +6905,7 @@ $("#menu_calibrate").click(function() {
     }
     else {
         createDialog(settings["calibrate"]);
-        makePapers(settings["calibrate"]);
+        makePapers(settings["calibrate"], papers);
         thsetter_content = papers["calibrate"]["main"].set();
         refresh_cols("calibrate");
         draw_calib(papers["calibrate"]["main"]);
@@ -6947,7 +6937,7 @@ $("#menu_recode").click(function() {
     }
     else {
         createDialog(settings["recode"]);
-        makePapers(settings["recode"]);
+        makePapers(settings["recode"], papers);
         refresh_cols("recode");
         draw_recode(papers["recode"]["main"]);
     }
@@ -6961,7 +6951,7 @@ $("#menu_create_tt").click(function() {
     }
     else {
         createDialog(settings["tt"]);
-        makePapers(settings["tt"]);
+        makePapers(settings["tt"], papers);
         refresh_cols("tt");
         draw_tt(papers["tt"]["main"]);
     }
@@ -6975,7 +6965,7 @@ $("#menu_find_rows").click(function() {
     }
     else {
         createDialog(settings["findRows"]);
-        makePapers(settings["findRows"]);
+        makePapers(settings["findRows"], papers);
         refresh_cols("findRows");
         draw_findRows(papers["findRows"]["main"]);
         current_command = "findRows";
@@ -6990,7 +6980,7 @@ $("#menu_minimize").click(function() {
     }
     else {
         createDialog(settings["minimize"]);
-        makePapers(settings["minimize"]);
+        makePapers(settings["minimize"], papers);
         draw_minimize(papers["minimize"]["main"]);
         refresh_cols("minimize");
         filldirexp();
@@ -7007,7 +6997,7 @@ $("#menu_xyplot").click(function() {
     }
     else {
         createDialog(settings["xyplot"]);
-        makePapers(settings["xyplot"]);
+        makePapers(settings["xyplot"], papers);
         refresh_cols("xyplot");
         draw_xyplot(papers["xyplot"]["main"]);
         $("#xyplot").resizable({
@@ -7040,7 +7030,7 @@ $("#menu_venn").click(function() {
     }
     else {
         createDialog(settings["venn"]);
-        makePapers(settings["venn"]);
+        makePapers(settings["venn"], papers);
         draw_venn(papers["venn"]["main"]);
         $("#venn").resizable({
             resize: function() {
@@ -7081,7 +7071,7 @@ $("#menu_saveRplot").click(function() {
     else {
         current_command = "saveRplot";
         createDialog(settings["saveRplot"]);
-        makePapers(settings["saveRplot"]);
+        makePapers(settings["saveRplot"], papers);
         draw_saveRplot(papers["saveRplot"]["main"]);
     }
     $("#main_menu").smartmenus('menuHideAll');
@@ -7095,7 +7085,7 @@ $("#menu_about").click(function() {
     else {
         createDialog(settings["about"]);
         var messages = [
-            "R package: QCA, version 3.5",
+            "R package: QCA, version 3.6",
             "",
             "Author: Adrian Dușa (dusa.adrian@unibuc.ro)",
             "Former coauthors:",

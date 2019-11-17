@@ -290,6 +290,7 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
             for (i in seq(length(thresholds))) {
                 y[x > thresholds[i]] = values[i + 1]
             }
+            x[x == 0] <- 0.00001
             fracpol <- glm(y ~ log(x) + I(x^(1/2)) + I(x^1) + I(x^2), family = quasibinomial(logit))
             fs <- round(unname(predict(fracpol, type = "response")), 6)
             fs[fs < 0.0001] <- 0

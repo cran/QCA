@@ -167,15 +167,15 @@ function(input, include = "", exclude = NULL, dir.exp = "",
     mbaseplus <- rev(c(1, cumprod(rev(noflevels + 1))))[-1]
     alreadyletters <- sum(nchar(colnames(recdata)[-ncol(recdata)])) == ncol(recdata) - 1
     tt$tt[seq(length(conditions))] <- as.data.frame(lapply(tt$tt[seq(length(conditions))], function(x) {
-        x[x %in% c("-", "dc")] <- -1
+        x[is.element(x, c("-", "dc"))] <- -1
         return(admisc::asNumeric(x))
     }))
     if (!is.null(exclude)) {
         if (identical(include, "")) {
             include <- "?"
         }
-        else if (!grepl("?", include)) {
-            include <- c("?", admisc::splitstr(include))
+        else if (!is.element("?", include)) { 
+            include <- c("?", include)
         }
     }
     pos.incl <- unique(c(explain, include)) 

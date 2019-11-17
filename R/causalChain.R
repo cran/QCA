@@ -41,7 +41,7 @@ function(data, ordering = NULL, strict = FALSE, ...) {
         allargs$incl.cut <- 0.5
     }
     verify.qca(data)
-    noflevels  <- getLevels(data)
+    noflevels  <- admisc::getInfo(data)$noflevels
     mv <- noflevels > 2
     names(noflevels) <- names(mv) <- colnames(data)
     if (class(ordering) == "character") {

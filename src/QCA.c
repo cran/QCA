@@ -2476,12 +2476,16 @@ SEXP C_pof(SEXP x, SEXP y, SEXP nec) {
     double sum_pmin_negy[ncols_x];
     double sum_neg_pmin[ncols_x];
     double sum_min_max_ec[ncols_x];
-    for (int c = 0; c < ncols_x; c++) {
-        sum_x[c] = 0;
-        sum_neg_x[c] = 0;
-        sum_pmin[c] = 0;
-        sum_neg_pmin[c] = 0;
-        sum_min_max_ec[c] = 0;
+    for (int c = 0; c < ncols_x; c++) { 
+        sum_x[c] = 0.0;
+        sum_neg_x[c] = 0.0;
+        sum_pmin[c] = 0.0;
+        sum_pmin_negy[c] = 0.0;
+        sum_neg_pmin[c] = 0.0;
+        sum_min_max_ec[c] = 0.0;
+        for (int r = 0; r < nrows_x; r++) {
+            p_max_ec[c * nrows_x + r] = 0.0;
+        }
     }
     for (int r = 0; r < nrows_x; r++) {
         sum_y += p_y[r];
@@ -2492,7 +2496,6 @@ SEXP C_pof(SEXP x, SEXP y, SEXP nec) {
             sum_pmin[c] += p_pmin[c * nrows_x + r];
             sum_neg_pmin[c] += 1 - p_pmin[c * nrows_x + r];
             sum_pmin_negy[c] += (p_pmin[c * nrows_x + r] < (1 - p_y[r])) ? p_pmin[c * nrows_x + r] : (1 - p_y[r]);
-            p_max_ec[c * nrows_x + r] = 0;
         }
     }
     for (int r = 0; r < nrows_x; r++) {

@@ -85,7 +85,7 @@ function(expression = "", obj, remainders = TRUE, type = 1, ...) {
         trexp <- attr(admisc::translate(paste(expression, collapse = "+"), snames = conditions, retlist = TRUE), "retlist")
         result <- matrix(ncol = length(trexp[[1]]), nrow = 0)
         if (is.matrix(obj)) {
-            noflevels <- getLevels(obj)
+            noflevels <- admisc::getInfo(obj)$noflevels
         }
         for (i in seq(length(trexp))) {
             rowi <- trexp[[i]]

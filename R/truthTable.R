@@ -122,12 +122,12 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         data[, outcome] <- 1 - data[, outcome]
     }
     nofconditions <- length(conditions)
-    infodata  <- getInfo(data, conditions, outcome)
-    data      <- infodata$data 
-    hastime   <- infodata$hastime
-    fuzzy.cc  <- infodata$fuzzy.cc
+    infodata <- admisc::getInfo(data[, conditions, drop = FALSE])
+    data[, conditions] <- infodata$data 
+    hastime <- infodata$hastime
+    fuzzy.cc <- infodata$fuzzy.cc
     noflevels <- infodata$noflevels
-    dc.code   <- infodata$dc.code
+    dc.code <- infodata$dc.code
     rownames(data) <- rownames(initial.data)
     condata <- data[, conditions, drop = FALSE]
     if (any(fuzzy.cc)) {
@@ -159,8 +159,9 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     tt$OUT[!exclude] <- 1 * (admisc::agteb(ipc[2, !exclude], ic1) & admisc::agteb(ipc[3, !exclude], pri.cut))
     tt$OUT[ipc[2, !exclude] < ic1 & admisc::agteb(ipc[2, !exclude], ic0)] <- "C"
     tt <- cbind(tt, t(ipc))
+    zero.five <- apply(data[, conditions, drop = FALSE], 1, function(x) any(admisc::aeqb(x, 0.5)))
     cases <- sapply(rownstt, function(x) {
-        paste(rownames(data)[line.data == x], collapse = ",")
+        paste(rownames(data)[line.data == x & !zero.five], collapse = ",")
     })
     DCC <- apply(minmat, 2, function(x) {
         paste(rownames(data)[x > 0.5 & data[, outcome] < 0.5], collapse = ",")

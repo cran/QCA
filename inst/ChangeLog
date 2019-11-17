@@ -1,20 +1,18 @@
+Version 3.6
+    o Solved bug related to starting the Graphical User Interface, due to
+      failing to load the required package admisc
+    o Functions compute(), factorize(), intersection(), negate()
+      and simplify() moved to package admisc, with no visible effects on
+      the users' side
+
 Version 3.5
     o New: first implementation of conjunctural directional expectations
       (thanks to Carsten Schneider for insisting)
+    o Improved: function simplify() now able to solve even further
+      simplifications, using a method advanced by Quine
     o Improved: to avoid infinite running times for very complex PI charts,
       only the first exact solution is returned, with a warning message
       (thanks to Konan Seny Kan for the example)
-    o Improved: function simplify() now able to solve even further
-      simplifications, using a method advanced by Quine
-    o Changed: functions negate() and factorize() no longer present the
-      simplest possible solution for a given expression, instead it is left
-      to the user's discretion to simplify()
-    o Changed: function pof() no longer evaluates matrices of implicants
-      and line numbers from the implicants matrix, this became obsolete
-      after introducing DNF expressions
-    o Changed: functions translate(), recode() and a number of other
-      internal ones have been moved to package admisc, which is now imported
-      by package QCA.
       
 Version 3.4
     o New: function findRows() gains a three dots argument "..." to allow

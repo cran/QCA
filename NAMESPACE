@@ -1,13 +1,11 @@
 import(shiny)
 import(venn)
-import(fastdigest)
 import(admisc)
 importFrom("utils", "packageDescription", "remove.packages", "capture.output", "data", "loadhistory", "savehistory", "tail")
 importFrom("stats", "glm", "predict", "quasibinomial", "binom.test", "cutree", "dist", "hclust", "na.omit", "dbinom", "setNames")
 importFrom("grDevices", "dev.cur", "dev.new", "dev.list")
 importFrom("graphics", "abline", "axis", "box", "mtext", "par", "title", "text")
 importFrom("methods", "is")
-importFrom("fastdigest", "fastdigest")
 
 useDynLib(QCA, .registration = TRUE)
 
@@ -17,12 +15,9 @@ export(.onAttach,
     calibrate,
     causalChain,
     combint,
-    compute,
     createMatrix,
-    deMorgan,
     eqmcc,
     export,
-    factorize,
     findmin,
     findRows,
     findSubsets,
@@ -30,15 +25,11 @@ export(.onAttach,
     findTh,
     fuzzyand,
     fuzzyor,
-    getInfo,
-    getLevels,
     getRow,
-    intersection,
     makeChart,
     minimize,
     minimizeLoop,
     modelFit,
-    negate,
     pof,
     pofind,
     rebuild,
@@ -48,13 +39,10 @@ export(.onAttach,
     setRownames,
     setColnames,
     setDimnames,
-    simplify,
-    sop,
     solveChart,
     superSubset,
     truthTable,
     uninstall,
-    validateNames,
     verify.data,
     verify.dir.exp,
     verify.minimize,
@@ -69,29 +57,21 @@ export(.onAttach,
     suf,
     getName,
     getSolution,
-    prettyString,
     rowDominance,
     sortMatrix,
     sortVector,
     writePrimeimp,
-    writeSolution,
-
-    # Electron-js specific
-    GUIcall
+    writeSolution
 )
 
 S3method(print, "aE")
 S3method(print, "chain")
-S3method(print, "deMorgan")
-S3method(print, "factorize")
 S3method(print, "fuzzy")
-S3method(print, "intersection")
 S3method(print, "modelFit")
 S3method(print, "mqca")
 S3method(print, "panel")
 S3method(print, "pic")
 S3method(print, "pof")
 S3method(print, "qca")
-S3method(print, "simplify")
 S3method(print, "sS")
 S3method(print, "tt")

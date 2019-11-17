@@ -46,7 +46,7 @@ function(model, theory) {
     }
     use.tilde <- model$options$use.tilde
     pims <- model$pims
-    if ("i.sol" %in% names(model)) {
+    if (is.element("i.sol", names(model))) {
         pims <- lapply(model$i.sol, function(x) x$pims)
         names(pims) <- NULL
         pims <- do.call("cbind", pims)
@@ -78,13 +78,13 @@ function(model, theory) {
     for (i in seq(length(models))) {
         expression <- models[i]
         cpims <- pims[, unlist(strsplit(expression, split = " \\+ ")), drop = FALSE]
-        cpims$MODEL <- compute(expression, data = model$tt$initial.data)
-        cpims$THEORY <- compute(theory, data = model$tt$initial.data)
+        cpims$MODEL <- admisc::compute(expression, data = model$tt$initial.data)
+        cpims$THEORY <- admisc::compute(theory, data = model$tt$initial.data)
         intersections <- rep("", 4)
-        intersections[1] <- do.call("intersection", c(list(theory, expression), arglist))
-        intersections[2] <- do.call("intersection", c(list(negate(theory, snames = snames), expression), arglist))
-        intersections[3] <- do.call("intersection", c(list(theory, negate(expression, snames = snames)), arglist))
-        intersections[4] <- do.call("intersection", c(list(negate(theory, snames = snames), negate(expression, snames = snames)), arglist))
+        intersections[1] <- do.call(admisc::intersection, c(list(theory, expression), arglist))
+        intersections[2] <- do.call(admisc::intersection, c(list(negate(theory, snames = snames), expression), arglist))
+        intersections[3] <- do.call(admisc::intersection, c(list(theory, negate(expression, snames = snames)), arglist))
+        intersections[4] <- do.call(admisc::intersection, c(list(negate(theory, snames = snames), negate(expression, snames = snames)), arglist))
         intnms <- c("MODEL*THEORY", "MODEL*theory", "model*THEORY", "model*theory")
         for (nm in seq(4)) {
             int <- intersections[nm]
@@ -92,7 +92,7 @@ function(model, theory) {
                 cpims[[intnms[nm]]] <- rep(0, nrow(model$tt$initial.data))
             }
             else {
-                cpims[[intnms[nm]]] <- compute(int, data = model$tt$initial.data)
+                cpims[[intnms[nm]]] <- admisc::compute(int, data = model$tt$initial.data)
             }
         }
         intersections[intersections == ""] <- "-"

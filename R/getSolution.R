@@ -98,7 +98,7 @@ function(expressions, mv, use.tilde, collapse, inputt, row.dom, initial, all.sol
         }
         tokeep <- sort(unique(as.vector(unique(sol.matrix))))
         all.PIs <- rownames(mtrx)[tokeep]
-        solm <- sol.matrix
+        solm <- matrix(as.integer(sol.matrix), nrow = nrow(sol.matrix))
         sol.matrix[sol.matrix == 0] <- NA
         sol.matrix <- matrix(rownames(mtrx)[sol.matrix], nrow = nrow(sol.matrix))
         reduced$expressions <- reduced$expressions[tokeep, , drop = FALSE]

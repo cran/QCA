@@ -68,7 +68,7 @@ function(data, outcome = "", conditions = "", relation = "necessity",
         }
     }
     data <- data[, c(conditions, outcome)]
-    noflevels <- getLevels(data[, conditions, drop = FALSE])
+    noflevels <- admisc::getInfo(data[, conditions, drop = FALSE])$noflevels
     if (any(noflevels > 2)) { 
         expression <- paste(unlist(lapply(seq(length(conditions)), function(x) {
             values <- sort(unique(data[, conditions[x]]))
