@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>factorize. QCA 3.6</title>
+<title>factorize. QCA 3.7</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.6</a>
+      <a class="brand" href="#">QCA 3.7</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -63,7 +63,7 @@ written in SOP - Sum Of Products form.</p>
     </div>
     
     <h2>Usage</h2>
-    <pre><div>factorize(input, snames = &quot;&quot;, noflevels = NULL, use.tilde = FALSE, pos = FALSE, ...)</div></pre>
+    <pre><div>factorize(input, snames = &quot;&quot;, noflevels, pos = FALSE, ...)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -81,11 +81,6 @@ written in SOP - Sum Of Products form.</p>
             <td valign="top"><b><code>noflevels</code></b></td>
             <td></td><td></td><td></td>
             <td>Numerical vector containing the number of levels for each set.</td>
-        </tr>
-        <tr>
-            <td valign="top"><b><code>use.tilde</code></b></td>
-            <td></td><td></td><td></td>
-            <td>Logical, use a tilde to negate the sets.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>pos</code></b></td>
@@ -119,9 +114,6 @@ multivalue conditions, and it should complement the <b><code>snames</code></b> a
 <b><code><a href='minimize.html'>minimize()</a></code></b> function), a factorization is performed
 for each of the minimized solutions.</p>
 
-      <p>The argument <b><code>use.tilde</code></b> is automatically activated if the input contains
-a tilde to negate conditions.</p>
-
 
 
       <p></p>
@@ -149,48 +141,37 @@ and quantitative strategies</em>, Berkeley: University of California Press</p>
     <h2 id="examples">Examples</h2>
     <pre class="examples">
 <div class='input'># typical example with redundant conditions
-factorize(&quot;AbcD + AbCd + AbCD + ABCd&quot;)
+factorize(&quot;a~b~cd + a~bc~d + a~bcd + abc~d&quot;)
 </div>
-<div class='output'>F1: A(bD + Cd) 
-F2: Ab(C + D) + ABCd 
-F3: AbcD + AC(b + d) 
-F4: AbD + ACd 
-F5: A(bcD + BCd) + AbC
+<div class='output'>F1: a(~bd + c~d)
+F2: a~b(c + d) + abc~d
+F3: a~b~cd + ac(~b + ~d)
+F4: a~bd + ac~d
+F5: a(~b~cd + bc~d) + a~bc
 
 
 <div class='input'># results presented in alphabetical order
-factorize(&quot;one*TWO*four + one*THREE + THREE*four&quot;)
+factorize(&quot;~one*two*~four + ~one*three + three*~four&quot;)
 </div>
-<div class='output'>F1: four*(THREE + one*TWO) + one*THREE 
-F2: four*THREE + one*(THREE + four*TWO) 
-F3: four*one*TWO + THREE*(four + one)
+<div class='output'>F1: ~four*(three + ~one*two) + ~one*three
+F2: ~four*three + ~one*(three + ~four*two)
+F3: ~four*~one*two + three*(~four + ~one)
 
 
 </div>
 <div class='input'># to preserve a certain order of the set names
-factorize(&quot;one*TWO*four + one*THREE + THREE*four&quot;,
-          snames = &quot;ONE, TWO, THREE, FOUR&quot;)
+factorize(&quot;~one*two*~four + ~one*three + three*~four&quot;,
+          snames = &quot;one, two, three, four&quot;)
 </div>
-<div class='output'>F1: one*(THREE + TWO*four) + THREE*four 
-F2: one*TWO*four + THREE*(one + four) 
-F3: four*(THREE + one*TWO) + one*THREE
+<div class='output'>F1: ~one*(three + two*~four) + three*~four
+F2: ~one*two*~four + three*(~one + ~four)
+F3: ~four*(three + ~one*two) + ~one*three
 
 
-</div>
-<div class='input'>
-factorize(&quot;~ONE*TWO*~FOUR + ~ONE*THREE + THREE*~FOUR&quot;,
-          snames = &quot;ONE, TWO, THREE, FOUR&quot;)
-</div>
-<div class='output'>F1: ~ONE*(THREE + TWO*~FOUR) + THREE*~FOUR 
-F2: ~ONE*TWO*~FOUR + THREE*(~ONE + ~FOUR) 
-F3: ~FOUR*(THREE + ~ONE*TWO) + ~ONE*THREE
-
-
-</div>
 <div class='input'></div># using pos - products of sums
-factorize(&quot;ac + aD + bc + bD&quot;, pos = TRUE)
+factorize(&quot;~a~c + ~ad + ~b~c + ~bd&quot;, pos = TRUE)
 </div>
-<div class='output'>F1: (a + b)(c + D) 
+<div class='output'>F1: (~a + ~b)(~c + d) 
 
 
 </div>
@@ -200,55 +181,55 @@ pCVF &lt;- minimize(CVF, outcome = &quot;PROTEST&quot;, incl.cut = 0.8,
 
 factorize(pCVF)
 </div>
-<div class='output'>M1: e + aBD + ABC + ACD 
-  F1: AC(B + D) + e + aBD 
-  F2: B(aD + AC) + e + ACD 
-  F3: D(aB + AC) + e + ABC 
+<div class='output'>M1: ~E + ~A*B*D + A*B*C + A*C*D 
+  F1: ~E + ~A*B*D + A*C*(B + D)
+  F2: ~E + A*C*D + B*(~A*D + A*C)
+  F3: ~E + A*B*C + D*(~A*B + A*C)
 
-M2: e + aBD + ABd + ACD 
-  F1: A(Bd + CD) + e + aBD 
-  F2: B(aD + Ad) + e + ACD 
-  F3: D(aB + AC) + e + ABd 
+M2: ~E + ~A*B*D + A*B*~D + A*C*D 
+  F1: ~E + ~A*B*D + A*(B*~D + C*D)
+  F2: ~E + A*C*D + B*(~A*D + A*~D)
+  F3: ~E + A*B*~D + D*(~A*B + A*C)
 
-M3: e + ABC + ACD + BCD 
-  F1: AC(B + D) + e + BCD 
-  F2: BC(A + D) + e + ACD 
-  F3: C(AB + AD + BD) + e 
-  F4: CD(A + B) + e + ABC 
+M3: ~E + A*B*C + A*C*D + B*C*D 
+  F1: ~E + B*C*D + A*C*(B + D)
+  F2: ~E + A*C*D + B*C*(A + D)
+  F3: ~E + C*(A*B + A*D + B*D)
+  F4: ~E + A*B*C + C*D*(A + B)
 
-M4: e + ABd + ACD + BCD 
-  F1: A(Bd + CD) + e + BCD 
-  F2: B(Ad + CD) + e + ACD 
-  F3: CD(A + B) + e + ABd
+M4: ~E + A*B*~D + A*C*D + B*C*D 
+  F1: ~E + B*C*D + A*(B*~D + C*D)
+  F2: ~E + A*C*D + B*(A*~D + C*D)
+  F3: ~E + A*B*~D + C*D*(A + B)
 
 
 </div>
 <div class='input'># using an object of class &quot;deMorgan&quot; produced with negate()
 factorize(negate(pCVF))
 </div>
-<div class='output'>M1: abE + adE + AcE + bdE 
-  F1: E(ab + ad + Ac + bd) 
-  F2: aE(b + d) + E(Ac + bd) 
-  F3: bE(a + d) + E(ad + Ac) 
-  F4: dE(a + b) + E(ab + Ac) 
+<div class='output'>M1: ~A~BE + ~A~DE + A~CE + ~B~DE 
+  F1: E(~A~B + ~A~D + A~C + ~B~D)
+  F2: ~AE(~B + ~D) + E(A~C + ~B~D)
+  F3: ~BE(~A + ~D) + E(~A~D + A~C)
+  F4: ~DE(~A + ~B) + E(~A~B + A~C)
 
-M2: abE + adE + bdE + AcDE 
-  F1: E(ab + ad + bd + AcD) 
-  F2: aE(b + d) + E(bd + AcD) 
-  F3: bE(a + d) + E(ad + AcD) 
-  F4: dE(a + b) + E(ab + AcD) 
+M2: ~A~BE + ~A~DE + ~B~DE + A~CDE 
+  F1: E(~A~B + ~A~D + ~B~D + A~CD)
+  F2: ~AE(~B + ~D) + E(~B~D + A~CD)
+  F3: ~BE(~A + ~D) + E(~A~D + A~CD)
+  F4: ~DE(~A + ~B) + E(~A~B + A~CD)
 
-M3: cE + abE + adE + bdE 
-  F1: E(c + ab + ad + bd) 
-  F2: aE(b + d) + E(c + bd) 
-  F3: bE(a + d) + E(c + ad) 
-  F4: dE(a + b) + E(c + ab) 
+M3: ~CE + ~A~BE + ~A~DE + ~B~DE 
+  F1: E(~C + ~A~B + ~A~D + ~B~D)
+  F2: ~AE(~B + ~D) + E(~C + ~B~D)
+  F3: ~BE(~A + ~D) + E(~C + ~A~D)
+  F4: ~DE(~A + ~B) + E(~C + ~A~B)
 
-M4: abE + adE + bdE + cDE 
-  F1: E(ab + ad + bd + cD) 
-  F2: aE(b + d) + E(bd + cD) 
-  F3: bE(a + d) + E(ad + cD) 
-  F4: dE(a + b) + E(ab + cD)
+M4: ~A~BE + ~A~DE + ~B~DE + ~CDE 
+  F1: E(~A~B + ~A~D + ~B~D + ~CD)
+  F2: ~AE(~B + ~D) + E(~B~D + ~CD)
+  F3: ~BE(~A + ~D) + E(~A~D + ~CD)
+  F4: ~DE(~A + ~B) + E(~A~B + ~CD)
 
 
 </div></pre>
@@ -265,10 +246,6 @@ M4: abE + adE + bdE + cDE
     
 Adrian Dusa
 
-      
-    <h2>See also</h2>
-    <b><code><a href='SOPexpression.html'>translate</a></code></b>
-    
   </div>
 </div>
       

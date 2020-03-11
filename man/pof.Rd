@@ -13,10 +13,9 @@ of the \bold{\code{pof()}} function, to calculate parameters of fit for single c
 
 \usage{
 pof(setms, outcome, data, relation = "necessity", inf.test = "",
-    incl.cut = c(0.75, 0.5), add = NULL, ...)
+    incl.cut = c(0.75, 0.5), add, ...)
     
-pofind(data, outcome, conditions, relation = "necessity",
-    use.tilde = FALSE, ...)
+pofind(data, outcome, conditions, relation = "necessity", ...)
 }
 
 \arguments{
@@ -37,7 +36,6 @@ pofind(data, outcome, conditions, relation = "necessity",
         output, or a vector of length 2, the second for the absence of the output. Used
         only in conjunction with the argument \bold{\code{inf.test}}}
   \item{add}{A function, or a list containing functions, to add more parameters of fit.}
-  \item{use.tilde}{Logical, use tilde to signal the absence of conditions.}
   \item{...}{Other arguments to be passed to the main function.}
 }
 
@@ -72,7 +70,7 @@ transformed into their corresponding set membership scores.
 The argument \bold{\code{setms}} can also be a string expression, written in SOP - sum of
 products form.
 
-For all situation when \bold{\code{setms}} is something else than a data frame, it
+For all other situations when \bold{\code{setms}} is something else than a data frame, it
 requires the original \bold{\code{data}} to generate the set memberships.
 
 If character, the argument \bold{\code{outcome}} is the name of the column from the
@@ -117,18 +115,12 @@ The negation of both \bold{\code{setms}} and \bold{\code{outcome}} is accepted a
 recognized using the Boolean subtraction from 1. If the names of the conditions are
 provided via an optional (undocumented) argument \bold{\code{conditions}}, the
 column names of the \bold{\code{setms}} object are negated using the function
-\bold{\code{\link{negate}()}}.
+\bold{\code{\link[admisc]{negate}()}}.
 
 The logical argument \bold{\code{neg.out}} is deprecated, but backwards compatible.
 \bold{\code{neg.out = TRUE}} and a tilde \bold{\code{~}} in the outcome name don't
 cancel each other out, either one (or even both) signaling if the \bold{\code{outcome}}
 should be negated.
-
-When argument \bold{\code{setms}} is a SOP expression, it is the only situation when
-everything (including the \bold{\code{outcome}}) can be negated using lower case letters,
-with or without a tilde. Lower case letters and a tilde do cancel each other out, for
-example \bold{\code{~X}} is interpreted as \bold{\code{x}}, while \bold{\code{~x}} is
-interpreted as \bold{\code{X}}.
 
 The arguments from function \bold{\code{pofind()}} are passed to the main function
 \bold{\code{pof()}} to calculate parameters of fit.
@@ -197,17 +189,13 @@ pof(1 - cCVF$pims, PROTEST, relation = "sufficiency")
 # -----
 # using a SOP expression, translated using the function translate()
 
-# notice that lower case letters mean the absence of a causal condition
-pof("natpride + GEOCON => PROTEST", data = CVF)
+pof("~NATPRIDE + GEOCON => PROTEST", data = CVF)
 
 # same for the negation of the outcome
-pof("natpride + GEOCON => ~PROTEST", data = CVF)
-
-# same using lower letters for the negation
-pof("natpride + GEOCON => protest", data = CVF)
+pof("~NATPRIDE + GEOCON => ~PROTEST", data = CVF)
 
 # necessity is indicated by the reverse arrow
-pof("natpride + GEOCON <= PROTEST", data = CVF)
+pof("~NATPRIDE + GEOCON <= PROTEST", data = CVF)
 
 
 # -----
@@ -218,7 +206,7 @@ inclH <- function(x, y) {
     sum(fuzzyand(x, y) + sqrt(fuzzyor(x - y, 0)*x))
 }
 
-pof("natpride + GEOCON => protest", data = CVF, add = inclH)
+pof("~NATPRIDE + GEOCON => ~PROTEST", data = CVF, add = inclH)
 
 }
 

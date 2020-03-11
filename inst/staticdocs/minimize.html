@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>minimize. QCA 3.6</title>
+<title>minimize. QCA 3.7</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.6</a>
+      <a class="brand" href="#">QCA 3.7</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -49,7 +49,7 @@ Adrian Dusa
         
       </header>
       
-      <h1>QCA minimization using the enhanced Quine-McCluskey algorithm</h1>
+      <h1>Minimize a truth table</h1>
 
 <div class="row">
   <div class="span8">
@@ -70,10 +70,9 @@ algorithm that is built for performance.</p>
     </div>
     
     <h2>Usage</h2>
-<pre><div>minimize(input, include = &quot;&quot;, exclude = NULL, dir.exp = &quot;&quot;,
-         pi.cons = 0, pi.depth = 0, sol.cons = 0, sol.cov = 1, sol.depth = 0,
-         min.pin = FALSE, row.dom = FALSE, all.sol = FALSE,
-         details = FALSE, use.tilde = FALSE, method = &quot;CCubes&quot;, ...)</div></pre>
+<pre><div>minimize(input, include = &quot;&quot;, dir.exp = NULL, details = FALSE, all.sol = FALSE,
+         row.dom = FALSE, min.pin = FALSE, pi.cons = 0, pi.depth = 0, sol.cons = 0,
+         sol.cov = 1, sol.depth = 0, method = &quot;CCubes&quot;, ...)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -90,15 +89,9 @@ algorithm that is built for performance.</p>
         process.</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>exclude</code></b></td>
-            <td></td><td></td><td></td>
-            <td>A vector of row numbers from the truth table, or a matrix of causal 
-        combinations to exclude from the minimization process.</td>
-        </tr>
-        <tr>
             <td valign="top"><b><code>dir.exp</code></b></td>
             <td></td><td></td><td></td>
-            <td>A vector of directional expectations to derive intermediate
+            <td>Character, a vector of directional expectations to derive intermediate
         solutions.</td>
         </tr>
         <tr>
@@ -146,7 +139,7 @@ algorithm that is built for performance.</p>
         <tr>
             <td valign="top"><b><code>all.sol</code></b></td>
             <td></td><td></td><td></td>
-            <td>Logical, search for all possible solutions even of not minimal.</td>
+            <td>Logical, search for all possible solutions.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>details</code></b></td>
@@ -154,15 +147,10 @@ algorithm that is built for performance.</p>
             <td>Logical, print more details about the solution.</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>use.tilde</code></b></td>
-            <td></td><td></td><td></td>
-            <td>Logical, use tilde to signal the absence of conditions.</td>
-        </tr>
-        <tr>
             <td valign="top"><b><code>method</code></b></td>
             <td></td><td></td><td></td>
-            <td>Minimization method, one of &quot;CCubes&quot; (default), or &quot;QMC&quot; the
-        classical Quine-McCluskey, or &quot;eQMC&quot; the enhanced Quine-McCluskey.</td>
+            <td>Minimization method, one of <b><code>&quot;CCubes&quot;</code></b> (default), or <b><code>&quot;QMC&quot;</code></b> the
+        classical Quine-McCluskey, or <b><code>&quot;eQMC&quot;</code></b> the enhanced Quine-McCluskey.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>...</code></b></td>
@@ -206,7 +194,7 @@ causal combinations.</p>
 
     <p>The argument <b><code>dir.exp</code></b> is used to specify directional expectations,
 as described by Ragin (2003). They can be specified using SOP expressions, which opens
-up the possibility to experiment with conjunctural directional expectations. Don't care
+up the possibility to experiment with conjunctural directional expectations. "Don't care"
 conditions are simply left unspecified.</p>
 
     <p>Activating the <b><code>details</code></b> argument has the effect of printing
@@ -214,10 +202,6 @@ parameters of fit for each prime implicant and each overall solution, the essent
 implicants being listed in the top part of the table. It also prints the truth
 table, in case the argument <b><code>input</code></b> has been provided as a data frame
 instead of a truth table object.</p>
-
-    <p>The argument <b><code>use.tilde</code></b> signals the absence of a causal condition,
-in a sufficiency relation with the outcome, using a tilde sign <b><code>&quot;~&quot;</code></b>.
-It is ignored if the data is multivalent.</p>
 
     <p>By default, the package <b><span class = "pkg">QCA</span></b> employes a different search
 algorithm based on Consistency Cubes (<a href = "http://dx.doi.org/10.13140/RG.2.2.36359.19361/4">Dusa, 2017</a>),
@@ -264,19 +248,22 @@ to 5 prime implicants.</p>
 
     <p>The default method to solve the PI chart (when <b><code>all.sol = FALSE</code></b>),
 is to find the minimal number (<b><code>k</code></b>) of prime implicants needed to cover all
-initial positive output configurations, then it exhaustively searches through all possible
+initial positive output configurations (minterms), then exhaustively search through all possible
 disjunctions of <b><code>k</code></b> prime implicants which do cover those configurations.</p>
 
     <p>The argument <b><code>min.pin</code></b> introduces an additional parameter to 
-control when to stop the search for prime implicants. It is based on the observation by
+control when to stop the search for prime implicants.  It is especially useful for very
+large truth tables and uses an observation by
 <a href = "http://dx.doi.org/10.13140/RG.2.2.36359.19361/4">Dusa (2017)</a> that out of the
 entire set of non redundant prime implicants, only a subset actually contribute to
-solving the chart with disjunctions of <b><code>k</code></b> PIs. The search depth can be
-shortened at the level where the next subset of PIs do not contribute to solving the
-PI chart, thus avoiding to spend unnecessary time on finding the maximal number of
-non-redundant PIs. Instead, it finds the set of minimal (<b><code>&quot;min&quot;</code></b>) number
-of PIs (<b><code>&quot;pin&quot;</code></b>) necessary to obtain exactly the same solutions, with a
-dramatically improved overall performance.</p>
+solving the PI chart. The search depth can be shortened if the next subset of PIs do not
+decrease the minimum <b><code>k</code></b>.</p>
+
+<p>When the objective is to find all possible combinations of PIs (regardless of their
+complexity) that minimally solve the PI chart, the argument <b><code>all.sol</code></b> can
+be activated and the algorithm will stop at the complexity level where the next subset of PIs
+do not contribute at all to solve it. This way, CCubes avoids spending unnecessary time on
+finding all possible irredundant PIs, with a dramatically improved overall performance.</p>
 
     <p>Once the PI chart is constructed using the prime implicants found in the previous
 stages, the argument <b><code>row.dom</code></b> can be used to further eliminate
@@ -285,18 +272,12 @@ dominance: if a prime implicant A covers the same (intial) positive output
 configurations as another prime implicant B and in the same time covers
 other configurations which B does not cover, then B is irrelevant and eliminated.</p>
 
-    <p>The argument <b><code>all.sol</code></b> automatically deactivates the argument
-<b><code>min.pin</code></b>, because it aims to exhaustively identify all possible
-non-redundant disjunctions of <b><code>n</code></b> prime implicants that solve the PI
-chart, where <b><code>n >= k</code></b>, with an inflated number of possible solutions.
-Depending on the complexity of the PI chart, sometimes it may take a very long time
-to identify all possible non-redundant (disjunctions that are not subsets of
-previously found) disjunctive solutions.</p>
-
-      <p>The task of solving the PI chart depends on its size, with prime implicants on the
-rows and the positive output configurations on the columns. Since the columns are
-fixed, another possible way to reduce the solving time is to eliminate redundant rows,
-by activating the argument <b><code>row.dom</code></b></p>
+    <p>Depending on the complexity of the PI chart, it sometimes may take a very long time
+to identify all possible irredundant (disjunctions that are not subsets of
+previously found) disjunctive solutions. In such a situation, the number of
+combinations of all possible numbers of prime implicants is potentially too large to be
+solved in a polynomial time and if not otherwise specified, the depth for the disjunctive
+solutions is automatically bounded to 5 prime implicants.</p>
 
       <p>If minimizing a dataset instead of a truth table, unless otherwise specified the 
 argument <b><code>incl.cut</code></b> is automatically set to the minimum value between
@@ -492,28 +473,20 @@ n OUT = 1/0/C: 8/10/0
 
 Number of multiple-covered cases: 2 
 
-M1: DEV*urb*LIT*STB + DEV*LIT*IND*STB &lt;=&gt; SURV
+M1: DEV*~URB*LIT*STB + DEV*LIT*IND*STB &lt;=&gt; SURV
 
-                    inclS  PRI    covS   covU   cases 
------------------------------------------------------------------- 
-1  DEV*urb*LIT*STB  1.000  1.000  0.500  0.250  FI,IE; FR,SE 
-2  DEV*LIT*IND*STB  1.000  1.000  0.750  0.500  FR,SE; BE,CZ,NL,UK 
------------------------------------------------------------------- 
-   M1               1.000  1.000  1.000 
+                     inclS   PRI   covS   covU   cases 
+------------------------------------------------------------------- 
+1  DEV*~URB*LIT*STB  1.000  1.000  0.500  0.250  FI,IE; FR,SE 
+2  DEV*LIT*IND*STB   1.000  1.000  0.750  0.500  FR,SE; BE,CZ,NL,UK 
+------------------------------------------------------------------- 
+   M1                1.000  1.000  1.000 
 
 </div>
 <div class='input'>
 # negating the outcome
 ttLCn &lt;- truthTable(LC, &quot;~SURV&quot;, sort.by = &quot;incl, n&quot;)
 minimize(ttLCn)
-</div>
-<div class='output'>
-M1: dev*urb*ind + DEV*LIT*IND*stb &lt;=&gt; surv
-
-</div>
-<div class='input'>
-# using a tilde instead of upper/lower case names
-minimize(ttLCn, use.tilde = TRUE)
 </div>
 <div class='output'>
 M1: ~DEV*~URB*~IND + DEV*LIT*IND*~STB &lt;=&gt; ~SURV
@@ -563,14 +536,14 @@ n OUT = 1/0/C: 10/8/0
 
 Number of multiple-covered cases: 5 
 
-M1: dev + stb &lt;=&gt; surv
+M1: ~DEV + ~STB &lt;=&gt; ~SURV
 
-        inclS  PRI    covS   covU   cases 
--------------------------------------------------------------- 
-1  dev  1.000  1.000  0.800  0.300  GR,PT,ES; IT,RO; HU,PL; EE 
-2  stb  1.000  1.000  0.700  0.200  GR,PT,ES; HU,PL; AU; DE 
--------------------------------------------------------------- 
-   M1   1.000  1.000  1.000 
+         inclS   PRI   covS   covU   cases 
+--------------------------------------------------------------- 
+1  ~DEV  1.000  1.000  0.800  0.300  GR,PT,ES; IT,RO; HU,PL; EE 
+2  ~STB  1.000  1.000  0.700  0.200  GR,PT,ES; HU,PL; AU; DE 
+--------------------------------------------------------------- 
+   M1    1.000  1.000  1.000 
 
 </div>
 <div class='input'>
@@ -685,14 +658,14 @@ n OUT = 1/0/C: 6/12/0
 
 Number of multiple-covered cases: 0 
 
-M1: DEV*URB*LIT*IND*STB + DEV*urb*LIT*ind*STB => SURV
+M1: DEV*URB*LIT*IND*STB + DEV*~URB*LIT*~IND*STB =&gt; SURV
 
-                        inclS  PRI    covS   covU   cases 
---------------------------------------------------------------- 
-1  DEV*URB*LIT*IND*STB  0.904  0.886  0.454  0.393  BE,CZ,NL,UK 
-2  DEV*urb*LIT*ind*STB  0.804  0.719  0.265  0.204  FI,IE 
---------------------------------------------------------------- 
-   M1                   0.870  0.843  0.658
+                          inclS   PRI   covS   covU   cases 
+----------------------------------------------------------------- 
+1  DEV*URB*LIT*IND*STB    0.904  0.886  0.454  0.393  BE,CZ,NL,UK 
+2  DEV*~URB*LIT*~IND*STB  0.804  0.719  0.265  0.204  FI,IE 
+----------------------------------------------------------------- 
+   M1                     0.870  0.843  0.658
 
 </div>
 <div class='input'>
@@ -705,14 +678,14 @@ n OUT = 1/0/C: 6/12/0
 
 Number of multiple-covered cases: 0 
 
-M1: DEV*ind + URB*STB => SURV
+M1: DEV*~IND + URB*STB =&gt; SURV
 
-            inclS  PRI    covS   covU   cases 
---------------------------------------------------- 
-1  DEV*ind  0.815  0.721  0.284  0.194  FI,IE 
-2  URB*STB  0.874  0.845  0.520  0.430  BE,CZ,NL,UK 
---------------------------------------------------- 
-   M1       0.850  0.819  0.714 
+             inclS   PRI   covS   covU   cases 
+---------------------------------------------------- 
+1  DEV*~IND  0.815  0.721  0.284  0.194  FI,IE 
+2  URB*STB   0.874  0.845  0.520  0.430  BE,CZ,NL,UK 
+---------------------------------------------------- 
+   M1        0.850  0.819  0.714 
 
 </div>
 <div class='input'>
@@ -728,14 +701,14 @@ From C1P1:
 
 Number of multiple-covered cases: 0 
 
-M1:    DEV*URB*LIT*STB + DEV*LIT*ind*STB => SURV 
+M1:    DEV*URB*LIT*STB + DEV*LIT*~IND*STB =&gt; SURV 
 
-                    inclS  PRI    covS   covU   cases 
------------------------------------------------------------ 
-1  DEV*URB*LIT*STB  0.901  0.879  0.468  0.378  BE,CZ,NL,UK 
-2  DEV*LIT*ind*STB  0.814  0.721  0.282  0.191  FI,IE 
------------------------------------------------------------ 
-   M1               0.866  0.839  0.660
+                     inclS   PRI   covS   covU   cases 
+------------------------------------------------------------ 
+1  DEV*URB*LIT*STB   0.901  0.879  0.468  0.378  BE,CZ,NL,UK 
+2  DEV*LIT*~IND*STB  0.814  0.721  0.282  0.191  FI,IE 
+------------------------------------------------------------ 
+   M1                0.866  0.839  0.660
 </div>
 <div class='input'>
 # URB as a don't care condition (left unspecified) and
@@ -751,14 +724,14 @@ From C1P1:
 
 Number of multiple-covered cases: 0 
 
-M1:    DEV*URB*STB + DEV*ind*STB => SURV 
+M1:    DEV*URB*STB + DEV*~IND*STB =&gt; SURV 
 
-                inclS  PRI    covS   covU   cases 
-------------------------------------------------------- 
-1  DEV*URB*STB  0.901  0.879  0.468  0.378  BE,CZ,NL,UK 
-2  DEV*ind*STB  0.814  0.721  0.282  0.191  FI,IE 
-------------------------------------------------------- 
-   M1           0.866  0.839  0.660
+                 inclS   PRI   covS   covU   cases 
+-------------------------------------------------------- 
+1  DEV*URB*STB   0.901  0.879  0.468  0.378  BE,CZ,NL,UK 
+2  DEV*~IND*STB  0.814  0.721  0.282  0.191  FI,IE 
+-------------------------------------------------------- 
+   M1            0.866  0.839  0.660
 </div>
 <div class='input'>
 
@@ -778,20 +751,21 @@ n OUT = 1/0/C: 13/16/0
 
 Number of multiple-covered cases: 5 
 
-M1: natpride + DEMOC*GEOCON*POLDIS + (democ*ETHFRACT*POLDIS + DEMOC*ETHFRACT*GEOCON) =&gt; PROTEST 
-M2: natpride + DEMOC*GEOCON*POLDIS + (democ*ETHFRACT*POLDIS + DEMOC*ETHFRACT*poldis) =&gt; PROTEST 
-M3: natpride + DEMOC*GEOCON*POLDIS + (DEMOC*ETHFRACT*GEOCON + ETHFRACT*GEOCON*POLDIS) =&gt; PROTEST 
-M4: natpride + DEMOC*GEOCON*POLDIS + (DEMOC*ETHFRACT*poldis + ETHFRACT*GEOCON*POLDIS) =&gt; PROTEST 
+ 
+M1: ~NATPRIDE + DEMOC*GEOCON*POLDIS + (~DEMOC*ETHFRACT*POLDIS + DEMOC*ETHFRACT*GEOCON) =&gt; PROTEST 
+M2: ~NATPRIDE + DEMOC*GEOCON*POLDIS + (~DEMOC*ETHFRACT*POLDIS + DEMOC*ETHFRACT*~POLDIS) =&gt; PROTEST 
+M3: ~NATPRIDE + DEMOC*GEOCON*POLDIS + (DEMOC*ETHFRACT*GEOCON + ETHFRACT*GEOCON*POLDIS) =&gt; PROTEST 
+M4: ~NATPRIDE + DEMOC*GEOCON*POLDIS + (DEMOC*ETHFRACT*~POLDIS + ETHFRACT*GEOCON*POLDIS) =&gt; PROTEST 
 
                                                 --------------------------------- 
-                           inclS  PRI    covS   covU   (M1)   (M2)   (M3)   (M4)  
+                           inclS   PRI   covS   covU   (M1)   (M2)   (M3)   (M4)  
 --------------------------------------------------------------------------------- 
-1 natpride                0.899  0.807  0.597  0.121  0.132  0.122  0.136  0.126 
+1 ~NATPRIDE               0.899  0.807  0.597  0.121  0.132  0.122  0.136  0.126 
 2 DEMOC*GEOCON*POLDIS     0.906  0.805  0.342  0.065  0.065  0.070  0.065  0.065 
 --------------------------------------------------------------------------------- 
-3  democ*ETHFRACT*POLDIS   0.842  0.718  0.299  0.000  0.040  0.040               
+3  ~DEMOC*ETHFRACT*POLDIS  0.842  0.718  0.299  0.000  0.040  0.040               
 4  DEMOC*ETHFRACT*GEOCON   0.935  0.826  0.480  0.000  0.085         0.085        
-5  DEMOC*ETHFRACT*poldis   0.932  0.773  0.417  0.000         0.085         0.085 
+5  DEMOC*ETHFRACT*~POLDIS  0.932  0.773  0.417  0.000         0.085         0.085 
 6  ETHFRACT*GEOCON*POLDIS  0.869  0.786  0.365  0.005                0.045  0.045 
 --------------------------------------------------------------------------------- 
    M1                      0.877  0.777  0.805 
@@ -801,15 +775,14 @@ M4: natpride + DEMOC*GEOCON*POLDIS + (DEMOC*ETHFRACT*poldis + ETHFRACT*GEOCON*PO
 
                            cases 
 -------------------------------- 
-1  natpride                CrimRussiansUkr,RussiansUkraine; HungariansYugo,KosovoAlbanians;
-                           RussiansLatvia; BasquesSpain; AlbaniansFYROM
+1  ~NATPRIDE               CrimRussiansUkr,RussiansUkraine; HungariansYugo,KosovoAlbanians; RussiansLatvia;
+                            BasquesSpain; AlbaniansFYROM
 2  DEMOC*GEOCON*POLDIS     HungariansRom,CatholicsNIreland; AlbaniansFYROM; RussiansEstonia
 -------------------------------- 
-3  democ*ETHFRACT*POLDIS   HungariansYugo,KosovoAlbanians; GagauzMoldova
+3  ~DEMOC*ETHFRACT*POLDIS  HungariansYugo,KosovoAlbanians; GagauzMoldova
 4  DEMOC*ETHFRACT*GEOCON   BasquesSpain; SerbsFYROM,CatalansSpain; AlbaniansFYROM; RussiansEstonia
-5  DEMOC*ETHFRACT*poldis   BasquesSpain; SerbsFYROM,CatalansSpain
-6  ETHFRACT*GEOCON*POLDIS  HungariansYugo,KosovoAlbanians; GagauzMoldova; AlbaniansFYROM;
-                           RussiansEstonia
+5  DEMOC*ETHFRACT*~POLDIS  BasquesSpain; SerbsFYROM,CatalansSpain
+6  ETHFRACT*GEOCON*POLDIS  HungariansYugo,KosovoAlbanians; GagauzMoldova; AlbaniansFYROM; RussiansEstonia
 -------------------------------- 
 
 </div>
@@ -818,13 +791,13 @@ M4: natpride + DEMOC*GEOCON*POLDIS + (DEMOC*ETHFRACT*poldis + ETHFRACT*GEOCON*PO
 pCVF$PIchart
 </div>
 <div class='output'>
-                        5  15 16 24 27 29 30 31 32
-natpride                x  x  -  -  x  x  -  x  - 
-democ*ETHFRACT*POLDIS   -  x  x  -  -  -  -  -  - 
-DEMOC*ETHFRACT*GEOCON   -  -  -  -  -  x  x  x  x 
-DEMOC*ETHFRACT*poldis   -  -  -  -  -  x  x  -  - 
-DEMOC*GEOCON*POLDIS     -  -  -  x  -  -  -  x  x 
-ETHFRACT*GEOCON*POLDIS  -  x  x  -  -  -  -  x  x 
+                         5  15 16 24 27 29 30 31 32
+~NATPRIDE                x  x  -  -  x  x  -  x  - 
+~DEMOC*ETHFRACT*POLDIS   -  x  x  -  -  -  -  -  - 
+DEMOC*ETHFRACT*GEOCON    -  -  -  -  -  x  x  x  x 
+DEMOC*ETHFRACT*~POLDIS   -  -  -  -  -  x  x  -  - 
+DEMOC*GEOCON*POLDIS      -  -  -  x  -  -  -  x  x 
+ETHFRACT*GEOCON*POLDIS   -  x  x  -  -  -  -  x  x  
 
 </div>
 <div class='input'>
@@ -873,15 +846,15 @@ n OUT = 1/0/C: 7/10/0
 
 Number of multiple-covered cases: 3 
 
-M1: P*E*S + P*E*A*EBA + E*A*eba*S &lt;=&gt; REC
+M1: P*E*S + P*E*A*EBA + E*A*~EBA*S &lt;=&gt; REC
 
-              inclS  PRI    covS   covU  
----------------------------------------- 
-1  P*E*S      1.000  1.000  0.571  0.143 
-2  P*E*A*EBA  1.000  1.000  0.571  0.286 
-3  E*A*eba*S  1.000  1.000  0.286  0.143 
----------------------------------------- 
-   M1         1.000  1.000  1.000 
+               inclS   PRI   covS   covU  
+----------------------------------------- 
+1  P*E*S       1.000  1.000  0.571  0.143 
+2  P*E*A*EBA   1.000  1.000  0.571  0.286 
+3  E*A*~EBA*S  1.000  1.000  0.286  0.143 
+----------------------------------------- 
+   M1          1.000  1.000  1.000 
 
 </div>
 <div class='input'></div></pre>

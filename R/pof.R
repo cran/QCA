@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -24,9 +24,15 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `pof` <-
-function(setms, outcome, data, relation = "necessity", inf.test = "",
-         incl.cut = c(0.75, 0.5), add = NULL, ...) {
+function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
+         inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...) {
     funargs <- lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x))
+    if (!is.null(setms)) {
+        funargs$setms <- paste(funargs$setms, collapse = "")
+    }
+    if (!is.null(outcome)) {
+        funargs$outcome <- paste(funargs$outcome, collapse = "")
+    }
     other.args <- list(...)
     if (missing(setms)) {
         cat("\n")
@@ -61,14 +67,10 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
             complete <- other.args$complete
         }
     }
-    if (!is.null(funargs$data)) {
-        if (is.matrix(data)) {
+    if (!is.null(data)) {
+        if (is.element("data.frame", class(data)) | is.matrix(data)) {
             data <- as.data.frame(data)
         }
-        if (is.element("data.frame", class(data))) {
-            data <- as.data.frame(data)
-        }
-        colnames(data) <- toupper(colnames(data))
         for (i in colnames(data)) {
             if (!is.numeric(data[, i])) {
                 if (admisc::possibleNumeric(data[, i])) {
@@ -95,8 +97,14 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
         relation <- ifelse(grepl("=", x), ifelse(grepl("=>", x), "suf", "nec"), NA)
         x <- gsub("<=|=>", "@", gsub("[[:space:]]", "", x))
         x <- unlist(strsplit(x, split = "@"))
+        if (identical(snames, "") & !is.null(data)) {
+            snames <- colnames(data)
+        }
         if (identical(substring(x[1], 1, 2), "1-")) {
             x[1] <- negate(gsub("1-", "", x[1]), snames = snames)
+        }
+        if (identical(substring(x[2], 1, 2), "1-")) {
+            x[2] <- negate(gsub("1-", "", x[2]), snames = snames)
         }
         outmtrx <- NA
         if (length(x) > 1) {
@@ -134,56 +142,8 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
             stop(simpleError("The data argument is missing, with no default.\n\n"))
         }
     }
-    Robjs <- eval.parent(parse(text = "ls()"), n = 1)
-    testit <- tryCatch(eval(setms), error = function(e) e)
-    if (is.null(testit) | length(testit) == 0) {
-        error(funargs$setms, type = 4)
-    }
-    if (inherits(testit, "error")) {
-        if (admisc::tilde1st(gsub("1-", "", funargs$setms))) {
-            condnegated <- !condnegated
-        }
-        if (identical(substr(funargs$setms, 1, 2), "1-")) {
-            condnegated <- !condnegated
-        }
-        conditions <- admisc::notilde(gsub("1-", "", funargs$setms))
-        if (is.element(toupper(conditions), Robjs)) {
-            if (identical(conditions, tolower(conditions))) {
-                condnegated <- !condnegated
-                setms <- eval.parent(parse(text = toupper(conditions)), n = 1)
-            }
-            else if (identical(conditions, toupper(conditions))) {
-                error(conditions, type = 3)
-            }
-        }
-        else if (is.element(tolower(conditions), Robjs)) {
-            if (identical(conditions, toupper(conditions))) {
-                condnegated <- !condnegated
-                setms <- eval.parent(parse(text = tolower(conditions)), n = 1)
-            }
-            else {
-                error(conditions, type = 3)
-            }
-        }
-        else {
-            error(conditions, type = 2)
-        }
-        setms <- data.frame(X = setms)
-        colnames(setms) <- conditions
-        if (condnegated) {
-            info <- getInfo(as.data.frame(setms))
-            if (info$noflevels > 2) {
-                cat("\n")
-                stop(simpleError("Multi-value objects should be negated using expressions.\n\n"))
-            }
-            setms[, 1] <- 1 - setms[, 1]
-        }
-    }
-    else {
-        if (is.element("formula", class(setms))) { 
-            error(type = 5)
-        }
-        if (identical(substr(funargs$setms, 1, 2), "1-")) condnegated <- !condnegated
+    if (is.element("formula", class(setms))) { 
+        error(type = 5)
     }
     checkoutcome <- TRUE
     addexpression <- FALSE
@@ -195,7 +155,7 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
             cat("\n")
             stop(simpleError("Only one expression allowed.\n\n"))
         }
-        toverify <- extract(setms, data = data)
+        toverify <- extract(funargs$setms, data = data)
         if (!is.na(toverify$relation)) {
             relation <- toverify$relation
         }
@@ -207,10 +167,12 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
                 stop(simpleError("Expression without outcome.\n\n"))
             }
             setms <- admisc::compute(toverify$expression, data = data, separate = TRUE)
+            funargs$setms <- toverify$expression
         }
         else {
             outcomename <- colnames(toverify$outmtrx)[1]
-            setms <- admisc::compute(toverify$expression, data = data[, -which(colnames(data) == outcomename), drop = FALSE], separate = TRUE)
+            setms <- admisc::compute(toverify$expression, data = data[, setdiff(colnames(data), outcomename), drop = FALSE], separate = TRUE)
+            funargs$setms <- paste(paste(unlist(toverify$expression), collapse = "+"), ifelse(toverify$relation == "suf", "=>", "<="), rownames(toverify$outmtrx))
             outcome <- admisc::compute(rownames(toverify$outmtrx)[1], data = data) 
             checkoutcome <- FALSE
             data <- data[, c(conditions, outcomename), drop = FALSE]
@@ -234,11 +196,10 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
             cat("\n")
             stop(simpleError("Outcome is missing, with no default.\n\n"))
         }
-        testit <- tryCatch(eval(outcome), error = function(e) e)
-        if (is.null(testit) | length(testit) == 0) {
-            error(funargs$outcome, type = 4)
+        if (is.element("formula", class(outcome))) { 
+            error(type = 5)
         }
-        if (inherits(testit, "error")) {
+        if (is.element("character", class(outcome))) {
             if (admisc::tilde1st(gsub("1-", "", funargs$outcome))) {
                 outnegated <- !outnegated
             }
@@ -246,50 +207,31 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
                 outnegated <- !outnegated
             }
             outcome <- admisc::notilde(gsub("1-", "", funargs$outcome))
-            if (is.element(toupper(outcome), Robjs)) {
-                if (identical(outcome, tolower(outcome))) {
-                    outnegated <- !outnegated
-                    outcome <- eval.parent(parse(text = toupper(outcome)), n = 1)
-                }
-                else if (identical(outcome, toupper(outcome))) {
-                    error(outcome, type = 3)
-                }
-            }
-            else if (is.element(tolower(outcome), Robjs)) {
-                if (identical(outcome, toupper(outcome))) {
-                    outnegated <- !outnegated
-                    outcome <- eval.parent(parse(text = tolower(outcome)), n = 1)
-                }
-                else {
-                    error(outcome, type = 3)
-                }
-            }
-            else {
-                error(outcome, type = 2)
-            }
-            if (outnegated) {
-                info <- getInfo(as.data.frame(outcome))
-                if (info$noflevels > 2) {
-                    cat("\n")
-                    stop(simpleError("Multi-value objects should be negated using expressions.\n\n"))
-                }
-                outcome <- 1 - outcome
-            }
-        }
-        if (is.element("formula", class(outcome))) { 
-            error(type = 5)
-        }
-        if (is.element("character", class(outcome))) {
-            if (missing(data)) {
+            outcomename <- admisc::curlyBrackets(outcome, outside = TRUE)
+            if (is.null(data)) {
                 error(type = 6)
             }
-            outcomename <- toupper(admisc::curlyBrackets(admisc::notilde(gsub("1-", "", outcome)), outside = TRUE))
             if (!is.element(outcomename, colnames(data))) {
                 cat("\n")
                 stop(simpleError("Outcome not found in the data.\n\n"))
             }
             verify.qca(data[, which(colnames(data) == outcomename), drop = FALSE])
             outcome <- admisc::compute(outcome, data = data)
+            if (outnegated) {
+                outcome <- 1 - outcome
+            }
+        }
+        else if (is.vector(outcome)) {
+            if (admisc::tilde1st(gsub("1-", "", funargs$outcome))) {
+                outnegated <- !outnegated
+            }
+            if (identical(substr(funargs$outcome, 1, 2), "1-")) {
+                outnegated <- !outnegated
+            }
+            outcomename <- admisc::notilde(gsub("1-", "", funargs$outcome))
+            if (identical(substr(outcomename, 1, 2), "c(")) {
+                outcomename <- "Y"
+            }
         }
     }
     if (is.vector(outcome)) {
@@ -302,53 +244,56 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
         cat("\n")
         stop(simpleError("The outcome should be either a column name in a dataset\n       or a vector of set membership values.\n\n"))
     }
+    if (identical(substr(funargs$setms, 1, 2), "1-")) {
+        condnegated <- !condnegated
+    }
     if (is.vector(setms)) {
         setms <- data.frame(setms)
-        conditions <- funargs$setms
-        if (grepl("[$]", conditions)) {
-            conditions <- tail(unlist(strsplit(conditions, split = "[$]")), 1)
-        }
-        else if (grepl("[(]", conditions)) {
-            conditions <- "X"
-        }
+            conditions <- admisc::notilde(gsub("1-", "", funargs$setms))
+            if (grepl("[$]", conditions)) {
+                conditions <- tail(unlist(strsplit(conditions, split = "[$]")), 1)
+            }
+            else if (identical(substr(conditions, 1, 2), "c(")) {
+                conditions <- "X"
+            }
         colnames(setms) <- conditions
     }
     if (is.element("data.frame", class(setms))) {
-        colnames(setms) <- gsub("[[:space:]]", "", colnames(setms))
         for (i in seq(ncol(setms))) {
             if (!is.numeric(setms[, i]) & admisc::possibleNumeric(setms[, i])) {
                 setms[, i] <- admisc::asNumeric(setms[, i])
             }
         }
         verify.qca(setms)
+        colnames(setms) <- gsub("[[:space:]]", "", colnames(setms))
+        if (identical(conditions, "")) {
+            if (any(grepl("[*]", colnames(setms)))) {
+                conditions <- colnames(extract(paste(colnames(setms), collapse = "+"))$condmtrx)
+            }
+        }
         if (condnegated) {
-            conditions <- attr(setms, "conditions")
-            if (is.null(conditions)) {
-                if (any(grepl("[*]", conditions))) {
-                    conditions <- colnames(extract(paste(conditions, collapse = "+"))$condmtrx)
-                }
-                else if (any(grepl("[+]", conditions))) {
-                    conditions <- unique(unlist(strsplit(conditions, split = "[+]")))
-                }
-                else if (any(grepl("\\$coms|\\$pims", funargs$setms))) {
-                    toverify <- unlist(strsplit(admisc::notilde(gsub("1-", "", funargs$setms)), split = "\\$"))[1]
-                    if (grepl("pims", funargs$setms)) { 
-                        tt <- eval.parent(parse(text = sprintf("%s$tt", toverify)), n = 1)
-                        if (tt$options$use.letters) {
-                            conditions <- LETTERS[seq(length(conditions))]    
-                        }
-                        else {
-                            conditions <- tt$options$conditions
-                        }
+            if (any(grepl("[*]", conditions))) {
+                conditions <- colnames(extract(paste(conditions, collapse = "+"))$condmtrx)
+            }
+            else if (any(grepl("[+]", conditions))) {
+                conditions <- unique(unlist(strsplit(conditions, split = "[+]")))
+            }
+            if (any(grepl("\\$coms|\\$pims", funargs$setms))) {
+                toverify <- unlist(strsplit(admisc::notilde(gsub("1-", "", funargs$setms)), split = "\\$"))[1]
+                if (grepl("pims", funargs$setms)) { 
+                    tt <- eval.parent(parse(text = sprintf("%s$tt", toverify)), n = 1)
+                    if (tt$options$use.letters) {
+                        conditions <- LETTERS[seq(length(conditions))]    
                     }
                     else {
-                        conditions <- eval.parent(parse(text = sprintf("%s$options$conditions", toverify)), n = 1)
+                        conditions <- tt$options$conditions
                     }
                 }
                 else {
+                    conditions <- eval.parent(parse(text = sprintf("%s$options$conditions", toverify)), n = 1)
                 }
             }
-            if (is.null(conditions)) {
+            if (identical(conditions, "")) {
                 colnames(setms) <- paste("~", colnames(setms), sep = "")
             }
             else {
@@ -464,7 +409,7 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
             individual[[i]]$sol.incl.cov <- incl.cov[nrow(incl.cov), 1:3]
             individual[[i]]$pims <- as.data.frame(temp)
         }
-        return(structure(list(overall=result.list, individual=individual, essential=other.args$essential, pims=as.data.frame(setms), relation=relation, options=funargs[-1]), class="pof"))
+        return(structure(list(overall=result.list, individual=individual, essential=other.args$essential, pims=as.data.frame(setms), relation=relation, options=funargs[-1]), class="QCA_pof"))
     }
     if (!is.null(add)) {
         if (!(is.list(add) | is.function(add))) {
@@ -501,5 +446,5 @@ function(setms, outcome, data, relation = "necessity", inf.test = "",
     funargs[["outcome"]] <- outcome
     funargs$relation <- relation
     result.list$options <- funargs
-    return(structure(result.list, class = "pof"))
+    return(structure(result.list, class = "QCA_pof"))
 }

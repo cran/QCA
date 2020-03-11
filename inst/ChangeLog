@@ -1,6 +1,43 @@
+Version 3.7
+    o New: useful functions added to the companion package admisc, among which
+      one called invert() that changes a SOP to a POS expression and back
+      (thanks to Charles Ragin for the suggestion)
+    o New function generate() for the corresponding data of an arbitrary data
+      generating structure (DGS), supplied as a SOP expression
+    o Changed: major modification (and *not* backwards compatible) relative to
+      denoting negations. Using upper and lower case letters for presence and
+      absence is no longer supported, a tilde being the only and the default
+      method to signal a negation (thanks to Charles Ragin for making the point)
+    o Changed: argument "all.sol" no longer deactivates argument "min.pin", as
+      they can be combined to find all PIs that minimally solve the PI chart,
+      but not all PIs. The "min.pin" argument without "all.sol" will find only
+      the simpler PIs that minimally solve the chart, with increased speed.
+    o Changed: removed deprecated argument "use.tilde" from all functions
+    o Changed: minimization output now use a star sign "*" to denote a conjunction,
+      even when the conditions are single letters
+    o Changed: argument "exclude" was moved from function minimize() to function
+      truthTable()
+    o Changed: all printing classes to avoid possible namespace collision with
+      package admisc, where a number of functions were moved
+    o Changed: printing minimization objects no longer display the truth table
+      but only the parameters of fit, when argument "details" is activated
+      (thanks to Christian Rupietta for the suggestion)
+    o Changed: dialogs for truth table and minimization in the GUI, to reflect
+      the current changes
+    o Improved: new method of deriving the intermediate solution, without
+      using any counterfactuals. This restricts the intermediate solution
+      to only one model for each combination of conservative and parsimonious
+      models
+    o Improved: error messages for function calibrate()
+      (thanks to Karen Elliott for the suggestion)
+    o Improved: function findRows() now also work with negated truth tables
+      (thanks to ijgreener for the suggestion)
+    o Fixed: segmentation fault for extremely complex PI charts
+      (thanks to Albert Chiu and Yiqing Xu for the report)
+
 Version 3.6
-    o Solved bug related to starting the Graphical User Interface, due to
-      failing to load the required package admisc
+    o Solved bug related to starting the Graphical User Interface, which
+      failed to load the required package admisc
     o Functions compute(), factorize(), intersection(), negate()
       and simplify() moved to package admisc, with no visible effects on
       the users' side
@@ -444,7 +481,7 @@ Version 1.0-0
       when truth table object passed (object of class "tt") 
     o Changed: functions prettyTable() and createString() now internalized
     o Renamed: function findPrimes() to findSubsets()
-    o Dropped: function qmcc() (fully replaced by function eqmcc())
+    o Dropped: function qmcc(), fully replaced by function eqmcc()
     o Dropped: truth table columns "freq0" and "freq1" 
 
 Version 0.6-5
@@ -495,7 +532,7 @@ Version 0.5-4
       (thanks to B. Monroe)
 
 Version 0.5-3
-    o New: Function truthTable() now allows multivalent data in conditions
+    o New: function truthTable() now allows multivalent data in conditions
     o Fixed: in function truthTable(); columns incorrectly arranged with respect 
       to outcome values
 
@@ -505,7 +542,7 @@ Version 0.5-2
 
 Version 0.5-1
     o Improved: function descriptions
-    o Changed: functions is.tt() and print.tt() now accessible to user
+    o Changed: functions is.tt() and print.tt() now user accessible
     o Fixed: function rowDominance2(); matrix dropped dimensions
     o Fixed: function eqmcc() for complete truth tables (thanks to R. Huang)
 

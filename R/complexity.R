@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,9 +23,32 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`uninstall` <- function(x) {
-    if (isNamespaceLoaded(deparse(substitute(x)))) {
-        detach(paste("package", deparse(substitute(x)), sep=":"), unload=TRUE, character.only = TRUE)
+complexity <- function(n, layers = NULL, noflevels = NULL) {
+    if (!is.numeric(n)) {
+        cat("\n")
+        stop(simpleError("Argument \"n\" should be numeric.\n\n"))
     }
-    remove.packages(x)
+    if (length(n) != 1L) {
+        cat("\n")
+        stop(simpleError("Argument \"n\" should be a scalar of length 1.\n\n"))
+    }
+    if (n < 0) {
+        cat("\n")
+        stop(simpleError("Argument \"n\" should be positive.\n\n"))
+    }
+    if (is.null(noflevels)) noflevels <- rep(2, n)
+    if (is.null(layers)) layers <- seq(n)
+    if (any(layers > n)) {
+        cat("\n")
+        stop(simpleError("Argument \"layers\" cannot be greater than \"n\".\n\n"))
+    }
+    sumk <- .Call("C_omplexity", list(as.integer(n), as.integer(layers), as.integer(noflevels)), PACKAGE = "QCA")
+    sumk[sumk < 0] <- Inf
+    return(sumk)
+    sumk <- rep(0, length(layers))
+    for (i in seq(length(layers))) {
+        sumk[i] <- sum(apply(admisc::combnk(n, layers[i]), 2, function(x) {
+            prod(noflevels[x])
+        }))
+    }
 }

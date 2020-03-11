@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>truthTable. QCA 3.6</title>
+<title>truthTable. QCA 3.7</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.6</a>
+      <a class="brand" href="#">QCA 3.7</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -65,8 +65,8 @@ combinations of causal conditions).</p>
     </div>
     
     <h2>Usage</h2>
-<pre><div>truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
-           complete = FALSE, use.letters = FALSE, show.cases = FALSE,
+<pre><div>truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut = 0,
+           exclude = NULL, complete = FALSE, use.letters = FALSE, show.cases = FALSE,
            dcc = FALSE, sort.by = "", inf.test = "", ...)</div></pre>
     
     <h2>Arguments</h2>
@@ -98,6 +98,17 @@ combinations of causal conditions).</p>
             <td></td><td></td><td></td>
             <td>The minimum number of cases under which a truth table row is 
         declared as a remainder.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>pri.cut</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The minimal score for the <b><code>PRI</code></b> - proportional reduction in
+        inconsistency, under which a truth table row is declared as negative.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>exclude</code></b></td>
+            <td></td><td></td><td></td>
+            <td>A vector of row numbers from the truth table, to code as negative output configurations.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>complete</code></b></td>
@@ -628,7 +639,7 @@ ttLM
 </div>
 <div class='input'>
 # the observed combinations coded as remainders
-ttLM$excluded
+ttLM$removed
 </div>
 <div class='output'>    DEV URB LIT IND STB OUT n  incl  PRI   cases
  6   0   0   1   0   1   ?  1  0.000 0.000  EE  
@@ -749,7 +760,7 @@ truthTable(RS, &quot;REC&quot;)
     </ul> -->
       
     <h2>See also</h2>
-    <code><a href='eqmcc.html'>eqmcc</a></code>
+    <b><code><a href='minimize.html'>minimize</a></code></b>
     
     <h2>Author</h2>
     

@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,10 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`combint` <- function (n, k, aloe = 0, zerobased = FALSE) {
+`combint` <- function (n, k, ogte = 0, zerobased = FALSE) {
     n <- as.integer(n)
     k <- as.integer(k)
-    aloe <- as.integer(aloe)
+    ogte <- as.integer(ogte)
     zerobased <- as.integer(zerobased)
-    .Call("C_combnk", list(n = n, k = k, aloe = aloe, zerobased = zerobased), PACKAGE = "QCA")
+    .Call("C_ombnk", list(n = n, k = k, ogte = ogte, zerobased = zerobased), PACKAGE = "QCA")
 }

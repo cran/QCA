@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -27,10 +27,10 @@
 function(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, ...) {
     if (!is.logical(chart) && length(setdiff(chart, 0:1)) > 0) {
         cat("\n")
-        stop(simpleError("Use a T/F matrix. See makeChart()'s output.\n\n"))
+        stop(simpleError("Use a logical, T/F matrix. See makeChart()'s output.\n\n"))
     }
     other.args <- list(...)
-    if ("min.dis" %in% names(other.args)) {
+    if (is.element("min.dis", names(other.args))) {
         if (is.logical(other.args$min.dis)) {
             all.sol <- !other.args$min.dis
         }
@@ -43,14 +43,18 @@ function(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, ...) {
         row.numbers <- rowDominance(chart)
         chart <- chart[row.numbers, ]
     }
-    foundm <- findmin(chart)
-    if (foundm == 0) { 
+    indexes <- which(chart, arr.ind = TRUE)
+    foundm <- findmin(chart, ... = ...) 
+    if (foundm == 0) {
         cat("\n")
         stop(simpleError("The PI chart cannot be solved.\n\n"))
     }
     if (all(dim(chart) > 1)) {
         if (is.null(depth)) depth <- 0L
-        output <- .Call("C_solveChart", t(matrix(as.logical(chart), nrow = nrow(chart))), all.sol, as.integer(depth), PACKAGE = "QCA")
+        env <- new.env()
+        env$findmin <- findmin
+        output <- .Call("C_solveChart", t(matrix(as.logical(chart), nrow = nrow(chart))),
+                    all.sol, as.integer(depth), env, PACKAGE = "QCA") 
         if (ncol(output) == 1 & is.double(output)) {
             warning(simpleWarning("The PI chart is too complex, only the first minimal solution returned.\n\n"))
         }

@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -94,8 +94,8 @@ function(data) {
                                 ifelse(length(notnumeric) == 1, " ", "s "),
                                 paste(notnumeric, collapse=", "),
                                 ifelse(length(notnumeric) == 1, " is ", " are "),
-                                "not numeric.", sep="")
-            stop(simpleError(paste(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep=""), "\n\n", sep = "")))
+                                "not numeric.", sep = "")
+            stop(simpleError(paste(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = ""), "\n\n", sep = "")))
         }
         if (any(checkuncal)) {
             cat("\n")
@@ -104,7 +104,7 @@ function(data) {
             "Fuzzy sets should have values bound to the interval [0 , 1] and all other sets should be crisp.\n",
             "Please check the following condition", ifelse(length(uncalibrated) == 1, "", "s"), ":\n",
             paste(uncalibrated, collapse = ", "), sep="")
-            stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+            stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
         }
         if (any(checkmvuncal)) {
             cat("\n")
@@ -127,15 +127,19 @@ function(data) {
 function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FALSE, ic1 = 1, ic0 = 1, inf.test) {
     if (!inherits(data, "data.frame")) {
         cat("\n")
+        cls <- ifelse(methods::is(data, "QCA_sS"), "QCA_sS",
+                ifelse(methods::is(data, "QCA_tt"), "QCA_tt",
+                ifelse(methods::is(data, "QCA_pof"), "QCA_tt",
+                paste(class(data), collapse = ", "))))
         errmessage <- paste("You have to provide a data frame, the current \"data\" argument contains an object\n",
-                   "       of class \"", class(data), "\"",
-                   ifelse(class(data) == "sS", ", created by superSubset()", ""),
-                   ifelse(class(data) == "tt", ", created by truthTable()", ""),
-                   ifelse(class(data) == "pof", ", created by pof()", ""),
-                   ".\n\n", sep="")
+                   "       of class ", class(data),
+                   ifelse(cls == "QCA_sS", ", created by superSubset()", ""),
+                   ifelse(cls == "QCA_tt", ", created by truthTable()", ""),
+                   ifelse(cls == "QCA_pof", ", created by pof()", ""),
+                   ".\n\n", sep = "")
         stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
     }
-    if (methods::is(data, "tt")) {
+    if (methods::is(data, "QCA_tt")) {
         data <- data$initial.data
     }
     if (identical(outcome, "")) {
@@ -241,7 +245,7 @@ function(data, outcome = "", conditions = "", explain = "",
 `verify.dir.exp` <-
 function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
     if (is.null(enter)) enter <- "\n"
-    if (identical(dir.exp, "")) {
+    if (is.null(dir.exp)) {
         return(dir.exp)
     }
     else {
@@ -249,8 +253,11 @@ function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
         if (is.character(dir.exp)) {
             dir.exp <- gsub(admisc::dashes(), "-", dir.exp)
         }
+        if (identical(dir.exp, "")) {
+            dir.exp <- paste(rep("-", length(conditions)), collapse = ",")
+        }
         direxpsplit <- unlist(strsplit(gsub("[-|;|,|[:space:]]", "", dir.exp), split = ""))
-        oldway <- admisc::possibleNumeric(direxpsplit) | length(direxpsplit) == 0
+        oldway <- (admisc::possibleNumeric(direxpsplit) | length(direxpsplit) == 0)
         if (oldway) {
             if (length(dir.exp) == 1) {
                 dir.exp <- admisc::splitstr(dir.exp)
@@ -259,6 +266,9 @@ function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
             if (length(dir.exp) != length(conditions)) {
                 cat(enter)
                 stop(simpleError(paste0("Number of expectations does not match number of conditions.", enter, enter)))
+            }
+            if (all(dir.exp == "-")) {
+                return(matrix(0L, ncol = length(conditions)))
             }
             del <- strsplit(as.character(dir.exp), split = ";")
             if (is.null(names(dir.exp))) {

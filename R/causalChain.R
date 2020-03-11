@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@ function(data, ordering = NULL, strict = FALSE, ...) {
         ordering <- lapply(ordering, admisc::splitstr)
     }
     if (length(allout <- unlist(ordering)) > 0) {
-        if (length(setdiff(toupper(allout), toupper(colnames(data)))) > 0) {
+        if (length(setdiff(allout, colnames(data))) > 0) {
             cat("\n")
             stop(simpleError("Some elements in the \"ordering\" argument not found in the data.\n\n"))
         }
@@ -165,5 +165,5 @@ function(data, ordering = NULL, strict = FALSE, ...) {
         }
     }
     attr(minimize.list, "call") <- metacall
-    return(structure(minimize.list, class = "chain"))
+    return(structure(minimize.list, class = "QCA_chain"))
 }

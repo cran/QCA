@@ -18,7 +18,7 @@ of values (either binary or multi-value).
 }
 
 \usage{
-allExpressions(noflevels, arrange = FALSE, depth = NULL, raw = FALSE, ...)
+allExpressions(noflevels, arrange = FALSE, depth, raw = FALSE, ...)
 
 createMatrix(noflevels, ...)
 
@@ -161,17 +161,17 @@ mat
 # implicant matrix     normal values
 # 
 #       A  B  C    |       A  B  C       
-#    2  0  0  1    |    2  -  -  0       c      
-#    4  0  1  0    |    4  -  0  -       b
-#    5  0  1  1    |    5  -  0  0       bc
+#    2  0  0  1    |    2  -  -  0       ~C      
+#    4  0  1  0    |    4  -  0  -       ~B
+#    5  0  1  1    |    5  -  0  0       ~B~C
 #    7  0  2  0    |    7  -  1  -       B
-#    8  0  2  1    |    8  -  1  0       Bc
-#   10  1  0  0    |   10  0  -  -       a  
-#   11  1  0  1    |   11  0  -  0       ac                 
-#   13  1  1  0    |   13  0  0  -       ab   
-#   14  1  1  1    |   14  0  0  0       abc
-#   16  1  2  0    |   16  0  1  -       aB
-#   17  1  2  1    |   17  0  1  0       aBc                   
+#    8  0  2  1    |    8  -  1  0       B~C
+#   10  1  0  0    |   10  0  -  -       ~A  
+#   11  1  0  1    |   11  0  -  0       ~A~C                 
+#   13  1  1  0    |   13  0  0  -       ~A~B   
+#   14  1  1  1    |   14  0  0  0       ~A~B~C
+#   16  1  2  0    |   16  0  1  -       ~AB
+#   17  1  2  1    |   17  0  1  0       ~AB~C                   
 }
 
 \keyword{functions}

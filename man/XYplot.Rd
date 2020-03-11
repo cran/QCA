@@ -11,7 +11,7 @@ two separate vectors of numeric values.
 
 \usage{
 XYplot(x, y, data, relation = "sufficiency", mguides = TRUE,
-       jitter = FALSE, clabels = NULL, enhance = FALSE, model = FALSE, ...)
+       jitter = FALSE, clabels, enhance = FALSE, model = FALSE, ...)
 }
 
 \arguments{

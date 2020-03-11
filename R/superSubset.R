@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -25,11 +25,10 @@
 
 `superSubset` <-
 function(data, outcome = "", conditions = "", relation = "necessity", incl.cut = 1,
-    cov.cut = 0, ron.cut = 0, pri.cut = 0, use.tilde = FALSE, use.letters = FALSE,
-    depth = NULL, add = NULL, ...) {
+    cov.cut = 0, ron.cut = 0, pri.cut = 0, use.letters = FALSE, depth = NULL,
+    add = NULL, ...) {
     funargs <- lapply(match.call(), deparse)
     other.args <- list(...)
-    colnames(data) <- toupper(colnames(data))
         neg.out <- FALSE
         if (is.element("neg.out", names(other.args))) {
             neg.out <- other.args$neg.out
@@ -42,19 +41,18 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         cat("\n")
         stop(simpleError("The outcome was not specified.\n\n"))
     }
-    outcome <- toupper(outcome)
     if (admisc::tilde1st(outcome)) {
         neg.out <- TRUE
         outcome <- substring(outcome, 2)
     }
-    if (!is.element(toupper(admisc::curlyBrackets(outcome, outside=TRUE)), toupper(colnames(data)))) {
+    if (!is.element(admisc::curlyBrackets(outcome, outside=TRUE), colnames(data))) {
         cat("\n")
         stop(simpleError("The outcome name does not exist in the data.\n\n"))
     }
     if (grepl("\\{|\\}", outcome)) {
         outcome.value <- admisc::curlyBrackets(outcome)
         outcome <- admisc::curlyBrackets(outcome, outside=TRUE)
-        data[, toupper(outcome)] <- as.numeric(is.element(data[, toupper(outcome)], admisc::splitstr(outcome.value)))
+        data[, outcome] <- as.numeric(is.element(data[, outcome], admisc::splitstr(outcome.value)))
     }
     if (identical(conditions, "")) {
         conditions <- names(data)[-which(names(data) == outcome)]
@@ -62,7 +60,6 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     else {
         conditions <- admisc::splitstr(conditions)
     }
-    conditions <- toupper(conditions)
     verify.data(data, outcome, conditions)
     if (!(nec(relation) | suf(relation) | relation %in% c("sufnec", "necsuf"))) {
         cat("\n")
@@ -78,24 +75,19 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     else if (relation == "necsuf") {
         relation <- "necessity"
     }
-    colnames(data) <- toupper(colnames(data))
-    conditions <- replacements <- toupper(conditions)
-    outcome <- toupper(outcome)
+    replacements <- conditions
     data <- data[, c(conditions, outcome)]
     nofconditions <- length(conditions)
     if (neg.out) {
         data[, outcome] <- 1 - data[, outcome]
     }
-    if (mv <- any(data[, conditions] > 1)) {
-        use.tilde <- FALSE
-    }
+    mv <- any(data[, conditions] > 1)
     alreadyletters <- sum(nchar(conditions)) == length(conditions)
-    collapse <- ifelse(alreadyletters & !mv & !use.tilde, "", "*")
+    collapse <- "*"
     if (use.letters & !alreadyletters) {
         replacements <- LETTERS[seq(length(conditions))]
         names(replacements) <- conditions
         colnames(data)[seq(length(conditions))] <- conditions <- replacements
-        collapse <- ifelse(mv | use.tilde, "*", "")
     }
     noflevels <- apply(data[, conditions, drop = FALSE], 2, max) + 1L
     fc <- apply(data[, conditions, drop = FALSE], 2, function(x) any(x %% 1 > 0))
@@ -129,7 +121,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         rownames(result.matrix) <- expressions <- seq(lexpressions)
         colnames(result.matrix) <- conditions
         prev.result <- TRUE
-        row_names <- writePrimeimp(result.matrix, mv = mv, use.tilde = use.tilde, collapse = collapse)
+        row_names <- admisc::writePrimeimp(result.matrix, mv = mv, collapse = collapse)
         rownames(CMatrix[[1]]) <- row_names
         result <- as.data.frame(CMatrix[[1]])
         mins <- CMatrix[[5]]
@@ -145,7 +137,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
             result.matrix2 <- CMatrix[[4]]
             rownames(result.matrix2) <- seq(lexprnec) + lexpressions
             colnames(result.matrix2) <- conditions
-            row_names2 <- writePrimeimp(result.matrix2, mv = mv, use.tilde = use.tilde, collapse = "+")
+            row_names2 <- admisc::writePrimeimp(result.matrix2, mv = mv, collapse = "+")
             rownames(CMatrix[[2]]) <- row_names2
             mins2 <- CMatrix[[6]]
             if (prev.result) {
@@ -213,8 +205,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         relation = relation,
         incl.cut = incl.cut,
         cov.cut = cov.cut,
-        use.tilde = use.tilde,
         use.letters = use.letters
     )
-    return(structure(out.list, class = "sS"))
+    return(structure(out.list, class = "QCA_sS"))
 }

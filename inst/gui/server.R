@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -78,10 +78,10 @@ infobjs <- function(env, objs, scrollvh) {
             if (is.data.frame(x)) {
                 return(1)
             }
-            else if (is(x, "tt")) {
+            else if (is(x, "QCA_tt")) {
                 return(2)
             }
-            else if (is(x, "qca")) {
+            else if (is(x, "QCA_min")) {
                 return(3)
             }
             else {
@@ -108,7 +108,7 @@ infobjs <- function(env, objs, scrollvh) {
                     ncols = ncold,
                     rownames = as.list(rownames(x)),
                     colnames = as.list(colnames(x)),
-                    numerics = as.list(as.vector(unlist(lapply(x, possibleNumeric)))),
+                    numerics = as.list(as.vector(unlist(lapply(x, admisc::possibleNumeric)))),
                     calibrated = as.list(as.vector(unlist(lapply(x, function(x) {
                         all(na.omit(x) >= 0 & na.omit(x) <= 1)
                     })))),
@@ -124,7 +124,6 @@ infobjs <- function(env, objs, scrollvh) {
             toreturn$tt <- lapply(mget(names(objs[objs == 2]), env), function(x) {
                 components <- c("indexes", "noflevels", "cases", "options", "colnames", "numerics")
                 x$indexes <- x$indexes - 1 
-                x$options$conditions <- toupper(x$options$conditions)
                 cnds <- x$options$conditions
                 if (x$options$use.letters) {
                     cnds <- LETTERS[seq(length(cnds))]
@@ -140,7 +139,7 @@ infobjs <- function(env, objs, scrollvh) {
                     components <- c(components, "id", "tt")
                 }
                 x$colnames <- colnames(x$initial.data)
-                x$numerics <- as.vector(unlist(lapply(x$initial.data, possibleNumeric)))
+                x$numerics <- as.vector(unlist(lapply(x$initial.data, admisc::possibleNumeric)))
                 return(x[components])
             })
         }
@@ -148,7 +147,6 @@ infobjs <- function(env, objs, scrollvh) {
             toreturn$qmc <- lapply(mget(names(objs[objs == 3]), env), function(x) {
                 components <- c("indexes", "noflevels", "cases", "options")
                 x <- x$tt
-                x$options$conditions <- toupper(x$options$conditions)
                 cnds <- x$options$conditions
                 if (x$options$use.letters) {
                     cnds <- LETTERS[seq(length(cnds))]
@@ -470,7 +468,7 @@ evalparse <- function(foo) {
                     toview <- FALSE
                     lib <- FALSE
                     if (grepl("^View\\(", gsub(" ", "", comnd))) {
-                        object <- gsub("\\\"", "", insideBrackets(comnd, type = "("))
+                        object <- gsub("\\\"", "", admisc::insideBrackets(comnd, type = "("))
                         if (object != "") {
                             if (exists(object, envir = ev)) {
                                 if (is.data.frame(ev[[object]])) {
@@ -496,7 +494,7 @@ evalparse <- function(foo) {
                         }
                     }
                     if (grepl("^library\\(", gsub(" ", "", comnd))) {
-                        object <- gsub("\\\"", "", insideBrackets(comnd, type = "("))
+                        object <- gsub("\\\"", "", admisc::insideBrackets(comnd, type = "("))
                         if (object != "") {
                             evaluateit[[i]][["library"]] <- object
                         }
@@ -666,6 +664,7 @@ filepath <- ""
 extension <- ""
 tcisdata <- TRUE
 shinyServer(function(input, output, session) {
+    session$onSessionEnded(stopApp)
     observe({
         dirfilist <- input$dirfilist
         session$sendCustomMessage(type = "dirfile", listFiles(current_path))
@@ -689,7 +688,7 @@ shinyServer(function(input, output, session) {
                     if (identical(splitpath, "")) {
                         splitpath <- "/"
                     }
-                    pathtobe <- paste(splitpath, collapse=.Platform$file.sep)
+                    pathtobe <- paste(splitpath, collapse = .Platform$file.sep)
                     if (length(list.files(pathtobe)) > 0) {
                         current_path <<- pathtobe
                     }
@@ -715,7 +714,7 @@ shinyServer(function(input, output, session) {
                         splitpath <- splitpath[seq(which(splitpath == dfchosen[2]))]
                         pathtobe <- ifelse(length(splitpath) == 1,
                                            ifelse(identical(splitpath, ""), "/", splitpath),
-                                           paste(splitpath, collapse=.Platform$file.sep))
+                                           paste(splitpath, collapse = .Platform$file.sep))
                         if (length(list.files(pathtobe)) > 0) {
                             current_path <<- pathtobe
                         }
@@ -728,7 +727,7 @@ shinyServer(function(input, output, session) {
             if (oktoset) {
                 current_path <<- gsub("//", "/", current_path)
                 if (!grepl("/", current_path)) {
-                    current_path <<- paste(current_path, "/", sep="")
+                    current_path <<- paste(current_path, "/", sep = "")
                 }
             }
             if (dfchosen[1] == "dir" & dfchosen[3] != "") {
@@ -748,7 +747,7 @@ shinyServer(function(input, output, session) {
                         current_path <<- dfchosen[3]
                     }
                     if (!grepl("/", current_path)) {
-                        current_path <<- paste(current_path, "/", sep="")
+                        current_path <<- paste(current_path, "/", sep = "")
                     }
                     setwd(current_path)
                     session$sendCustomMessage(type = "dirfile", listFiles(current_path))
@@ -777,63 +776,63 @@ shinyServer(function(input, output, session) {
                 if (possibleNumeric(row_names)) {
                     row_names <- as.numeric(row_names)
                 }
-                tc <- capture.output(tryCatch(read.table(filepath, header=header, ifelse(colsep == "tab", "\t", colsep),
-                          row.names=row_names, as.is=TRUE, dec=decimal, nrows = 2), error = function(e) e, warning = function(w) w))
+                tc <- capture.output(tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
+                          row.names = row_names, as.is = TRUE, dec = decimal, nrows = 2), error = function(e) e, warning = function(w) w))
             }
             else {
-                tc <- capture.output(tryCatch(read.table(filepath, header=header, ifelse(colsep == "tab", "\t", colsep),
-                          as.is=TRUE, dec=decimal, nrows = 2), error = function(e) e, warning = function(w) w))
+                tc <- capture.output(tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
+                          as.is = TRUE, dec = decimal, nrows = 2), error = function(e) e, warning = function(w) w))
             }
             if (any(grepl("subscript out of bounds", tc))) {
                 mesaj <- paste("The data doesn't have ", row_names, " columns.", sep = "")
-                session$sendCustomMessage(type = "tempdatainfo", list(ncols=1, nrows=1, colnames=mesaj, rownames="error!"))
+                session$sendCustomMessage(type = "tempdatainfo", list(ncols = 1, nrows = 1, colnames = mesaj, rownames="error!"))
                 return(invisible())
             }
             else if (any(grepl("are not allowed", tc))) {
                 mesaj <- paste("The row.names column has duplicated values.", sep = "")
-                session$sendCustomMessage(type = "tempdatainfo", list(ncols=1, nrows=1, colnames=mesaj, rownames="error!"))
+                session$sendCustomMessage(type = "tempdatainfo", list(ncols = 1, nrows = 1, colnames = mesaj, rownames="error!"))
                 return(invisible())
             }
             else if (any(grepl("data frame with 0 columns", tc))) {
                 mesaj <- paste("The data has only 1 column.", sep = "")
-                tc <- tryCatch(read.table(filepath, header=header, ifelse(colsep == "tab", "\t", colsep),
-                           as.is=TRUE, dec=decimal, nrows = 2), error = function(e) e)
-                session$sendCustomMessage(type = "tempdatainfo", list(ncols=2, nrows=2, colnames=c(colnames(tc), mesaj), rownames=""))
+                tc <- tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
+                           as.is = TRUE, dec = decimal, nrows = 2), error = function(e) e)
+                session$sendCustomMessage(type = "tempdatainfo", list(ncols = 2, nrows = 2, colnames=c(colnames(tc), mesaj), rownames=""))
                 return(invisible())
             }
             else if (any(grepl("attempt to select less than one element", tc))) {
                 mesaj <- paste("The column \"", row_names, "\" was not found.", sep = "")
-                session$sendCustomMessage(type = "tempdatainfo", list(ncols=1, nrows=1, colnames=mesaj, rownames="error!"))
+                session$sendCustomMessage(type = "tempdatainfo", list(ncols = 1, nrows = 1, colnames = mesaj, rownames = "error!"))
                 return(invisible())
             }
-            tc <- tryCatch(read.table(filepath, header=header, ifelse(colsep == "tab", "\t", colsep),
-                           as.is=TRUE, dec=decimal, nrows = 2), error = function(e) e, warning = function(w) w)
+            tc <- tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
+                           as.is = TRUE, dec = decimal, nrows = 2), error = function(e) e, warning = function(w) w)
             tcisdata <<- TRUE
             if (is.null(dim(tc))) {
                 if (is.list(tc)) {
                     if (identical(names(tc), c("message", "call"))) {
                         tcisdata <<- FALSE
-                        session$sendCustomMessage(type = "tempdatainfo", list(ncols=1, nrows=1, colnames=tc$message, rownames="error!"))
+                        session$sendCustomMessage(type = "tempdatainfo", list(ncols = 1, nrows = 1, colnames = tc$message, rownames = "error!"))
                     }
                 }
             }
             else {
                 if (grepl("X.PDF", names(tc)[1])) {
                     tcisdata <<- FALSE
-                    session$sendCustomMessage(type = "tempdatainfo", list(ncols=1, nrows=1, colnames="not a dataframe, this is a PDF file", rownames="error!"))
+                    session$sendCustomMessage(type = "tempdatainfo", list(ncols = 1, nrows = 1, colnames = "not a dataframe, this is a PDF file", rownames="error!"))
                 }
             }
             if (tcisdata) {
                 if (row_names != "") {
-                    tc <- tryCatch(read.table(filepath, header=header, ifelse(colsep == "tab", "\t", colsep),
-                              row.names=row_names, as.is=TRUE, dec=decimal), error = function(e) e, warning = function(w) w)
+                    tc <- tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
+                              row.names = row_names, as.is = TRUE, dec = decimal), error = function(e) e, warning = function(w) w)
                 }
                 else {
-                    tc <- tryCatch(read.table(filepath, header=header, ifelse(colsep == "tab", "\t", colsep),
-                              as.is=TRUE, dec=decimal), error = function(e) e, warning = function(w) w)
+                    tc <- tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
+                              as.is = TRUE, dec = decimal), error = function(e) e, warning = function(w) w)
                 }
                 if (identical(names(tc), c("message", "call"))) {
-                    session$sendCustomMessage(type = "tempdatainfo", list(ncols=1, nrows=1, colnames=tc$message, rownames="error!"))
+                    session$sendCustomMessage(type = "tempdatainfo", list(ncols = 1, nrows = 1, colnames = tc$message, rownames = "error!"))
                 }
                 else {
                     tempdata <<- tc
@@ -845,10 +844,10 @@ shinyServer(function(input, output, session) {
                     if (length(rnames) == 1) {
                         rnames = list(rnames)
                     }
-                    session$sendCustomMessage(type = "tempdatainfo", list(ncols=ncol(tempdata),
-                                                                     nrows=nrow(tempdata),
-                                                                     colnames=cnames,
-                                                                     rownames=rnames))
+                    session$sendCustomMessage(type = "tempdatainfo", list(ncols = ncol(tempdata),
+                                                                     nrows = nrow(tempdata),
+                                                                     colnames = cnames,
+                                                                     rownames = rnames))
                 }
             }
         }
@@ -1079,7 +1078,7 @@ shinyServer(function(input, output, session) {
                                        prettyx = seq(xasp[1], xasp[2], length.out = xasp[3] + 1))
                 if (recalibrate) {
                     checkit <- calibrateit(tocalibrate)
-                    if ("fuzzyvals" %in% names(checkit)) {
+                    if (is.element("fuzzyvals", names(checkit))) {
                         tosend$poinths$fuzzyvals <- checkit$fuzzyvals
                     }
                 }
@@ -1174,7 +1173,7 @@ shinyServer(function(input, output, session) {
             if (file.exists(svgfile)) {
                 file.remove(svgfile)
             }
-            stopApp()
+            session$sendCustomMessage(type = "okquit", list(1))
         }
     })
     session$sendCustomMessage(type = "fullinfo", list(infobjs = infobjs(ev, ls(ev)), console = NULL))

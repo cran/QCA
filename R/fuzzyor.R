@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,11 +23,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`fuzzyor` <- function(..., na.rm = FALSE, use.tilde = FALSE) {
+`fuzzyor` <- function(..., na.rm = FALSE) {
     funargs <- unlist(lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x)))
-    if (!is.na(rem <- match("use.tilde", names(funargs)))) {
-        funargs <- funargs[-rem]
-    }
     if (!is.na(rem <- match("na.rm", names(funargs)))) {
         funargs <- funargs[-rem]
     }
@@ -53,15 +50,8 @@
     for (i in seq(length(funargs))) {
         tc <- tryCatch(eval.parent(parse(text = funargs[i])), error = function(e) e, warning = function(w) w)
         if (is.function(tc) | inherits(tc, "error")) {
-            tc <- tryCatch(eval.parent(parse(text = toupper(funargs[i]))), error = function(e) e, warning = function(w) w)
-            if (is.function(tc) | inherits(tc, "error")) {
-                cat("\n")
-                stop(simpleError(sprintf("Object '%s' not found.\n\n", funargs[i])))
-            }
-            else {
-                negated[i] <- !negated[i]
-                other.args[[i]] <- eval.parent(parse(text = toupper(funargs[i])), n = 1)
-            }
+            cat("\n")
+            stop(simpleError(sprintf("Object '%s' not found.\n\n", funargs[i])))
         }
         else {
             other.args[[i]] <- eval.parent(parse(text = funargs[i]), n = 1)
@@ -117,17 +107,12 @@
             other.args[[i]] <- 1 - other.args[[i]]
         }
         if (negated[i] + tildenegated[i] == 1) {
-            if (use.tilde | tildenegated[i] | !identical(cols[i], toupper(cols[i]))) {
-                cols[i] <- paste("~", cols[i], sep = "")
-            }
-            else {
-                cols[i] <- tolower(cols[i])
-            }
+            cols[i] <- paste("~", cols[i], sep = "")
         }
     }
     result <- apply(other.args, 1, max, na.rm = na.rm)
     attr(result, "names") <- NULL
     attr(result, "name") <- paste(cols, collapse = " + ")
-    class(result) <- c("numeric", "fuzzy")
+    class(result) <- c("numeric", "QCA_fuzzy")
     return(result)
 }

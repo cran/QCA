@@ -21,7 +21,6 @@
 \alias{setRownames}
 \alias{setColnames}
 \alias{setDimnames}
-\alias{uninstall}
 \alias{verify.data}
 \alias{verify.dir.exp}
 \alias{verify.minimize}
@@ -80,7 +79,6 @@
 \alias{rowDominance}
 \alias{sortMatrix}
 \alias{sortVector}
-\alias{writePrimeimp}
 
 
 \title{Internal Functions}

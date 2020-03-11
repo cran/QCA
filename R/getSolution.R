@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `getSolution` <-
-function(expressions, mv, use.tilde, collapse, inputt, row.dom, initial, all.sol, indata, ...) {
+function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, ...) {
     mtrx <- NULL
     sol.matrix <- NULL
     other.args <- list(...)
@@ -52,7 +52,7 @@ function(expressions, mv, use.tilde, collapse, inputt, row.dom, initial, all.sol
     if (!missing(indata)) {
         hastime <- logical(ncol(expressions))
         for (i in seq(ncol(expressions))) {
-            if (any(indata[, i] %in% c("-", "dc", "?"))) {
+            if (any(is.element(indata[, i], c("-", "dc", "?")))) {
                 hastime[i] <- TRUE
             }
         }
@@ -67,10 +67,10 @@ function(expressions, mv, use.tilde, collapse, inputt, row.dom, initial, all.sol
         }
     }
     }
-    PI <- writePrimeimp(expressions, mv = mv, use.tilde = use.tilde, collapse = collapse)
+    PI <- admisc::writePrimeimp(expressions, mv = mv, collapse = collapse)
     rownames(expressions) <- PI
     if (is.null(mtrx)) {
-        mtrx <- makeChart(expressions, inputt, mv = mv, use.tilde = use.tilde, collapse = collapse)
+        mtrx <- makeChart(expressions, inputt, mv = mv, collapse = collapse)
     }
     else {
         rownames(mtrx) <- PI
@@ -91,9 +91,6 @@ function(expressions, mv, use.tilde, collapse, inputt, row.dom, initial, all.sol
         mtrx <- reduced$mtrx
         setColnames(mtrx, initial)
         if (is.null(sol.matrix)) {
-            if (nrow(mtrx) > 150 & nrow(mtrx) * ncol(mtrx) > 1500) {
-                message(sprintf("Starting to search all possible solutions in a PI chart with %d rows and %d columns.\nThis will take some time...", nrow(mtrx), ncol(mtrx)))
-            }
             sol.matrix <- solveChart(mtrx, all.sol = all.sol, ... = ...)
         }
         tokeep <- sort(unique(as.vector(unique(sol.matrix))))

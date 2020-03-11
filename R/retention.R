@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -26,9 +26,6 @@
 `retention` <- 
 function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
          type = "corruption", dependent = TRUE, p.pert = 0.5, n.pert = 1) {
-    names(data) <- toupper(names(data))
-    conditions <- toupper(conditions)
-    outcome <- toupper(outcome)
     if (identical(conditions, "")) {
         conditions <- names(data)[-which(names(data) == outcome)]
     }

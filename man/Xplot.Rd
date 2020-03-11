@@ -10,7 +10,7 @@ horizontally on the X axis from minimum to maximum.
 }
 
 \usage{
-Xplot(x, jitter = FALSE, at = NULL, ...)
+Xplot(x, jitter = FALSE, at, ...)
 }
 
 \arguments{

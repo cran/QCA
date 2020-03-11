@@ -12,8 +12,8 @@ assign cases to the vector space corners (the truth table rows).
 
 \usage{
 truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut = 0,
-           complete = FALSE, use.letters = FALSE, show.cases = FALSE, dcc = FALSE,
-           sort.by = "", inf.test = "", ...)
+           exclude = NULL, complete = FALSE, use.letters = FALSE, show.cases = FALSE,
+           dcc = FALSE, sort.by = "", inf.test = "", ...)
 }
 
 \arguments{
@@ -27,6 +27,8 @@ truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut
         declared as a remainder.}
   \item{pri.cut}{The minimal score for the \bold{\code{PRI}} - proportional reduction in
         inconsistency, under which a truth table row is declared as negative.}
+  \item{exclude}{A vector of row numbers from the truth table, to code as negative
+        output configurations.}
   \item{complete}{Logical, print complete truth table.}
   \item{use.letters}{Logical, use letters instead of causal conditions' names.}
   \item{show.cases}{Logical, print case names.}
@@ -252,7 +254,7 @@ ttLM <- truthTable(LM, "SURV", n.cut = 2, sort.by = "incl")
 ttLM
 
 # the observed combinations coded as remainders
-ttLM$excluded
+ttLM$removed
 
 
 # -----

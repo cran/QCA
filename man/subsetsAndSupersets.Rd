@@ -14,8 +14,8 @@ or supersets, of a (prime) implicant or an initial causal configuration.
 
 \usage{
 superSubset(data, outcome = "", conditions = "", relation = "necessity",
-    incl.cut = 1, cov.cut = 0, ron.cut = 0, pri.cut = 0, use.tilde = FALSE,
-    use.letters = FALSE, depth = NULL, add = NULL, ...)
+    incl.cut = 1, cov.cut = 0, ron.cut = 0, pri.cut = 0, use.letters = FALSE,
+    depth, add, ...)
 
 findSubsets(input, noflevels, stop, ...)
 
@@ -37,7 +37,6 @@ findSupersets(input, noflevels, ...)
   \item{ron.cut}{The minimal score for the \bold{\code{RoN}} - relevance of necessity.}
   \item{pri.cut}{The minimal score for the \bold{\code{PRI}} - proportional reduction in
         inconsistency.}
-  \item{use.tilde}{Logical, use tilde for negation with bivalent variables.}
   \item{use.letters}{Logical, use simple letters instead of original conditions'
         names.}
   \item{noflevels}{A vector containing the number of levels for each causal
@@ -222,15 +221,15 @@ noflevels <- c(2, 2, 2)
 getRow(sub, noflevels + 1)
 
 # implicant matrix   normal values
-#      A  B  C    |       A  B  C       
-#   5  0  1  1    |    5  -  0  0      bc    
-#   8  0  2  1    |    8  -  1  0      Bc
-#  11  1  0  1    |   11  0  -  0      ac
-#  14  1  1  1    |   14  0  0  0      abc
-#  17  1  2  1    |   17  0  1  0      aBc
-#  20  2  0  1    |   20  1  -  0      Ac
-#  23  2  1  1    |   23  1  0  0      Abc               
-#  26  2  2  1    |   26  1  1  0      ABc 
+#      a  b  c    |       a  b  c       
+#   5  0  1  1    |    5  -  0  0      ~b~c    
+#   8  0  2  1    |    8  -  1  0      b~c
+#  11  1  0  1    |   11  0  -  0      ~a~c
+#  14  1  1  1    |   14  0  0  0      ~a~b~c
+#  17  1  2  1    |   17  0  1  0      ~ab~c
+#  20  2  0  1    |   20  1  -  0      a~c
+#  23  2  1  1    |   23  1  0  0      a~b~c               
+#  26  2  2  1    |   26  1  1  0      ab~c 
 
 
 # stopping at maximum row number 20
@@ -250,8 +249,8 @@ findSupersets(input = 17, noflevels + 1)
 (im <- getRow(c(14, 17), noflevels + 1))
 
 # implicant matrix   normal values
-#  14  1  1  1    |   14  0  0  0       abc
-#  17  1  2  1    |   17  0  1  0       aBc
+#  14  1  1  1    |   14  0  0  0       ~a~b~c
+#  17  1  2  1    |   17  0  1  0       ~ab~c
 
 
 sup <- findSupersets(input = im, noflevels + 1)
@@ -262,18 +261,18 @@ sup
 getRow(sup, noflevels + 1)
 
 # implicant matrix   normal values
-#      A  B  C    |       A  B  C       
-#   2  0  0  1    |    2  -  -  0       c      
-#   4  0  1  0    |    4  -  0  -       b
-#   5  0  1  1    |    5  -  0  0       bc
-#   7  0  2  0    |    7  -  1  -       B
-#   8  0  2  1    |    8  -  1  0       Bc
-#  10  1  0  0    |   10  0  -  -       a  
-#  11  1  0  1    |   11  0  -  0       ac                 
-#  13  1  1  0    |   13  0  0  -       ab   
-#  14  1  1  1    |   14  0  0  0       abc
-#  16  1  2  0    |   16  0  1  -       aB
-#  17  1  2  1    |   17  0  1  0       aBc
+#      a  b  c    |       a  b  c       
+#   2  0  0  1    |    2  -  -  0       ~c      
+#   4  0  1  0    |    4  -  0  -       ~b
+#   5  0  1  1    |    5  -  0  0       ~b~c
+#   7  0  2  0    |    7  -  1  -       b
+#   8  0  2  1    |    8  -  1  0       b~c
+#  10  1  0  0    |   10  0  -  -       ~a  
+#  11  1  0  1    |   11  0  -  0       ~a~c                 
+#  13  1  1  0    |   13  0  0  -       ~a~b   
+#  14  1  1  1    |   14  0  0  0       ~a~b~c
+#  16  1  2  0    |   16  0  1  -       ~ab
+#  17  1  2  1    |   17  0  1  0       ~ab~c
                              
 }
 

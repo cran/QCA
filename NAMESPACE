@@ -1,11 +1,12 @@
 import(shiny)
 import(venn)
 import(admisc)
-importFrom("utils", "packageDescription", "remove.packages", "capture.output", "data", "loadhistory", "savehistory", "tail")
+importFrom("utils", "packageDescription", "capture.output", "data", "loadhistory", "savehistory", "tail")
 importFrom("stats", "glm", "predict", "quasibinomial", "binom.test", "cutree", "dist", "hclust", "na.omit", "dbinom", "setNames")
 importFrom("grDevices", "dev.cur", "dev.new", "dev.list")
 importFrom("graphics", "abline", "axis", "box", "mtext", "par", "title", "text")
 importFrom("methods", "is")
+importFrom("lpSolve", "lp")
 
 useDynLib(QCA, .registration = TRUE)
 
@@ -15,6 +16,7 @@ export(.onAttach,
     calibrate,
     causalChain,
     combint,
+    complexity,
     createMatrix,
     eqmcc,
     export,
@@ -25,6 +27,7 @@ export(.onAttach,
     findTh,
     fuzzyand,
     fuzzyor,
+    generate,
     getRow,
     makeChart,
     minimize,
@@ -42,7 +45,6 @@ export(.onAttach,
     solveChart,
     superSubset,
     truthTable,
-    uninstall,
     verify.data,
     verify.dir.exp,
     verify.minimize,
@@ -60,18 +62,18 @@ export(.onAttach,
     rowDominance,
     sortMatrix,
     sortVector,
-    writePrimeimp,
     writeSolution
 )
 
-S3method(print, "aE")
-S3method(print, "chain")
-S3method(print, "fuzzy")
-S3method(print, "modelFit")
-S3method(print, "mqca")
-S3method(print, "panel")
-S3method(print, "pic")
-S3method(print, "pof")
-S3method(print, "qca")
-S3method(print, "sS")
-S3method(print, "tt")
+S3method(print, "QCA_aE")
+S3method(print, "QCA_chain")
+S3method(print, "QCA_findmin")
+S3method(print, "QCA_fuzzy")
+S3method(print, "QCA_loopmin")
+S3method(print, "QCA_min")
+S3method(print, "QCA_modelFit")
+S3method(print, "QCA_panel")
+S3method(print, "QCA_pic")
+S3method(print, "QCA_pof")
+S3method(print, "QCA_sS")
+S3method(print, "QCA_tt")

@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -24,12 +24,23 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `findmin` <-
-function(chart) {
-    if (!methods::is(chart, "pic")) {
+function(chart, ...) {
+    other.args <- list(...)
+    if (!methods::is(chart, "QCA_pic")) {
         if (!is.matrix(chart) | (!is.logical(chart) & length(setdiff(chart, 0:1)) > 0)) {
             cat("\n")
-            stop(simpleError("The input should be a logical matrix. See function makeChart()\n\n"))
+            stop(simpleError("Use a logical, T/F matrix. See makeChart()'s output.\n\n"))
         }
     }
-    return(.Call("C_findmin", t(matrix(as.logical(chart), nrow = nrow(chart))), FALSE, PACKAGE = "QCA"))
+    cpi <- attr(chart, "C_PI")
+    if (!is.null(cpi)) {
+        solution <- lpSolve::lp("min", rep(1, cpi), chart[, seq(cpi)], ">=", 1, int.vec = seq(nrow(chart)))$solution
+    }
+    else {
+        solution <- lpSolve::lp("min", rep(1, nrow(chart)), t(chart), ">=", 1, int.vec = seq(ncol(chart)))$solution
+    }
+    result <- as.integer(sum(solution > 0))
+    attr(result, "solution") <- which(solution > 0)
+    class(result) <- c("numeric", "QCA_findmin")
+    return(result)
 }

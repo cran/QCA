@@ -12,12 +12,11 @@ show how to solve it using a minimum number of prime implicants.
 }
 
 \usage{
-makeChart(primes = "", configs = "", snames = "", mv = FALSE,
-          use.tilde = FALSE, collapse = "*", ...)
+makeChart(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...)
 
-findmin(chart)
+findmin(chart, ...)
 
-solveChart(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, ...)
+solveChart(chart, row.dom = FALSE, all.sol = FALSE, depth, ...)
 }
 
 \arguments{
@@ -27,10 +26,9 @@ solveChart(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, ...)
         or a matrix of causal configurations in the implicants space.}
   \item{snames}{A string containing the sets' names, separated by commas.}
   \item{mv}{Logical, row and column names in multi-value notation.}
-  \item{use.tilde}{Logical, row and column names indicating absence with a tilde.}
   \item{collapse}{Scalar character, how to collapse different parts of the row or
         column names.}
-  \item{chart}{An object of class \code{"pic"} or a logical matrix.}
+  \item{chart}{An object of class \code{"QCA_pic"} or a logical matrix.}
   \item{row.dom}{Logical, apply row dominance to eliminate redundant prime implicants.}
   \item{all.sol}{Derive all possible solutions, irrespective if the disjunctive number of
         prime implicants is minimal or not.}
@@ -80,7 +78,7 @@ increasing the search time.
 }
 
 \value{
-For \bold{\code{makeChart}}: a logical matrix of class \code{"pic"}.
+For \bold{\code{makeChart}}: a logical matrix of class \code{"QCA_pic"}.
 
 For \bold{\code{findmin}}: a numerical scalar.
 
@@ -102,49 +100,24 @@ quantitative strategies}, Berkeley: University of California Press
 
 \examples{
 # non-standard products, it needs the set names
-chart <- makeChart("A, B, c", "ABC, Abc, AbC, aBc", snames =  "A,B,C")
+chart <- makeChart("a, b, ~c", "abc, a~b~c, a~bc, ~ab~c")
 chart
-#   ABC Abc AbC aBc
-# A  x   x   x   - 
-# B  x   -   -   x 
-# c  -   x   -   x 
+#      abc   a~b~c a~bc  ~ab~c
+# a      x     x     x     -  
+# b      x     -     -     x  
+# ~c     -     x     -     x
 
 findmin(chart)
 # 2
 
 solveChart(chart)
-# first and second rows (A + B)
-# and first and third rows (A + c)
-# A is an essential prime implicant
-#      A + B  A + c
+# first and second rows (a + b)
+# and first and third rows (a + ~c)
+# a is an essential prime implicant
+#      a + b  a + ~c
 #      [,1]   [,2]
 # [1,]    1      1
 # [2,]    2      3
-
-# Quine's example, page 528
-rows <- "AB, BC, Ac, aC, abd, bcd"
-cols <- "ABCD, ABCd, ABcD, ABcd, AbcD, Abcd, aBCD, aBCd, abCD, abCd, abcd"
-
-chart <- makeChart(rows, cols, "A,B,C,D")
-chart
-#     ABCD ABCd ABcD ABcd AbcD Abcd aBCD aBCd abCD abCd abcd
-# AB   x    x    x    x    -    -    -    -    -    -    -  
-# BC   x    x    -    -    -    -    x    x    -    -    -  
-# Ac   -    -    x    x    x    x    -    -    -    -    -  
-# aC   -    -    -    -    -    -    x    x    x    x    -  
-# abd  -    -    -    -    -    -    -    -    -    x    x  
-# bcd  -    -    -    -    -    x    -    -    -    -    x 
-
-findmin(chart)
-# 4
-
-solveChart(chart)
-#      [,1] [,2] [,3] [,4]
-# [1,]    1    1    2    2
-# [2,]    3    3    3    3
-# [3,]    4    4    4    4
-# [4,]    5    6    5    6
-
 
 # using SOP standard product sign
 rows <- "EF, ~GH, IJ"
@@ -167,26 +140,26 @@ solveChart(chart)
 # using implicant matrices
 primes <- matrix(c(2,2,1,0,2,2,0,2,2,2), nrow = 2)
 configs <- matrix(c(2,2,2,1,1,2,2,2,2,1,2,2,2,2,2), nrow = 3)
-colnames(primes) <- colnames(configs) <- LETTERS[1:5]
+colnames(primes) <- colnames(configs) <- letters[1:5]
 
-# the prime implicants: AbCE and ACDE
+# the prime implicants: a~bce and acde
 primes
-#      A B C D E
+#      a b c d e
 # [1,] 2 1 2 0 2
 # [2,] 2 0 2 2 2
 
-# the initial causal combinations: AbCdE, AbCDE and ABCDE
+# the initial causal combinations: a~bc~de, a~bcde and abcde
 configs
-#      A B C D E
+#      a b c d e
 # [1,] 2 1 2 1 2
 # [2,] 2 1 2 2 2
 # [3,] 2 2 2 2 2
 
-chartLC <- makeChart(primes, configs)
+chartLC <- makeChart(primes, configs, collapse = "")
 chartLC
-#      AbCdE AbCDE ABCDE
-# AbCE   x     x     -  
-# ACDE   -     x     x
+#         a~bc~de a~bcde   abcde  
+# a~bce      x       x       -   
+# acde       -       x       x   
 
 }
 

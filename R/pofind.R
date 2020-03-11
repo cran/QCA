@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -24,8 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `pofind` <-
-function(data, outcome = "", conditions = "", relation = "necessity",
-         use.tilde = FALSE, ...) {
+function(data, outcome = "", conditions = "", relation = "necessity", ...) {
     funargs <- lapply(match.call(), deparse)
     if (missing(data)) {
         cat("\n")
@@ -46,13 +45,8 @@ function(data, outcome = "", conditions = "", relation = "necessity",
             }
         }
     }
-    colnames(data) <- toupper(colnames(data))
-    if (!is.element(outcome, c(tolower(outcome), toupper(outcome)))) {
-        cat("\n")
-        stop(simpleError("The outcome name should not contain both lower and upper case letters.\n\n"))
-    }
     origoutcome <- outcome
-    outcome <- toupper(admisc::notilde(admisc::curlyBrackets(outcome, outside = TRUE)))
+    outcome <- admisc::notilde(admisc::curlyBrackets(outcome, outside = TRUE))
     if (!is.element(outcome, colnames(data))) {
         cat("\n")
         stop(simpleError("Outcome not found in the data.\n\n"))
@@ -61,7 +55,7 @@ function(data, outcome = "", conditions = "", relation = "necessity",
         conditions <- setdiff(colnames(data), outcome)
     }
     else {
-        conditions <- toupper(admisc::splitstr(conditions))
+        conditions <- admisc::splitstr(conditions)
         if (any(!is.element(conditions, colnames(data)))) {
             cat("\n")
             stop(simpleError("Conditions not found in the data.\n\n"))
@@ -76,12 +70,7 @@ function(data, outcome = "", conditions = "", relation = "necessity",
         })), collapse = "+")
     }
     else {
-        if (use.tilde) {
-            negconditions <- paste("~", conditions, sep = "")
-        }
-        else {
-            negconditions <- tolower(conditions)
-        }
+        negconditions <- paste("~", conditions, sep = "")
         expression <- paste(negconditions, conditions, sep = "+", collapse = "+")
     }
     pofargs <- list(setms = expression,
@@ -95,9 +84,7 @@ function(data, outcome = "", conditions = "", relation = "necessity",
     if (is.element("covU", colnames(result$incl.cov))) {
         result$incl.cov <- result$incl.cov[, setdiff(colnames(result$incl.cov), "covU")]
     }
-    if (use.tilde) {
-        rownames(result$incl.cov)[seq(length(conditions))] <- paste("", rownames(result$incl.cov)[seq(length(conditions))])
-    }
+    rownames(result$incl.cov)[seq(length(conditions))] <- paste("", rownames(result$incl.cov)[seq(length(conditions))])
     result$options$data <- funargs$data
     return(result)
 }

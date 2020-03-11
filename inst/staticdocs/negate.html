@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>negate. QCA 3.6</title>
+<title>negate. QCA 3.7</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.6</a>
+      <a class="brand" href="#">QCA 3.7</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -57,20 +57,21 @@ Adrian Dusa
     <div class="Description">
       <h2>Description</h2>
 
-      <p>Function to negate a SOP expression.</p>
+      <p>Functions to negate a DNF/SOP expression, or to invert SOP to POS or POS to SOP.</p>
   
     </div>
     
     <h2>Usage</h2>
-<pre><div>negate(expression, snames = "", noflevels = NULL, use.tilde = FALSE, simplify = TRUE)</div></pre>
+<pre><div>negate(input, snames = "", noflevels, simplify = TRUE)</div>
+<div>invert(input, snames = "", noflevels)</div></pre>
     
     <h2>Arguments</h2>
     <table>
         <tr>
-            <td valign="top"><b><code>expression</code></b></td>
+            <td valign="top"><b><code>input</code></b></td>
             <td></td><td></td><td></td>
             <td>A string representing a SOP expresson, or a minimization
-        object of class <code>&quot;qca&quot;</code>.</td>
+        object of class <code>&quot;QCA_min&quot;</code>.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>snames</code></b></td>
@@ -81,11 +82,6 @@ Adrian Dusa
             <td valign="top"><b><code>noflevels</code></b></td>
             <td></td><td></td><td></td>
             <td>Numerical vector containing the number of levels for each set.</td>
-        </tr>
-        <tr>
-            <td valign="top"><b><code>use.tilde</code></b></td>
-            <td></td><td></td><td></td>
-            <td>Logical, use tilde for negation with bivalent variables.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>simplify</code></b></td>
@@ -177,16 +173,25 @@ negate(&quot;AB*EF + ~CD*EF&quot;)
 N1: ~EF + ~AB*CD 
 
 </div>
+
+<div class='input'>
+# invert to POS
+invert(&quot;a*b + ~c*d&quot;)
+</div>
+<div class='output'>
+N1: (~a + ~b)*(c + ~d)
+
+</div>
 <div class='input'>
 
 # using an object of class &quot;qca&quot; produced with minimize()
-cLC &lt;- minimize(LC, outcome = &quot;SURV&quot;, include = &quot;?&quot;)
+cLC &lt;- minimize(LC, outcome = &quot;SURV&quot;)
 
 negate(cLC)
 </div>
 <div class='output'>
-M1: DEV*urb*LIT*STB + DEV*LIT*IND*STB
-  N1: dev + lit + stb + URB*ind
+M1: DEV*~URB*LIT*STB + DEV*LIT*IND*STB 
+  N1: ~DEV + ~LIT + ~STB + URB*~IND
 
 </div>
 <div class='input'>
@@ -198,7 +203,7 @@ negate(pLC)
 </div>
 <div class='output'>
 M1: DEV*STB
-  N1: dev + stb
+  N1: ~DEV + ~STB
 
 </div></pre>
   </div>

@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,7 +23,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`print.aE` <- function(x, ...) {
+`print.QCA_aE` <- function(x, ...) {
     rownames(x) <- format(seq.nrow <- seq(nrow(x)))
     if (attr(x, "raw")) {
         x[x >= 0] <- paste("", x[x >= 0])
@@ -37,7 +37,7 @@
     }
     cat("\n")
 }
-`print.chain` <- function(x, ...) {
+`print.QCA_chain` <- function(x, ...) {
     other.args <- list(...)
     line.length <- getOption("width")
     if (any(names(x) == "via.web")) {
@@ -53,17 +53,12 @@
                 outcome <- x$tt$options$outcome
                 if (grepl("\\{|\\}", outcome)) {
                     if (x$options$neg.out) {
-                        outcome <- paste("~", admisc::notilde(toupper(outcome)), sep = "")
+                        outcome <- paste("~", admisc::notilde(outcome), sep = "")
                     }
                 }
                 else {
                     if (x$options$neg.out) {
-                        if (x$options$use.tilde) {
-                            outcome <- paste("~", admisc::notilde(toupper(outcome)), sep = "")
-                        }
-                        else {
-                            outcome <- admisc::notilde(tolower(outcome))
-                        }
+                        outcome <- paste("~", admisc::notilde(outcome), sep = "")
                     }
                 }
                 if (is.element("i.sol", names(x))) {
@@ -127,23 +122,27 @@
         cat("There are no causal chains in this data.\n\n")
     }
 }
-`print.fuzzy` <- function(x, ...) {
+`print.QCA_findmin` <- function(x, ...) {
+    attr(x, "solution") <- NULL
+    print(unclass(x))
+}
+`print.QCA_fuzzy` <- function(x, ...) {
     attr(x, "name") <- NULL
     print(unclass(x))
     cat("\n")
 }
-`print.modelFit` <- function(x, ...) {
+`print.QCA_modelFit` <- function(x, ...) {
     for (i in seq(length(x))) {
         print(x[[i]])
     }
 }
-`print.mqca` <- function(x, ...) {
+`print.QCA_loopmin` <- function(x, ...) {
     cat("\n")
     for (i in seq(length(x))) {
-        print.qca(x[[i]], details = FALSE, mqca = TRUE)
+        print.QCA_min(x[[i]], details = FALSE, mqca = TRUE)
     }
 }
-`print.panel` <- function(x, ...) {
+`print.QCA_panel` <- function(x, ...) {
     other.args <- list(...)
     quote <- FALSE
     if (is.element("quote", names(other.args))) {
@@ -175,7 +174,7 @@
         print(x, quote = quote, right = right)
     }
 }
-`print.pic` <- function(x, ...) {
+`print.QCA_pic` <- function(x, ...) {
     if (all(dim(x) > 0)) {
         rownms  <- rownames(x)
         colnms  <- colnames(x)
@@ -190,16 +189,24 @@
     print(admisc::prettyTable(x))
     cat("\n")
 }
-`print.pof` <- function(x, ...) {
+`print.QCA_pof` <- function(x, ...) {
     if (is.element("modelfit", names(x))) {
         cat("\n")
         if (names(x$modelfit$model) != "M") {
             cat(names(x$modelfit$model), "\n", sep = "")
         }
-        cat("MODEL:        ", x$modelfit$model, "\n", sep = "")
-        cat("THEORY:       ", x$modelfit$theory, "\n", sep = "")
-        for (int in seq(4)) {
-            cat(names(x$modelfit$intersections)[int], ": ", x$modelfit$intersections[int], "\n", sep = "")
+        cat("model:          ", x$modelfit$model, "\n", sep = "")
+        cat("theory:         ", x$modelfit$theory, "\n", sep = "")
+        if (any(grepl("~", names(x$modelfit$intersections)))) {
+            cat(names(x$modelfit$intersections)[1], ":   ", x$modelfit$intersections[1], "\n", sep = "")
+            cat(names(x$modelfit$intersections)[2], ":  ", x$modelfit$intersections[2], "\n", sep = "")
+            cat(names(x$modelfit$intersections)[3], ":  ", x$modelfit$intersections[3], "\n", sep = "")
+            cat(names(x$modelfit$intersections)[4], ": ", x$modelfit$intersections[4], "\n", sep = "")
+        }
+        else {
+            for (int in seq(4)) {
+                cat(names(x$modelfit$intersections)[int], ": ", x$modelfit$intersections[int], "\n", sep = "")
+            }
         }
     }
     if (is.element("fuzzyop", names(x$options))) {
@@ -539,7 +546,7 @@
         }
     }
 }
-`print.qca` <- function(x, ...) {
+`print.QCA_min` <- function(x, ...) {
     enter <- ifelse (is.element("enter", names(as.list(x$call))), as.list(x$call)$enter, TRUE)
     line.length <- getOption("width")
     if (any(names(x) == "via.web")) {
@@ -555,42 +562,22 @@
     }
     sol.cons <- x$options$sol.cons
     sol.cov  <- x$options$sol.cov
-    outcome <- toupper(x$tt$options$outcome)
+    outcome <- x$tt$options$outcome
     if (grepl("\\{|\\}", outcome)) {
         if (x$options$neg.out) {
-            outcome <- paste("~", admisc::notilde(toupper(outcome)), sep = "")
+            outcome <- paste("~", admisc::notilde(outcome), sep = "")
         }
         if (any(x$options$explain != 1)) {
             outcome <- ""
         }
     }
     else {
-        if (x$options$use.tilde) {
-            if (x$options$neg.out) {
-                if (admisc::tilde1st(outcome)) {
-                    outcome <- admisc::notilde(outcome)
-                }
-                else {
-                    outcome <- paste("~", toupper(outcome), sep = "")
-                }
-            }
-        }
-        else {
-            if (x$options$neg.out) {
-                if (admisc::tilde1st(outcome)) {
-                    outcome <- toupper(admisc::notilde(outcome))
-                }
-                else {
-                    outcome <- tolower(outcome)
-                }
+        if (x$options$neg.out) {
+            if (admisc::tilde1st(outcome)) {
+                outcome <- admisc::notilde(outcome)
             }
             else {
-                if (admisc::tilde1st(outcome)) {
-                    outcome <- tolower(admisc::notilde(outcome))
-                }
-                else {
-                    outcome <- toupper(outcome)
-                }
+                outcome <- paste("~", outcome, sep = "")
             }
         }
     }
@@ -607,27 +594,8 @@
     if (is.element("details", names(other.args))) {
         if (is.logical(other.args$details)) {
             details <- other.args$details
-            x$options$print.truth.table <- details
             x$options$details <- details
         }
-    }
-    if (x$options$print.truth.table) {
-        print.tt(x$tt)
-    }
-    else {
-        nofconditions <- length(x$tt$noflevels)
-        if (!all(is.element(names(x$tt$tt)[seq(nofconditions)], names(x$tt$recoded.data)[seq(nofconditions)])) & x$options$use.letters) {
-            if (enter) cat("\n")
-            names.mydata <- colnames(x$tt$recoded.data)[seq(nofconditions + 1)]
-            for (i in seq(nofconditions)) {
-                cat("    ", paste(names(x$tt$tt)[i], ": ", sep=""), names.mydata[i], "\n", sep="")
-            }
-        }
-    }
-    if (details) {
-        if (!x$options$print.truth.table & enter) cat("\n")
-        cat("n OUT = 1/0/C:", paste(x$numbers[1:3], collapse="/"), "\n")
-        cat("  Total      :", x$numbers[4], "\n")
     }
     if (!mqca & enter) {
         cat("\n")
@@ -650,12 +618,6 @@
             cat(paste(ifelse(j > 1, "\n", ""), "From ", paste(isols, collapse = ", "), ": ", sep = ""))
             if (enter) cat("\n")
             i <- which(names(x$i.sol) == isols[1])
-            if (x$options$show.cases & x$options$details) {
-                PIchart <- x$i.sol[[i]]$PIchart
-                PIchart <- PIchart[is.element(rownames(PIchart), unique(unlist(x$i.sol[[i]]$solution[[1]]))), , drop=FALSE]
-                mult.cov <- ifelse(any(colSums(PIchart) > 1), length(unlist(lapply(x$inputcases[colSums(PIchart) > 1], strsplit, split = ",", useBytes = TRUE))), 0)
-                cat("\nNumber of multiple-covered cases:", mult.cov, "\n")
-            }
             if (!mqca & enter) {
                 cat("\n")
             }
@@ -676,17 +638,11 @@
                 }
             }
             if (x$options$details) {
-                print.pof(x$i.sol[[i]]$IC, show.cases = x$options$show.cases)
+                print.QCA_pof(x$i.sol[[i]]$IC, show.cases = x$options$show.cases)
             }
         }
     }
     else { 
-        if (x$options$show.cases & !mqca & x$options$details) {
-            PIchart <- x$PIchart
-            PIchart <- PIchart[is.element(rownames(PIchart), unique(unlist(x$solution[[1]]))), , drop = FALSE]
-            mult.cov <- ifelse(any(colSums(PIchart) > 1), length(unlist(lapply(x$inputcases[colSums(PIchart) > 1], strsplit, split = ",", useBytes = TRUE))), 0)
-            cat("Number of multiple-covered cases:", mult.cov, "\n\n")
-        }
         if (length(x$solution) == 1) {
             sufnec <- all(admisc::agteb(x$IC$sol.incl.cov[3], sol.cov))
             sufnec <- paste(ifelse(sufnec, "<", ""), "=>", sep="")
@@ -717,14 +673,14 @@
             }
         }
         if (x$options$details) {
-            print.pof(x$IC, show.cases = x$options$show.cases, line.length=line.length)
+            print.QCA_pof(x$IC, show.cases = x$options$show.cases, line.length=line.length)
         }
     }
     if (!x$options$details & enter) {
         cat("\n")
     }
 }
-`print.sS` <- function(x, ...) {
+`print.QCA_sS` <- function(x, ...) {
     other.args <- list(...)
     if (x$use.letters) {
         conditions <- names(x$letters)
@@ -756,7 +712,7 @@
     cat(sep.row, "\n")
     cat("\n")
 }
-`print.tt` <- function(x, ...) {
+`print.QCA_tt` <- function(x, ...) {
     other.args <- list(...)
     enter <- ifelse (is.element("enter", names(as.list(x$call))), as.list(x$call)$enter, TRUE)
     if (!is.null(x$rowsorder)) {
@@ -775,7 +731,7 @@
         }
     }
     if (!complete) {
-        if (!is.element("excluded", names(x$options))) {
+        if (!is.element("removed", names(x$options))) {
             x$tt <- x$tt[x$tt$OUT != "?", , drop = FALSE]
         }
     }
@@ -799,11 +755,11 @@
         rownames(x$tt) <- paste(format(as.numeric(rownames(x$tt))), "")
         nofconditions <- length(x$noflevels)
         names.mydata <- colnames(x$recoded.data)[seq(nofconditions + 1)]
-        if (!is.element("excluded", names(x$options))) {
+        if (!is.element("removed", names(x$options))) {
             if (enter) cat("\n")
             if (!all(is.element(names(x$tt)[seq(nofconditions)], names(x$recoded.data)[seq(nofconditions)]))) {
                 for (i in seq(nofconditions)) {
-                    cat("    ", paste(names(x$tt)[i], ": ", sep=""), names.mydata[i], "\n", sep="")
+                    cat("    ", paste(names(x$tt)[i], ": ", sep = ""), names.mydata[i], "\n", sep = "")
                 }
             }
         }
@@ -828,7 +784,7 @@
         if (any(misspri)) {
             x$tt[misspri, "PRI"] <- "  -"
         }
-        if (!is.element("excluded", names(x$options))) {
+        if (!is.element("removed", names(x$options))) {
             cat("  OUT: output value\n")
             cat("    n: number of cases in configuration\n")
             cat(" incl: sufficiency inclusion score\n")

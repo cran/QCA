@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -24,8 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `makeChart` <-
-function(primes = "", configs = "", snames = "", mv = FALSE,
-         use.tilde = FALSE, collapse = "*", ...) {
+function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...) {
     prmat <- is.matrix(primes)
     comat <- is.matrix(configs)
     other.args <- list(...)
@@ -61,9 +60,9 @@ function(primes = "", configs = "", snames = "", mv = FALSE,
             else {
                 mtrx <- t(mtrx)
             }
-            rownames(mtrx) <- writePrimeimp(primes, mv = mv, use.tilde = use.tilde, collapse = collapse)
+            rownames(mtrx) <- admisc::writePrimeimp(primes, mv = mv, collapse = collapse)
         }
-        colnames(mtrx) <- writePrimeimp(configs, mv = mv, use.tilde = use.tilde, collapse = collapse)
+        colnames(mtrx) <- admisc::writePrimeimp(configs, mv = mv, collapse = collapse)
         class(mtrx) <- c("matrix", "pic")
         return(mtrx)
     }
@@ -98,7 +97,7 @@ function(primes = "", configs = "", snames = "", mv = FALSE,
         }
         colnames(mtrx) <- names(tconfigs)
         rownames(mtrx) <- names(tprimes)
-        class(mtrx) <- c("matrix", "pic")
+        class(mtrx) <- c("matrix", "QCA_pic")
         return(mtrx)
     }
     else {

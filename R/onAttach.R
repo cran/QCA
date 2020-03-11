@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -28,9 +28,9 @@
                  "  Springer International Publishing.", sep="\n")
     msg <- paste(msg, "\n\nTo run the graphical user interface, use: runGUI()\n", sep="")
     if (!grepl("there is no package called", tryCatch(find.package("QCApro"), error = function(e) e))) {
-        msg <- paste(msg, "\nNOTE: Found multiple functions and object type conflicts in the fork package QCApro.",
-                          "\n      To avoid confusion, please uninstall it before using this software, with:\n",
-                          "      uninstall(\"QCApro\")", sep="")
+        msg <- paste(msg, "\nNOTE: Found multiple function name conflicts with the fork package QCApro.",
+                          "\n      To avoid confusion, it should be unloaded before using this software, with:", 
+                          "\n      unload(QCApro)", sep = "")
     }
     packageStartupMessage("\nTo cite package QCA in publications, please use:\n", msg, "\n")
 }

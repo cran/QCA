@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
 function (x, type = "fuzzy", method = "direct", thresholds = NA,
           logistic = TRUE, idm = 0.95, ecdf = FALSE, below = 1, above = 1, ...) {
     other.args <- list(...)
+    funargs <- lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x))
     if (is.element("q", names(other.args))) {
         above <- other.args$q
     }
@@ -37,16 +38,21 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
         x <- admisc::asNumeric(x) 
     }
     else {
+        if (grepl("[$]", funargs$x) & is.null(x)) {
+            x <- unlist(strsplit(funargs$x, split = "\\$"))
+            cat("\n")
+            stop(simpleError(sprintf("There is no column \"%s\" in the dataframe %s.\n\n", x[2], x[1])))
+        }
         cat("\n")
-        stop(simpleError("x is not numeric.\n\n"))
+        stop(simpleError("The input is not numeric.\n\n"))
     }
     if (!is.element(type, c("crisp", "fuzzy"))) {
         cat("\n")
-        stop(simpleError("Unknown calibration type.\n\n"))
+        stop(simpleError("Incorrect calibration type.\n\n"))
     }
     if (!is.element(method, c("direct", "indirect", "TFR"))) {
         cat("\n")
-        stop(simpleError("Unknown calibration method.\n\n"))
+        stop(simpleError("Incorrect calibration method.\n\n"))
     }
     if (method != "TFR") {
         if(all(is.na(thresholds))) {

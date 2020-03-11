@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Adrian Dusa
+# Copyright (c) 2020, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -48,32 +48,6 @@
     if (is.vector(x) & is.character(x) & any(grepl("\\$solution", funargs["x"]))) {
         x <- list(x)
     }
-    if (is.character(x)) {
-        if (x == tolower(x) & x != toupper(x)) {
-            if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", toupper(x))), n = 1)) {
-                conds <- toupper(x)
-                x <- 1 - eval.parent(parse(text = sprintf("get(\"%s\")", toupper(x))), n = 1)
-                negated[1] <- TRUE
-            }
-        }
-    }
-    else {
-        testit <- capture.output(tryCatch(eval(x), error = function(e) e))
-        if (length(testit) == 1 & is.character(testit)) {
-            if (grepl("Error", testit)) {
-                x <- as.vector(deparse(funargs["x"]))
-            }
-            else if (admisc::hastilde(testit)) {
-                negated[1] <- TRUE
-                if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", admisc::notilde(testit))), n = 1)) {
-                    x <- 1 - eval.parent(parse(text = sprintf("get(\"%s\")", admisc::notilde(testit))), n = 1)
-                }
-                else {
-                    x <- testit
-                }
-            }
-        }
-    }
     if (is.list(x)) {
         if (any(grepl("\\$solution", funargs["x"]))) {
             model <- TRUE
@@ -91,32 +65,6 @@
         if (length(testit) == 1 & is.character(testit)) {
             if (grepl("Error", testit)) {
                 y <- as.vector(funargs["y"])
-            }
-        }
-        if (!is.character(y)) {
-            testit <- capture.output(tryCatch(eval(y), error = function(e) e))
-            if (length(testit) == 1 & is.character(testit)) {
-                if (grepl("Error", testit)) {
-                    y <- deparse(funargs["y"])
-                }
-                else if (admisc::hastilde(testit)) {
-                    negated[2] <- TRUE
-                    if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", admisc::notilde(testit))), n = 1)) {
-                        y <- 1 - eval.parent(parse(text = sprintf("get(\"%s\")", admisc::notilde(testit))), n = 1)
-                    }
-                    else {
-                        y <- testit
-                    }
-                }
-            }
-        }
-        else {
-            if (y == tolower(y) & y != toupper(y)) {
-                if (eval.parent(parse(text = sprintf("is.element(\"%s\", ls())", toupper(y))), n = 1)) {
-                    conds <- toupper(y)
-                    y <- 1 - eval.parent(parse(text = sprintf("get(\"%s\")", toupper(y))), n = 1)
-                    negated[2] <- TRUE
-                }
             }
         }
     }
