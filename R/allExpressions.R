@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `allExpressions` <-
-function(noflevels, arrange = FALSE, depth = NULL, raw = FALSE, ...) {
+function(noflevels = NULL, arrange = FALSE, depth = NULL, raw = FALSE, ...) {
     result <- createMatrix(noflevels + 1, arrange = arrange, depth = depth, ... = ...) - 1
     attr(result, "raw") <- raw
     class(result) <- c("matrix", "QCA_aE")

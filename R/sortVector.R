@@ -25,7 +25,7 @@
 
 `sortVector` <- 
 function(x, collapse = "") {
-    strx <- strsplit(x, split=ifelse(collapse == "", "", "\\*"))
+    strx <- strsplit(x, split = ifelse(collapse == "", "", "\\*"))
     strings <- NULL
     lengths <- unlist(lapply(strx, length))
     unique.lengths <- sort(unique(lengths))

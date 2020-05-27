@@ -79,6 +79,7 @@
 \alias{rowDominance}
 \alias{sortMatrix}
 \alias{sortVector}
+\alias{mvregexp}
 
 
 \title{Internal Functions}

@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `getSolution` <-
-function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, ...) {
+function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, curly, ...) {
     mtrx <- NULL
     sol.matrix <- NULL
     other.args <- list(...)
@@ -49,28 +49,28 @@ function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, .
         }
     }
     if (FALSE) {
-    if (!missing(indata)) {
-        hastime <- logical(ncol(expressions))
-        for (i in seq(ncol(expressions))) {
-            if (any(is.element(indata[, i], c("-", "dc", "?")))) {
-                hastime[i] <- TRUE
+        if (!missing(indata)) {
+            hastime <- logical(ncol(expressions))
+            for (i in seq(ncol(expressions))) {
+                if (any(is.element(indata[, i], c("-", "dc", "?")))) {
+                    hastime[i] <- TRUE
+                }
+            }
+            indata <- indata[, !hastime, drop = FALSE]
+            expressions <- expressions[, !hastime, drop = FALSE]
+            inputt <- inputt[, !hastime, drop = FALSE]
+            relevant <- apply(expressions, 1, sum) > 0
+            if (any(!relevant)) {
+                sol.matrix <- NULL
+                mtrx <- mtrx[relevant, , drop = FALSE]
+                expressions <- expressions[relevant, , drop = FALSE]
             }
         }
-        indata <- indata[, !hastime, drop = FALSE]
-        expressions <- expressions[, !hastime, drop = FALSE]
-        inputt <- inputt[, !hastime, drop = FALSE]
-        relevant <- apply(expressions, 1, sum) > 0
-        if (any(!relevant)) {
-            sol.matrix <- NULL
-            mtrx <- mtrx[relevant, , drop = FALSE]
-            expressions <- expressions[relevant, , drop = FALSE]
-        }
     }
-    }
-    PI <- admisc::writePrimeimp(expressions, mv = mv, collapse = collapse)
+    PI <- admisc::writePrimeimp(expressions, mv = mv, collapse = collapse, curly = curly)
     rownames(expressions) <- PI
     if (is.null(mtrx)) {
-        mtrx <- makeChart(expressions, inputt, mv = mv, collapse = collapse)
+        mtrx <- makeChart(expressions, inputt, mv = mv, collapse = collapse, getSolution = TRUE, curly = curly)
     }
     else {
         rownames(mtrx) <- PI

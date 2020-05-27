@@ -37,18 +37,32 @@ function(data, outcome = "", conditions = "") {
         cat("\n")
         stop(simpleError("The outcome set is not specified.\n\n"))
     }
-    if (! outcome %in% colnames(data)) {
+    if (!is.element(outcome, colnames(data))) {
         cat("\n")
         stop(simpleError("The name of the outcome is not correct.\n\n"))
     }
     if (!identical(conditions, "")) {
-        if (outcome %in% conditions) {
-            cat("\n")
-            stop(simpleError(paste0("Variable \"", outcome, "\" cannot be both outcome _and_ condition!\n\n")))
+        if (any(grepl(":", conditions))) {
+            if (length(conditions) > 1) {
+                cat("\n")
+                stop(simpleError("Only one sequence of conditions allowed.\n\n"))
+            }
+            conditions <- unlist(strsplit(conditions, split = ":"))
+            nms <- colnames(data)
+            cs <- unlist(strsplit(conditions, split = ":"))
+            conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
+            if (is.element(outcome, conditions)) {
+                cat("\n")
+                stop(simpleError("Outcome found in the sequence of conditions.\n\n"))
+            }
         }
-        if (!all(conditions %in% names(data))) {
+        if (is.element(outcome, conditions)) {
             cat("\n")
-            stop(simpleError("The conditions' names are not correct.\n\n"))
+            stop(simpleError(paste0("\"", outcome, "\" cannot be both outcome _and_ condition.\n\n")))
+        }
+        if (!all(is.element(conditions, names(data)))) {
+            cat("\n")
+            stop(simpleError("Conditions not found in the data.\n\n"))
         }
         if (any(duplicated(conditions))) {
             cat("\n")
@@ -59,7 +73,7 @@ function(data, outcome = "", conditions = "") {
         checked <- sapply(data, function(x) any(is.na(x)))
         cat("\n")
         stop(paste("Missing values in the data are not allowed. Please check columns:\n",
-             paste(names(checked)[checked], collapse = ", "), "\n\n", sep=""), call. = FALSE)
+             paste(names(checked)[checked], collapse = ", "), "\n\n", sep = ""), call. = FALSE)
     }
 }
 `verify.qca` <-
@@ -103,7 +117,7 @@ function(data) {
             errmessage <- paste("Uncalibrated data.\n",
             "Fuzzy sets should have values bound to the interval [0 , 1] and all other sets should be crisp.\n",
             "Please check the following condition", ifelse(length(uncalibrated) == 1, "", "s"), ":\n",
-            paste(uncalibrated, collapse = ", "), sep="")
+            paste(uncalibrated, collapse = ", "), sep = "")
             stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
         }
         if (any(checkmvuncal)) {
@@ -112,8 +126,8 @@ function(data) {
             errmessage <- paste("Possibly uncalibrated data.\n",
             "Multivalue conditions with more than 20 levels are unlikely to be (properly) calibrated.\n",
             "Please check the following condition", ifelse(length(uncalibrated) == 1, "", "s"), ":\n",
-            paste(uncalibrated, collapse = ", "), sep="")
-            stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+            paste(uncalibrated, collapse = ", "), sep = "")
+            stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
         }
     }
     else if (is.vector(data)) {
@@ -137,7 +151,7 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
                    ifelse(cls == "QCA_tt", ", created by truthTable()", ""),
                    ifelse(cls == "QCA_pof", ", created by pof()", ""),
                    ".\n\n", sep = "")
-        stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+        stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
     }
     if (methods::is(data, "QCA_tt")) {
         data <- data$initial.data
@@ -153,14 +167,19 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
     if (!identical(conditions, "")) {
         if (length(conditions) == 1 & is.character(conditions)) {
             conditions <- admisc::splitstr(conditions)
+            if (any(grepl(":", conditions)) & length(conditions) > 1) {
+                cat("\n")
+                stop(simpleError("Only one sequence of conditions allowed.\n\n"))
+            }
+            conditions <- unlist(strsplit(conditions, split = ":"))
         }
         if (is.element(outcome, conditions)) {
             cat("\n")
             stop(simpleError(paste0("Variable \"", outcome, "\" cannot be both outcome _and_ condition!\n\n")))
         }
-        if (!all(conditions %in% names(data))) {
+        if (!all(is.element(conditions, names(data)))) {
             cat("\n")
-            stop(simpleError("The conditions' names are not correct.\n\n"))
+            stop(simpleError("Conditions not found in the data.\n\n"))
         }
         if (any(duplicated(conditions))) {
             cat("\n")
@@ -175,7 +194,7 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
         checked <- sapply(data, function(x) any(is.na(x)))
         cat("\n")
         stop(simpleError(paste("Missing values in the data are not allowed. Please check columns:\n",
-             paste(names(checked)[checked], collapse = ", "), "\n\n", sep="")))
+             paste(names(checked)[checked], collapse = ", "), "\n\n", sep = "")))
     }
     if (any(c(ic1, ic0) < 0) | any(c(ic1, ic0) > 1)) {
         cat("\n")
@@ -193,7 +212,6 @@ function(data, outcome = "", conditions = "", complete = FALSE, show.cases = FAL
 `verify.minimize` <-
 function(data, outcome = "", conditions = "", explain = "",
          include = "", use.letters = FALSE) {
-    verify.data(data, outcome = outcome, conditions = conditions)
     if (all(explain == "")) {
         cat("\n")
         stop(simpleError("You have not specified what to explain.\n\n"))
@@ -228,7 +246,7 @@ function(data, outcome = "", conditions = "", explain = "",
         }
         if (!all(is.element(conditions, names(data)))) {
             cat("\n")
-            stop(simpleError("The conditions' names are not correct.\n\n"))
+            stop(simpleError("Conditions not found in the data.\n\n"))
         }
     }
     if (use.letters & ncol(data) > 27) {
@@ -239,7 +257,7 @@ function(data, outcome = "", conditions = "", explain = "",
         checked <- sapply(data, function(x) any(is.na(x)))
         cat("\n")
         stop(simpleError(paste("Missing values in the data are not allowed. Please check columns:\n",
-             paste(names(checked)[checked], collapse = ", "), "\n\n", sep="")))
+             paste(names(checked)[checked], collapse = ", "), "\n\n", sep = "")))
     }
 }
 `verify.dir.exp` <-
@@ -249,7 +267,7 @@ function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
         return(dir.exp)
     }
     else {
-        multivalue <- any(grepl("[{|}]", dir.exp))
+        multivalue <- any(grepl(mvregexp, dir.exp))
         if (is.character(dir.exp)) {
             dir.exp <- gsub(admisc::dashes(), "-", dir.exp)
         }
@@ -292,11 +310,11 @@ function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
                     values <- admisc::asNumeric(setdiff(values, "-"))
                     if (length(setdiff(values, seq(noflevels[i]) - 1)) > 0) {
                         cat(enter)
-                        errmessage <- paste("Values specified in the directional expectations do not appear in the data, for condition \"", conditions[i], "\".\n\n", sep="")
+                        errmessage <- paste("Values specified in the directional expectations do not appear in the data, for condition \"", conditions[i], "\".\n\n", sep = "")
                         stop(simpleError(paste0(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = ""), enter, enter)))
                     }
                     else {
-                        expression <- c(expression, paste(conditions[i], "{", values, "}", sep = ""))
+                        expression <- c(expression, paste(conditions[i], "[", values, "]", sep = ""))
                     }
                 }
             }
@@ -307,7 +325,7 @@ function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
             if (length(dir.exp) == 1) {
                 if (!grepl("[+]", dir.exp) &  grepl("[,]", dir.exp)) {
                     if (multivalue) {
-                        values <- admisc::curlyBrackets(dir.exp)
+                        values <- admisc::squareBrackets(dir.exp)
                         atvalues <- paste("@", seq(length(values)), sep = "")
                         for (i in seq(length(values))) {
                             dir.exp <- gsub(values[i], atvalues[i], dir.exp)
@@ -327,7 +345,7 @@ function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
         if (!multivalue) {
             if (any(noflevels > 2)) {
                 cat(enter)
-                stop(simpleError(paste0("For multivalue data, directional expectations should be specified using curly brackets.", enter, enter)))
+                stop(simpleError(paste0("For multivalue data, directional expectations should be specified using square brackets.", enter, enter)))
             }
         }
         if (!oldway) {
@@ -349,15 +367,21 @@ function(data, outcome, conditions, noflevels, dir.exp = "", enter = NULL) {
 function(allargs) {
     data <- allargs$input
     outcome <- admisc::splitstr(allargs$outcome)
-    mvoutcome <- grepl("[{]", outcome) 
+    mvoutcome <- grepl(mvregexp, outcome) 
     if (any(mvoutcome)) {
-        outcome.value <- admisc::curlyBrackets(outcome)
-        outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
+        if (any(grepl("\\{", outcome))) {
+            outcome.value <- admisc::curlyBrackets(outcome)
+            outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
+        }
+        else {
+            outcome.value <- admisc::squareBrackets(outcome)
+            outcome <- admisc::squareBrackets(outcome, outside = TRUE)
+        }
         if (length(setdiff(outcome, names(data))) > 0) {
             outcome <- setdiff(outcome, names(data))
             cat("\n")
-            errmessage <- paste("Outcome(s) not present in the data: \"", paste(outcome, collapse="\", \""), "\".\n\n", sep="")
-            stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+            errmessage <- paste("Outcome(s) not present in the data: \"", paste(outcome, collapse="\", \""), "\".\n\n", sep = "")
+            stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
         }
         for (i in seq(length(outcome))) {
             if (mvoutcome[i]) {
@@ -365,7 +389,7 @@ function(allargs) {
                 if (length(mvnot) > 0) {
                     cat("\n")
                     errmessage <- sprintf("Value(s) %s not found in the outcome \"%s\".\n\n", paste(mvnot, collapse = ","), outcome[i])
-                    stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+                    stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
                 }
             }
         }
@@ -374,8 +398,8 @@ function(allargs) {
         if (length(setdiff(outcome, names(data))) > 0) {
             outcome <- setdiff(outcome, names(data))
             cat("\n")
-            errmessage <- paste("Outcome(s) not present in the data: \"", paste(outcome, collapse="\", \""), "\".\n\n", sep="")
-            stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+            errmessage <- paste("Outcome(s) not present in the data: \"", paste(outcome, collapse="\", \""), "\".\n\n", sep = "")
+            stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
         }
         fuzzy.outcome <- apply(data[, outcome, drop=FALSE], 2, function(x) any(x %% 1 > 0))
         if (any(!fuzzy.outcome)) {
@@ -385,7 +409,7 @@ function(allargs) {
                 if (!all(valents %in% c(0, 1))) {
                     cat("\n")
                     errmessage <- paste("Please specify the value of outcome variable \"", i, "\" to explain.\n\n", sep = "")
-                    stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+                    stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
                 }
             }
         }
@@ -400,8 +424,8 @@ function(allargs) {
     if (length(setdiff(outcome, conditions)) > 0) {
         outcome <- setdiff(outcome, conditions)
         cat("\n")
-        errmessage <- paste("Outcome(s) not present in the conditions' names: \"", paste(outcome, collapse="\", \""), "\".\n\n", sep="")
-        stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+        errmessage <- paste("Outcome(s) not present in the conditions' names: \"", paste(outcome, collapse="\", \""), "\".\n\n", sep = "")
+        stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
     }
 }
 `verify.inf.test` <- function(inf.test, data) {
@@ -415,7 +439,7 @@ function(allargs) {
             if (any(fuzzy)) {
                 cat("\n")
                 errmessage <- "The binomial test only works with crisp data.\n\n"
-                stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+                stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
             }
         }
         if (length(inf.test) > 1) {
@@ -423,7 +447,7 @@ function(allargs) {
             if (is.na(alpha) | alpha < 0 | alpha > 1) {
                 cat("\n")
                 errmessage <- "The second value of inf.test should be a number between 0 and 1.\n\n"
-                stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep="")))
+                stop(simpleError(paste(strwrap(errmessage, exdent = 7), collapse = "\n", sep = "")))
             }
         }
     }

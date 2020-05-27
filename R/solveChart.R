@@ -51,20 +51,15 @@ function(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, ...) {
     }
     if (all(dim(chart) > 1)) {
         if (is.null(depth)) depth <- 0L
-        env <- new.env()
-        env$findmin <- findmin
         output <- .Call("C_solveChart", t(matrix(as.logical(chart), nrow = nrow(chart))),
-                    all.sol, as.integer(depth), env, PACKAGE = "QCA") 
+                    all.sol, as.integer(depth), PACKAGE = "QCA") 
         if (ncol(output) == 1 & is.double(output)) {
             warning(simpleWarning("The PI chart is too complex, only the first minimal solution returned.\n\n"))
         }
         output[output == 0] <- NA
     }
     else {
-        output <- matrix(seq(nrow(chart)))
-        if (ncol(chart) == 1) {
-            output <- t(output)
-        }
+        output <- matrix(seq(length(chart)))
     }
     output <- matrix(as.integer(row.numbers[output]), nrow = nrow(output))
     output[is.na(output)] <- 0L

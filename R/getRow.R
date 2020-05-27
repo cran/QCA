@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `getRow` <- 
-function(row.no, noflevels, zerobased = FALSE, ...) {
+function(row.no = NULL, noflevels = NULL, zerobased = FALSE, ...) {
     other.args <- list(...)
     enter <- ifelse (is.element("enter", names(other.args)), other.args$enter, TRUE)
     max.combs <- prod(noflevels)

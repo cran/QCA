@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `createMatrix` <-
-function(noflevels, ...) {
+function(noflevels = NULL, ...) {
     other.args <- list(...)
     RAM <- 2
     if (is.element("RAM", names(other.args))) {
@@ -61,9 +61,9 @@ function(noflevels, ...) {
         cat("\n")
         stop(simpleError("The argument depth has to be an integer number."))
     }
-    if ((mem <- prod(noflevels)*length(levels)*8/1024^3) > RAM) {
+    if ((mem <- prod(noflevels) * length(levels) * 8 / 1024^3) > RAM) {
         cat("\n")
-        stop(simpleError(paste("Too much memory needed (", round(mem, 1), " Gb) to create the matrix.", sep="")))
+        stop(simpleError(paste("Too much memory needed (", round(mem, 1), " Gb) to create the matrix.", sep = "")))
     }
     noflevels <- as.integer(abs(noflevels))
     arrange <- as.integer(arrange * 1)

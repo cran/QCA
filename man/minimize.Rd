@@ -213,10 +213,11 @@ Minimization}, R Journal vol.10, issue 2, pp. 357-370, DOI:
 \href{http://dx.doi.org/10.32614/RJ-2018-080}{10.32614/RJ-2018-080}
 
 Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}. 
-Springer International Publishing.
+Springer International Publishing, DOI:
+\href{http://dx.doi.org/10.1007/978-3-319-75668-4}{10.1007/978-3-319-75668-4}.
 
 Ragin, C. (2003) \emph{Recent Advances in Fuzzy-Set Methods and Their Application to Policy Questions}.
-WP 2003-9, \href{http://www.compasss.org/wpseries/Ragin2003a.pdf}{COMPASSS}.
+WP 2003-9, \href{http://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
 
 Ragin, C. (2009) \dQuote{Qualitative Comparative Analysis Using Fuzzy-Sets (fsQCA)},
 in Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods.
@@ -241,7 +242,7 @@ Qualitative Comparative Analysis (QCA) and Related Techniques}, SAGE.
 # Lipset binary crisp data
 
 # the associated truth table
-ttLC <- truthTable(LC, "SURV", sort.by = "incl, n", show.cases = TRUE)
+ttLC <- truthTable(LC, SURV, sort.by = "incl, n", show.cases = TRUE)
 ttLC
 
 # conservative solution (Rihoux & De Meur 2009, p.57)
@@ -256,7 +257,7 @@ venn(cLC)
 minimize(ttLC, details = TRUE)
 
 # negating the outcome
-ttLCn <- truthTable(LC, "~SURV", sort.by = "incl, n", show.cases = TRUE)
+ttLCn <- truthTable(LC, ~SURV, sort.by = "incl, n", show.cases = TRUE)
 minimize(ttLCn)
 
 # parsimonious solution, positive output
@@ -274,8 +275,9 @@ pLCn
 # -----
 # Lipset multi-value crisp data (Cronqvist & Berg-Schlosser 2009, p.80)
 
-# truth table 
-ttLM <- truthTable(LM, "SURV", conditions = "DEV, URB, LIT, IND",
+# truth table, conditions all columns from DEV to IND
+# note the sequence operator ":"
+ttLM <- truthTable(LM, SURV, conditions = DEV:IND,
         sort.by = "incl", show.cases = TRUE)
 
 # conservative solution, positive output
@@ -285,7 +287,7 @@ minimize(ttLM, details = TRUE)
 minimize(ttLM, include = "?", details = TRUE)
 
 # negate the outcome
-ttLMn <- truthTable(LM, "~SURV", conditions = "DEV, URB, LIT, IND",
+ttLMn <- truthTable(LM, ~SURV, conditions = DEV:IND,
          sort.by = "incl", show.cases = TRUE)
 
 # conservative solution, negative output
@@ -299,7 +301,7 @@ minimize(ttLMn, include = "?", details = TRUE)
 # Lipset fuzzy sets data (Ragin 2009, p.112)
 
 # truth table using a very low inclusion cutoff
-ttLF <- truthTable(LF, "SURV", incl.cut = 0.8,
+ttLF <- truthTable(LF, SURV, incl.cut = 0.8,
         sort.by = "incl", show.cases = TRUE)
 
 # conservative solution
@@ -310,18 +312,22 @@ minimize(ttLF, include = "?", details = TRUE)
 
 # intermediate solution using directional expectations
 minimize(ttLF, include = "?", details = TRUE,
-         dir.exp = "DEV, URB, LIT, IND, STB")
+         dir.exp = c(DEV, URB, LIT, IND, STB))
+
+# directional expectations can also be specified usin a sequence
+minimize(ttLF, include = "?", details = TRUE, dir.exp = DEV:STB)
+
 
 # URB as a don't care condition (left unspecified) and
 # experimentally, conjunctural directional expectations
 minimize(ttLF, include = "?", details = TRUE,
-         dir.exp = "DEV, STB, ~LIT*IND")
+         dir.exp = c(DEV, STB, ~LIT*IND))
 
 
 # -----
 # Cebotari & Vink (2013, 2015)
 
-ttCVF <- truthTable(CVF, outcome = "PROTEST", incl.cut = 0.8,
+ttCVF <- truthTable(CVF, outcome = PROTEST, incl.cut = 0.8,
                     sort.by = "incl, n", show.cases = TRUE)
 
 pCVF <- minimize(ttCVF, include = "?", details = TRUE)
@@ -330,7 +336,7 @@ pCVF
 # inspect the PI chart
 pCVF$PIchart
 
-# DEMOC*ETHFRACT*poldis is dominated by DEMOC*ETHFRACT*GEOCON
+# DEMOC*ETHFRACT*~POLDIS is dominated by DEMOC*ETHFRACT*GEOCON
 # using row dominance to solve the PI chart
 pCVFrd <- minimize(ttCVF, include = "?", row.dom = TRUE, details = TRUE)
 
@@ -349,7 +355,7 @@ for(i in 1:4) {
 # which will automatically be passed to truthTable() as an intermediary
 # step before the minimization
 
-minimize(RS, outcome = "REC", details = TRUE)
+minimize(RS, outcome = REC, details = TRUE)
 
 }
 

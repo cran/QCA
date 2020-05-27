@@ -58,7 +58,7 @@
             ptn <- gsub("\"|]|,|\ ", "", ptn)
             stopindex <- ifelse(identical(condsplit[stindex - 1], "["), stindex - 2, stindex - 1)
             if (possibleNumeric(ptn)) {
-                cols <- eval.parent(parse(text=paste("colnames(", filename, ")", sep="")))
+                cols <- eval.parent(parse(text = paste("colnames(", filename, ")", sep = "")))
                 if (!is.null(cols)) {
                     result[i] <- cols[as.numeric(ptn)]
                 }
@@ -70,18 +70,18 @@
                 if (!postring) { 
                     ptnfound <- FALSE
                     n <- 1
-                    if (eval.parent(parse(text=paste0("\"", ptn, "\" %in% ls()")), n = 1)) {
-                        ptn <- eval.parent(parse(text=paste("get(", ptn, ")", sep="")), n = 1)
+                    if (eval.parent(parse(text = paste0("\"", ptn, "\" %in% ls()")), n = 1)) {
+                        ptn <- eval.parent(parse(text = paste("get(", ptn, ")", sep = "")), n = 1)
                         ptnfound <- TRUE
                     }
-                    else if (eval.parent(parse(text=paste0("\"", ptn, "\" %in% ls()")), n = 2)) {
-                        ptn <- eval.parent(parse(text=paste("get(\"", ptn, "\")", sep="")), n = 2)
+                    else if (eval.parent(parse(text = paste0("\"", ptn, "\" %in% ls()")), n = 2)) {
+                        ptn <- eval.parent(parse(text = paste("get(\"", ptn, "\")", sep = "")), n = 2)
                         ptnfound <- TRUE
                         n <- 2
                     }
                     if (ptnfound) {
                         if (possibleNumeric(ptn)) {
-                            result <- eval.parent(parse(text=paste("colnames(", filename, ")[", ptn, "]", sep="")), n = n)
+                            result <- eval.parent(parse(text = paste("colnames(", filename, ")[", ptn, "]", sep = "")), n = n)
                         }
                         else {
                             result <- ptn
@@ -224,48 +224,4 @@
     x <- as.vector(unlist(x))
     strsplit(x, split=prod.split)
 }
-`insideBrackets` <- function(x, invert = FALSE, type = "{") {
-    typematrix <- matrix(c("{", "[", "(", "}", "]", ")", "{}", "[]", "()"), nrow = 3)
-    tml <- which(typematrix == type, arr.ind = TRUE)[1]
-    if (is.na(tml)) {
-        tml <- 1
-    }
-    tml <- typematrix[tml, 1:2]
-    gsub(paste("\\", tml, sep = "", collapse = "|"), "",
-         regmatches(x, gregexpr(paste("\\", tml, sep = "", collapse = ".*"), x), invert = invert)[[1]])
-}
-`outsideBrackets` <- function(x, type = "{") {
-    typematrix <- matrix(c("{", "[", "(", "}", "]", ")", "{}", "[]", "()"), nrow = 3)
-    tml <- which(typematrix == type, arr.ind = TRUE)[1]
-    if (is.na(tml)) {
-        tml <- 1
-    }
-    tml <- typematrix[tml, 1:2]
-    pattern <- paste("\\", tml, sep = "", collapse = "[[:alnum:]|,]*")
-    unlist(strsplit(gsub("\\s+", " ", trimstr(gsub(pattern, " ", x))), split = " "))
-}
-`curlyBrackets` <- function(x, outside = FALSE) {
-    x <- paste(x, collapse = "+")
-    regexp <- "\\{[[:alnum:]|,|;]+\\}"
-    x <- gsub("[[:space:]]", "", x)
-    res <- regmatches(x, gregexpr(regexp, x), invert = outside)[[1]]
-    if (outside) {
-        res <- unlist(strsplit(res, split="\\+"))
-        return(res[res != ""])
-    }
-    else {
-        return(gsub("\\{|\\}", "", res))
-    }
-}
-`roundBrackets` <- function(x, outside = FALSE) {
-    regexp <- "\\(([^)]+)\\)"
-    x <- gsub("[[:space:]]", "", x)
-    res <- regmatches(x, gregexpr(regexp, x), invert = outside)[[1]]
-    if (outside) {
-        res <- unlist(strsplit(res, split="\\+"))
-        return(res[res != ""])
-    }
-    else {
-        return(gsub("\\(|\\)", "", res))
-    }
-}
+`mvregexp` <- "\\[|\\]|\\{|\\}"

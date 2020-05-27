@@ -26,11 +26,35 @@
 `retention` <- 
 function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
          type = "corruption", dependent = TRUE, p.pert = 0.5, n.pert = 1) {
+    outcome <- admisc::recreate(substitute(outcome))
+    conditions <- admisc::recreate(substitute(conditions))
+    type <- admisc::recreate(substitute(type))
+    if (any(grepl("\\{|\\[", c(outcome, conditions)))) {
+        cat("\n")
+        stop(simpleError("Only binary data allowed.\n\n"))
+    }
+    nms <- colnames(data)
     if (identical(conditions, "")) {
-        conditions <- names(data)[-which(names(data) == outcome)]
+        conditions <- setdiff(nms, outcome)
     }
     else {
         conditions <- admisc::splitstr(conditions)
+        if (length(conditions) == 1 & any(grepl(":", conditions))) {
+            cs <- unlist(strsplit(conditions, split = ":"))
+            if (!all(is.element(conditions, nms))) {
+                cat("\n")
+                stop(simpleError("Conditions from sequence not found in the data.\n\n"))
+            }
+            conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
+        }
+        if (!all(is.element(conditions, nms))) {
+            cat("\n")
+            stop(simpleError("Conditions not found in the data.\n\n"))
+        }
+    }
+    if (!is.element(outcome, nms)) {
+        cat("\n")
+        stop(simpleError("Outcome not found in the data.\n\n"))
     }
     data <- data[, c(conditions, outcome)]
     udata <- unique(data[, conditions])

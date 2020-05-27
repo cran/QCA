@@ -25,9 +25,14 @@
 
 `makeChart` <-
 function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...) {
+    primes <- admisc::recreate(substitute(primes))
+    configs <- admisc::recreate(substitute(configs))
+    snames <- admisc::recreate(substitute(snames))
     prmat <- is.matrix(primes)
     comat <- is.matrix(configs)
     other.args <- list(...)
+    curly <- other.args$curly
+    if (is.null(curly)) curly <- FALSE
     if (prmat & comat) {
         if (!(is.numeric(primes) & is.numeric(configs))) {
             cat("\n")
@@ -37,7 +42,7 @@ function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...
             cat("\n")
             stop(simpleError("Matrix values have to be non-negative.\n\n"))
         }
-        if (!is.element("getSolution", unlist(lapply(lapply(sys.calls(), as.character), "[[", 1)))) {
+        if (!is.element("getSolution", names(other.args))) {
             if (any(apply(primes, 1, sum) == 0) | any(apply(configs, 1, sum) == 0)) {
                 cat("\n")
                 stop(simpleError("Matrices have to be specified at implicants level.\n\n"))
@@ -60,9 +65,9 @@ function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...
             else {
                 mtrx <- t(mtrx)
             }
-            rownames(mtrx) <- admisc::writePrimeimp(primes, mv = mv, collapse = collapse)
+            rownames(mtrx) <- admisc::writePrimeimp(primes, mv = mv, collapse = collapse, curly = curly)
         }
-        colnames(mtrx) <- admisc::writePrimeimp(configs, mv = mv, collapse = collapse)
+        colnames(mtrx) <- admisc::writePrimeimp(configs, mv = mv, collapse = collapse, curly = curly)
         class(mtrx) <- c("matrix", "pic")
         return(mtrx)
     }

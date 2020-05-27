@@ -27,8 +27,8 @@ truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut
         declared as a remainder.}
   \item{pri.cut}{The minimal score for the \bold{\code{PRI}} - proportional reduction in
         inconsistency, under which a truth table row is declared as negative.}
-  \item{exclude}{A vector of row numbers from the truth table, to code as negative
-        output configurations.}
+  \item{exclude}{A vector of (remainder) row numbers from the truth table, to code as
+        negative output configurations.}
   \item{complete}{Logical, print complete truth table.}
   \item{use.letters}{Logical, use letters instead of causal conditions' names.}
   \item{show.cases}{Logical, print case names.}
@@ -198,7 +198,8 @@ Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods. Qualitat
 Comparative Analysis (QCA) and Related Techniques}, SAGE.
 
 Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}. 
-Springer International Publishing.
+Springer International Publishing, DOI:
+\href{http://dx.doi.org/10.1007/978-3-319-75668-4}{10.1007/978-3-319-75668-4}.
 
 Lipset, S.M. (1959) \dQuote{Some Social Requisites of Democracy: Economic Development
 and Political Legitimacy}, \emph{American Political Science Review} vol.53, pp.69-105.

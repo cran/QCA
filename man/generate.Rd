@@ -8,7 +8,7 @@ This function acts as a DGS - Data Generating Structure for a certain SOP expres
 }
 
 \usage{
-generate(expression, snames = "", noflevels)
+generate(expression = "", snames = "", noflevels)
 }
 
 \arguments{
@@ -40,16 +40,25 @@ Adrian Dusa
 }
 
 \examples{
-generate("D + ~AB + B~C <=> Z")
+generate(D + ~AB + B~C -> Z)
+
+# the positive configurations in their complete DNF expansion:
+expanded <- expand(D + ~AB + B~C, snames = c(A, B, C, D))
+# ~A~B~CD + ~A~BCD + ~AB~CD + ~ABCD + A~B~CD + A~BCD +
+# AB~CD + ABCD + ~AB~C~D + ~ABC~D + AB~C~D
+
+# which has the equivalent simpler, initial expression:
+simplify(expanded)
+# D + ~AB + B~C
 
 # same structure with different set names
 # (note the mandatory use of the product sign *)
-generate("Alpha + ~Beta*Gamma + Gamma*~Delta <=> Omicron")
+generate(Alpha + ~Beta*Gamma + Gamma*~Delta -> Omicron)
 
-# Introducing an additional, irrelevant condition
-# note the product sign is not mandatory here
+# introducing an additional, irrelevant condition
+# (note the product sign is not mandatory if providing the set names)
 setnames <- "Alpha, Beta, Gamma, Delta, Epsilon"
-dat <- generate("Alpha + ~BetaGamma + Gamma~Delta <=> Omicron", snames = setnames)
+dat <- generate(Alpha + ~BetaGamma + Gamma~Delta -> Omicron, snames = setnames)
 
 head(dat)
 
@@ -61,9 +70,9 @@ head(dat)
 # 5     0    0     1     0       0       1
 # 6     0    0     1     0       1       1
 
-minimize(dat, outcome = "Omicron")
+minimize(dat, outcome = Omicron)
 
-# M1: Alpha + ~Beta*Gamma + Gamma*~Delta <=> Omicron
+# M1: Alpha + ~Beta*Gamma + Gamma*~Delta <-> Omicron
 }
 
 \keyword{functions}

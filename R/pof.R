@@ -26,15 +26,12 @@
 `pof` <-
 function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
          inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...) {
+    setms <- admisc::recreate(substitute(setms))
+    outcome <- admisc::recreate(outcome)
     funargs <- lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x))
-    if (!is.null(setms)) {
-        funargs$setms <- paste(funargs$setms, collapse = "")
-    }
-    if (!is.null(outcome)) {
-        funargs$outcome <- paste(funargs$outcome, collapse = "")
-    }
     other.args <- list(...)
-    if (missing(setms)) {
+    funargs$outcome <- paste(funargs$outcome, collapse = "")
+    if (is.null(setms)) {
         cat("\n")
         stop(simpleError("The \"setms\" argument is missing.\n\n"))
     }
@@ -89,13 +86,13 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
     conditions <- outcomename <- ""
     condnegated <- outnegated <- FALSE
     `extract` <- function(x, snames = "", data = NULL) {
-        if (grepl("<=>", x)) {
+        if (grepl("<=>|<->", x)) {
             cat("\n")
-            stop(simpleError("Incorrect expression: relation can only be '=>' or '<='.\n\n"))
+            stop(simpleError("Incorrect expression: relation can be either necessity or sufficiency.\n\n"))
         }
-        multivalue <- grepl("[{|}]", x)
-        relation <- ifelse(grepl("=", x), ifelse(grepl("=>", x), "suf", "nec"), NA)
-        x <- gsub("<=|=>", "@", gsub("[[:space:]]", "", x))
+        multivalue <- grepl("\\{|\\}|\\[|\\]", x)
+        relation <- ifelse(grepl("=|-", x), ifelse(grepl("=>|->", x), "suf", "nec"), NA)
+        x <- gsub("<=|=>|<-|->", "@", gsub("[[:space:]]", "", x))
         x <- unlist(strsplit(x, split = "@"))
         if (identical(snames, "") & !is.null(data)) {
             snames <- colnames(data)
@@ -117,65 +114,42 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         return(list(condmtrx = condmtrx, outmtrx = outmtrx, expression = x[1],
             relation = relation, multivalue = multivalue))
     }
-    `error` <- function(x, type = 1) {
-        cat("\n")
-        if (type == 1) {
-            stop(simpleError("Complex expressions should be quoted.\n\n"))
-        }
-        else if (type == 2) {
-            stop(simpleError(sprintf("Object '%s' not found.\n\n", x)))
-        }
-        else if (type == 3) {
-            stop(simpleError(sprintf("Incorrect specification of '%s'.\n\n", x)))
-        }
-        else if (type == 4) {
-            if (grepl("$", x)) {
-                x <- unlist(strsplit(x, split = "[$]"))
-                x <- tail(x, 1)
-            }
-            stop(simpleError(sprintf("Invalid entry: '%s'.\n\n", x)))
-        }
-        else if (type == 5) {
-            stop(simpleError("Tilde negation should be quoted.\n\n"))
-        }
-        else if (type == 6) {
-            stop(simpleError("The data argument is missing, with no default.\n\n"))
-        }
-    }
-    if (is.element("formula", class(setms))) { 
-        error(type = 5)
-    }
     checkoutcome <- TRUE
     addexpression <- FALSE
     if (is.element("character", class(setms))) {
         if (missing(data)) {
-            error(type = 6)
+            cat("\n")
+            stop(simpleError("The data argument is missing, with no default.\n\n"))
         }
         if (length(setms) > 1) {
             cat("\n")
             stop(simpleError("Only one expression allowed.\n\n"))
         }
-        toverify <- extract(funargs$setms, data = data)
+        toverify <- extract(setms, data = data)
         if (!is.na(toverify$relation)) {
             relation <- toverify$relation
         }
         conditions <- colnames(toverify$condmtrx)
-        verify.qca(data[, which(is.element(colnames(data), conditions)), drop = FALSE])
         if (is.na(toverify$outmtrx)) {
             if (missing(outcome)) {
                 cat("\n")
                 stop(simpleError("Expression without outcome.\n\n"))
             }
-            setms <- admisc::compute(toverify$expression, data = data, separate = TRUE)
+            temp <- subset(data, select = which(is.element(colnames(data), conditions)))
+            verify.qca(temp)
+            setms <- admisc::compute(toverify$expression, data = temp, separate = TRUE)
             funargs$setms <- toverify$expression
         }
         else {
             outcomename <- colnames(toverify$outmtrx)[1]
-            setms <- admisc::compute(toverify$expression, data = data[, setdiff(colnames(data), outcomename), drop = FALSE], separate = TRUE)
-            funargs$setms <- paste(paste(unlist(toverify$expression), collapse = "+"), ifelse(toverify$relation == "suf", "=>", "<="), rownames(toverify$outmtrx))
-            outcome <- admisc::compute(rownames(toverify$outmtrx)[1], data = data) 
+            temp <- subset(data, select = which(is.element(colnames(data), c(conditions, outcomename))))
+            verify.qca(temp)
+            setms <- admisc::compute(toverify$expression, data = temp, separate = TRUE)
+            funargs$setms <- paste(paste(unlist(toverify$expression), collapse = "+"),
+                                    ifelse(toverify$relation == "suf", "->", "<-"),
+                                    rownames(toverify$outmtrx))
+            outcome <- admisc::compute(rownames(toverify$outmtrx)[1], data = temp) 
             checkoutcome <- FALSE
-            data <- data[, c(conditions, outcomename), drop = FALSE]
         }
         if (is.vector(setms)) {
             setms <- data.frame(setms)
@@ -186,7 +160,7 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             addexpression <- TRUE
         }
     }
-    if (is.element("fuzzy", class(setms))) {
+    if (is.element("QCA_fuzzy", class(setms))) {
         conditions <- "expression"
         setms <- data.frame(X = as.vector(setms))
         colnames(setms) <- conditions
@@ -196,9 +170,6 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             cat("\n")
             stop(simpleError("Outcome is missing, with no default.\n\n"))
         }
-        if (is.element("formula", class(outcome))) { 
-            error(type = 5)
-        }
         if (is.element("character", class(outcome))) {
             if (admisc::tilde1st(gsub("1-", "", funargs$outcome))) {
                 outnegated <- !outnegated
@@ -207,9 +178,15 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
                 outnegated <- !outnegated
             }
             outcome <- admisc::notilde(gsub("1-", "", funargs$outcome))
-            outcomename <- admisc::curlyBrackets(outcome, outside = TRUE)
+            if (grepl("\\{", outcome)) {
+                outcomename <- admisc::curlyBrackets(outcome, outside = TRUE)
+            }
+            else {
+                outcomename <- admisc::squareBrackets(outcome, outside = TRUE)
+            }
             if (is.null(data)) {
-                error(type = 6)
+                cat("\n")
+                stop(simpleError("The data argument is missing, with no default.\n\n"))
             }
             if (!is.element(outcomename, colnames(data))) {
                 cat("\n")
@@ -249,13 +226,13 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
     }
     if (is.vector(setms)) {
         setms <- data.frame(setms)
-            conditions <- admisc::notilde(gsub("1-", "", funargs$setms))
-            if (grepl("[$]", conditions)) {
-                conditions <- tail(unlist(strsplit(conditions, split = "[$]")), 1)
-            }
-            else if (identical(substr(conditions, 1, 2), "c(")) {
-                conditions <- "X"
-            }
+        conditions <- admisc::notilde(gsub("1-", "", funargs$setms))
+        if (grepl("[$]", conditions)) {
+            conditions <- tail(unlist(strsplit(conditions, split = "[$]")), 1)
+        }
+        else if (identical(substr(conditions, 1, 2), "c(")) {
+            conditions <- "X"
+        }
         colnames(setms) <- conditions
     }
     if (is.element("data.frame", class(setms))) {
@@ -297,7 +274,7 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
                 colnames(setms) <- paste("~", colnames(setms), sep = "")
             }
             else {
-                colnames(setms) <- gsub("[[:space:]]", "", negate(colnames(setms), snames = conditions))
+                colnames(setms) <- gsub("[[:space:]]", "", admisc::negate(colnames(setms), snames = conditions))
             }
         }
     }

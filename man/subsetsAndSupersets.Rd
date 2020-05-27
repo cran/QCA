@@ -17,9 +17,9 @@ superSubset(data, outcome = "", conditions = "", relation = "necessity",
     incl.cut = 1, cov.cut = 0, ron.cut = 0, pri.cut = 0, use.letters = FALSE,
     depth, add, ...)
 
-findSubsets(input, noflevels, stop, ...)
+findSubsets(input, noflevels = NULL, stop = NULL, ...)
 
-findSupersets(input, noflevels, ...)
+findSupersets(input, noflevels = NULL, ...)
 }
 
 \arguments{
@@ -76,7 +76,7 @@ When \bold{\code{relation = "necsuf"}}, the relation is interpreted as necessity
 \bold{\code{relation = "sufnec"}}, when relation is interpreted as sufficiency.
 
 The argument \bold{\code{outcome}} specifies the name of the outcome, and if
-multi-value the argument can also specify the level to explain, using curly brackets
+multi-value the argument can also specify the level to explain, using square brackets
 notation.
 
 Outcomes can be negated using a tilde operator \bold{\code{~X}}. The logical argument
@@ -163,10 +163,10 @@ vol.54, no.4, pp.298-324, DOI:
 
 Cebotari, Victor; Vink, Maarten Peter (2015) \emph{Replication Data for: A
 configurational analysis of ethnic protest in Europe}, Harvard Dataverse, V2,
-DOI: \href{http://dx.doi.org/10.7910/DVN/PT2IB9}{10.7910/DVN/PT2IB9}
+DOI: \href{http://dx.doi.org/10.7910/DVN/PT2IB9}{10.7910/DVN/PT2IB9}.
 
-Dusa, A. (2007) \emph{Enhancing Quine-McCluskey}. 
-\href{http://www.compasss.org/wpseries/Dusa2007b.pdf}{WP 2007-49, COMPASSS}.
+Dusa, A. (2007b) \emph{Enhancing Quine-McCluskey}.
+WP 2007-49, \href{http://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
 
 Dusa, Adrian (2010) \dQuote{A Mathematical Approach to the Boolean Minimization 
 Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113, DOI:
@@ -187,7 +187,7 @@ Cambridge: Cambridge University Press.
 # Lipset binary crisp sets
 ssLC <- superSubset(LC, "SURV")
 
-require(venn)
+library(venn)
 x = list("SURV" = which(LC$SURV == 1),
          "STB" = which(ssLC$coms[, 1] == 1),
          "LIT" = which(ssLC$coms[, 2] == 1))

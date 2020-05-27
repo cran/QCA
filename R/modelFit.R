@@ -24,11 +24,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `modelFit` <-
-function(model, theory) {
+function(model, theory = "") {
     if (!(methods::is(model, "QCA_min") | methods::is(model, "admisc_deMorgan"))) {
         cat("\n")
         stop(simpleError("The model should be a minimization object or its negation.\n\n"))
     }
+    theory <- admisc::recreate(substitute(theory))
     if (is.character(theory)) {
         if (length(theory) != 1) {
             cat("\n")

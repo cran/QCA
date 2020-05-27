@@ -31,6 +31,10 @@
         cat("\n")
         stop(simpleError("Argument x is mandatory.\n\n"))
     }
+    x <- admisc::recreate(substitute(x))
+    if (!missing(y)) {
+        y <- admisc::recreate(substitute(y))
+    }
     via.web <- FALSE
     if (length(testarg <- which(names(other.args) == "via.web")) > 0) {
         via.web <- other.args$via.web
@@ -39,12 +43,6 @@
     negated <- logical(2)
     xname <- yname <- ""
     minus <- rawToChar(as.raw(c(226, 128, 147)))
-    testit <- capture.output(tryCatch(eval(x), error = function(e) e))
-    if (length(testit) == 1 & is.character(testit)) {
-        if (grepl("Error", testit)) {
-            x <- as.vector(funargs["x"])
-        }
-    }
     if (is.vector(x) & is.character(x) & any(grepl("\\$solution", funargs["x"]))) {
         x <- list(x)
     }
@@ -73,9 +71,9 @@
             x <- admisc::splitstr(x)
         }
         if (length(x) == 1) {
-            x <- unlist(strsplit(x, split = "=>"))
+            x <- unlist(strsplit(x, split = "->|=>"))
             if (length(x) == 1) {
-                x <- unlist(strsplit(x, split = "<="))
+                x <- unlist(strsplit(x, split = "<-|<="))
                 if (length(x) > 1) {
                     relation <- "necessity"
                     y <- admisc::trimstr(x[2])
@@ -197,6 +195,12 @@
     }
     xcopy <- x
     ycopy <- y
+    if (is.element("QCA_fuzzy", class(xcopy))) {
+        attributes(xcopy) <- NULL
+    }
+    if (is.element("QCA_fuzzy", class(ycopy))) {
+        attributes(ycopy) <- NULL
+    }
     jitfactor <- 0.01
     jitamount <- 0.01
     cexaxis <- 0.8

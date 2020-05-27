@@ -1,2 +1,28 @@
-PKG_CFLAGS = $(SHLIB_OPENMP_CFLAGS)
-PKG_LIBS = $(SHLIB_OPENMP_CFLAGS)
+#PKG_CFLAGS += -O3 -Wall -pipe -pedantic -std=gnu99
+#PKG_CXXFLAGS += -O3 -Wall -pipe -Wno-unused -pedantic
+PKG_CPPFLAGS=-I . -Ibfp -Ibfp/bfp_LUSOL -Ibfp/bfp_LUSOL/LUSOL -Icolamd -Ilp_solve -Ilpsolve/shared -DINTEGERTIME -DPARSER_LP -DBUILDING_FOR_R -DYY_NEVER_INTERACTIVE -DUSRDLL -DCLOCKTIME -DRoleIsExternalInvEngine -DINVERSE_ACTIVE=INVERSE_LUSOL -DINLINE=static -DParanoia
+
+PKG_LIBS = $(SUBLIBS)
+MkInclude = $(R_HOME)/etc${R_ARCH}/Makeconf
+SUBDIRS = lpsolve
+SUBLIBS = $(SUBDIRS:=.a)
+
+all: $(SHLIB)
+$(SHLIB): sublibs
+
+sublibs: subclean sublibraries subclean
+
+sublibraries: subclean
+	@for d in $(SUBDIRS); do \
+	  (cd $${d} && CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" MAKE="$(MAKE) -f \"$(MkInclude)\" -f Makefile" $(MAKE) -f "$(MkInclude)" -f Makefile library) || exit 1; \
+	done
+
+clean: subclean
+	@-rm -rf .libs _libs
+	@-rm -f *.o $(SHLIB)
+
+subclean:
+	@-rm -f *.a
+	@for d in $(SUBDIRS); do \
+	  (cd $${d} && MkInclude="$(MkInclude)" $(MAKE) clean) || exit 1; \
+	done

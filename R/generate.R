@@ -23,9 +23,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`generate` <- function(expression, snames = "", noflevels = NULL) {
-    suf <- grepl("=>", expression)
-    if (grepl("<=", expression) & !suf) {
+`generate` <- function(expression = "", snames = "", noflevels = NULL) {
+    expression <- admisc::recreate(substitute(expression))
+    snames <- admisc::recreate(substitute(snames))
+    suf <- grepl("=>|->", expression)
+    if (grepl("<=|<-", expression) & !suf) {
         cat("\n")
         stop(simpleError("Invalid expression, relation should (also) indicate sufficiency.\n\n"))
     }
@@ -36,8 +38,8 @@
     }
     outcome <- ""
     if (suf) {
-        necsuf <- grepl("<=>", expression)
-        expression <- unlist(strsplit(expression, split = ifelse(necsuf, "<=>", "=>")))
+        necsuf <- grepl("<=>|<->", expression)
+        expression <- unlist(strsplit(expression, split = ifelse(necsuf, "<=>|<->", "->|=>")))
         outcome <- trimstr(expression[2])
         expression <- trimstr(expression[1])
     }

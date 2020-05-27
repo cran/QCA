@@ -32,15 +32,7 @@ function(chart, ...) {
             stop(simpleError("Use a logical, T/F matrix. See makeChart()'s output.\n\n"))
         }
     }
-    cpi <- attr(chart, "C_PI")
-    if (!is.null(cpi)) {
-        solution <- lpSolve::lp("min", rep(1, cpi), chart[, seq(cpi)], ">=", 1, int.vec = seq(nrow(chart)))$solution
-    }
-    else {
-        solution <- lpSolve::lp("min", rep(1, nrow(chart)), t(chart), ">=", 1, int.vec = seq(ncol(chart)))$solution
-    }
-    result <- as.integer(sum(solution > 0))
-    attr(result, "solution") <- which(solution > 0)
+    result <- .Call("C_findmin", chart * 1)
     class(result) <- c("numeric", "QCA_findmin")
     return(result)
 }

@@ -25,10 +25,32 @@
 
 `pofind` <-
 function(data, outcome = "", conditions = "", relation = "necessity", ...) {
-    funargs <- lapply(match.call(), deparse)
     if (missing(data)) {
         cat("\n")
         stop(simpleError("Data is missing.\n\n"))
+    }
+    funargs <- lapply(match.call(), deparse)
+    outcome <- admisc::recreate(substitute(outcome), colnames(data))
+    conditions <- admisc::recreate(substitute(conditions), colnames(data))
+    enter <- if (is.element("enter", names(list(...)))) "" else "\n" 
+    if (identical(conditions, "")) {
+        conditions <- setdiff(colnames(data), admisc::notilde(outcome))
+    }
+    else {
+        if (is.character(conditions) & length(conditions) == 1) {
+            conditions <- admisc::splitstr(conditions)
+            if (length(conditions) == 1) {
+                if (grepl(":", conditions)) {
+                    nms <- colnames(data)
+                    cs <- unlist(strsplit(conditions, split = ":"))
+                    if (!all(is.element(cs, nms))) {
+                        cat(enter)
+                        stop(simpleError(paste0("Inexisting condition(s) in the sequence.", enter, enter)))
+                    }
+                    conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
+                }
+            }
+        }
     }
     if (identical(outcome, "")) {
         cat("\n")
@@ -46,7 +68,13 @@ function(data, outcome = "", conditions = "", relation = "necessity", ...) {
         }
     }
     origoutcome <- outcome
-    outcome <- admisc::notilde(admisc::curlyBrackets(outcome, outside = TRUE))
+    if (grepl("\\{", outcome)) {
+        outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
+    }
+    else {
+        admisc::squareBrackets(outcome, outside = TRUE)
+    }
+    outcome <- admisc::notilde(outcome)
     if (!is.element(outcome, colnames(data))) {
         cat("\n")
         stop(simpleError("Outcome not found in the data.\n\n"))
@@ -56,9 +84,13 @@ function(data, outcome = "", conditions = "", relation = "necessity", ...) {
     }
     else {
         conditions <- admisc::splitstr(conditions)
-        if (any(!is.element(conditions, colnames(data)))) {
-            cat("\n")
-            stop(simpleError("Conditions not found in the data.\n\n"))
+        verify.data(data, outcome, conditions)
+        if (length(conditions) == 1) {
+            if (grepl(":", conditions)) {
+                nms <- colnames(data)
+                cs <- unlist(strsplit(conditions, split = ":"))
+                conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
+            }
         }
     }
     data <- data[, c(conditions, outcome)]
@@ -66,7 +98,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", ...) {
     if (any(noflevels > 2)) { 
         expression <- paste(unlist(lapply(seq(length(conditions)), function(x) {
             values <- sort(unique(data[, conditions[x]]))
-            return(paste(conditions[x], "{", values, "}", sep = ""))
+            return(paste(conditions[x], "[", values, "]", sep = ""))
         })), collapse = "+")
     }
     else {

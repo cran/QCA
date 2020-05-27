@@ -25,6 +25,7 @@
 
 `findRows` <-
 function(expression = "", obj, remainders = TRUE, type = 1, ...) {
+    expression <- admisc::recreate(substitute(expression))
     if (any(type == 0)) {
         type <- 0
     }

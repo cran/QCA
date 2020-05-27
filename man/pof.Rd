@@ -169,7 +169,7 @@ pof(conds, 1 - PROTEST, relation = "suf")
 # -----
 # standard analysis of necessity
 # using the "coms" component from superSubset()
-nCVF <- superSubset(CVF, outcome = "PROTEST", incl.cut = 0.90, cov.cut = 0.6)
+nCVF <- superSubset(CVF, outcome = PROTEST, incl.cut = 0.90, cov.cut = 0.6)
 
 # also checking their necessity inclusion score in the negated outcome
 pof(nCVF$coms, 1 - PROTEST)
@@ -180,7 +180,7 @@ pof(nCVF$coms, 1 - PROTEST)
 # using the "pims" component from minimize()
 
 # conservative solution
-cCVF <- minimize(CVF, outcome = "PROTEST", incl.cut = 0.8, details = TRUE)
+cCVF <- minimize(CVF, outcome = PROTEST, incl.cut = 0.8, details = TRUE)
 
 # verify if their negations are also sufficient for the outcome
 pof(1 - cCVF$pims, PROTEST, relation = "sufficiency")
@@ -189,13 +189,13 @@ pof(1 - cCVF$pims, PROTEST, relation = "sufficiency")
 # -----
 # using a SOP expression, translated using the function translate()
 
-pof("~NATPRIDE + GEOCON => PROTEST", data = CVF)
+pof(~NATPRIDE + GEOCON -> PROTEST, data = CVF)
 
 # same for the negation of the outcome
-pof("~NATPRIDE + GEOCON => ~PROTEST", data = CVF)
+pof(~NATPRIDE + GEOCON -> ~PROTEST, data = CVF)
 
 # necessity is indicated by the reverse arrow
-pof("~NATPRIDE + GEOCON <= PROTEST", data = CVF)
+pof(~NATPRIDE + GEOCON <- PROTEST, data = CVF)
 
 
 # -----
@@ -203,10 +203,10 @@ pof("~NATPRIDE + GEOCON <= PROTEST", data = CVF)
 
 inclH <- function(x, y) {
     sum(fuzzyand(x, y)) /
-    sum(fuzzyand(x, y) + sqrt(fuzzyor(x - y, 0)*x))
+    sum(fuzzyand(x, y) + sqrt(fuzzyor(x - y, 0) * x))
 }
 
-pof("~NATPRIDE + GEOCON => ~PROTEST", data = CVF, add = inclH)
+pof(~NATPRIDE + GEOCON -> ~PROTEST, data = CVF, add = inclH)
 
 }
 

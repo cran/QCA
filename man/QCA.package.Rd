@@ -56,9 +56,9 @@ specify conjunctural directional expectations in the minimization function.
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 3.7\cr
-    Date:    \tab 2020-03-10\cr
-    License: \tab GPL (>= 2)\cr
+    Version: \tab 3.8\cr
+    Date:    \tab 2020-05-26\cr
+    License: \tab GPL (>= 3)\cr
     }
 }
 
@@ -91,8 +91,8 @@ Dusa, A. (2007a) \dQuote{User manual for the QCA(GUI) package in R}.
 \emph{Journal of Business Research} vol.60, no.5, pp.576-586, DOI: 
 \href{https://doi.org/10.1016/j.jbusres.2007.01.002}{10.1016/j.jbusres.2007.01.002}
 
-Dusa, A. (2007b) \emph{Enhancing Quine-McCluskey}. 
-\href{http://www.compasss.org/wpseries/Dusa2007b.pdf}{WP 2007-49, COMPASSS}.
+Dusa, A. (2007b) \emph{Enhancing Quine-McCluskey}.
+WP 2007-49, \href{http://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
 
 Dusa, A. (2010) \dQuote{A Mathematical Approach to the Boolean Minimization 
 Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113, DOI:

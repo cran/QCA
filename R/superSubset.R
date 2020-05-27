@@ -27,11 +27,18 @@
 function(data, outcome = "", conditions = "", relation = "necessity", incl.cut = 1,
     cov.cut = 0, ron.cut = 0, pri.cut = 0, use.letters = FALSE, depth = NULL,
     add = NULL, ...) {
+    funargs <- lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x))
+    dots <- list(...)
+    if (missing(data)) {
+        cat("\n")
+        stop(simpleError("Data is missing.\n\n"))
+    }
     funargs <- lapply(match.call(), deparse)
-    other.args <- list(...)
+    outcome <- admisc::recreate(substitute(outcome), colnames(data))
+    conditions <- admisc::recreate(substitute(conditions), colnames(data))
         neg.out <- FALSE
-        if (is.element("neg.out", names(other.args))) {
-            neg.out <- other.args$neg.out
+        if (is.element("neg.out", names(dots))) {
+            neg.out <- dots$neg.out
         }
     incl.cut <- incl.cut - .Machine$double.eps ^ 0.5
     if (cov.cut > 0) {
@@ -41,27 +48,52 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         cat("\n")
         stop(simpleError("The outcome was not specified.\n\n"))
     }
-    if (admisc::tilde1st(outcome)) {
+    if (is.character(outcome)) {
+        funargs$outcome <- outcome
+    }
+    if (admisc::tilde1st(funargs$outcome)) {
         neg.out <- TRUE
-        outcome <- substring(outcome, 2)
+        funargs$outcome <- substring(funargs$outcome, 2)
     }
-    if (!is.element(admisc::curlyBrackets(outcome, outside=TRUE), colnames(data))) {
-        cat("\n")
-        stop(simpleError("The outcome name does not exist in the data.\n\n"))
+    mvoutcome <- grepl("\\[|\\{", funargs$outcome)
+    if (mvoutcome) {
+        curly <- grepl("\\{", funargs$outcome)
+        if (curly) {
+            outcome.value <- admisc::curlyBrackets(funargs$outcome)
+            funargs$outcome <- admisc::curlyBrackets(funargs$outcome, outside = TRUE)
+        }
+        else {
+            outcome.value <- admisc::squareBrackets(funargs$outcome)
+            funargs$outcome <- admisc::squareBrackets(funargs$outcome, outside = TRUE)
+        }
     }
-    if (grepl("\\{|\\}", outcome)) {
-        outcome.value <- admisc::curlyBrackets(outcome)
-        outcome <- admisc::curlyBrackets(outcome, outside=TRUE)
-        data[, outcome] <- as.numeric(is.element(data[, outcome], admisc::splitstr(outcome.value)))
+    if (is.character(outcome)) {
+        if (!is.element(notilde(funargs$outcome), colnames(data))) {
+            cat("\n")
+            stop(simpleError("The outcome name does not exist in the data.\n\n"))
+        }
+        if (mvoutcome) {
+            outcome <- as.numeric(is.element(data[, funargs$outcome], admisc::splitstr(outcome.value)))
+        }
+    }
+    else {
+        data[, funargs$outcome] <- outcome
     }
     if (identical(conditions, "")) {
-        conditions <- names(data)[-which(names(data) == outcome)]
+        conditions <- names(data)[-which(names(data) == funargs$outcome)]
     }
     else {
         conditions <- admisc::splitstr(conditions)
     }
-    verify.data(data, outcome, conditions)
-    if (!(nec(relation) | suf(relation) | relation %in% c("sufnec", "necsuf"))) {
+    verify.data(data, funargs$outcome, conditions)
+    if (length(conditions) == 1) {
+        if (grepl(":", conditions)) {
+            nms <- colnames(data)
+            cs <- unlist(strsplit(conditions, split = ":"))
+            conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
+        }
+    }
+    if (!(nec(relation) | suf(relation) | is.element(relation, c("sufnec", "necsuf")))) {
         cat("\n")
         stop(simpleError("The relationship should be \"necessity\", \"sufficiency\", \"sufnec\" or \"necsuf\".\n\n"))
     }
@@ -76,10 +108,10 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         relation <- "necessity"
     }
     replacements <- conditions
-    data <- data[, c(conditions, outcome)]
+    data <- data[, c(conditions, funargs$outcome)]
     nofconditions <- length(conditions)
     if (neg.out) {
-        data[, outcome] <- 1 - data[, outcome]
+        data[, funargs$outcome] <- 1 - data[, funargs$outcome]
     }
     mv <- any(data[, conditions] > 1)
     alreadyletters <- sum(nchar(conditions)) == length(conditions)
@@ -101,7 +133,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
                      as.matrix(data[, conditions]),
                      noflevels,
                      as.numeric(fc),
-                     data[, outcome],
+                     data[, funargs$outcome],
                      as.numeric(nec(relation)),
                      incl.cut,
                      cov.cut,

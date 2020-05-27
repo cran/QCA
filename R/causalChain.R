@@ -82,9 +82,7 @@ function(data, ordering = NULL, strict = FALSE, ...) {
         allargs$SA <- FALSE
     }
     minimizeit <- function(allargs) {
-        tc <- tryCatch(do.call("minimize", allargs), error = function(e) e)
-        if (inherits(tc, "error")) return(NA)
-        return(tc)
+        return(tryCatch(do.call("minimize", allargs), error = function(e) NA))
     }
     allargs$enter <- FALSE
     minimize.list <- list()
@@ -107,7 +105,7 @@ function(data, ordering = NULL, strict = FALSE, ...) {
                             uniqv <- sort(unique(data[, nextcols[j]]))
                             for (v in seq(noflevels[nextcols[j]] - 1)) {
                                 if (is.element(v, uniqv)) {
-                                    allargs$outcome <- sprintf("%s{%s}", nextcols[j], v)
+                                    allargs$outcome <- sprintf("%s[%s]", nextcols[j], v)
                                     minimize.list[[allargs$outcome]] <- minimizeit(allargs)
                                 }
                             }
@@ -134,7 +132,7 @@ function(data, ordering = NULL, strict = FALSE, ...) {
                         uniqv <- sort(unique(data[, nextcols[j]]))
                         for (v in seq(noflevels[nextcols[j]] - 1)) {
                             if (is.element(v, uniqv)) {
-                                allargs$outcome <- sprintf("%s{%s}", nextcols[j], v)
+                                allargs$outcome <- sprintf("%s[%s]", nextcols[j], v)
                                 minimize.list[[allargs$outcome]] <- minimizeit(allargs)
                             }
                         }
@@ -153,7 +151,7 @@ function(data, ordering = NULL, strict = FALSE, ...) {
                 uniqv <- sort(unique(data[, x]))
                 for (v in seq(noflevels[x] - 1)) {
                     if (is.element(v, uniqv)) {
-                        allargs$outcome <- sprintf("%s{%s}", x, v)
+                        allargs$outcome <- sprintf("%s[%s]", x, v)
                         minimize.list[[allargs$outcome]] <- minimizeit(allargs)
                     }
                 }

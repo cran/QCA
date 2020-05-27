@@ -101,6 +101,10 @@ quantitative strategies}, Berkeley: University of California Press
 \examples{
 # non-standard products, it needs the set names
 chart <- makeChart("a, b, ~c", "abc, a~b~c, a~bc, ~ab~c")
+
+# same with unquoted expressions
+chart <- makeChart(c(a, b, ~c), c(abc, a~b~c, a~bc, ~ab~c))
+
 chart
 #      abc   a~b~c a~bc  ~ab~c
 # a      x     x     x     -  

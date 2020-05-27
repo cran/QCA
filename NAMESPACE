@@ -6,7 +6,6 @@ importFrom("stats", "glm", "predict", "quasibinomial", "binom.test", "cutree", "
 importFrom("grDevices", "dev.cur", "dev.new", "dev.list")
 importFrom("graphics", "abline", "axis", "box", "mtext", "par", "title", "text")
 importFrom("methods", "is")
-importFrom("lpSolve", "lp")
 
 useDynLib(QCA, .registration = TRUE)
 
@@ -62,7 +61,9 @@ export(.onAttach,
     rowDominance,
     sortMatrix,
     sortVector,
-    writeSolution
+    writeSolution,
+
+    mvregexp
 )
 
 S3method(print, "QCA_aE")

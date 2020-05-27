@@ -18,11 +18,11 @@ of values (either binary or multi-value).
 }
 
 \usage{
-allExpressions(noflevels, arrange = FALSE, depth, raw = FALSE, ...)
+allExpressions(noflevels = NULL, arrange = FALSE, depth, raw = FALSE, ...)
 
-createMatrix(noflevels, ...)
+createMatrix(noflevels = NULL, ...)
 
-getRow(row.no, noflevels, zerobased = FALSE, ...)
+getRow(row.no = NULL, noflevels = NULL, zerobased = FALSE, ...)
 }
 
 \arguments{
@@ -107,8 +107,8 @@ Adrian Dusa
 }
 
 \references{
-Dusa, Adrian. 2007. \emph{Enhancing Quine-McCluskey}.
-\href{http://www.compasss.org/wpseries/Dusa2007b.pdf}{COMPASSS: Working Paper 2007-49}
+Dusa, A. (2007b) \emph{Enhancing Quine-McCluskey}.
+WP 2007-49, \href{http://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
 
 Dusa, Adrian. 2010. \dQuote{A Mathematical Approach to the Boolean Minimization 
 Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113.

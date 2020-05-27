@@ -28,11 +28,12 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         exclude = NULL, complete = FALSE, use.letters = FALSE, show.cases = FALSE,
         dcc = FALSE, sort.by = "", inf.test = "", ...) {
     metacall <- match.call(expand.dots = TRUE)
-    other.args <- list(...)
-    back.args <- c("outcome", "conditions", "n.cut", "incl.cut", "complete", "show.cases", "sort.by", "use.letters", "inf.test")
-    check.args <- pmatch(names(other.args), back.args)
-    names(other.args)[!is.na(check.args)] <- back.args[check.args[!is.na(check.args)]]
-    enter <- ifelse (is.element("enter", names(other.args)), other.args$enter, TRUE)
+    dots <- admisc::recreate(substitute(list(...)))
+    back.args <- c("outcome", "conditions", "n.cut", "incl.cut", "complete", "show.cases",
+                    "sort.by", "use.letters", "inf.test")
+    check.args <- pmatch(names(dots), back.args)
+    names(dots)[!is.na(check.args)] <- back.args[check.args[!is.na(check.args)]]
+    enter <- ifelse (is.element("enter", names(dots)), dots$enter, TRUE)
     ic0 <- 1
     if (is.character(incl.cut) & length(incl.cut) == 1) {
         incl.cut <- admisc::splitstr(incl.cut)
@@ -42,35 +43,47 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         ic0 <- incl.cut[2]
     }
         neg.out <- FALSE
-        if (is.element("neg.out", names(other.args))) {
-            neg.out <- other.args$neg.out
+        if (is.element("neg.out", names(dots))) {
+            neg.out <- dots$neg.out
         }
-        if (is.element("incl.cut1", names(other.args)) & identical(ic1, 1)) {
-            ic1 <- other.args$incl.cut1
+        if (is.element("incl.cut1", names(dots)) & identical(ic1, 1)) {
+            ic1 <- dots$incl.cut1
             incl.cut[1] <- ic1
         }
-        if (is.element("incl.cut0", names(other.args)) & identical(ic0, 1)) {
-            ic0 <- other.args$incl.cut0
+        if (is.element("incl.cut0", names(dots)) & identical(ic0, 1)) {
+            ic0 <- dots$incl.cut0
             incl.cut[2] <- ic0
         }
     initialcols <- colnames(data)
-    if (length(outcome) > 1) {
+    outcome <- admisc::recreate(substitute(outcome), colnames(data))
+    if (length(admisc::splitstr(outcome)) > 1) {
         cat("\n")
         stop(simpleError(paste0("Only one outcome is allowed.", ifelse(enter, "\n\n", ""))))
     }
     outcome.copy <- outcome
     initial.data <- as.data.frame(data) 
+    curly <- any(grepl("\\{", outcome)) 
     if (!identical(outcome, "")) {
-        if (!is.element(admisc::curlyBrackets(admisc::notilde(outcome), outside = TRUE), colnames(data))) {
+        testoutcome <- ifelse(curly,
+                            admisc::curlyBrackets(admisc::notilde(outcome), outside = TRUE),
+                            admisc::squareBrackets(admisc::notilde(outcome), outside = TRUE))
+        if (!is.element(testoutcome, colnames(data))) {
             cat("\n")
             stop(simpleError(paste0("Inexisting outcome name.", ifelse(enter, "\n\n", ""))))
         }
     }
-    if (grepl("[{|}]", outcome)) {
-        outcome.value <- admisc::curlyBrackets(outcome)
-        outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
+    if (grepl(mvregexp, outcome)) {
+        if (curly) {
+            outcome.value <- admisc::curlyBrackets(outcome)
+            outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
+        }
+        else {
+            outcome.value <- admisc::squareBrackets(outcome)
+            outcome <- admisc::squareBrackets(outcome, outside = TRUE)
+        }
         data[, admisc::notilde(outcome)] <- is.element(data[, admisc::notilde(outcome)], admisc::splitstr(outcome.value)) * 1
     }
+    conditions <- admisc::recreate(substitute(conditions), colnames(data))
     if (identical(conditions, "")) {
         conditions <- setdiff(colnames(data), admisc::notilde(outcome))
     }
@@ -83,8 +96,8 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         sort.by <- admisc::splitstr(sort.by)
     }
     decreasing <- TRUE 
-    if (is.element("decreasing", names(other.args))) {
-        decreasing <- other.args$decreasing
+    if (is.element("decreasing", names(dots))) {
+        decreasing <- dots$decreasing
     }
     if (is.character(decreasing) & length(decreasing) == 1) {
         decreasing <- admisc::splitstr(decreasing)
@@ -109,6 +122,13 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         initial.data <- data
     }
     verify.tt(data, admisc::notilde(outcome), conditions, complete, show.cases, ic1, ic0, inf.test)
+    if (length(conditions) == 1) {
+        if (grepl(":", conditions)) {
+            nms <- colnames(data)
+            cs <- unlist(strsplit(conditions, split = ":"))
+            conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
+        }
+    }
     data <- data[, c(conditions, admisc::notilde(outcome))]
     if (admisc::tilde1st(outcome)) {
         data[, admisc::notilde(outcome)] <- 1 - data[, admisc::notilde(outcome)]
@@ -179,6 +199,9 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         if (length(exclude) > 0) {
             exclude <- setdiff(exclude, rownames(tt))
         }
+    }
+    if (length(exclude) == 0) {
+        exclude <- NULL
     }
     if (length(conditions) < 8) {
         ttc <- as.data.frame(matrix(nrow = prod(noflevels), ncol = ncol(tt)))

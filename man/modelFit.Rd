@@ -12,7 +12,7 @@ expresison) and the solutions found by function \bold{\code{\link[QCA]{minimize}
 }
 
 \usage{
-modelFit(model, theory)
+modelFit(model, theory = "")
 }
 
 \arguments{
@@ -59,7 +59,7 @@ Cambridge: Cambridge University Press.
 \examples{
 # Lipset fuzzy version data
 
-ttLF <- truthTable(LF, outcome = "SURV", incl.cut = 0.8)
+ttLF <- truthTable(LF, outcome = SURV, incl.cut = 0.8)
 
 
 # parsimonious solution
