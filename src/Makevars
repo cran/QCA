@@ -8,9 +8,7 @@ SUBDIRS = lpsolve
 SUBLIBS = $(SUBDIRS:=.a)
 
 all: $(SHLIB)
-$(SHLIB): sublibs
-
-sublibs: subclean sublibraries subclean
+$(SHLIB): sublibraries
 
 sublibraries: subclean
 	@for d in $(SUBDIRS); do \

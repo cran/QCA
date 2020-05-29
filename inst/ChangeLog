@@ -11,6 +11,8 @@ Version 3.8
       excluding remainders (thanks to Ian Greener for the report)
     o Fixed: bug leading to a C error when simplifying assumptions do not exist
       for some intermediate models (thanks to Oliver Klein for the report)
+    o Changed: function minimize() now gives an error when including remainders
+      but all possile configurations are observed
     o Changed: reverted back to using the easy counterfactuals method for the
       intermediate solution, since it is not always possible to restrict it
       to a single model (thanks to Max Netherworlds for the example)

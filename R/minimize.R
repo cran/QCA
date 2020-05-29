@@ -291,6 +291,10 @@ function(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
         c.sol <- p.sol <- do.call("getSolution", callist)
     }
     if (incl.rem) {
+        if (prod(noflevels) == nrow(tt$tt)) {
+            cat(enter)
+            stop(simpleError(paste0("There are no remainders to include, all configurations are observed.", enter, enter)))
+        }
         pos.matrix <- inputt
         if (method == "QMC") {
             expressions <- .Call("C_QMC", createMatrix(noflevels)[-output$negatives, , drop = FALSE] + 1, noflevels, PACKAGE = "QCA")
