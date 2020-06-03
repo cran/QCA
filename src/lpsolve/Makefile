@@ -10,7 +10,7 @@ OBJS := $(patsubst %.c,%.o,$(SRCS))
 #$(info $$SRCS is [${SRCS}])
 #$(info $$OBJS is [${OBJS}])
 
-library: $(LIB) clean0
+library: $(LIB)
 
 #include make_o.mk
 

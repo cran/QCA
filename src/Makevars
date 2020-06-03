@@ -10,7 +10,7 @@ SUBLIBS = $(SUBDIRS:=.a)
 all: $(SHLIB)
 $(SHLIB): sublibraries
 
-sublibraries: subclean
+sublibraries:
 	@for d in $(SUBDIRS); do \
 	  (cd $${d} && CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" MAKE="$(MAKE) -f \"$(MkInclude)\" -f Makefile" $(MAKE) -f "$(MkInclude)" -f Makefile library) || exit 1; \
 	done
