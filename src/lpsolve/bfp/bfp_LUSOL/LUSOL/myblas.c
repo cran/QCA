@@ -58,6 +58,7 @@ MYBOOL is_nativeBLAS(void)
 
 MYBOOL load_BLAS(char *libname)
 {
+#if 0
   MYBOOL result = TRUE;
 
 #ifdef LoadableBlasLib
@@ -127,10 +128,16 @@ MYBOOL load_BLAS(char *libname)
     }
   }
   return( result );
+#endif
+  return FALSE;
 }
 MYBOOL unload_BLAS(void)
 {
+#if 0
   return( load_BLAS(NULL) );
+#else
+  return FALSE;
+#endif
 }
 
 
@@ -141,9 +148,9 @@ void daxpy( int n, REAL da, REAL *dx, int incx, REAL *dy, int incy)
 {
   dx++;
   dy++;
-  BLAS_daxpy( &n, &da, dx, &incx, dy, &incy);
+  BLAS_daxpy( n, da, dx, incx, dy, incy);
 }
-void BLAS_CALLMODEL my_daxpy( int *_n, REAL *_da, REAL *dx, int *_incx, REAL *dy, int *_incy)
+void BLAS_CALLMODEL my_daxpy( int n, REAL da, REAL *dx, int incx, REAL *dy, int incy)
 {
 
 /* constant times a vector plus a vector.
@@ -156,8 +163,6 @@ void BLAS_CALLMODEL my_daxpy( int *_n, REAL *_da, REAL *dx, int *_incx, REAL *dy
   int      m, mp1;
 #endif
   register REAL rda;
-  REAL     da = *_da;
-  int      n = *_n, incx = *_incx, incy = *_incy;
 
   if (n <= 0) return;
   if (da == 0.0) return;
@@ -218,10 +223,10 @@ void dcopy( int n, REAL *dx, int incx, REAL *dy, int incy)
 {
   dx++;
   dy++;
-  BLAS_dcopy( &n, dx, &incx, dy, &incy);
+  BLAS_dcopy( n, dx, incx, dy, incy);
 }
 
-void BLAS_CALLMODEL my_dcopy (int *_n, REAL *dx, int *_incx, REAL *dy, int *_incy)
+void BLAS_CALLMODEL my_dcopy (int n, REAL *dx, int incx, REAL *dy, int incy)
 {
 
 /* copies a vector, x, to a vector, y.
@@ -233,7 +238,7 @@ void BLAS_CALLMODEL my_dcopy (int *_n, REAL *dx, int *_incx, REAL *dy, int *_inc
 #ifndef DOFASTMATH
   int      m, mp1;
 #endif
-  int      n = *_n, incx = *_incx, incy = *_incy;
+
 
   if(n<=0) 
     return;
@@ -300,10 +305,10 @@ x40:
 void dscal (int n, REAL da, REAL *dx, int incx)
 {
   dx++;
-  BLAS_dscal (&n, &da, dx, &incx);
+  BLAS_dscal (n, da, dx, incx);
 }
 
-void BLAS_CALLMODEL my_dscal (int *_n, REAL *_da, REAL *dx, int *_incx)
+void BLAS_CALLMODEL my_dscal (int n, REAL da, REAL *dx, int incx)
 {
 
 /* Multiply a vector by a constant.
@@ -326,8 +331,6 @@ void BLAS_CALLMODEL my_dscal (int *_n, REAL *_da, REAL *dx, int *_incx)
   int      m, mp1, ix;
 #endif
   register REAL rda;
-  REAL      da = *_da;
-  int      n = *_n, incx = *_incx;
 
   if (n <= 0)
     return;
@@ -383,10 +386,10 @@ REAL ddot(int n, REAL *dx, int incx, REAL *dy, int incy)
 {
   dx++;
   dy++;
-  return( BLAS_ddot (&n, dx, &incx, dy, &incy) );
+  return( BLAS_ddot (n, dx, incx, dy, incy) );
 }
 
-REAL BLAS_CALLMODEL my_ddot(int *_n, REAL *dx, int *_incx, REAL *dy, int *_incy)
+REAL BLAS_CALLMODEL my_ddot(int n, REAL *dx, int incx, REAL *dy, int incy)
 {
 
 /* forms the dot product of two vectors.
@@ -399,7 +402,6 @@ REAL BLAS_CALLMODEL my_ddot(int *_n, REAL *dx, int *_incx, REAL *dy, int *_incy)
 #ifndef DOFASTMATH
   int      m, mp1;
 #endif
-  int      n = *_n, incx = *_incx, incy = *_incy;
 
   dtemp = 0.0;
   if (n<=0)
@@ -465,10 +467,10 @@ void dswap( int n, REAL *dx, int incx, REAL *dy, int incy )
 {
   dx++;
   dy++;
-  BLAS_dswap( &n, dx, &incx, dy, &incy );
+  BLAS_dswap( n, dx, incx, dy, incy );
 }
 
-void BLAS_CALLMODEL my_dswap( int *_n, REAL *dx, int *_incx, REAL *dy, int *_incy )
+void BLAS_CALLMODEL my_dswap( int n, REAL *dx, int incx, REAL *dy, int incy )
 {
   int   i, ix, iy;
 #ifndef DOFASTMATH
@@ -476,7 +478,6 @@ void BLAS_CALLMODEL my_dswap( int *_n, REAL *dx, int *_incx, REAL *dy, int *_inc
   REAL  dtemp2, dtemp3;
 #endif
   register REAL  dtemp1;
-  int   n = *_n, incx = *_incx, incy = *_incy;
 
   if (n <= 0) return;
 
@@ -564,10 +565,10 @@ x60:
 void dload(int n, REAL da, REAL *dx, int incx)
 {
   dx++;
-  BLAS_dload (&n, &da, dx, &incx);
+  BLAS_dload (n, da, dx, incx);
 }
 
-void BLAS_CALLMODEL my_dload (int *_n, REAL *_da, REAL *dx, int *_incx)
+void BLAS_CALLMODEL my_dload (int n, REAL da, REAL *dx, int incx)
 {
 /* copies a scalar, a, to a vector, x.
    uses unrolled loops when incx equals one.
@@ -588,8 +589,6 @@ void BLAS_CALLMODEL my_dload (int *_n, REAL *_da, REAL *dx, int *_incx)
     the append and delete operations in these instructions. */
 
   int    i, ix, m, mp1;
-  REAL   da = *_da;
-  int    n = *_n, incx = *_incx;
 
   if (n<=0) return;
   dx--;
@@ -632,23 +631,22 @@ x40:
 int idamax( int n, REAL *x, int is )
 {
   x++;
-  return ( BLAS_idamax( &n, x, &is ) );
+  return ( BLAS_idamax( n, x, is ) );
 }
 
 int idamin( int n, REAL *x, int is )
 {
   x++;
-  return ( BLAS_idamin( &n, x, &is ) );
+  return ( BLAS_idamin( n, x, is ) );
 }
 
-int BLAS_CALLMODEL my_idamax( int *_n, REAL *x, int *_is )
+int BLAS_CALLMODEL my_idamax( int n, REAL *x, int is )
 {
   register REAL xmax, xtest;
   int    i, imax = 0;
 #if !defined DOFASTMATH
   int    ii;
 #endif
-  int    n = *_n, is = *_is;
 
   if((n < 1) || (is <= 0))
     return(imax);
@@ -680,14 +678,13 @@ int BLAS_CALLMODEL my_idamax( int *_n, REAL *x, int *_is )
   return(imax);
 }
 
-int BLAS_CALLMODEL my_idamin( int *_n, REAL *x, int *_is )
+int BLAS_CALLMODEL my_idamin( int n, REAL *x, int is )
 {
   register REAL xmin, xtest;
   int    i, imin = 0;
 #if !defined DOFASTMATH
   int    ii;
 #endif
-  int    n = *_n, is = *_is;
 
   if((n < 1) || (is <= 0))
     return(imin);
@@ -726,14 +723,13 @@ REAL dnormi( int n, REAL *x )
   return( BLAS_dnormi( &n, x ) );
 }
 
-REAL BLAS_CALLMODEL my_dnormi( int *_n, REAL *x )
+REAL BLAS_CALLMODEL my_dnormi( int n, REAL *x )
 {
 /* ===============================================================
    dnormi  returns the infinity-norm of the vector x.
    =============================================================== */
    int      j;
    register REAL hold, absval;
-   int      n = *_n;
 
    x--;
    hold = 0.0;

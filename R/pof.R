@@ -407,11 +407,20 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             }
             colnames(toadd) <- substr(names(add), 1, 5)
             for (i in seq(length(add))) {
-                toadd[, i] <- apply(setms, 2, add[[i]], outcome)
+                coltoadd <- apply(cbind(setms, fuzzyor(setms)), 2, add[[i]], outcome)
+                if (ncol(setms) == 1) {
+                    coltoadd <- coltoadd[1]
+                }
+                toadd[, i] <- coltoadd
             }
         }
         else {
-            toadd <- matrix(apply(cbind(setms, fuzzyor(setms)), 2, add, outcome), ncol = 1)
+            toadd <- matrix(nrow = nrow(incl.cov), ncol = 1)
+            coltoadd <- apply(cbind(setms, fuzzyor(setms)), 2, add, outcome)
+            if (ncol(setms) == 1) {
+                coltoadd <- coltoadd[1]
+            }
+            toadd[, 1] <- coltoadd
             if (any(grepl("function", funargs$add))) {
                 funargs$add <- "X"
             }

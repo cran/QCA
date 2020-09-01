@@ -56,8 +56,8 @@ specify conjunctural directional expectations in the minimization function.
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 3.8.2\cr
-    Date:    \tab 2020-06-02\cr
+    Version: \tab 3.9\cr
+    Date:    \tab 2020-08-31\cr
     License: \tab GPL (>= 3)\cr
     }
 }
@@ -85,7 +85,7 @@ Temporality to Qualitative Comparative Analysis.}
 
 Cronqvist, L. (2016) \emph{Tosmana: Tool for Small-N Analysis, Version 1.522 
 [Computer Program]}. Trier: University of Trier.\cr
-URL: \url{http://www.tosmana.net}
+URL: \url{https://www.tosmana.net}
 
 Dusa, A. (2007a) \dQuote{User manual for the QCA(GUI) package in R}.
 \emph{Journal of Business Research} vol.60, no.5, pp.576-586, DOI: 

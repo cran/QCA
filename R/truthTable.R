@@ -92,6 +92,10 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
             conditions <- admisc::splitstr(conditions)
         }
     }
+    if (length(conditions) > 30) {
+        cat("\n")
+        stop(simpleError(paste0("Impossible to run a QCA analysis with so many conditions.", ifelse(enter, "\n\n", ""))))
+    }
     if (is.character(sort.by) & length(sort.by) == 1 & !identical(sort.by, "")) {
         sort.by <- admisc::splitstr(sort.by)
     }
@@ -198,6 +202,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         }
         if (length(exclude) > 0) {
             exclude <- setdiff(exclude, rownames(tt))
+            exclude <- exclude[exclude <= prod(noflevels)]
         }
     }
     if (length(exclude) == 0) {

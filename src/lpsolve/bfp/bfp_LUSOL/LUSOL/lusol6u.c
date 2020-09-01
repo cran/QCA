@@ -1,3 +1,4 @@
+#include <math.h>
 
 /* Create a column-based version of U.
    This makes it possible to solve Ux=h (ftran) faster for sparse h,

@@ -32,12 +32,12 @@ function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, c
     if (is.list(expressions)) {
         mtrx <- expressions[[2]]
         sol.matrix <- expressions[[3]]
-        if (ncol(sol.matrix) == 1 & is.double(sol.matrix)) {
-            warning(simpleWarning("The PI chart is too complex, only the first minimal solution returned.\n\n"))
-        }
         if (is.null(sol.matrix)) {
             if (enter) cat("\n")
             stop(simpleError(paste("There are no solutions, given these constraints.", ifelse(enter, "\n\n", ""))))
+        }
+        if (ncol(sol.matrix) == 1 & is.double(sol.matrix)) {
+            warning(simpleWarning("The PI chart is too complex, only the first minimal solution returned.\n\n"))
         }
         expressions <- expressions[[1]]
     }

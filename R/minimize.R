@@ -291,10 +291,6 @@ function(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
         c.sol <- p.sol <- do.call("getSolution", callist)
     }
     if (incl.rem) {
-        if (prod(noflevels) == nrow(tt$tt)) {
-            cat(enter)
-            stop(simpleError(paste0("There are no remainders to include, all configurations are observed.", enter, enter)))
-        }
         pos.matrix <- inputt
         if (method == "QMC") {
             expressions <- .Call("C_QMC", createMatrix(noflevels)[-output$negatives, , drop = FALSE] + 1, noflevels, PACKAGE = "QCA")
@@ -311,7 +307,7 @@ function(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
             expressions <- admisc::sortExpressions(getRow(expressions, noflevels + 1))
             setColnames(expressions, colnames(inputt))
         }
-        else {
+        else { 
             extended.data <- as.matrix(tt$recoded.data)
             if (nrow(excl.matrix) > 0) {
                 extended.data <- rbind(extended.data, cbind(excl.matrix, 0))

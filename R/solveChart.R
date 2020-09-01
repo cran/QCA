@@ -49,7 +49,6 @@ function(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, ...) {
         cat("\n")
         stop(simpleError("The PI chart cannot be solved.\n\n"))
     }
-    if (all(dim(chart) > 1)) {
         if (is.null(depth)) depth <- 0L
         output <- .Call("C_solveChart", t(matrix(as.logical(chart), nrow = nrow(chart))),
                     all.sol, as.integer(depth), PACKAGE = "QCA") 
@@ -57,10 +56,6 @@ function(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, ...) {
             warning(simpleWarning("The PI chart is too complex, only the first minimal solution returned.\n\n"))
         }
         output[output == 0] <- NA
-    }
-    else {
-        output <- matrix(seq(length(chart)))
-    }
     output <- matrix(as.integer(row.numbers[output]), nrow = nrow(output))
     output[is.na(output)] <- 0L
     return(output)

@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # include <Rinternals.h>
 # include <Rmath.h>
 # include <R_ext/Rdynload.h>
-# include <unateCovering_lpSolve.h>
+# include "unateCovering_lpSolve.h"
 #ifdef _OPENMP
   #include <omp.h>
 #endif
@@ -65,16 +65,26 @@ SEXP C_findmin(SEXP pichart) {
     double *p_x = REAL(x);
     int nr = nrows(x);
     int nc = ncols(x);
-    double colsum;
     Rboolean covered = TRUE;
-    int c = 0;
-    while (covered && c < nc) {
-        colsum = 0;
-        for (int r = 0; r < nr; r++) {
-            colsum += p_x[c * nr + r];
+    if (nc <= 0) {
+        nc = 0;
+        covered = FALSE;
+    }
+    else {
+        double colsum;
+        int c = 0;
+        while (covered && c < nc) {
+            colsum = 0;
+            for (int r = 0; r < nr; r++) {
+                colsum += p_x[c * nr + r];
+            }
+            covered = colsum > 0;
+            c++;
         }
-        covered = colsum > 0;
-        c++;
+    }
+    if (nr <= 0) {
+        nr = 0;
+        covered = FALSE;
     }
     SEXP res = PROTECT(allocVector(INTSXP, nr));
     int *p_res = INTEGER(res);
@@ -255,7 +265,7 @@ static R_INLINE void superRows(int *p_matrix, int rows, int *survcols, int *p_co
         }
     }
 }
-static R_INLINE Rboolean nonredundant(int tempc[], int prevfoundPI, int p_ck[], int k, int p_indx[], int pidepth, int tempk[], int p_temp[], int nconds) {
+static R_INLINE Rboolean nonredundant(const int tempc[], const int prevfoundPI, const int p_ck[], const int k, const int p_indx[], const int pidepth, const int tempk[], const int p_temp[], const int nconds) {
     Rboolean nonred = TRUE;
     if (prevfoundPI > 0) {
         int i = 0;
@@ -278,7 +288,7 @@ static R_INLINE Rboolean nonredundant(int tempc[], int prevfoundPI, int p_ck[], 
     }
     return(nonred);
 }
-static R_INLINE void pushPI(int p_temp[], int p_indx[], int p_ck[], int p_pichart[], int tempk[], int tempc[], int decpos[], int frows[], int f, int k, int nconds, int foundPI, int pidepth, int posrows) {
+static R_INLINE void pushPI(int p_temp[], int p_indx[], int p_ck[], int p_pichart[], const int tempk[], const int tempc[], const int decpos[], const int frows[], const int f, const int k, const int nconds, const int foundPI, const int pidepth, const int posrows) {
     for (int c = 0; c < k; c++) {
         p_temp[nconds * foundPI + tempk[c]] = tempc[c];
     }
@@ -570,10 +580,11 @@ SEXP C_solveChart(SEXP pichart, SEXP allsol, SEXP vdepth) {
     usage = PROTECT(allocVector(VECSXP, 5));
     int pirows = nrows(pichart); 
     int picols = ncols(pichart); 
-    SEXP rmin;
+    SEXP rmin, transposed;
     SET_VECTOR_ELT(usage, 1, rmin = getAttrib(pichart, mkString("minpic")));
     if (Rf_isNull(rmin)) {
-        SET_VECTOR_ELT(usage, 1, rmin = C_findmin(transpose(pichart)));
+        SET_VECTOR_ELT(usage, 0, transposed = transpose(pichart));
+        SET_VECTOR_ELT(usage, 1, rmin = C_findmin(transposed));
     }
     int k = INTEGER(rmin)[0];
     if (k > 0) {
@@ -1013,12 +1024,12 @@ static R_INLINE void get_noflevels(int noflevels[], int p_tt[], int nconds, int 
         noflevels[c] += 1; 
     }
 }
-static R_INLINE void fill_mbase(int mbase[], int tempk[], int noflevels[], int k) {
+static R_INLINE void fill_mbase(int mbase[], const int tempk[], const int noflevels[], const int k) {
     for (int c = 1; c < k; c++) {
         mbase[c] = mbase[c - 1] * noflevels[tempk[c - 1]];
     }
 }
-static R_INLINE void getDecimals(int posrows, int negrows, int k, int decpos[], int decneg[], int p_posmat[], int p_negmat[], int tempk[], int mbase[]) {
+static R_INLINE void getDecimals(const int posrows, const int negrows, const int k, int decpos[], int decneg[], const int p_posmat[], const int p_negmat[], const int tempk[], const int mbase[]) {
     for (int r = 0; r < posrows; r++) {
         decpos[r] = 0;
         for (int c = 0; c < k; c++) {
@@ -1032,7 +1043,7 @@ static R_INLINE void getDecimals(int posrows, int negrows, int k, int decpos[], 
         }
     }
 }
-static R_INLINE void getUniques(int posrows, int *found, int decpos[], Rboolean possiblePI[], int possiblePIrows[]) {
+static R_INLINE void getUniques(const int posrows, int *found, int decpos[], Rboolean possiblePI[], int possiblePIrows[]) {
     for (int r = 1; r < posrows; r++) {
         int prev = 0;
         Rboolean unique = TRUE; 
@@ -1047,7 +1058,7 @@ static R_INLINE void getUniques(int posrows, int *found, int decpos[], Rboolean 
         }
     }
 }
-static R_INLINE void verify_possiblePI(int compare, int negrows, int *found, Rboolean possiblePI[], int possiblePIrows[], int decpos[], int decneg[]) {
+static R_INLINE void verify_possiblePI(const int compare, const int negrows, int *found, Rboolean possiblePI[], const int possiblePIrows[], const int decpos[], const int decneg[]) {
     for (int i = 0; i < compare; i++) {
         int j = 0;
         while (j < negrows && possiblePI[i]) {
@@ -1059,7 +1070,15 @@ static R_INLINE void verify_possiblePI(int compare, int negrows, int *found, Rbo
         }
     }
 }
-static R_INLINE void get_frows(int frows[], Rboolean possiblePI[], int possiblePIrows[], int compare) {
+void printfarray(int* arr, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        Rprintf("%d ", arr[i]);
+    } 
+    Rprintf("\n");
+}
+static R_INLINE void get_frows(int frows[], const Rboolean possiblePI[], const int possiblePIrows[], const int compare) {
     int pos = 0;
     for (int i = 0; i < compare; i++) {
         if (possiblePI[i]) {
@@ -1068,16 +1087,454 @@ static R_INLINE void get_frows(int frows[], Rboolean possiblePI[], int possibleP
         }
     }
 }
+int GetNextComb(int *arr, int k, int n, int indexLimit)
+{
+    int i;
+    for (i = k - 1; i >= indexLimit; --i)
+    {
+        arr[i]++;
+        if (arr[i] + (k-i-1) != n)
+            break;
+    }
+    if (i == indexLimit-1)
+        return 0;
+    for (int j = i + 1; j < k; j++)
+        arr[j] = arr[j-1] + 1;
+    return 1;
+}
+int fillCombinationTasks(const int n, int k, int (*comb)[3], const int arrayMaxSize, int* outNumItemsFilled)
+{  
+    *outNumItemsFilled = 0;
+    if (k <= 1)
+    {
+        for (int X = 0; X <= n-k; X++)
+        {
+            comb[*outNumItemsFilled][0] = X;
+            (*outNumItemsFilled)++;
+        }
+        return 1;
+    }
+    else if (k <= 2)
+    {
+        for (int X = 0; X <= n-k; X++)
+            for (int Y = X + 1; Y <= n-k+1; Y++)
+            {
+                const int currIndex = *outNumItemsFilled;
+                comb[currIndex][0] = X;
+                comb[currIndex][1] = Y;
+                (*outNumItemsFilled)++;
+            }
+        return 2;
+    } 
+    else 
+    {
+        for (int X = 0; X <= n-k; X++)
+            for (int Y = X + 1; Y <= n-k+1; Y++)
+                for (int Z = Y + 1; Z <=  n-k+2; Z++)
+                {
+                    const int currIndex = *outNumItemsFilled;
+                    comb[currIndex][0] = X;
+                    comb[currIndex][1] = Y;
+                    comb[currIndex][2] = Z;
+                    (*outNumItemsFilled)++;
+                }
+        return 3;
+    }
+}
+#ifdef SHOW_DEBUG_PROFILE
+#define PRINT_PROFILE_STATS \
+    const double cleanup_time = omp_get_wtime(); \
+    Rprintf("Init time: %f\n", findingPIsStart_time - init_time); \
+    Rprintf("PI finding time middle: %f\n", findingPIsEnd_time - findingPIsStart_time); \
+    Rprintf("cleanup time: %f\n", cleanup_time - findingPIsEnd_time);  \
+    Rprintf("total time: %f\n", cleanup_time - init_time); 
+#else 
+#define PRINT_PROFILE_STATS {}
+#endif
 SEXP C_Cubes(SEXP list) {
+#ifdef SHOW_DEBUG_PROFILE 
+    const double init_time = omp_get_wtime();
+#endif
     SEXP   posmat,    negmat,    pichart,    temp,    indx,    ck,    tempcpy,    result,    pic;
     int *p_posmat, *p_negmat, *p_pichart, *p_temp, *p_indx, *p_ck, *p_tempcpy, *p_result, *p_pic;
-    SEXP tt, checkmin; 
-    SEXP usage = PROTECT(allocVector(VECSXP, 11));
+    SEXP tt, checkmin, transposed; 
+    SEXP usage = PROTECT(allocVector(VECSXP, 12));
     SET_VECTOR_ELT(usage, 0, tt = coerceVector(VECTOR_ELT(list, 0), INTSXP));
     int *p_tt = INTEGER(tt);
     SEXP last_column;
     SET_VECTOR_ELT(usage, 9, last_column = allocVector(INTSXP, 1));
-    SET_VECTOR_ELT(usage, 10, checkmin = allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(usage, 11, checkmin = allocVector(INTSXP, 1));
+    INTEGER(checkmin)[0] = 0;
+    int ttrows = nrows(tt); 
+    int nconds = ncols(tt) - 1; 
+    int posrows = 0;
+    for (int r = 0; r < ttrows; r++) {
+        posrows += p_tt[nconds * ttrows + r];
+    }
+    int neresizes = ttrows - posrows;
+    SET_VECTOR_ELT(usage, 1, posmat = allocMatrix(INTSXP, posrows, nconds));
+    p_posmat = INTEGER(posmat);
+    SET_VECTOR_ELT(usage, 2, negmat = allocMatrix(INTSXP, (neresizes == 0) ? 1 : neresizes, nconds));
+    p_negmat = INTEGER(negmat);
+    int rowpos, rowneg;
+    populate_posneg(&rowpos, &rowneg, nconds, ttrows, posrows, p_tt, p_posmat, p_negmat);
+    int noflevels[nconds];
+    get_noflevels(noflevels, p_tt, nconds, ttrows);
+    int foundPI = 0;
+    int prevfoundPI = 0;
+    int estimpi = 10000;
+    SET_VECTOR_ELT(usage, 3, pichart = allocMatrix(LGLSXP, posrows, estimpi));
+    p_pichart = LOGICAL(pichart);
+    memset(p_pichart, FALSE, posrows * estimpi * sizeof(int));
+    SET_VECTOR_ELT(usage, 4, temp = allocMatrix(INTSXP, nconds, estimpi));
+    p_temp = INTEGER(temp);
+    memset(p_temp, 0, nconds * estimpi * sizeof(int));
+    SET_VECTOR_ELT(usage, 6, ck = allocVector(INTSXP, estimpi));
+    p_ck = INTEGER(ck);
+    int posminpin = getpos(list, "min.pin");
+    Rboolean minpin = (posminpin >= 0) ? (LOGICAL(VECTOR_ELT(list, posminpin))[0]) : FALSE;
+    if (posminpin < 0 && length(list) > 1) {
+        if (isLogical(VECTOR_ELT(list, 1))) {
+            minpin = LOGICAL(VECTOR_ELT(list, 1))[0];
+        }
+    }
+    int posdepth = getpos(list, "depth");
+    int pidepth = nconds;
+    int soldepth = 5; 
+    if (posdepth >= 0) {
+        pidepth = INTEGER(coerceVector(VECTOR_ELT(list, posdepth), INTSXP))[0];
+        soldepth = INTEGER(coerceVector(VECTOR_ELT(list, posdepth), INTSXP))[1];
+    }
+    if (pidepth == 0 || nconds < pidepth) {
+        pidepth = nconds;
+    }
+    SET_VECTOR_ELT(usage, 5, indx = allocMatrix(INTSXP, pidepth, estimpi));
+    p_indx = INTEGER(indx);
+    memset(p_indx, 0, pidepth * estimpi * sizeof(int));
+    int pospicons = getpos(list, "pi.cons");
+    double picons = (pospicons >= 0) ? (REAL(VECTOR_ELT(list, pospicons))[0]) : 0;
+    Rboolean morePIfound = FALSE;
+    Rboolean foundX = TRUE; 
+    int minPIs = 0;
+    int depthcol = 0; 
+    int posdata = getpos(list, "data");
+    int posfs = getpos(list, "fs");
+    int posallsol = getpos(list, "all.sol");
+#ifdef SHOW_DEBUG_PROFILE 
+    const double findingPIsStart_time = omp_get_wtime();
+#endif
+    for (int k = 1; k <= pidepth; k++) {
+        morePIfound = FALSE; 
+    #ifdef SHOW_DEBUG_OUTPUT
+        Rprintf("====== K = %d =====\n", k);
+    #endif 
+        const int numMaxCombinations = (nconds*(nconds-1)*(nconds-2))/6 + (nconds*(nconds-1)/2) + nconds;
+        int combinationsSetFixedPrefix[numMaxCombinations][3];
+        int numPrefixCombinations = 0;
+	
+        const int INDEX_LIMIT = fillCombinationTasks(nconds, k, combinationsSetFixedPrefix, numMaxCombinations, &numPrefixCombinations);
+#ifdef _OPENMP
+         #pragma omp parallel for schedule(dynamic)
+#endif
+        for (int taskIter = 0; taskIter < numPrefixCombinations; taskIter++)
+        {
+        int tempk[k];
+            for (int i = 0; i < INDEX_LIMIT; i++)
+            {
+                tempk[i] = combinationsSetFixedPrefix[taskIter][i];
+            }
+            for (int i = INDEX_LIMIT; i < k; i++)
+            {
+                tempk[i] = tempk[i-1] + 1;
+            }
+            if (k > INDEX_LIMIT)
+                tempk[k-1]--; 
+            int decpos[posrows];
+            int decneg[(neresizes > 0) ? neresizes : 1];
+            int finishedAll = 0;
+            int mbase[k];
+            mbase[0] = 1; 
+            while (!finishedAll) {
+                if (k > INDEX_LIMIT)
+                {
+                    int res = GetNextComb(tempk, k, nconds, INDEX_LIMIT);
+                    if (!res)
+                    {
+                        finishedAll = 1;
+                        break; 
+                    }                    
+                }
+                else
+                {
+                    finishedAll = 1;
+                }
+                #ifdef SHOW_DEBUG_OUTPUT
+                    #pragma omp critical
+                    {
+                        int threadid = omp_get_thread_num();
+                        Rprintf("P%d - k%d - ", threadid, k);
+                        printfarray(tempk, k);
+                    }
+                #endif
+                fill_mbase(mbase, tempk, noflevels, k);
+                getDecimals(posrows, neresizes, k, decpos, decneg, p_posmat, p_negmat, tempk, mbase);
+                int possiblePIrows[posrows];
+                possiblePIrows[0] = 0; 
+                Rboolean possiblePI[posrows];
+                possiblePI[0] = TRUE; 
+                int found = 1;
+                getUniques(posrows, &found, decpos, possiblePI, possiblePIrows);
+                int compare = found;
+                if (picons > 0) {
+                    int val[k];
+                    Rboolean fuzzy[k];
+                    for (int i = 0; i < compare; i++) {
+                        for (int c = 0; c < k; c++) {
+                            val[c] = p_posmat[tempk[c] * posrows + possiblePIrows[i]];
+                            fuzzy[c] = LOGICAL(VECTOR_ELT(list, posfs))[tempk[c]];
+                        }
+                        if (altb(consistency(VECTOR_ELT(list, posdata), k, tempk, val, fuzzy), picons)) {
+                            possiblePI[i] = FALSE;
+                            found -= 1;
+                        }
+                    }
+                }
+                else if (neresizes > 0) {
+                    verify_possiblePI(compare, neresizes, &found, possiblePI, possiblePIrows, decpos, decneg);
+                }
+                if (found) { 
+                    int frows[found];
+                    get_frows(frows, possiblePI, possiblePIrows, compare);
+                    for (int f = 0; f < found; f++) {
+                        int tempc[k];
+                        for (int c = 0; c < k; c++) {
+                            tempc[c] = p_posmat[tempk[c] * posrows + frows[f]] + 1;
+                        }
+                        if (nonredundant(tempc, prevfoundPI, p_ck, k, p_indx, pidepth, tempk, p_temp, nconds)) {
+                        #ifdef _OPENMP    
+                            #pragma omp critical
+                        #endif 
+                            {
+                                pushPI(p_temp, p_indx, p_ck, p_pichart, tempk, tempc, decpos, frows, f, k, nconds, foundPI, pidepth, posrows);
+                                ++foundPI;
+                                morePIfound = TRUE;
+                                if (foundPI == estimpi) {
+                                    estimpi *= 2;
+                                    SET_VECTOR_ELT(usage, 3, pichart = resize(pichart, posrows * estimpi));
+                                    p_pichart = LOGICAL(pichart);
+                                    SET_VECTOR_ELT(usage, 4, temp = resize(temp, nconds * estimpi));
+                                    p_temp = INTEGER(temp);
+                                    SET_VECTOR_ELT(usage, 5, indx = resize(indx, pidepth * estimpi));
+                                    p_indx = INTEGER(indx);
+                                    SET_VECTOR_ELT(usage, 6, ck = resize(ck, estimpi));
+                                    p_ck = INTEGER(ck);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (foundPI > prevfoundPI) {
+            depthcol = prevfoundPI + 1;
+        }
+        if (foundPI > 0) {
+            INTEGER(last_column)[0] = foundPI;
+            setAttrib(pichart, install("last_column"), last_column);
+            SET_VECTOR_ELT(usage, 10, transposed = transpose(pichart));
+            SET_VECTOR_ELT(usage, 11, checkmin = C_findmin(transposed));
+            if (INTEGER(checkmin)[0] > 0) { 
+                if (minpin) {
+                    Rboolean allminsol = FALSE;
+                    if (posallsol >= 0) {
+                        allminsol = LOGICAL(VECTOR_ELT(list, posallsol))[0];
+                    }
+                    if (!allminsol) {
+                        morePIfound = FALSE;
+                    }
+                    if (INTEGER(checkmin)[0] == minPIs && morePIfound) {
+                        if (nrows(pichart) > 1) {
+                            int k2 = minPIs;
+                            int tempk2[k2];
+                            for (int i = 0; i < k2; i++) {
+                                tempk2[i] = i;
+                            }
+                            tempk2[k2 - 1] -= 1;
+                            int e2 = 0;
+                            int h2 = k2;
+                            Rboolean foundminpairs = FALSE;
+                            Rboolean last = (foundPI == k2);
+                            while (((tempk2[0] != foundPI - k2) || last) && !foundminpairs) {
+                                increment(k2, &e2, &h2, foundPI + last, tempk2, depthcol);
+                                last = FALSE;
+                                Rboolean allrows = TRUE;
+                                int r = 0;
+                                while (r < posrows && allrows) {
+                                    Rboolean covered = FALSE;
+                                    int c = 0;
+                                    while (c < k2 && !covered) {
+                                        covered = p_pichart[tempk2[c] * posrows + r];
+                                        c++;
+                                    }
+                                    allrows = covered;
+                                    r++;
+                                }
+                                foundminpairs = allrows;
+                            }
+                            foundX = foundminpairs;
+                        }
+                        else { 
+                            int i = depthcol;
+                            while (i < foundPI && !foundX) {
+                                foundX = p_pichart[i]; 
+                                ++i;
+                            }
+                        }
+                    }
+                    minPIs = INTEGER(checkmin)[0];
+                }
+            }
+            else if (INTEGER(checkmin)[0] == 0) {
+                morePIfound = TRUE;
+            }
+        }
+        else {
+            morePIfound = TRUE;
+        }
+        if (foundX) { 
+            prevfoundPI = foundPI;
+        }
+        else {
+            foundPI = prevfoundPI;
+            break;
+        }
+        if (!morePIfound) {
+            break;
+        }
+    }
+#ifdef SHOW_DEBUG_PROFILE
+    const double findingPIsEnd_time = omp_get_wtime();
+#endif
+    SEXP dimnames, ttcolnms,  colnms;
+    SET_VECTOR_ELT(usage, 6, dimnames = allocVector(VECSXP, 2));
+    if (hasColnames(tt)) {
+        SET_VECTOR_ELT(usage, 7, ttcolnms = VECTOR_ELT(getAttrib(tt, R_DimNamesSymbol), 1));
+        SET_VECTOR_ELT(usage, 8, colnms = allocVector(STRSXP, nconds));
+        for (int i = 0; i < nconds; i++) {
+            SET_STRING_ELT(colnms, i, STRING_ELT(ttcolnms, i));
+        }
+        SET_VECTOR_ELT(dimnames, 1, colnms); 
+    }
+    if (posallsol >= 0) { 
+        int posrowdom = getpos(list, "row.dom");
+        Rboolean rowdom = (posrowdom >= 0) ? (LOGICAL(VECTOR_ELT(list, posrowdom))[0]) : FALSE;
+        SEXP out = PROTECT(allocVector(VECSXP, 3));
+        SEXP cols;
+        SET_VECTOR_ELT(usage, 7, cols = allocVector(LGLSXP, foundPI));
+        int *p_cols = INTEGER(cols);
+        memset(p_cols, TRUE, foundPI * sizeof(int));
+        if (rowdom) { 
+            int survcols = foundPI;
+            rowDominance(p_pichart, posrows, &survcols, p_cols, p_ck);
+            if (survcols < foundPI) {
+                int s = 0;
+                for (int c = 0; c < foundPI; c++) {
+                    if (p_cols[c]) {
+                        for (int r = 0; r < nconds; r++) {
+                            p_temp[s * nconds + r] = p_temp[c * nconds + r];
+                        }
+                        s++;
+                    }
+                }
+                foundPI = survcols;
+            }
+        }
+        SET_VECTOR_ELT(usage, 8, tempcpy = allocVector(INTSXP, foundPI));
+        p_tempcpy = INTEGER(tempcpy);
+        sortmat(p_temp, p_tempcpy, p_ck, nconds, foundPI);
+        SET_VECTOR_ELT(out, 0, result = allocMatrix(INTSXP, foundPI, nconds));
+        p_result = INTEGER(result);
+        SET_VECTOR_ELT(out, 1, pic = allocMatrix(LGLSXP, posrows, foundPI));
+        p_pic = LOGICAL(pic);
+        for (int c = 0; c < foundPI; c++) {
+            for (int r = 0; r < posrows; r++) {
+                p_pic[c * posrows + r] = p_pichart[p_tempcpy[c] * posrows + r];
+            }
+            for (int r = 0; r < nconds; r++) {
+                p_result[r * foundPI + c] = p_temp[p_tempcpy[c] * nconds + r];
+            }
+        }
+        if (hasColnames(tt)) {
+            setAttrib(result, R_DimNamesSymbol, dimnames);  
+        }
+        int posolcons = getpos(list, "sol.cons");
+        int posolcov  = getpos(list, "sol.cov");
+        if (REAL(VECTOR_ELT(list, posolcons))[0] > 0) { 
+            SEXP temptemp;
+            SET_VECTOR_ELT(usage, 1, temptemp = duplicate(ck)); 
+            int *p_temptemp = INTEGER(temptemp);
+            SET_VECTOR_ELT(usage, 6, ck = allocVector(INTSXP, foundPI));
+            p_ck = INTEGER(ck);
+            for (int c = 0; c < foundPI; c++) {
+                p_ck[c] = p_temptemp[p_tempcpy[c]];
+            }
+            SET_VECTOR_ELT(usage, 1, temptemp = duplicate(indx)); 
+            p_temptemp = INTEGER(temptemp);
+            SET_VECTOR_ELT(usage, 5, indx = allocMatrix(INTSXP, foundPI, pidepth));
+            p_indx = INTEGER(indx);
+            for (int r = 0; r < foundPI; r++) {
+                for (int c = 0; c < pidepth; c++) {
+                    p_indx[c * foundPI + r] = p_temptemp[p_tempcpy[r] * pidepth + c] - 1;
+                }
+            }
+            SET_VECTOR_ELT(out, 2,
+                solveChartCons(result, 
+                            ck, 
+                            indx, 
+                            VECTOR_ELT(list, posdata), 
+                            VECTOR_ELT(list, posfs), 
+                            ((nrows(pic) < ncols(pic)) ? nrows(pic) : ncols(pic)), 
+                            REAL(VECTOR_ELT(list, posolcons))[0], 
+                            REAL(VECTOR_ELT(list, posolcov))[0], 
+                            LOGICAL(VECTOR_ELT(list, posallsol))[0], 
+                            soldepth
+                            )
+                        );
+        }
+        else {
+            if (picons > 0 && INTEGER(checkmin)[0] == 0) {
+                SET_VECTOR_ELT(out, 2, R_NilValue);
+            }
+            else {
+                INTEGER(VECTOR_ELT(list, posdepth))[0] = INTEGER(VECTOR_ELT(list, posdepth))[1];
+                setAttrib(pic, install("minpic"), checkmin);
+                SET_VECTOR_ELT(out, 2, C_solveChart(pic, VECTOR_ELT(list, posallsol), VECTOR_ELT(list, posdepth)));
+            }
+        }
+        SET_VECTOR_ELT(out, 1, pic = transpose(pic));
+        UNPROTECT(2);
+        return(out);
+    }
+    else {
+        SET_VECTOR_ELT(usage, 6, result = transpose(temp));
+        if (hasColnames(tt)) {
+            setAttrib(result, R_DimNamesSymbol, dimnames);  
+        }
+        UNPROTECT(1);
+        return(result);
+    }
+}
+SEXP C_Cubes_serial(SEXP list) {
+    SEXP   posmat,    negmat,    pichart,    temp,    indx,    ck,    tempcpy,    result,    pic;
+    int *p_posmat, *p_negmat, *p_pichart, *p_temp, *p_indx, *p_ck, *p_tempcpy, *p_result, *p_pic;
+    SEXP tt, transposed, checkmin; 
+    SEXP usage = PROTECT(allocVector(VECSXP, 12));
+    SET_VECTOR_ELT(usage, 0, tt = coerceVector(VECTOR_ELT(list, 0), INTSXP));
+    int *p_tt = INTEGER(tt);
+    SEXP last_column;
+    SET_VECTOR_ELT(usage, 9, last_column = allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(usage, 11, checkmin = allocVector(INTSXP, 1));
+    INTEGER(checkmin)[0] = 0;
     int ttrows = nrows(tt); 
     int nconds = ncols(tt) - 1; 
     int posrows = 0;
@@ -1209,7 +1666,8 @@ SEXP C_Cubes(SEXP list) {
         if (foundPI > 0) {
             INTEGER(last_column)[0] = foundPI;
             setAttrib(pichart, install("last_column"), last_column);
-            SET_VECTOR_ELT(usage, 10, checkmin = C_findmin(transpose(pichart)));
+            SET_VECTOR_ELT(usage, 10, transposed = transpose(pichart));
+            SET_VECTOR_ELT(usage, 11, checkmin = C_findmin(transposed));
             if (INTEGER(checkmin)[0] > 0) { 
                 if (minpin) {
                     Rboolean allminsol = FALSE;

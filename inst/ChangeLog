@@ -1,3 +1,17 @@
+Version 3.9
+    o Function export() moved to package admisc
+    o Fixed: row numbers bigger than the total number of rows in a truth
+      table are now ignored from the "exclude" argument
+      (thanks to Philipp Bentz for the report)
+    o Fixed: minor bug diplaying additional parameters of fit in function pof()
+    o Changed: function minimize() no longer returns with an error when 
+      including remainders on saturated truth tables
+      (thanks to Michael Baumgartner for the suggestion)
+    o Fixed: minor bug in when dealing with a single column PI chart
+      (thanks to Michael Baumgartner and Martyna Swiatczak for the report)
+    o Fixed: outstanding C level bug leading to a segfault on some Linux
+      distributions using MKL and BLAS
+      
 Version 3.8
     o New: package QCA now accepts unquoted strings for SOP expressions,
       as well as to specify the outcome and conditions, in functions:

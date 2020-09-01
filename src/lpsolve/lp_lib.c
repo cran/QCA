@@ -7608,7 +7608,7 @@ STATIC MYBOOL is_sc_violated(lprec *lp, int column)
 {
   int  varno;
   REAL tmpreal;
-  REAL eps = lp->epsvalue;                                    /* ß adding eps here*/
+  REAL eps = lp->epsvalue;                                    /* ï¿½ adding eps here*/
 
   varno = lp->rows+column;
   tmpreal = unscaled_value(lp, lp->sc_lobound[column], varno);
@@ -9764,7 +9764,7 @@ STATIC void initialize_solution(lprec *lp, MYBOOL shiftbounds)
   }
 
   /* Do final pass to get the maximum value */
-  i = idamax(lp->rows /* +1 */, lp->rhs, 1);
+  i = my_idamax(lp->rows /* +1 */, lp->rhs, 1);
   lp->rhsmax = fabs(lp->rhs[i]);
 
   if(shiftbounds == INITSOL_SHIFTZERO)
