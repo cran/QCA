@@ -677,6 +677,9 @@
             print.QCA_pof(x$IC, show.cases = x$options$show.cases, line.length=line.length)
         }
     }
+    if (x$complex) {
+        warning(simpleWarning("The PI chart is exceedingly complex, solution(s) not guaranteed to be exhaustive.\n\n"))
+    }
     if (!x$options$details & enter) {
         cat("\n")
     }

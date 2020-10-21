@@ -965,7 +965,7 @@ MYBOOL SOS_is_full(SOSgroup *group, int sosindex, int column, MYBOOL activeonly)
 
 MYBOOL SOS_can_activate(SOSgroup *group, int sosindex, int column)
 {
-  int    i, n, nn, nz, *list;
+  int    i, n, nn, *list;
   lprec  *lp;
 
   if(group == NULL)
@@ -996,44 +996,16 @@ MYBOOL SOS_can_activate(SOSgroup *group, int sosindex, int column)
     n = list[0]+1;
     nn = list[n];
 
-#if 0
-    /* Accept if the SOS is empty */
+   /* Accept if the SOS is empty */
     if(list[n+1] == 0)
       return(TRUE);
-#endif
 
-    /* Cannot activate a variable if the SOS is full */
+   /* Cannot activate a variable if the SOS is full */
     if(list[n+nn] != 0)
       return(FALSE);
 
-    /* Check if there are variables quasi-active via non-zero lower bounds */
-    nz = 0;
-    for(i = 1; i < n; i++)
-      if(lp->bb_bounds->lowbo[lp->rows+abs(list[i])] > 0) {
-        nz++;
-        /* Reject outright if selected column has a non-zero lower bound */
-        if(list[i] == column)
-          return(FALSE);
-      }
-#ifdef Paranoia
-    if(nz > nn)
-      report(lp, SEVERE, "SOS_can_activate: Found too many non-zero member variables for SOS index %d\n", sosindex);
-#endif
-    for(i = 1; i <= nn; i++) {
-      if(list[n+i] == 0)
-        break;
-      if(lp->bb_bounds->lowbo[lp->rows+list[n+i]] == 0)
-        nz++;
-    }
-    if(nz == nn)
-      return(FALSE);
-
-    /* Accept if the SOS is empty */
-    if(list[n+1] == 0)
-      return(TRUE);
-
-    /* Check if we can set variable active in SOS2..SOSn
-      (must check left and right neighbours if one variable is already active) */
+   /* Check if we can set variable active in SOS2..SOSn
+     (must check left and right neighbours if one variable is already active) */
     if(nn > 1) {
 
      /* Find the variable that was last activated;
@@ -1047,27 +1019,26 @@ MYBOOL SOS_can_activate(SOSgroup *group, int sosindex, int column)
       i--;
       nn = list[n+i];
 
-      /* SOS accepts an additional variable; confirm neighbourness of candidate;
-         Search for the SOS set index of the last activated variable */
+     /* SOS accepts an additional variable; confirm neighbourness of candidate;
+        Search for the SOS set index of the last activated variable */
       n = list[0];
       for(i = 1; i <= n; i++)
-        if(abs(list[i]) == nn)
-          break;
+        if(abs(list[i]) == nn) break;
       if(i > n) {
         report(lp, CRITICAL, "SOS_can_activate: Internal index error at SOS %d\n", sosindex);
         return(FALSE);
       }
 
-      /* SOS accepts an additional variable; confirm neighbourness of candidate */
+     /* SOS accepts an additional variable; confirm neighbourness of candidate */
 
-      /* Check left neighbour */
+     /* Check left neighbour */
       if((i > 1) && (list[i-1] == column))
         return(TRUE);
-      /* Check right neighbour */
+     /* Check right neighbour */
       if((i < n) && (list[i+1] == column))
         return(TRUE);
 
-      /* It is not the right neighbour; return false */
+     /* It is not the right neighbour; return false */
       return(FALSE);
     }
   }

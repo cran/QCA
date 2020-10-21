@@ -58,6 +58,27 @@ REAL *cloneREAL(lprec *lp, REAL *origlist, int size);
 MYBOOL *cloneMYBOOL(lprec *lp, MYBOOL *origlist, int size);
 int *cloneINT(lprec *lp, int *origlist, int size);
 
+#if 0
+!if defined INLINE
+INLINE void set_biton(MYBOOL *bitarray, int item)
+{
+  bitarray[item / 8] |= (1 << (item % 8));
+}
+INLINE void set_bitoff(MYBOOL *bitarray, int item)
+{
+  bitarray[item / 8] &= ~(1 << (item % 8));
+}
+INLINE MYBOOL is_biton(MYBOOL *bitarray, int item)
+{
+  return( (MYBOOL) ((bitarray[item / 8] & (1 << (item % 8))) != 0) );
+}
+!else
+void set_biton(MYBOOL *bitarray, int item);
+MYBOOL set_bitoff(MYBOOL *bitarray, int item);
+MYBOOL is_biton(MYBOOL *bitarray, int item);
+!endif
+#endif
+
 int comp_bits(MYBOOL *bitarray1, MYBOOL *bitarray2, int items);
 
 STATIC workarraysrec *mempool_create(lprec *lp);
@@ -121,15 +142,10 @@ STATIC MYBOOL freePackedVector(PVrec **PV);
 
 #ifdef FORTIFY
 
-#if defined CODE_lp_utils && !defined CODE_lp_utils_
+#ifdef CODE_lp_utils
 int _Fortify_ret;
 #else
 extern int _Fortify_ret;
-#endif
-
-#ifdef CODE_lp_utils
-#define CODE_lp_utils_
-#else
 # undef allocCHAR
 # undef allocMYBOOL
 # undef allocINT

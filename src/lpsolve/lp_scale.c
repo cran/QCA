@@ -147,7 +147,7 @@ int CurtisReidScales(lprec *lp, MYBOOL _Advanced, REAL *FRowScale, REAL *FColSca
          *residual_even, *residual_odd;
   REAL   sk,   qk,     ek,
          skm1, qkm1,   ekm1,
-         qkqkm1, ekekm1,
+         qkm2, qkqkm1, ekm2, ekekm1,
          absvalue, logvalue,
          StopTolerance;
   int    *RowCount, *ColCount, colMax;
@@ -245,8 +245,8 @@ int CurtisReidScales(lprec *lp, MYBOOL _Advanced, REAL *FRowScale, REAL *FColSca
     sk += (residual_even[col]*residual_even[col]) / (REAL) ColCount[col];
 
   Result = 0;
-  qk=1; qkm1=0; 
-  ek=0; ekm1=0; 
+  qk=1; qkm1=0; qkm2=0;
+  ek=0; ekm1=0; ekm2=0;
 
   while(sk>StopTolerance) {
   /* Given the values of residual and sk, construct
@@ -331,11 +331,11 @@ int CurtisReidScales(lprec *lp, MYBOOL _Advanced, REAL *FRowScale, REAL *FColSca
     }
 
     /* Compute ek and qk */
-    //ekm2=ekm1;
+    ekm2=ekm1;
     ekm1=ek;
     ek=qk * sk / skm1;
 
-    //qkm2=qkm1;
+    qkm2=qkm1;
     qkm1=qk;
     qk=1-ek;
 
@@ -351,6 +351,7 @@ int CurtisReidScales(lprec *lp, MYBOOL _Advanced, REAL *FRowScale, REAL *FColSca
     for(row = 0; row<=lp->rows; row++)
       FRowScale[row]+=(residual_odd[row] / (qkm1 * (REAL) RowCount[row]) -
                       RowScalem2[row] * ekekm1 / qkm1);
+    }
   }
   else { /* pass is odd, compute ColScale */
     for(col=1; col<=colMax; col++)
@@ -358,7 +359,6 @@ int CurtisReidScales(lprec *lp, MYBOOL _Advanced, REAL *FRowScale, REAL *FColSca
     for(col=1; col<=colMax; col++)
       FColScale[col]+=(residual_even[col] / ((REAL) ColCount[col] * qkm1) -
                        ColScalem2[col] * ekekm1 / qkm1);
-  }
   }
 
   /* Do validation, if indicated */
@@ -502,7 +502,7 @@ STATIC void accumulate_for_scale(lprec *lp, REAL *min, REAL *max, REAL value)
       SETMAX(*max, value);
       SETMIN(*min, value);
     }
-  }
+   }
 }
 
 STATIC REAL minmax_to_scale(lprec *lp, REAL min, REAL max, int itemcount)
@@ -629,7 +629,7 @@ STATIC MYBOOL scale_updaterows(lprec *lp, REAL *scalechange, MYBOOL updateonly)
 
 STATIC MYBOOL scale_columns(lprec *lp, REAL *scaledelta)
 {
-  int     i,j, nz;
+  int     i,j, colMax, nz;
   REAL    *scalechange;
   REAL    *value;
   int     *colnr;
@@ -644,7 +644,7 @@ STATIC MYBOOL scale_columns(lprec *lp, REAL *scaledelta)
   else
     scalechange = &scaledelta[lp->rows];
 
-  //colMax = lp->columns;
+  colMax = lp->columns;
 
   /* Scale matrix entries (including any Lagrangean constraints) */
   for(i = 1; i <= lp->columns; i++) {
@@ -806,7 +806,7 @@ STATIC REAL scale(lprec *lp, REAL *scaledelta)
       nz = nzOF;
     else
       nz = mat_rowlength(lp->matA, i);
-    absval = minmax_to_scale(lp, row_min[i], row_max[i], nz); /* nz instead of nzOF KJEI 20/05/2010 */
+    absval = minmax_to_scale(lp, row_min[i], row_max[i], nzOF);
     if(absval == 0)
       absval = 1;
     scalechange[i] = absval;

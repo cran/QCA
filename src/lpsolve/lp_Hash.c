@@ -162,11 +162,8 @@ STATIC void drophash(const char *name, hashelem **list, hashtable *ht) {
       if(hp1 == hp) {
         if(hp2 != NULL)
           hp2->nextelem = hp->nextelem;
-        else {
+        else
           ht->first = hp->nextelem;
-          if (ht->first == NULL)
-            ht->last = NULL;
-        }
       }
       if(list != NULL)
         list[hp->index] = NULL;
@@ -207,7 +204,7 @@ STATIC int find_row(lprec *lp, char *name, MYBOOL Unconstrained_rows_found)
       hp = findhash(name, lp->rowname_hashtab);
   else
       hp = NULL;
-
+ 
   if (hp == NULL) {
     if(Unconstrained_rows_found) { /* just ignore them in this case */
          return(-1);
@@ -227,7 +224,7 @@ STATIC int find_var(lprec *lp, char *name, MYBOOL verbose)
       hp = findhash(name, lp->colname_hashtab);
   else
       hp = NULL;
-
+ 
   if (hp == NULL) {
     if(verbose)
       report(lp, SEVERE, "find_var: Unknown variable name '%s'\n", name);

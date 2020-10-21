@@ -182,33 +182,19 @@ STATIC MYBOOL stallMonitor_check(lprec *lp, int rownr, int colnr, int lastnr,
   /* Also require that we have a measure of infeasibility-stalling */
   if(isStalled) {
     REAL testvalue, refvalue = monitor->epsvalue;
-#if 1
     if(monitor->isdual)
       refvalue *= 1000*log10(9.0+lp->rows);
     else
       refvalue *= 1000*log10(9.0+lp->columns);
-#else
-      refvalue *= 1000*log10(9.0+lp->sum);
-#endif
     testvalue = my_reldiff(monitor->thisinfeas, monitor->previnfeas);
     isStalled &= (fabs(testvalue) < refvalue);
 
     /* Check if we should force "major" pivoting, i.e. no bound flips;
       this is activated when we see the feasibility deteriorate */
 /*    if(!isStalled && (testvalue > 0) && (TRUE || is_action(lp->anti_degen, ANTIDEGEN_BOUNDFLIP))) */
-#if !defined _PRICE_NOBOUNDFLIP
     if(!isStalled && (testvalue > 0) && is_action(lp->anti_degen, ANTIDEGEN_BOUNDFLIP))
       acceptance = AUTOMATIC;
   }
-#else
-    if(!isStalled && (testvalue > 0) && !ISMASKSET(lp->piv_strategy, PRICE_NOBOUNDFLIP)) {
-      SETMASK(lp->piv_strategy, PRICE_NOBOUNDFLIP);
-      acceptance = AUTOMATIC;
-    }
-  }
-  else
-    CLEARMASK(lp->piv_strategy, PRICE_NOBOUNDFLIP);
-#endif
 
 #if 1
   isCreeping = FALSE;
@@ -239,7 +225,7 @@ STATIC MYBOOL stallMonitor_check(lprec *lp, int rownr, int colnr, int lastnr,
     /* Check if we should change pivoting strategy */
     else if(isCreeping ||                                                 /* We have OF creep */
             (monitor->Ncycle > monitor->limitstall[monitor->isdual]) ||   /* KE empirical value */
-            ((monitor->Ccycle == rownr) && (monitor->Rcycle == colnr))) {   /* Obvious cycling */
+            ((monitor->Ccycle == rownr) && (monitor->Rcycle == colnr))) { /* Obvious cycling */
 
       monitor->active = TRUE;
 
@@ -567,7 +553,7 @@ STATIC int primloop(lprec *lp, MYBOOL primalfeasible, REAL primaloffset)
   int    i, j, k, colnr = 0, rownr = 0, lastnr = 0,
          candidatecount = 0, minitcount = 0, ok = TRUE;
   LREAL  theta = 0.0;
-  REAL   epsvalue, xviolated = 0.0, cviolated = 0.0,
+  REAL   epsvalue, xviolated, cviolated,
          *prow = NULL, *pcol = NULL,
          *drow = lp->drow;
   int    *workINT = NULL,
@@ -872,7 +858,7 @@ Optimality:
 
       /* Check if we are still primal feasible; the default assumes that this check
          is not necessary after the relaxed problem has been solved satisfactorily. */
-      if((lp->bb_level <= 1) || (lp->improve & IMPROVE_BBSIMPLEX) /* || (lp->bb_rule & NODE_RCOSTFIXING) */) { /* NODE_RCOSTFIXING fix */
+      if((lp->bb_level <= 1) || (lp->improve & IMPROVE_BBSIMPLEX)) {
         set_action(&lp->piv_strategy, PRICE_FORCEFULL);
           i = rowdual(lp, lp->rhs, FALSE, FALSE, NULL);
         clear_action(&lp->piv_strategy, PRICE_FORCEFULL);
@@ -994,7 +980,7 @@ STATIC int dualloop(lprec *lp, MYBOOL dualfeasible, int dualinfeasibles[], REAL 
          ok = TRUE;
   int    *boundswaps = NULL;
   LREAL  theta = 0.0;
-  REAL   xviolated, cviolated,
+  REAL   epsvalue, xviolated, cviolated,
          *prow = NULL, *pcol = NULL,
          *drow = lp->drow;
   int    *nzprow = NULL, *workINT = NULL,
@@ -1054,7 +1040,7 @@ STATIC int dualloop(lprec *lp, MYBOOL dualfeasible, int dualinfeasibles[], REAL 
   /* Do regular dual simplex variable initializations */
   lp->spx_status = RUNNING;
   minit = ITERATE_MAJORMAJOR;
-  //epsvalue = lp->epspivot;
+  epsvalue = lp->epspivot;
 
   ok = stallMonitor_create(lp, TRUE, "dualloop");
   if(!ok)
@@ -1404,7 +1390,7 @@ RetryRow:
         /* Check if we are still dual feasible; the default assumes that this check
           is not necessary after the relaxed problem has been solved satisfactorily. */
         colnr = 0;
-        if((dualoffset != 0) || (lp->bb_level <= 1) || (lp->improve & IMPROVE_BBSIMPLEX) || (lp->bb_rule & NODE_RCOSTFIXING)) { /* NODE_RCOSTFIXING fix */
+        if((dualoffset != 0) || (lp->bb_level <= 1) || (lp->improve & IMPROVE_BBSIMPLEX)) {
           set_action(&lp->piv_strategy, PRICE_FORCEFULL);
             colnr = colprim(lp, drow, nzdrow, FALSE, 1, &candidatecount, FALSE, NULL);
           clear_action(&lp->piv_strategy, PRICE_FORCEFULL);
@@ -1709,7 +1695,7 @@ lprec *make_lag(lprec *lpserver)
 
     /* First create and core variable data */
     set_sense(hlp, is_maxim(lpserver));
-    /*hlp->lag_bound = lpserver->bb_limitOF;*/
+    hlp->lag_bound = lpserver->bb_limitOF;
     for(i = 1; i <= lpserver->columns; i++) {
       set_mat(hlp, 0, i, get_mat(lpserver, 0, i));
       if(is_binary(lpserver, i))
@@ -1846,7 +1832,7 @@ STATIC int lag_solve(lprec *lp, REAL start_bound, int num_iter)
           LagFeas = FALSE;
       }
       /* Test for convergence and update */
-      if(Converged && (fabs(my_reldiff(hold , SubGrad[i])) > /* lp->lag_accept */ DEF_LAGACCEPT))
+      if(Converged && (fabs(my_reldiff(hold , SubGrad[i])) > lp->lag_accept))
         Converged = FALSE;
       SubGrad[i] = hold;
       SqrsumSubGrad += hold * hold;
@@ -1975,7 +1961,7 @@ STATIC int lag_solve(lprec *lp, REAL start_bound, int num_iter)
 
   /* Transfer solution values */
   if(AnyFeas) {
-    /*lp->lag_bound = my_chsign(is_maxim(lp), Zbest);*/
+    lp->lag_bound = my_chsign(is_maxim(lp), Zbest);
     for(i = 0; i <= lp->sum; i++)
       lp->solution[i] = BestFeasSol[i];
     transfer_solution(lp, TRUE);
@@ -2049,11 +2035,7 @@ STATIC int spx_solve(lprec *lp)
     lp->bfp_restart(lp);
 
   lp->spx_status = presolve(lp);
-  if(lp->spx_status == PRESOLVED) {
-    status = lp->spx_status;
-    goto Reconstruct;
-  }
-  else if(lp->spx_status != RUNNING)
+  if(lp->spx_status != RUNNING)
     goto Leave;
 
   iprocessed = !lp->wasPreprocessed;
@@ -2077,7 +2059,6 @@ STATIC int spx_solve(lprec *lp)
       postprocess(lp);
 
     /* Restore data related to presolve (mainly a placeholder as of v5.1) */
-Reconstruct:
     if(!postsolve(lp, status))
       report(lp, SEVERE, "spx_solve: Failure during postsolve.\n");
 
@@ -2181,26 +2162,7 @@ int lin_solve(lprec *lp)
   /* Reset heuristic in preparation for next run (if any) */
   lp->bb_heuristicOF = my_chsign(is_maxim(lp), lp->infinite);
 
-  /* Check that correct status code is returned */
-/*
-   peno 26.12.07
-   status was not set to SUBOPTIMAL, only lp->spx_status
-   Bug occured by a change in 5.5.0.10 when  && (lp->bb_totalnodes > 0) was added
-   added status =
-   See UnitTest3
-*/
-/*
-   peno 12.01.08
-   If an integer solution is found with the same objective value as the relaxed solution then
-   searching is stopped. This by setting lp->bb_break. However this resulted in a report of SUBOPTIMAL
-   solution. For this,  && !bb_better(lp, OF_DUALLIMIT, OF_TEST_BE) is added in the test.
-   See UnitTest20
-*/
-  if((lp->spx_status == OPTIMAL) && (lp->bb_totalnodes > 0)) {
-    if((lp->bb_break && !bb_better(lp, OF_DUALLIMIT, OF_TEST_BE)) /* ||
-       ISMASKSET(lp->trace, TRACE_NOBBLIMIT) */)
-    status = lp->spx_status = SUBOPTIMAL;
-  }
-
   return( status );
 }
+
+

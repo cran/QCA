@@ -2,8 +2,6 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "lp_lib.h"
-
 #include "ini.h"
 
 FILE *ini_create(char *filename)
@@ -58,7 +56,7 @@ int ini_readdata(FILE *fp, char *data, int szdata, int withcomment)
       *ptr = 0;
   }
 
-  l = (int) strlen(data);
+  l = strlen(data);
   while((l > 0) && (isspace(data[l - 1])))
     l--;
   data[l] = 0;

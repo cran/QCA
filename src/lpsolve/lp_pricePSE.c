@@ -139,6 +139,12 @@ STATIC MYBOOL restartPricer(lprec *lp, MYBOOL isdual)
   REAL   *sEdge = NULL, seNorm, hold;
   int    i, j, m;
   MYBOOL isDEVEX, ok = applyPricer(lp);
+/* Correction from V6, apparently, via Kjell Eikland and the
+** lpSolve mailing list 2014-06-18 2:57 p.m. */
+
+  if (ok && (lp->edgeVector[0] < 0) && (isdual == AUTOMATIC))
+    ok = FALSE;
+
 
   if(!ok)
     return( ok );
@@ -313,15 +319,9 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
       lp->bfp_ftran_normal(lp, vEdge, NULL);
     }
 
-    /* Update the squared steepest edge norms; first store some constants */
+   /* Deal with the variable entering the basis to become a new leaving candidate */
     cEdge = lp->edgeVector[exitcol];
     rw = w[rownr];
-    if(fabs(rw) < lp->epspivot) {
-      forceRefresh = TRUE;
-      goto Finish2;
-    }
-
-   /* Deal with the variable entering the basis to become a new leaving candidate */
     hold = 1 / rw;
     lp->edgeVector[colnr] = (hold*hold) * cEdge;
 
@@ -415,10 +415,6 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
     /* Update the squared steepest edge norms; first store some constants */
     cEdge = lp->edgeVector[colnr];
     cAlpha = vAlpha[colnr];
-    if(fabs(cAlpha) < lp->epspivot) {
-      forceRefresh = TRUE;
-      goto Finish1;
-    }
 
     /* Deal with the variable leaving the basis to become a new entry candidate */
     hold = 1 / cAlpha;
@@ -466,13 +462,11 @@ STATIC MYBOOL updatePricer(lprec *lp, int rownr, int colnr, REAL *pcol, REAL *pr
       }
     }
 
-Finish1:
     FREE(vAlpha);
     FREE(vTemp);
 
   }
 
-Finish2:
   FREE(vEdge);
   freeWeights(w);
 

@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <R.h>
 #include <Rinternals.h>
-#include <stdlib.h> 
 #include <R_ext/Rdynload.h>
 void R_init_QCA(DllInfo* info) {
   R_registerRoutines(info, NULL, NULL, NULL, NULL);

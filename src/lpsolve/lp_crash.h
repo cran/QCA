@@ -18,6 +18,8 @@ __EXTERN_C {
 #endif
 
 STATIC MYBOOL crash_basis(lprec *lp);
+STATIC MYBOOL guess_basis(lprec *lp, REAL *guessvector, int *basisvector);
+
 
 #ifdef __cplusplus
 }

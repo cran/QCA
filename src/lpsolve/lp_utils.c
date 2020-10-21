@@ -6,11 +6,12 @@
 #include "lp_utils.h"
 #include <time.h>
 #include <sys/timeb.h>
-#include "lp_bit.h"
 
 #ifdef FORTIFY
 # include "lp_fortify.h"
 #endif
+
+#include "R.h"
 
 /*
     Miscellaneous utilities as implemented for lp_solve v5.0+
@@ -149,6 +150,22 @@ STATIC MYBOOL allocFREE(lprec *lp, void **ptr)
 #include "lp_utils.h"
 /* alloc-routines should always be before this line! */
 
+#if 0
+!if !defined INLINE
+void set_biton(MYBOOL *bitarray, int item)
+{
+  bitarray[item / 8] |= (1 << (item % 8));
+}
+void set_bitoff(MYBOOL *bitarray, int item)
+{
+  bitarray[item / 8] &= ~(1 << (item % 8));
+}
+MYBOOL is_biton(MYBOOL *bitarray, int item)
+{
+  return( (MYBOOL) ((bitarray[item / 8] & (1 << (item % 8))) != 0) );
+}
+!endif
+#endif
 int comp_bits(MYBOOL *bitarray1, MYBOOL *bitarray2, int items)
 {
   int            i, items4, left = 0, right = 0;
@@ -459,8 +476,7 @@ STATIC REAL roundToPrecision(REAL value, REAL precision)
     return( value*sign );
   else if((value < (REAL) MAXINT64) &&
      (modf((REAL) (value+precision), &vmod) < precision)) {
-    /* sign *= (LLONG) (value+precision); */
-    sign *= (LLONG) (value+0.5);
+    sign *= (LLONG) (value+precision);
     return( (REAL) sign );
   }
 
@@ -530,16 +546,13 @@ STATIC int searchFor(int target, int *attributes, int size, int offset, MYBOOL a
     match = attributes[beginPos];
     if(absolute)
       match = abs(match);
-    
-    while((beginPos < endPos) && (match != target)) 
-    {
+      while((beginPos < endPos) && (match != target)) {
         beginPos++;
         match = attributes[beginPos];
         if(absolute)
           match = abs(match);
-    }
-    
-    if(match == target)
+      }
+      if(match == target)
         endPos = beginPos;
   }
 
@@ -564,7 +577,7 @@ STATIC MYBOOL isINT(lprec *lp, REAL value)
   value = fabs(value)+lp->epsint;
   return( (MYBOOL) (my_reldiff(value, floor(value)) < 2*lp->epsint) );
 #elif 0
-  REAL hold;
+  static REAL hold;
   value = fabs(value);
   hold = pow(10, MIN(-2, log10(value+1)+log10(lp->epsint)));
   return( (MYBOOL) (modf(value+lp->epsint, &value) < 2*hold) );
@@ -602,13 +615,19 @@ STATIC void chsign_bounds(REAL *lobound, REAL *upbound)
 /* ---------------------------------------------------------------------------------- */
 STATIC REAL rand_uniform(lprec *lp, REAL range)
 {
-  static MYBOOL randomized = FALSE; /* static ok here for reentrancy/multithreading */
+  static MYBOOL randomized = FALSE;
 
   if(!randomized) {
+    GetRNGstate();
+/* Original code:   srand((unsigned) time( NULL )); */
     randomized = TRUE;
-    srand((unsigned) time( NULL ));
   }
-  range *= (REAL) rand() / (REAL) RAND_MAX;
+/* We need to call Put when we're done. So...every time? */
+
+  range *= (REAL) unif_rand();
+  PutRNGstate();
+
+/* Original code: range *= (REAL) rand() / (REAL) RAND_MAX; */
   return( range );
 }
 
@@ -928,10 +947,8 @@ STATIC int compareLink(LLrec *linkmap1, LLrec *linkmap2)
   test = memcmp(&linkmap1->size, &linkmap2->size, sizeof(int));
   if(test == 0)
     test = memcmp(&linkmap1->count, &linkmap2->count, sizeof(int));
-
-  if(test == 0)
-    test = memcmp(linkmap1->map, linkmap2->map, sizeof(int)*(2*linkmap1->size+1));
-
+    if(test == 0)
+      test = memcmp(linkmap1->map, linkmap2->map, sizeof(int)*(2*linkmap1->size+1));
   return( test );
 }
 

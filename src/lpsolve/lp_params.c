@@ -8,14 +8,14 @@
 #include "lp_report.h"
 #include "ini.h"
 
-typedef int (__WINAPI fn_int_get_function)(lprec *lp);
-typedef long (__WINAPI fn_long_get_function)(lprec *lp);
-typedef MYBOOL (__WINAPI fn_MYBOOL_get_function)(lprec *lp);
-typedef REAL (__WINAPI fn_REAL_get_function)(lprec *lp);
-typedef void (__WINAPI fn_int_set_function)(lprec *lp, int value);
-typedef void (__WINAPI fn_long_set_function)(lprec *lp, long value);
-typedef void (__WINAPI fn_MYBOOL_set_function)(lprec *lp, MYBOOL value);
-typedef void (__WINAPI fn_REAL_set_function)(lprec *lp, REAL value);
+typedef int (__WINAPI int_get_function)(lprec *lp);
+typedef long (__WINAPI long_get_function)(lprec *lp);
+typedef MYBOOL (__WINAPI MYBOOL_get_function)(lprec *lp);
+typedef REAL (__WINAPI REAL_get_function)(lprec *lp);
+typedef void (__WINAPI int_set_function)(lprec *lp, int value);
+typedef void (__WINAPI long_set_function)(lprec *lp, long value);
+typedef void (__WINAPI MYBOOL_set_function)(lprec *lp, MYBOOL value);
+typedef void (__WINAPI REAL_set_function)(lprec *lp, REAL value);
 
 #define intfunction    1
 #define longfunction   2
@@ -25,10 +25,10 @@ typedef void (__WINAPI fn_REAL_set_function)(lprec *lp, REAL value);
 #define setvalues(values, basemask) values, sizeof(values) / sizeof(*values), basemask
 #define setNULLvalues NULL, 0, 0
 #define setvalue(value) value, #value
-#define setintfunction(get_function, set_function) { get_function }, { set_function }, intfunction
-#define setlongfunction(get_function, set_function) { (fn_int_get_function *) get_function }, {(fn_int_set_function *) set_function }, longfunction
-#define setMYBOOLfunction(get_function, set_function) { (fn_int_get_function *) get_function }, { (fn_int_set_function *) set_function }, MYBOOLfunction
-#define setREALfunction(get_function, set_function) {(fn_int_get_function *) get_function }, { (fn_int_set_function *) set_function }, REALfunction
+#define setintfunction(get_function, set_function) get_function, set_function, intfunction
+#define setlongfunction(get_function, set_function) (int_get_function *) get_function, (int_set_function *) set_function, longfunction
+#define setMYBOOLfunction(get_function, set_function) (int_get_function *) get_function, (int_set_function *) set_function, MYBOOLfunction
+#define setREALfunction(get_function, set_function) (int_get_function *) get_function, (int_set_function *) set_function, REALfunction
 
 #define WRITE_COMMENTED 0
 #define WRITE_ACTIVE    1
@@ -41,16 +41,16 @@ struct _values {
 struct _functions {
   char *par;                                    /* name of parameter in ini file */
   union {
-    fn_int_get_function *int_get_function;         /* set via setintfunction */
-    fn_long_get_function *long_get_function;       /* set via setlongfunction */
-    fn_MYBOOL_get_function *MYBOOL_get_function;   /* set via setMYBOOLfunction */
-    fn_REAL_get_function *REAL_get_function;       /* set via setREALfunction */
+    int_get_function *int_get_function;         /* set via setintfunction */
+    long_get_function *long_get_function;       /* set via setlongfunction */
+    MYBOOL_get_function *MYBOOL_get_function;   /* set via setMYBOOLfunction */
+    REAL_get_function *REAL_get_function;       /* set via setREALfunction */
   } get_function;
   union {
-    fn_int_set_function *int_set_function;         /* set via setintfunction */
-    fn_long_set_function *long_set_function;       /* set via setlongfunction */
-    fn_MYBOOL_set_function *MYBOOL_set_function;   /* set via setMYBOOLfunction */
-    fn_REAL_set_function *REAL_set_function;       /* set via setREALfunction */
+    int_set_function *int_set_function;         /* set via setintfunction */
+    long_set_function *long_set_function;       /* set via setlongfunction */
+    MYBOOL_set_function *MYBOOL_set_function;   /* set via setMYBOOLfunction */
+    REAL_set_function *REAL_set_function;       /* set via setREALfunction */
   } set_function;
   int type;                                     /* set via set*function */
   struct _values *values;                       /* set via setvalues to a structure of _values */
@@ -295,7 +295,6 @@ static struct _functions functions[] =
   { "EPSPERTURB", setREALfunction(get_epsperturb, set_epsperturb), setNULLvalues, WRITE_ACTIVE },
   { "EPSPIVOT", setREALfunction(get_epspivot, set_epspivot), setNULLvalues, WRITE_ACTIVE },
   { "INFINITE", setREALfunction(get_infinite, set_infinite), setNULLvalues, WRITE_ACTIVE },
-  { "BREAK_NUMERIC_ACCURACY", setREALfunction(get_break_numeric_accuracy, set_break_numeric_accuracy), setNULLvalues, WRITE_ACTIVE },
 
   /* read-only options */
   { "DEBUG", setMYBOOLfunction(is_debug, set_debug), setNULLvalues, WRITE_COMMENTED },
@@ -303,7 +302,7 @@ static struct _functions functions[] =
   { "PRINT_SOL", setintfunction(get_print_sol, set_print_sol), setvalues(print_sol, ~0), WRITE_COMMENTED },
   { "TIMEOUT", setlongfunction(get_timeout, set_timeout), setNULLvalues, WRITE_COMMENTED },
   { "TRACE", setMYBOOLfunction(is_trace, set_trace), setNULLvalues, WRITE_COMMENTED },
-  { "VERBOSE", setintfunction(get_verbose, set_verbose), setvalues(verbose, ~0), WRITE_COMMENTED },
+  { "VERBOSE", setintfunction(get_verbose, set_verbose), setvalues(verbose, ~0), WRITE_COMMENTED }
 };
 
 static void write_params1(lprec *lp, FILE *fp, char *header, int newline)
@@ -311,7 +310,7 @@ static void write_params1(lprec *lp, FILE *fp, char *header, int newline)
   int ret = 0, ret2, i, j, k, value, value2, elements, majorversion, minorversion, release, build;
   unsigned int basemask;
   REAL a = 0;
-  char buf[4096], par[30];
+  char buf[4096], par[20];
 
   ini_writeheader(fp, header, newline);
   lp_solve_version(&majorversion, &minorversion, &release, &build);
@@ -358,9 +357,9 @@ static void write_params1(lprec *lp, FILE *fp, char *header, int newline)
       basemask = functions[i].basemask;
       for(j = 0; j < elements; j++) {
         value = functions[i].values[j].value;
-        ret2 = ret;
-        if(((unsigned int) value) < basemask)
-          ret2 &= basemask;
+	ret2 = ret;
+	if(((unsigned int) value) < basemask)
+	  ret2 &= basemask;
         if(value == 0) {
           if(ret2 == 0) {
             if(*buf)
@@ -424,7 +423,7 @@ MYBOOL __WINAPI write_params(lprec *lp, char *filename, char *options)
 
   readoptions(options, &header);
 
-  k = (int) strlen(filename);
+  k = strlen(filename);
   filename0 = (char *) malloc(k + 1 + 1);
   strcpy(filename0, filename);
   ptr1 = strrchr(filename0, '.');

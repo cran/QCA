@@ -36,6 +36,7 @@
     v1.2.0 24 March 2005        Completed multiple pricing logic.
    ------------------------------------------------------------------------- */
 
+INLINE REAL normalizeEdge(lprec *lp, int item, REAL edge, MYBOOL isdual);
 
 /* Comparison operators for entering and leaving variables for both the primal and
    dual simplexes.  The functions compare a candidate variable with an incumbent. */
@@ -44,16 +45,16 @@ int CMP_CALLMODEL compareImprovementVar(const pricerec *current, const pricerec 
   register int   result = COMP_PREFERNONE;
   register lprec *lp = current->lp;
   register REAL  testvalue, margin = PREC_IMPROVEGAP;
-  int currentvarno = current->varno,
-      candidatevarno = candidate->varno;
+  int currentcolno, currentvarno = current->varno,
+      candidatecolno, candidatevarno = candidate->varno;
   MYBOOL isdual = candidate->isdual;
 
   if(isdual) {
     candidatevarno = lp->var_basic[candidatevarno];
     currentvarno   = lp->var_basic[currentvarno];
   }
-  //candidatecolno = candidatevarno - lp->rows;
-  //currentcolno   = currentvarno - lp->rows;
+  candidatecolno = candidatevarno - lp->rows;
+  currentcolno   = currentvarno - lp->rows;
 
   /* Do pivot-based selection unless Bland's (first index) rule is active */
   if(lp->_piv_rule_ != PRICER_FIRSTINDEX) {
@@ -150,8 +151,6 @@ Finish:
 
 }
 
-
-
 int CMP_CALLMODEL compareSubstitutionVar(const pricerec *current, const pricerec *candidate)
 {
   register int    result = COMP_PREFERNONE;
@@ -159,15 +158,15 @@ int CMP_CALLMODEL compareSubstitutionVar(const pricerec *current, const pricerec
   register REAL   testvalue = candidate->theta,
                   margin = current->theta;
   MYBOOL isdual = candidate->isdual, candbetter;
-  int    currentvarno = current->varno,
-         candidatevarno = candidate->varno;
+  int    currentcolno, currentvarno = current->varno,
+         candidatecolno, candidatevarno = candidate->varno;
 
   if(!isdual) {
     candidatevarno = lp->var_basic[candidatevarno];
     currentvarno   = lp->var_basic[currentvarno];
   }
-  //candidatecolno = candidatevarno - lp->rows;
-  //currentcolno   = currentvarno - lp->rows;
+  candidatecolno = candidatevarno - lp->rows;
+  currentcolno   = currentvarno - lp->rows;
 
   /* Compute the ranking test metric. */
   if(isdual) {
@@ -409,23 +408,6 @@ int CMP_CALLMODEL compareSubstitutionQS(const UNIONTYPE QSORTrec *current, const
   return( compareBoundFlipVar((pricerec *) current->pvoidint2.ptr, (pricerec *) candidate->pvoidint2.ptr) );
 /*  return( compareSubstitutionVar((pricerec *) current->self, (pricerec *) candidate->self) ); */
 }
-
-
-#if 1
-INLINE REAL normalizeEdge(lprec *lp, int item, REAL edge, MYBOOL isdual)
-{
-#if 1
-  /* Don't use the pricer "close to home", since this can possibly
-    worsen the final feasibility picture (mainly a Devex issue?) */
-  if(fabs(edge) > lp->epssolution)
-#endif
-    edge /= getPricer(lp, item, isdual);
-  if((lp->piv_strategy & PRICE_RANDOMIZE) != 0)
-    edge *= (1.0-PRICER_RANDFACT) + PRICER_RANDFACT*rand_uniform(lp, 1.0);
-  return( edge );
-
-}
-#endif 
 
 /* Function to add a valid pivot candidate into the specified list */
 STATIC int addCandidateVar(pricerec *candidate, multirec *multi, findCompare_func findCompare, MYBOOL allowSortedExpand)
@@ -980,9 +962,11 @@ STATIC int rowprim(lprec *lp, int colnr, LREAL *theta, REAL *pcol, int *nzpcol, 
 {
   int      i, ii, iy, iz, Hpass, k, *nzlist;
   LREAL    f, savef;
-  REAL     Heps, Htheta, Hlimit, epsvalue, epspivot, p = 0.0;
+  REAL     Heps, Htheta, Hlimit, epsvalue, epspivot, p;
   pricerec current, candidate;
   MYBOOL   isupper = !lp->is_lower[colnr], HarrisTwoPass = FALSE;
+
+  p = 0.0;
 
   /* Update local value of pivot setting */
   lp->_piv_rule_ = get_piv_rule(lp);
@@ -1377,8 +1361,6 @@ STATIC int coldual(lprec *lp, int row_nr, REAL *prow, int *nzprow,
            dolongsteps = (MYBOOL) (lp->longsteps != NULL);
 
   /* Initialize */
-  if(xviol != NULL)
-    *xviol = lp->infinite;
   if(dolongsteps && !dualphase1)
     dolongsteps = AUTOMATIC;  /* Sets Phase1 = TRUE, Phase2 = AUTOMATIC */
   current.theta    = lp->infinite;
@@ -1459,9 +1441,7 @@ STATIC int coldual(lprec *lp, int row_nr, REAL *prow, int *nzprow,
   for(ix = 1; ix <= iy; ix++) {
     i = nzprow[ix];
     w = prow[i] * g;            /* Change sign if upper bound of the leaving variable is violated   */
-    /* Change sign if the non-basic variable is currently upper-bounded */
-    /* w *= 2*lp->is_lower[i] - 1; */ /* fails on AIX!!! */
-    w = my_chsign(!lp->is_lower[i], w);
+    w *= 2*lp->is_lower[i] - 1; /* Change sign if the non-basic variable is currently upper-bounded */
 
     /* Check if the candidate is worth using for anything */
     if(w < -epsvalue) {
@@ -1556,19 +1536,33 @@ STATIC int coldual(lprec *lp, int row_nr, REAL *prow, int *nzprow,
   return( i );
 } /* coldual */
 
-  
+
+INLINE REAL normalizeEdge(lprec *lp, int item, REAL edge, MYBOOL isdual)
+{
+#if 1
+  /* Don't use the pricer "close to home", since this can possibly
+    worsen the final feasibility picture (mainly a Devex issue?) */
+  if(fabs(edge) > lp->epssolution)
+#endif
+    edge /= getPricer(lp, item, isdual);
+  if((lp->piv_strategy & PRICE_RANDOMIZE) != 0)
+    edge *= (1.0-PRICER_RANDFACT) + PRICER_RANDFACT*rand_uniform(lp, 1.0);
+  return( edge );
+
+}
+
 /* Support routines for block detection and partial pricing */
 STATIC int partial_findBlocks(lprec *lp, MYBOOL autodefine, MYBOOL isrow)
 {
   int    i, jj, n, nb, ne, items;
   REAL   hold, biggest, *sum = NULL;
   MATrec *mat = lp->matA;
-  //partialrec *blockdata;
+  partialrec *blockdata;
 
   if(!mat_validate(mat))
     return( 1 );
 
-  //blockdata = IF(isrow, lp->rowblocks, lp->colblocks);
+  blockdata = IF(isrow, lp->rowblocks, lp->colblocks);
   items     = IF(isrow, lp->rows, lp->columns);
   allocREAL(lp, &sum, items+1, FALSE);
 
@@ -1947,7 +1941,7 @@ STATIC MYBOOL multi_recompute(multirec *multi, int index, MYBOOL isphase2, MYBOO
   n = index;
   while(n < multi->used) {
     i = ++multi->freeList[0];
-    multi->freeList[i] = (int) (((pricerec *) multi->sortedList[n].pvoidreal.ptr) - multi->items);
+    multi->freeList[i] = ((pricerec *) multi->sortedList[n].pvoidreal.ptr) - multi->items;
     n++;
   }
   multi->used  = index;
@@ -1988,10 +1982,12 @@ STATIC MYBOOL multi_removevar(multirec *multi, int varnr)
 STATIC int multi_enteringvar(multirec *multi, pricerec *current, int priority)
 {
   lprec    *lp = multi->lp;
-  int      i = 0, bestindex, colnr;
+  int      i, bestindex, colnr;
   REAL     bound, score, bestscore = -lp->infinite;
   REAL     b1, b2, b3;
   pricerec *candidate, *bestcand;
+
+  i = 0;
 
   /* Check that we have a candidate */
   multi->active = bestindex = 0;

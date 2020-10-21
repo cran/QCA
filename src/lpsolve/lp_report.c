@@ -25,7 +25,11 @@
 #include "commonlib.h"
 #include "lp_report.h"
 
-#include "mmio.h"
+#include <R.h>
+#include <R_ext/Print.h>
+
+
+// #include "mmio.h"
 
 #ifdef FORTIFY
 # include "lp_fortify.h"
@@ -46,36 +50,34 @@ char * __VACALL explain(lprec *lp, char *format, ...)
   va_list ap;
 
   va_start(ap, format);
-  vsnprintf(buff, DEF_STRBUFSIZE, format, ap);
+    vsnprintf(buff, DEF_STRBUFSIZE, format, ap);
+    allocCHAR(lp, &(lp->ex_status), (int) strlen(buff), AUTOMATIC);
+    strcpy(lp->ex_status, buff);
   va_end(ap);
-  allocCHAR(lp, &(lp->ex_status), (int) strlen(buff), AUTOMATIC);
-  strcpy(lp->ex_status, buff);
   return( lp->ex_status );
 }
 void __VACALL report(lprec *lp, int level, char *format, ...)
 {
-  char buff[DEF_STRBUFSIZE+1];
-  va_list ap;
+  static char buff[DEF_STRBUFSIZE+1];
+  static va_list ap;
 
   if(lp == NULL) {
     va_start(ap, format);
-    vfprintf(stderr, format, ap);
+      REvprintf( format, ap);
     va_end(ap);
   }
   else if(level <= lp->verbose) {
+    va_start(ap, format);
     if(lp->writelog != NULL) {
-      va_start(ap, format);
       vsnprintf(buff, DEF_STRBUFSIZE, format, ap);
-      va_end(ap);
       lp->writelog(lp, lp->loghandle, buff);
     }
     if(lp->outstream != NULL) {
-      va_start(ap, format);
       vfprintf(lp->outstream, format, ap);
-      va_end(ap);
-      if(lp->outstream != stdout)
+/*    if(lp->outstream != stdout) */
         fflush(lp->outstream);
     }
+    va_end(ap);
   }
 #ifdef xParanoia
   if(level == CRITICAL)
@@ -102,21 +104,19 @@ STATIC void debug_print(lprec *lp, char *format, ...)
 
   if(lp->bb_trace) {
     print_indent(lp);
+    va_start(ap, format);
     if (lp == NULL)
     {
-      va_start(ap, format);
-      vfprintf(stderr, format, ap);
-      va_end(ap);
-      fputc('\n', stderr);
+      REvprintf( format, ap);
+    /*   fputc('\n', stderr); */
     }
     else if(lp->debuginfo != NULL)
     {
       char buff[DEF_STRBUFSIZE+1];
-      va_start(ap, format);
       vsnprintf(buff, DEF_STRBUFSIZE, format, ap);
-      va_end(ap);
       lp->debuginfo(lp, lp->loghandle, buff);
     }
+    va_end(ap);
   }
 } /* debug_print */
 
@@ -295,7 +295,8 @@ void blockWriteBMAT(FILE *output, const char *label, lprec* lp, int first, int l
    principally for run difference and debugging purposes */
 MYBOOL REPORT_debugdump(lprec *lp, char *filename, MYBOOL livedata)
 {
-  FILE   *output = stdout;
+  /* FILE   *output = stdout; */
+  FILE   *output;
   MYBOOL ok;
 
   ok = (MYBOOL) ((filename == NULL) || ((output = fopen(filename,"w")) != NULL));
@@ -356,10 +357,8 @@ void REPORT_objective(lprec *lp)
 {
   if(lp->outstream == NULL)
     return;
-  if(fabs(lp->best_solution[0]) < 1e-5)
-    fprintf(lp->outstream, "\nValue of objective function: %g\n", (double)lp->best_solution[0]);
-  else
-    fprintf(lp->outstream, "\nValue of objective function: %.8f\n", (double)lp->best_solution[0]);
+  fprintf(lp->outstream, "\nValue of objective function: %g\n",
+    (double)lp->best_solution[0]);
   fflush(lp->outstream);
 }
 
@@ -376,21 +375,19 @@ void REPORT_solution(lprec *lp, int columns)
   fprintf(lp->outstream, "\nActual values of the variables:\n");
   if(columns <= 0)
     columns = 2;
-	
   n = 0;
-  for(i = 1; i <= psundo->orig_columns; i++) 
-  {
-        j = psundo->orig_rows + i;
-        value = get_var_primalresult(lp, j);
-        if(NZonly && (fabs(value) < lp->epsprimal))
-            continue;
-        n = (n+1) % columns;
-        fprintf(lp->outstream, "%-20s %12g", get_origcol_name(lp, i), (double) value);
-        if(n == 0)
-            fprintf(lp->outstream, "\n");
-        else
-            fprintf(lp->outstream, "       ");
-    }
+  for(i = 1; i <= psundo->orig_columns; i++) {
+    j = psundo->orig_rows + i;
+    value = get_var_primalresult(lp, j);
+    if(NZonly && (fabs(value) < lp->epsprimal))
+      continue;
+    n = (n+1) % columns;
+    fprintf(lp->outstream, "%-20s %12g", get_origcol_name(lp, i), (double) value);
+    if(n == 0)
+      fprintf(lp->outstream, "\n");
+    else
+      fprintf(lp->outstream, "       ");
+  }
 
   fflush(lp->outstream);
 } /* REPORT_solution */
@@ -516,6 +513,11 @@ void REPORT_lp(lprec *lp)
 
   if(lp->outstream == NULL)
     return;
+
+  if(lp->matA->is_roworder) {
+    report(lp, IMPORTANT, "REPORT_lp: Cannot print lp while in row entry mode.\n");
+    return;
+  }
 
   fprintf(lp->outstream, "Model name: %s\n", get_lp_name(lp));
   fprintf(lp->outstream, "          ");
@@ -699,94 +701,94 @@ void REPORT_modelinfo(lprec *lp, MYBOOL doName, char *datainfo)
 /* Save a matrix column subset to a MatrixMarket formatted file,
    say to export the basis matrix for further numerical analysis.
    If colndx is NULL, then the full constraint matrix is assumed. */
-MYBOOL REPORT_mat_mmsave(lprec *lp, char *filename, int *colndx, MYBOOL includeOF, char *infotext)
-{
-  int         n, m, nz, i, j, k, kk;
-  MATrec      *mat = lp->matA;
-  MM_typecode matcode;
-  FILE        *output = stdout;
-  MYBOOL      ok;
-  REAL        *acol = NULL;
-  int         *nzlist = NULL;
+// MYBOOL REPORT_mat_mmsave(lprec *lp, char *filename, int *colndx, MYBOOL includeOF, char *infotext)
+// {
+//   int         n, m, nz, i, j, k, kk;
+//   MATrec      *mat = lp->matA;
+//   MM_typecode matcode;
+//   FILE        *output; /* = stdout; */
+//   MYBOOL      ok;
+//   REAL        *acol = NULL;
+//   int         *nzlist = NULL;
 
-  /* Open file */
-  ok = (MYBOOL) ((filename == NULL) || ((output = fopen(filename,"w")) != NULL));
-  if(!ok)
-    return(ok);
-  if((filename == NULL) && (lp->outstream != NULL))
-    output = lp->outstream;
+//   /* Open file */
+//   ok = (MYBOOL) ((filename == NULL) || ((output = fopen(filename,"w")) != NULL));
+//   if(!ok)
+//     return(ok);
+//   if((filename == NULL) && (lp->outstream != NULL))
+//     output = lp->outstream;
 
-  /* Compute column and non-zero counts */
-  if(colndx == lp->var_basic) {
-    if(!lp->basis_valid)
-      return( FALSE );
-    m = lp->rows;
-  }
-  else if(colndx != NULL)
-    m = colndx[0];
-  else
-    m = lp->columns;
-  n = lp->rows;
-  nz = 0;
+//   /* Compute column and non-zero counts */
+//   if(colndx == lp->var_basic) {
+//     if(!lp->basis_valid)
+//       return( FALSE );
+//     m = lp->rows;
+//   }
+//   else if(colndx != NULL)
+//     m = colndx[0];
+//   else
+//     m = lp->columns;
+//   n = lp->rows;
+//   nz = 0;
 
-  for(j = 1; j <= m; j++) {
-    k = (colndx == NULL ? n + j : colndx[j]);
-    if(k > n) {
-      k -= lp->rows;
-      nz += mat_collength(mat, k);
-      if(includeOF && is_OF_nz(lp, k))
-        nz++;
-    }
-    else
-      nz++;
-  }
-  kk = 0;
-  if(includeOF) {
-    n++;   /* Row count */
-    kk++;  /* Row index offset */
-  }
+//   for(j = 1; j <= m; j++) {
+//     k = (colndx == NULL ? n + j : colndx[j]);
+//     if(k > n) {
+//       k -= lp->rows;
+//       nz += mat_collength(mat, k);
+//       if(includeOF && is_OF_nz(lp, k))
+//         nz++;
+//     }
+//     else
+//       nz++;
+//   }
+//   kk = 0;
+//   if(includeOF) {
+//     n++;   /* Row count */
+//     kk++;  /* Row index offset */
+//   }
 
-  /* Initialize */
-  mm_initialize_typecode(&matcode);
-  mm_set_matrix(&matcode);
-  mm_set_coordinate(&matcode);
-  mm_set_real(&matcode);
+//   /* Initialize */
+//   mm_initialize_typecode(&matcode);
+//   mm_set_matrix(&matcode);
+//   mm_set_coordinate(&matcode);
+//   mm_set_real(&matcode);
 
-  mm_write_banner(output, matcode);
-  mm_write_mtx_crd_size(output, n+kk, m, nz+(colndx == lp->var_basic ? 1 : 0));
+//   mm_write_banner(output, matcode);
+//   mm_write_mtx_crd_size(output, n+kk, m, nz+(colndx == lp->var_basic ? 1 : 0));
 
-  /* Allocate working arrays for sparse column storage */
-  allocREAL(lp, &acol, n+2, FALSE);
-  allocINT(lp, &nzlist, n+2, FALSE);
+//   /* Allocate working arrays for sparse column storage */
+//   allocREAL(lp, &acol, n+2, FALSE);
+//   allocINT(lp, &nzlist, n+2, FALSE);
 
-  /* Write the matrix non-zero values column-by-column.
-     NOTE: matrixMarket files use 1-based indeces,
-     i.e. first row of a vector has index 1, not 0. */
-  if(infotext != NULL) {
-    fprintf(output, "%%\n");
-    fprintf(output, "%% %s\n", infotext);
-    fprintf(output, "%%\n");
-  }
-  if(includeOF && (colndx == lp->var_basic))
-    fprintf(output, "%d %d %g\n", 1, 1, 1.0);
-  for(j = 1; j <= m; j++) {
-    k = (colndx == NULL ? lp->rows + j : colndx[j]);
-    if(k == 0)
-      continue;
-    nz = obtain_column(lp, k, acol, nzlist, NULL);
-    for(i = 1; i <= nz; i++) {
-      if(!includeOF && (nzlist[i] == 0))
-        continue;
-      fprintf(output, "%d %d %g\n", nzlist[i]+kk, j+kk, acol[i]);
-    }
-  }
-  fprintf(output, "%% End of MatrixMarket file\n");
+//   /* Write the matrix non-zero values column-by-column.
+//      NOTE: matrixMarket files use 1-based indeces,
+//      i.e. first row of a vector has index 1, not 0. */
+//   if(infotext != NULL) {
+//     fprintf(output, "%%\n");
+//     fprintf(output, "%% %s\n", infotext);
+//     fprintf(output, "%%\n");
+//   }
+//   if(includeOF && (colndx == lp->var_basic))
+//     fprintf(output, "%d %d %g\n", 1, 1, 1.0);
+//   for(j = 1; j <= m; j++) {
+//     k = (colndx == NULL ? lp->rows + j : colndx[j]);
+//     if(k == 0)
+//       continue;
+//     nz = obtain_column(lp, k, acol, nzlist, NULL);
+//     for(i = 1; i <= nz; i++) {
+//       if(!includeOF && (nzlist[i] == 0))
+//         continue;
+//       fprintf(output, "%d %d %g\n", nzlist[i]+kk, j+kk, acol[i]);
+//     }
+//   }
+//   fprintf(output, "%% End of MatrixMarket file\n");
 
-  /* Finish */
-  FREE(acol);
-  FREE(nzlist);
-  fclose(output);
+//   /* Finish */
+//   FREE(acol);
+//   FREE(nzlist);
+//   fclose(output);
 
-  return(ok);
-}
+//   return(ok);
+// }
 

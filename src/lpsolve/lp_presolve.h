@@ -87,8 +87,10 @@ STATIC MYBOOL presolve_freeUndo(lprec *lp);
 
 STATIC MYBOOL presolve_updatesums(presolverec *psdata);
 
-//INLINE int presolve_nextrow(presolverec *psdata, int colnr, int *previtem);
-//INLINE int presolve_nextcol(presolverec *psdata, int rownr, int *previtem);
+/*
+INLINE int presolve_nextrow(presolverec *psdata, int colnr, int *previtem);
+INLINE int presolve_nextcol(presolverec *psdata, int rownr, int *previtem);
+*/
 
 STATIC presolverec *presolve_init(lprec *lp);
 STATIC void presolve_free(presolverec **psdata);
@@ -97,6 +99,26 @@ STATIC void presolve_rowremove(presolverec *psdata, int rownr, MYBOOL allowcolde
 STATIC int presolve_colremove(presolverec *psdata, int colnr, MYBOOL allowrowdelete);
 
 STATIC MYBOOL presolve_colfixdual(presolverec *psdata, int colnr, REAL *fixValue, int *status);
+
+#if 0
+INLINE int presolve_rowlength(presolverec *psdata, int rownr)
+{
+  int *items = psdata->rows->next[rownr];
+
+  if(items == NULL)
+    return( 0 );
+  else
+    return( items[0] );
+}
+INLINE int presolve_collength(presolverec *psdata, int colnr)
+{
+  int *items = psdata->cols->next[colnr];
+  if(items == NULL)
+    return( 0 );
+  else
+    return( items[0] );
+}
+#endif
 
 STATIC int presolve(lprec *lp);
 STATIC MYBOOL postsolve(lprec *lp, int status);

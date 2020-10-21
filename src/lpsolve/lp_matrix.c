@@ -94,25 +94,12 @@ STATIC MYBOOL mat_memopt(MATrec *mat, int rowextra, int colextra, int nzextra)
   int matalloc, colalloc, rowalloc;
 
   if((mat == NULL) ||
-#if 0
      (++rowextra < 1) || (++colextra < 1) || (++nzextra < 1))
-#else
-     (rowextra < 0) || (colextra < 0) || (nzextra < 0))
-#endif
     return( FALSE );
 
-  mat->rows_alloc    = MIN(mat->rows_alloc,    mat->rows + rowextra);
-  mat->columns_alloc = MIN(mat->columns_alloc, mat->columns + colextra);
-  mat->mat_alloc     = MIN(mat->mat_alloc,     mat->col_end[mat->columns] + nzextra);
-#if 0
-  rowalloc = mat->rows_alloc;
-  colalloc = mat->columns_alloc;
-  matalloc = mat->mat_alloc;
-#else
-  rowalloc = mat->rows_alloc + 1;
-  colalloc = mat->columns_alloc + 1;
-  matalloc = mat->mat_alloc + 1;
-#endif
+  rowalloc = mat->rows_alloc    = MIN(mat->rows_alloc,    mat->rows + rowextra);
+  colalloc = mat->columns_alloc = MIN(mat->columns_alloc, mat->columns + colextra);
+  matalloc = mat->mat_alloc     = MIN(mat->mat_alloc,     mat->col_end[mat->columns] + nzextra);
 
 #if MatrixColAccess==CAM_Record
   mat->col_mat = (MATitem *) realloc(mat->col_mat, matalloc * sizeof(*(mat->col_mat)));
@@ -194,14 +181,14 @@ STATIC MYBOOL inc_mat_space(MATrec *mat, int mindelta)
 
 STATIC MYBOOL inc_matrow_space(MATrec *mat, int deltarows)
 {
-  int    rowsum;
+  int    rowsum; /* , oldrowsalloc; */
   MYBOOL status = TRUE;
 
   /* Adjust lp row structures */
   if(mat->rows+deltarows >= mat->rows_alloc) {
 
     /* Update memory allocation and sizes */
-    //oldrowsalloc = mat->rows_alloc;
+    /* oldrowsalloc = mat->rows_alloc; */
     deltarows = DELTA_SIZE(deltarows, mat->rows);
     SETMAX(deltarows, DELTAROWALLOC);
     mat->rows_alloc += deltarows;
@@ -816,7 +803,7 @@ STATIC MYBOOL mat_setcol(MATrec *mat, int colno, int count, REAL *column, int *r
 
   /* Capture OF definition in column mode */
   if(isA && !mat->is_roworder) {
-    if(isNZ && (count > 0) && (rowno[0] == 0)) {
+    if(isNZ && (rowno[0] == 0)) {
       value = column[0];
 #ifdef DoMatrixRounding
       value = roundToPrecision(value, mat->epsvalue);
@@ -892,18 +879,10 @@ STATIC MYBOOL mat_setcol(MATrec *mat, int colno, int count, REAL *column, int *r
 #ifdef DoMatrixRounding
       value = roundToPrecision(value, mat->epsvalue);
 #endif
-      if(mat->is_roworder) {    /* Fix following Ingmar Stein bug report 12.10.2006 */
-        if(isA && doscale)
-          value = scaled_mat(lp, value, colno, rowno[i]);
-        if(isA)
-          value = my_chsign(is_chsign(lp, colno), value);
-      }
-      else {
-        if(isA && doscale)
-          value = scaled_mat(lp, value, rowno[i], colno);
-        if(isA)
-          value = my_chsign(is_chsign(lp, rowno[i]), value);
-      }
+      if(isA && doscale)
+        value = scaled_mat(lp, value, rowno[i], colno);
+      if(isA)
+        value = my_chsign(is_chsign(lp, rowno[i]), value);
       SET_MAT_ijA(jj, rowno[i], colno, value);
     }
   }
@@ -915,18 +894,10 @@ STATIC MYBOOL mat_setcol(MATrec *mat, int colno, int count, REAL *column, int *r
 #ifdef DoMatrixRounding
       value = roundToPrecision(value, mat->epsvalue);
 #endif
-      if(mat->is_roworder) {    /* Fix following Ingmar Stein bug report 12.10.2006 */
-        if(isA && doscale)
-          value = scaled_mat(lp, value, colno, i);
-        if(isA)
-          value = my_chsign(is_chsign(lp, colno), value);
-      }
-      else {
-        if(isA && doscale)
-          value = scaled_mat(lp, value, i, colno);
-        if(isA)
-          value = my_chsign(is_chsign(lp, i), value);
-      }
+      if(isA && doscale)
+        value = scaled_mat(lp, value, i, colno);
+      if(isA)
+        value = my_chsign(is_chsign(lp, i), value);
       SET_MAT_ijA(jj, i, colno, value);
       jj++;
     }
@@ -988,14 +959,12 @@ STATIC int mat_nz_unused(MATrec *mat)
   return( mat->mat_alloc - mat->col_end[mat->columns] );
 }
 
-#if 0
 STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *colno, MYBOOL doscale, MYBOOL checkrowmode)
 {
-  lprec   *lp = mat->lp;
-  int     delta;
-  int k, kk, i, ii, j, jj = 0, jj_j, elmnr, orignr, newnr, firstcol, rownr, colnr, matz = 0;
-  MYBOOL  *addto = NULL, isA, isNZ;
-  REAL    value = 0.0, saved = 0;
+  int    kk, i, ii, j, jj = 0, jj_j, elmnr, orignr, newnr, firstcol, rownr, colnr;
+  MYBOOL *addto = NULL, isA, isNZ;
+  REAL   value, saved = 0;
+  lprec  *lp = mat->lp;
 
   /* Check if we are in row order mode and should add as column instead;
      the matrix will be transposed at a later stage */
@@ -1013,7 +982,7 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
     return( FALSE );
   if(isNZ && (count > 0)) {
     if(count > 1)
-      sortREALByINT(row, (int *) colno, count, 0, TRUE);
+      sortREALByINT(row, colno, count, 0, TRUE);
     if((colno[0] < 1) || (colno[count-1] > mat->columns))
       return( FALSE );
   }
@@ -1021,14 +990,14 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   /* Capture OF definition in row mode */
   if(isA && mat->is_roworder) {
     lp->orig_obj[rowno] = 0;
-    if(isNZ && (count > 0) && (colno[0] == 0)) {
+    if(isNZ && (colno[0] == 0)) {
       value = row[0];
-      if(doscale)
-        value = scaled_mat(lp, value, 0, rowno);
-      value = my_chsign(is_maxim(lp), value);
 #ifdef DoMatrixRounding
       value = roundToPrecision(value, mat->epsvalue);
 #endif
+      if(doscale)
+        value = scaled_mat(lp, value, 0, rowno);
+      value = my_chsign(is_maxim(lp), value);
       lp->orig_obj[rowno] = value;
       count--;
       row++;
@@ -1036,115 +1005,43 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
     }
     else if(!isNZ && (row[0] != 0)) {
       value = saved = row[0];
+#ifdef DoMatrixRounding
+      value = roundToPrecision(value, mat->epsvalue);
+#endif
       if(doscale)
         value = scaled_mat(lp, value, 0, rowno);
       value = my_chsign(is_maxim(lp), value);
-#ifdef DoMatrixRounding
-      value = roundToPrecision(value, mat->epsvalue);
-#endif
       lp->orig_obj[rowno] = value;
       row[0] = 0;
     }
-    else {
+    else
       lp->orig_obj[rowno] = 0;
-      value = 0;
-    }
   }
 
   /* Optionally tally and map the new non-zero values */
-  i  = mat->row_end[rowno-1];
-  ii = mat->row_end[rowno];     /* ****** KE 20070106 - was "-1" */
   firstcol = mat->columns + 1;
   if(isNZ) {
-    /* See if we can do fast in-place replacements of leading items */
-    colnr = 1; /* initialise in case of an empty row */
-    while((i < ii) /* && (count > 0) */ && ((colnr = ROW_MAT_COLNR(i)) == *colno) && (count > 0)) {
-      value = *row;             /* ****** KE 20080111 - Added line */
-      if(mat->is_roworder) {
-        if(isA && doscale)
-          value = scaled_mat(lp, value, colnr, rowno);
-        if(isA)
-          value = my_chsign(is_chsign(lp, colnr), value);
-      }
-      else {
-        if(isA && doscale)
-          value = scaled_mat(lp, value, rowno, colnr);
-        if(isA)
-          value = my_chsign(is_chsign(lp, rowno), value);
-      }
-#ifdef DoMatrixRounding
-      value = roundToPrecision(value, mat->epsvalue);
-      if(value == 0)
-        matz++;
-#endif
-      ROW_MAT_VALUE(i) = value;
-      i++;
-      count--;
-      row++;
-      colno++;
-    }
-  if(i >= ii)
-      colnr = 0;
-    /* Proceed with remaining entries */
     newnr = count;
-    if(newnr > 0)
+    if(newnr)
       firstcol = colno[0];
   }
   else {
     newnr = 0;
-    kk = mat->columns;
-    if(i < ii)
-      colnr = ROW_MAT_COLNR(i);
-    else
-      colnr = 0;
-    for(k = 1; k <= kk; k++) {
-      value = row[k];           /* ****** KE 20080111 - Added line */
-      if(fabs(value) > mat->epsvalue) {
-        /* See if we can do fast in-place replacements of leading items */
-        if((addto == NULL) && (i < ii) && (colnr == k)) {
-          if(mat->is_roworder) {
-            if(isA && doscale)
-              value = scaled_mat(lp, value, colnr, rowno);
-            if(isA)
-              value = my_chsign(is_chsign(lp, colnr), value);
-          }
-          else {
-            if(isA && doscale)
-              value = scaled_mat(lp, value, rowno, colnr);
-            if(isA)
-              value = my_chsign(is_chsign(lp, rowno), value);
-          }
-#ifdef DoMatrixRounding
-          value = roundToPrecision(value, mat->epsvalue);
-          if(value == 0)
-            matz++;
-#endif
-          ROW_MAT_VALUE(i) = value;
-          i++;
-          if(i < ii)
-            colnr = ROW_MAT_COLNR(i);
-          else
-            colnr = 0;
-        }
-        /* Otherwise update addto-list */
-        else {
-          if(addto == NULL) {
-            if(!allocMYBOOL(lp, &addto, mat->columns + 1, TRUE))
-              return( FALSE );
-            firstcol = k;
-          }
-          addto[k] = TRUE;
-          newnr++;
-        }
+    if(!allocMYBOOL(lp, &addto, mat->columns + 1, TRUE)) {
+      return( FALSE );
+    }
+    for(i = mat->columns; i >= 1; i--) {
+      if(fabs(row[i]) > mat->epsvalue) {
+        addto[i] = TRUE;
+        firstcol = i;
+        newnr++;
       }
     }
   }
-  if(newnr == 0)
-   if (FALSE)
-    return( TRUE );
 
   /* Make sure we have enough matrix space */
-  if((newnr > 0) && (mat_nz_unused(mat) <= newnr) && !inc_mat_space(mat, newnr)) {
+  /* if(!inc_mat_space(mat, newnr)) { */
+  if((mat_nz_unused(mat) <= newnr) && !inc_mat_space(mat, newnr)) {
     newnr = 0;
     goto Done;
   }
@@ -1152,32 +1049,27 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   /* Pack initial entries if existing row data has a lower column
      start index than the first index of the new vector */
   orignr = mat_nonzeros(mat);
-  /* delta = newnr - mat_rowlength(mat, rowno);*/
+  /* k = newnr - mat_rowlength(mat, rowno); */
   kk = 0;
   if(rowno == 0)
     ii = 0;
   else
     ii = mat->row_end[rowno-1];
-
   if((orignr == 0) || (ii >= orignr))
-    j = firstcol;
-  else if(isNZ||TRUE)
-    j = colnr;
+    j = firstcol /* 1 */;
   else
-    j = ROW_MAT_COLNR(ii); /* first column with a value on that row */
-
-  jj = mat->col_end[firstcol-1];  /* Set the index of the insertion point for the first new value */
+    j = ROW_MAT_COLNR(ii);
+  jj = mat->col_end[firstcol - 1];
   if(jj >= orignr)
     colnr = firstcol;
   else
-    colnr = COL_MAT_COLNR(jj); /* first column with a value starting from firstcol */
-
-  if((j > 0) && (j < colnr)) {
-    jj = elmnr = mat->col_end[j-1];
+    colnr = COL_MAT_COLNR(jj);
+  if(j < colnr) {
+    elmnr = mat->col_end[j-1];
+    jj = elmnr;
     for( ; j < colnr; j++) {
       /* Shift entries in current column */
-      k = mat->col_end[j];
-      for( ; jj < k; jj++) {
+      for( ; jj < mat->col_end[j]; jj++) {
         if(COL_MAT_ROWNR(jj) != rowno) {
           COL_MAT_COPY(elmnr, jj);
           elmnr++;
@@ -1186,18 +1078,14 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
       /* Update next column start index */
       mat->col_end[j] = elmnr;
     }
-    delta = elmnr - jj;  /* The shrinkage count */
+    jj_j = jj - elmnr;  /* The shrinkage count */
   }
-  else {
-    delta = 0;
-    /* Adjust for case where we simply append values - jj is initially the first column item */
-    if((mat->col_end[firstcol] == orignr) && 0)
-      jj = orignr;
-  }
+  else
+    jj_j = 0;
 
   /* Make sure we have sufficient space for any additional entries and move existing data down;
      this ensures that we only have to relocate matrix elements up in the next stage */
-  jj_j = MAX(0, newnr + delta);
+  jj_j = MAX(0, newnr - jj_j);
   if(jj_j > 0) {
     if(!inc_mat_space(mat, jj_j)) {
       FREE(addto);
@@ -1210,12 +1098,13 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
   }
 
   /* Handle case where the matrix was empty before (or we can simply append) */
-  if((delta >= 0) && (mat->col_end[firstcol] == orignr) && 0) {
+  /* if(orignr == 0) { */
+  if(mat->col_end[firstcol] == orignr) {
     if(isNZ)
       elmnr = count;
     else
       elmnr = mat->columns;
-    jj_j = mat->col_end[firstcol];
+    jj_j = mat->col_end[firstcol] /* 0 */;
     for(newnr = 0; newnr < elmnr; newnr++) {
       if(isNZ)
         colnr = colno[newnr];
@@ -1226,20 +1115,18 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
         mat->col_end[firstcol] = jj_j;
         firstcol++;
       }
-      if(isNZ || ((addto != NULL) && addto[colnr])) {
+      if(isNZ || addto[colnr]) {
         if(isNZ)
           value = row[newnr];
         else
           value = row[colnr];
+#ifdef DoMatrixRounding
+        value = roundToPrecision(value, mat->epsvalue);
+#endif
         if(isA && doscale)
           value = scaled_mat(lp, value, rowno, colnr);
         if(isA)
           value = my_chsign(is_chsign(lp, rowno), value);
-#ifdef DoMatrixRounding
-        value = roundToPrecision(value, mat->epsvalue);
-        if(value == 0)
-          matz++;
-#endif
         SET_MAT_ijA(jj_j, rowno, colnr, value);
         jj_j++;
         /* Update last column start position */
@@ -1258,12 +1145,12 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
 
   /* Start from the top of the first non-zero column of the new row */
   elmnr = orignr + jj_j;
-  if(jj <= elmnr) {
+  if(jj < elmnr) {
     if(isNZ)
       newnr = 0;
     else
       newnr = firstcol - 1;
-    j = jj - mat->col_end[firstcol-1];
+    j = jj - mat->col_end[firstcol - 1];
     colnr = firstcol;
     while((jj < elmnr) || (newnr < count)) {
 
@@ -1281,10 +1168,7 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
       }
       else {
         rownr = rowno;
-        if(!isNZ)                              /* KE added this conditional on 13.9.2006 */
-          colnr = firstcol + 1;
-        else
-          colnr = mat->columns + 1;
+        colnr = mat->columns + 1;
       }
 
       if(isNZ) {
@@ -1297,10 +1181,17 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
         kk = newnr + 1;
 
       /* Test if there is an available new item ... */
+#if 1  /* PENO fix 27.2.2005 */
       if((isNZ && (kk > colnr)) ||                    /* If this is not the case */
          (!isNZ && ((kk > colnr) || (!addto[kk])))) {
         /* DELETE if there is an existing value */
         if(!isNZ && (kk <= colnr))
+#else
+      if((isNZ && (kk > colnr)) ||                    /* If this is not the case */
+         (!isNZ && !addto[kk])) {
+        /* DELETE if there is an existing value */
+        if(!isNZ)
+#endif
           newnr++;
         if(rownr == rowno) {
           kk = jj_j;
@@ -1323,15 +1214,13 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
         else
           value = row[newnr+1];
         newnr++;
-        if(isA && doscale)
-          value = scaled_mat(lp, value, rowno, kk);
-        if(isA)
-          value = my_chsign(is_chsign(lp, rowno), value);
 #ifdef DoMatrixRounding
         value = roundToPrecision(value, mat->epsvalue);
-        if(value == 0)
-          matz++;
 #endif
+        if(isA && doscale)
+          value = scaled_mat(lp, value, rowno, colnr);
+        if(isA)
+          value = my_chsign(is_chsign(lp, rowno), value);
         SET_MAT_ijA(jj_j, rowno, kk, value);
 
         /* Adjust if we have inserted an element */
@@ -1367,10 +1256,6 @@ STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *coln
       firstcol++;
     }
   }
-
-  /* Compact in the case that we added zeros and set flag for row index update */
-  if(matz > 0)
-    mat_zerocompact(mat);
   mat->row_end_valid = FALSE;
 
 Done:
@@ -1380,245 +1265,6 @@ Done:
   return( (MYBOOL) (newnr > 0) );
 
 }
-
-#else
-
-STATIC MYBOOL mat_setrow(MATrec *mat, int rowno, int count, REAL *row, int *colno, MYBOOL doscale, MYBOOL checkrowmode)
-{
-  lprec   *lp = mat->lp;
-  int     delta, delta1;
-  int k, i, ii, j, jj_j, lendense,
-          origidx = 0, newidx, orignz, newnz,
-          rownr, colnr, colnr1;
-  MYBOOL  isA, isNZ;
-  REAL    value = 0.0;
-
-  /* Check if we are in row order mode and should add as column instead;
-     the matrix will be transposed at a later stage */
-  if(checkrowmode && mat->is_roworder)
-    return( mat_setcol(mat, rowno, count, row, colno, doscale, FALSE) );
-
-  /* Do initialization and validation */
-  if(!mat_validate(mat))
-    return( FALSE );
-  isA = (MYBOOL) (mat == lp->matA);
-  if(doscale && isA && !lp->scaling_used)
-    doscale = FALSE;
-  isNZ = (MYBOOL) (colno != NULL);
-  lendense = (mat->is_roworder ? lp->rows : lp->columns);
-  if((count < 0) || (count > lendense))
-    return( FALSE );
-  colnr1 = lendense + 1;
-
-  /* Capture OF definition in row mode */
-  if(isA && mat->is_roworder) {
-    lp->orig_obj[rowno] = 0;
-    if((count > 0) && (colno[0] == 0)) {
-      value = row[0];
-      if(doscale)
-        value = scaled_mat(lp, value, 0, rowno);
-      value = my_chsign(is_maxim(lp), value);
-#ifdef DoMatrixRounding
-      value = roundToPrecision(value, mat->epsvalue);
-#endif
-      lp->orig_obj[rowno] = value;
-      if(isNZ) {
-        colno++;
-        row++;
-        count--;
-      }
-    }
-    else {
-      lp->orig_obj[rowno] = 0;
-      value = 0;
-    }
-  }
-
-  /* Make local working data copies */
-  if(!isNZ) {
-    REAL *tmprow = NULL;
-    if(!allocINT(lp, &colno, lendense+1, FALSE))
-      return( FALSE );
-    newnz = 0;
-    for(i = 1; i <= lendense; i++)
-      if((value = row[i]) != 0) {
-        if((tmprow == NULL) && !allocREAL(lp, &tmprow, lendense-i+1, FALSE)) {
-          FREE(colno);
-          return( FALSE );
-        }
-        tmprow[newnz] = value;
-        colno[newnz++] = i;
-      }
-    count = newnz;
-    row = tmprow;
-  }
-  else {
-    int *tmpcolno = NULL;
-    if(!allocINT(lp, &tmpcolno, lendense, FALSE))
-      return( FALSE );
-    newnz = count;
-    MEMCOPY(tmpcolno, colno, newnz);
-    colno = tmpcolno;
-    if(newnz > 1)
-      sortREALByINT(row, (int *) colno, newnz, 0, TRUE);
-    if((newnz > 0) && ((colno[0] < 0) || (colno[newnz-1] > lendense))) {
-      FREE(colno);
-      newnz = 0;
-      return( FALSE );
-    }
-  }
-
-  /* Make sure we have enough matrix space */
-  i  = mat->row_end[rowno-1];
-  ii = mat->row_end[rowno];
-  delta1 = delta = count - (ii-i);
-  colnr1 = (newnz > 0 ? colno[0] : lendense+1);
-
-  /* Pack initial entries if existing row data has a lower column
-     start index than the first index of the new vector */
-  orignz = mat_nonzeros(mat);
-  j = (i >= orignz ? colnr1 : ROW_MAT_COLNR(i));
-
-  /* Index of the column-top insertion point for the first new value */
-  origidx = mat->col_end[colnr1-1];
-  colnr = (origidx >= orignz ? colnr1 : COL_MAT_COLNR(origidx));
-
-  if(j < colnr) {
-    origidx = newidx = mat->col_end[j-1];
-    for( ; j < colnr; j++) {
-      /* Shift entries in current column */
-      jj_j = mat->col_end[j];
-      for( ; origidx < jj_j; origidx++) {
-        if(COL_MAT_ROWNR(origidx) != rowno) {
-          if(newidx != origidx) {
-            COL_MAT_COPY(newidx, origidx);
-          }
-          newidx++;
-        }
-      }
-      /* Update next column start index */
-      mat->col_end[j] = newidx;
-    }
-    delta = newidx - origidx;  /* The first stage element shrinkage count */
-  }
-  else {
-    delta = 0;
-    newidx = origidx;
-  }
-
-  /* Make sure we have sufficient space for any additional entries and move existing data down;
-     this ensures that we only have to relocate matrix elements up in the next stage */
-  jj_j = MAX(0, (int) newnz + delta);
-
-  j = !((orignz == lendense) && (newnz == orignz) && (delta1 == 0)) && (jj_j > 0) && (orignz > origidx);
-
-  if ((j) && (jj_j > delta1))
-    delta1 = jj_j;
-
-  if((delta1 > 0) && (mat_nz_unused(mat) <= delta1) && !inc_mat_space(mat, delta1)) {
-    newnz = 0;
-    goto Done;
-  }
-
-  if(j) {
-    COL_MAT_MOVE(origidx+jj_j, origidx, orignz-origidx);
-    origidx += jj_j;
-    orignz += jj_j;
-  }
-
-  /* Start from the top of the first non-zero column of the new row */
-  newnz = 0;
-  j = origidx - mat->col_end[colnr1-1];
-  k = colnr1;  /* Last column for which col_end is valid/updated */
-  while((colnr1 <= lendense) || (origidx < orignz)) {
-
-    /* Get the column index of the active update item */
-    if(newnz < count)
-      colnr1 = colno[newnz];
-    else
-      colnr1 = lendense + 1;
-
-    /* Get coordinate of active existing matrix entries */
-    if(origidx < orignz) {
-      rownr = COL_MAT_ROWNR(origidx);
-      colnr = COL_MAT_COLNR(origidx);
-    }
-    else {
-      if(colnr1 > lendense)
-        break;
-      rownr = rowno;
-      colnr = lendense + 1;
-    }
-
-    /* Update column start position if we just crossed into a column */
-    jj_j = origidx - j;
-    i = MIN(colnr, colnr1);
-    for(; k < i; k++)
-      mat->col_end[k] = jj_j;
-
-    /* Test if there is an available new item ... */
-    if(colnr1 > colnr) {             /* If this is not the case */
-      /* DELETE if there is an existing value */
-      if(rownr == rowno) {
-ForceDelete:
-        j++;
-        delta--;
-        origidx++;
-        continue;
-      }
-    }
-    else if((colnr > colnr1) ||                         /* Existing column index > new => INSERT */
-            ((colnr == colnr1) && (rownr >= rowno)) ) { /* Same column index, existing row >= target row => INSERT/REPLACE */
-
-      value = row[newnz];
-      newnz++;
-      if(isA && doscale)
-        value = scaled_mat(lp, value, rowno, colnr1);
-      if(isA)
-        value = my_chsign(is_chsign(lp, rowno), value);
-#ifdef DoMatrixRounding
-      value = roundToPrecision(value, mat->epsvalue);
-      if(value == 0) {
-        if((colnr > colnr1) || (rownr > rowno))
-        ;
-        else
-          goto ForceDelete;
-      }
-#endif
-      SET_MAT_ijA(jj_j, rowno, colnr1, value);
-
-      /* Adjust if we have inserted an element */
-      if((colnr > colnr1) || (rownr > rowno)) {
-        j--;
-        origidx--;
-        jj_j++;
-        delta++;
-      }
-      origidx++;
-      continue;
-    }
-
-    /* Shift the matrix element up by the active difference */
-    if(jj_j != origidx) {
-      COL_MAT_COPY(jj_j, origidx);
-    }
-    origidx++;
-  }
-
-  /* Update pending / incomplete column start position */
-  jj_j = origidx - j;
-  for(; k <= lendense; k++)
-    mat->col_end[k] = jj_j;
-  mat->row_end_valid = FALSE;
-
-Done:
-  if(!isNZ)
-    FREE(row);
-  FREE(colno);
-  return( (MYBOOL) (newnz > 0) );
-
-} /* mat_setrow */
-#endif
 
 STATIC int mat_appendrow(MATrec *mat, int count, REAL *row, int *colno, REAL mult, MYBOOL checkrowmode)
 {
@@ -1641,8 +1287,7 @@ STATIC int mat_appendrow(MATrec *mat, int count, REAL *row, int *colno, REAL mul
     if((colno[0] < 1) || (colno[count-1] > mat->columns))
       return( 0 );
   }
-  /* else if((row != NULL) && !mat->is_roworder) */
-  else if(!isNZ && (row != NULL) && !mat->is_roworder)
+  else if(row != NULL)
     row[0] = 0;
 
   /* Capture OF definition in row mode */
@@ -1652,25 +1297,25 @@ STATIC int mat_appendrow(MATrec *mat, int count, REAL *row, int *colno, REAL mul
 #ifdef DoMatrixRounding
       value = roundToPrecision(value, mat->epsvalue);
 #endif
-      value = scaled_mat(lp, value, 0, lp->columns);
+      value = scaled_mat(lp, value, 0, mat->columns);
       value = my_chsign(is_maxim(lp), value);
-      lp->orig_obj[lp->columns] = value;
+      lp->orig_obj[mat->columns] = value;
       count--;
       row++;
       colno++;
     }
-    else if(!isNZ && (row != NULL) && (row[0] != 0)) {
+    else if(!isNZ && (row[0] != 0)) {
       value = saved = row[0];
 #ifdef DoMatrixRounding
       value = roundToPrecision(value, mat->epsvalue);
 #endif
-      value = scaled_mat(lp, value, 0, lp->columns);
+      value = scaled_mat(lp, value, 0, mat->columns);
       value = my_chsign(is_maxim(lp), value);
-      lp->orig_obj[lp->columns] = value;
+      lp->orig_obj[mat->columns] = value;
       row[0] = 0;
     }
     else
-      lp->orig_obj[lp->columns] = 0;
+      lp->orig_obj[mat->columns] = 0;
   }
 
   /* Optionally tally and map the new non-zero values */
@@ -1684,16 +1329,14 @@ STATIC int mat_appendrow(MATrec *mat, int count, REAL *row, int *colno, REAL mul
   }
   else {
     newnr = 0;
-    if(row != NULL) {
-      if(!allocMYBOOL(lp, &addto, mat->columns + 1, TRUE)) {
-        return( newnr );
-      }
-      for(i = mat->columns; i >= 1; i--) {
-        if(fabs(row[i]) > mat->epsvalue) {
-          addto[i] = TRUE;
-          firstcol = i;
-          newnr++;
-        }
+    if(!allocMYBOOL(lp, &addto, mat->columns + 1, TRUE)) {
+      return( newnr );
+    }
+    for(i = mat->columns; i >= 1; i--) {
+      if(fabs(row[i]) > mat->epsvalue) {
+        addto[i] = TRUE;
+        firstcol = i;
+        newnr++;
       }
     }
   }
@@ -1728,11 +1371,8 @@ STATIC int mat_appendrow(MATrec *mat, int count, REAL *row, int *colno, REAL mul
       value = roundToPrecision(value, mat->epsvalue);
 #endif
       value *= mult;
-      if(isA) {
-        if(mat->is_roworder)
-          value = my_chsign(is_chsign(lp, j), value);
+      if(isA)
         value = scaled_mat(lp, value, mat->rows, j);
-      }
       SET_MAT_ijA(elmnr, mat->rows, j, value);
       elmnr--;
     }
@@ -1768,29 +1408,12 @@ STATIC int mat_appendcol(MATrec *mat, int count, REAL *column, int *rowno, REAL 
     return( mat_appendrow(mat, count, column, rowno, mult, FALSE) );
 
   /* Make sure we have enough space */
-/*
   if(!inc_mat_space(mat, mat->rows+1))
-    return( 0 );
-*/
-  if(column == NULL)
-    i = 0;
-  else if(rowno != NULL)
-    i = count;
-  else {
-    int nrows = mat->rows;
-
-    elmnr = 0;
-    for(i = 1; i <= nrows; i++)
-      if(column[i] != 0)
-        elmnr++;
-    i = elmnr;
-  }
-  if((mat_nz_unused(mat) <= i) && !inc_mat_space(mat, i))
     return( 0 );
 
   /* Do initialization and validation */
   isA = (MYBOOL) (mat == lp->matA);
-  isNZ = (MYBOOL) (column == NULL || rowno != NULL);
+  isNZ = (MYBOOL) (rowno != NULL);
   if(isNZ && (count > 0)) {
     if(count > 1)
       sortREALByINT(column, rowno, count, 0, TRUE);
@@ -2238,7 +1861,7 @@ STATIC void mat_multrow(MATrec *mat, int row_nr, REAL mult)
   }
 }
 
-STATIC void mat_multcol(MATrec *mat, int col_nr, REAL mult, MYBOOL DoObj)
+STATIC void mat_multcol(MATrec *mat, int col_nr, REAL mult)
 {
   int    i, ie;
   MYBOOL isA;
@@ -2258,10 +1881,9 @@ STATIC void mat_multcol(MATrec *mat, int col_nr, REAL mult, MYBOOL DoObj)
   for(i = mat->col_end[col_nr - 1]; i < ie; i++)
     COL_MAT_VALUE(i) *= mult;
   if(isA) {
-    if(DoObj)
-      mat->lp->orig_obj[col_nr] *= mult;
+    mat->lp->orig_obj[col_nr] *= mult;
     if(get_Lrows(mat->lp) > 0)
-      mat_multcol(mat->lp->matL, col_nr, mult, DoObj);
+      mat_multcol(mat->lp->matL, col_nr, mult);
   }
 }
 
@@ -3025,14 +2647,8 @@ STATIC MYBOOL __WINAPI invert(lprec *lp, MYBOOL shiftbounds, MYBOOL final)
   lp->bfp_finishfactorization(lp);
 
   /* Recompute the RHS ( Ref. lp_solve inverse logic and Chvatal p. 121 ) */
-#ifdef DebugInv
-  blockWriteLREAL(stdout, "RHS-values pre invert", lp->rhs, 0, lp->rows);
-#endif
   recompute_solution(lp, shiftbounds);
   restartPricer(lp, AUTOMATIC);
-#ifdef DebugInv
-  blockWriteLREAL(stdout, "RHS-values post invert", lp->rhs, 0, lp->rows);
-#endif
 
 Cleanup:
   /* Check for numerical instability indicated by frequent refactorizations */
@@ -3322,7 +2938,7 @@ STATIC int prod_Ax(lprec *lp, int *coltarget, REAL *input, int *nzinput,
                               REAL *output, int *nzoutput, int roundmode)
 /* prod_Ax is only used in fimprove; note that it is NOT VALIDATED/verified as of 20030801 - KE */
 {
-  int      j, colnr, ib, ie, vb;
+  int      j, colnr, ib, ie, vb; /*, ve; */
   MYBOOL   localset, localnz = FALSE, isRC;
   MATrec   *mat = lp->matA;
   REAL     sdp;
@@ -3352,7 +2968,7 @@ STATIC int prod_Ax(lprec *lp, int *coltarget, REAL *input, int *nzinput,
 
   /* Scan the columns */
   vb = 1;
-  //ve = coltarget[0];
+  /* ve = coltarget[0]; */
   for(vb = 1; vb <= coltarget[0]; vb++) {
     colnr = coltarget[vb];
     j = lp->is_basic[colnr];

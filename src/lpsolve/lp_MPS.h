@@ -9,6 +9,10 @@
 #define COLNAMEMASK          "C%d"
 #define COLNAMEMASK2         "c%d"
 
+#define MPSFIXED             1
+#define MPSFREE              2
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

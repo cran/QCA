@@ -1,3 +1,18 @@
+Version 3.10
+    o Major rewrite of the core C code, to prevent any possible memory leaks
+      and segmentation faults
+    o New: argument "max.comb" in function minimize(), to limit the size of the
+      PI chart to the number of PIs at that complexity level where the possible
+      number of combinations does not exceed a maximum value
+    o New: argument "first.min" in function minimize(), to return the very first
+      minimal model found, provided the PI chart can be solved
+    o Changed: argument "min.pin" no longer cares if the PIs at the next
+      level of complexity contribute or not to the number of minimal models;
+      instead, it strictly returns the PIs at the first level of complexity
+      where the PI chart can be minimally solved
+    o New: arguments "max.comb" and "first.min" in function solveChart(), to
+      mirror those from function minimize()
+      
 Version 3.9
     o Function export() moved to package admisc
     o Fixed: row numbers bigger than the total number of rows in a truth
@@ -9,8 +24,6 @@ Version 3.9
       (thanks to Michael Baumgartner for the suggestion)
     o Fixed: minor bug in when dealing with a single column PI chart
       (thanks to Michael Baumgartner and Martyna Swiatczak for the report)
-    o Fixed: outstanding C level bug leading to a segfault on some Linux
-      distributions using MKL and BLAS
       
 Version 3.8
     o New: package QCA now accepts unquoted strings for SOP expressions,

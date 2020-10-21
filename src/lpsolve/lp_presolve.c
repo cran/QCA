@@ -45,55 +45,10 @@
 #endif
 
 
-INLINE int presolve_nextrecord(psrec *ps, int recnr, int *previtem)
-{
-  int *nzlist = ps->next[recnr], nzcount = nzlist[0], status = -1;
+#define presolve_setstatus(one, two)  presolve_setstatusex(one, two, __LINE__, __FILE__)
 
-  /* Check if we simply wish the last active column */
-  if(previtem == NULL) {
-    if(nzlist != NULL)
-      status = nzlist[*nzlist];
-    return( status );
-  }
-
-  /* Step to next */
-#ifdef Paranoia
-  else if((*previtem < 0) || (*previtem > nzcount))
-    return( status );
-#endif
-  (*previtem)++;
-
-  /* Set the return values */
-  if(*previtem > nzcount)
-    (*previtem) = 0;
-  else
-    status = nzlist[*previtem];
-
-  return( status );
-}
-
-INLINE int presolve_nextcol(presolverec *psdata, int rownr, int *previtem)
-//Find the first active (non-eliminated) nonzero column in rownr after prevcol 
-{
-  return( presolve_nextrecord(psdata->rows, rownr, previtem) );
-}
-
-INLINE int presolve_lastcol(presolverec *psdata, int rownr)
-{
-  return( presolve_nextrecord(psdata->rows, rownr, NULL) );
-}
-
-INLINE int presolve_nextrow(presolverec *psdata, int colnr, int *previtem)
-// Find the first active (non-eliminated) nonzero row in colnr after prevrow 
-{
-  return( presolve_nextrecord(psdata->cols, colnr, previtem) );
-}
-
-INLINE int presolve_lastrow(presolverec *psdata, int colnr)
-{
-  return( presolve_nextrecord(psdata->cols, colnr, NULL) );
-}
-
+INLINE int presolve_nextrow(presolverec *psdata, int colnr, int *previtem);
+INLINE int presolve_nextcol(presolverec *psdata, int rownr, int *previtem);
 
 INLINE int presolve_rowlength(presolverec *psdata, int rownr)
 {
@@ -113,8 +68,6 @@ INLINE int presolve_collength(presolverec *psdata, int colnr)
     return( items[0] );
 }
 
-
-#define presolve_setstatus(one, two)  presolve_setstatusex(one, two, __LINE__, __FILE__)
 STATIC int presolve_setstatusex(presolverec *psdata, int status, int lineno, char *filename)
 {
   if((status == INFEASIBLE) || (status == UNBOUNDED)) {
@@ -233,21 +186,33 @@ STATIC MYBOOL presolve_rebuildUndo(lprec *lp, MYBOOL isprimal)
   presolveundorec *psdata = lp->presolve_undo;
   MATrec          *mat = NULL;
 
+
   /* Point to and initialize undo structure at first call */
   if(isprimal) {
     if(psdata->primalundo != NULL)
       mat = psdata->primalundo->tracker;
+
+    if(mat == NULL) {
+        //printf("exiting before writing to sol because mat is NULL");
+        return (FALSE);
+    }
+
     solution = lp->full_solution + lp->presolve_undo->orig_rows;
     slacks   = lp->full_solution;
   }
   else {
     if(psdata->dualundo != NULL)
       mat = psdata->dualundo->tracker;
+
+    if(mat == NULL)
+          return( FALSE );
+
     solution = lp->full_duals;
     slacks   = lp->full_duals + lp->presolve_undo->orig_rows;
   }
+
   if(mat == NULL)
-    return( FALSE );
+        return( FALSE );
 
   /* Loop backward over the undo chain */
   for(j = mat->col_tag[0]; j > 0; j--) {
@@ -410,50 +375,48 @@ STATIC MYBOOL presolve_SOScheck(presolverec *psdata)
 /* Presolve routines for tightening the model                                    */
 /* ----------------------------------------------------------------------------- */
 
-INLINE REAL presolve_roundrhs(lprec *lp, REAL value, MYBOOL isGE)
+INLINE REAL presolve_round(lprec *lp, REAL value, MYBOOL isGE)
 {
 #ifdef DoPresolveRounding
-  REAL eps = PRESOLVE_EPSVALUE*1000,
-  /* REAL eps = PRESOLVE_EPSVALUE*pow(10.0,MAX(0,log10(1+fabs(value)))), */
-  testout = my_precision(value, eps);
-#if 1
-  if(my_chsign(isGE, value-testout) < 0)
+  REAL eps = PRESOLVE_EPSVALUE,
+#if 0
+       testin  = value + my_chsign(isGE, eps/SCALEDINTFIXRANGE),
+       testout = restoreINT(testin, eps);
+  if(testout == testin)
+    value = restoreINT(value, eps);
+  else
     value = testout;
-#elif 0
-  if(my_chsign(isGE, value-testout) < 0)
-    value = testout;
-  else if(value != testout)
-    value += my_chsign(isGE, (value-testout)/2);
-    /* value = testout + my_chsign(isGE, (value-testout)/2); */
 #else
+       testout = restoreINT(value, eps);
   if(testout != value)
-    value += my_chsign(isGE, eps*1000);              /* BASE OPTION */
+    value += my_chsign(isGE, eps*1000); // /SCALEDINTFIXRANGE);
 #endif
 
 #endif
   return( value );
 }
 
-INLINE REAL presolve_roundval(lprec *lp, REAL value)
+INLINE REAL presolve_precision(lprec *lp, REAL value)
 {
 #ifdef DoPresolveRounding
-  /* value = my_precision(value, PRESOLVE_EPSVALUE*MAX(1,log10(1+fabs(value)))); */
-  value = my_precision(value, PRESOLVE_EPSVALUE);    /* BASE OPTION */
+  value = restoreINT(value, PRESOLVE_EPSVALUE);
 #endif
   return( value );
 }
+
 #if 0
 INLINE MYBOOL presolve_mustupdate(lprec *lp, int colnr)
 {
-#if 0
+!if 0
   return( my_infinite(lp, get_lowbo(lp, colnr)) ||
           my_infinite(lp, get_upbo(lp, colnr)) );
-#else
+!else
   return( my_infinite(lp, lp->orig_lowbo[lp->rows+colnr]) ||
           my_infinite(lp, lp->orig_upbo[lp->rows+colnr]) );
-#endif
+!endif
 }
 #endif
+
 INLINE REAL presolve_sumplumin(lprec *lp, int item, psrec *ps, MYBOOL doUpper)
 {
   REAL *plu = (doUpper ? ps->pluupper : ps->plulower),
@@ -528,7 +491,7 @@ STATIC MYBOOL presolve_debugmap(presolverec *psdata, char *caption)
 {
   lprec *lp = psdata->lp;
   MATrec *mat = lp->matA;
-  int    colnr, ix, ie, nx, jx, je, *cols, *rows;
+  int    colnr, ix, ie, nx, jx, je, *cols, *rows, n;
   int    nz = mat->col_end[lp->columns] - 1;
   MYBOOL status = FALSE;
 
@@ -556,7 +519,7 @@ STATIC MYBOOL presolve_debugmap(presolverec *psdata, char *caption)
       }
       cols = psdata->rows->next[COL_MAT_ROWNR(*rows)];
       ie = cols[0];
-      //n = 0;
+      n = 0;
       for(ix = 1; ix <= ie; ix++) {
         nx = cols[ix];
         if((nx < 0) || (nx > nz)) {
@@ -789,6 +752,50 @@ STATIC int presolve_rowlengthdebug(presolverec *psdata)
   return( n );
 }
 
+INLINE int presolve_nextrecord(psrec *ps, int recnr, int *previtem)
+{
+  int *nzlist = ps->next[recnr], nzcount = nzlist[0], status = -1;
+
+  /* Check if we simply wish the last active column */
+  if(previtem == NULL) {
+    if(nzlist != NULL)
+      status = nzlist[*nzlist];
+    return( status );
+  }
+
+  /* Step to next */
+#ifdef Paranoia
+  else if((*previtem < 0) || (*previtem > nzcount))
+    return( status );
+#endif
+  (*previtem)++;
+
+  /* Set the return values */
+  if(*previtem > nzcount)
+    (*previtem) = 0;
+  else
+    status = nzlist[*previtem];
+
+  return( status );
+}
+INLINE int presolve_nextcol(presolverec *psdata, int rownr, int *previtem)
+/* Find the first active (non-eliminated) nonzero column in rownr after prevcol */
+{
+  return( presolve_nextrecord(psdata->rows, rownr, previtem) );
+}
+INLINE int presolve_lastcol(presolverec *psdata, int rownr)
+{
+  return( presolve_nextrecord(psdata->rows, rownr, NULL) );
+}
+INLINE int presolve_nextrow(presolverec *psdata, int colnr, int *previtem)
+/* Find the first active (non-eliminated) nonzero row in colnr after prevrow */
+{
+  return( presolve_nextrecord(psdata->cols, colnr, previtem) );
+}
+INLINE int presolve_lastrow(presolverec *psdata, int colnr)
+{
+  return( presolve_nextrecord(psdata->cols, colnr, NULL) );
+}
 
 INLINE void presolve_adjustrhs(presolverec *psdata, int rownr, REAL fixdelta, REAL epsvalue)
 {
@@ -799,7 +806,7 @@ INLINE void presolve_adjustrhs(presolverec *psdata, int rownr, REAL fixdelta, RE
 #if 1
     my_roundzero(lp->orig_rhs[rownr], epsvalue);
 #else
-    lp->orig_rhs[rownr] = presolve_roundrhs(lp, lp->orig_rhs[rownr], FALSE);
+    lp->orig_rhs[rownr] = presolve_round(lp, lp->orig_rhs[rownr], FALSE);
 #endif
   lp->presolve_undo->fixed_rhs[rownr] += fixdelta;
 }
@@ -1042,7 +1049,6 @@ STATIC int presolve_redundantSOS(presolverec *psdata, int *nb, int *nSum)
           continue;
         j = SOS->members[k];
         SOS_member_delete(lp->SOS, i, j);
-        /* if(get_upbo(lp, j) - get_lowbo(lp, j) < lp->epsprimal) */
         if(is_fixedvar(lp, nrows+j))
           continue;
         if(!presolve_colfix(psdata, j, 0.0, AUTOMATIC, &iBoundTighten)) {
@@ -1307,7 +1313,7 @@ STATIC MYBOOL presolve_multibounds(presolverec *psdata, int rownr, int colnr,
       LHS -= netX-coeff_a*Xupper;
       LHS /= coeff_a;
       if(LHS > Xlower + epsvalue) {
-        Xlower = presolve_roundrhs(lp, LHS, TRUE);
+        Xlower = presolve_round(lp, LHS, TRUE);
         status = TRUE;
       }
       else if(LHS > Xlower - epsvalue)
@@ -1317,7 +1323,7 @@ STATIC MYBOOL presolve_multibounds(presolverec *psdata, int rownr, int colnr,
       LHS -= netX-coeff_a*Xlower;
       LHS /= coeff_a;
       if(LHS < Xupper - epsvalue) {
-        Xupper = presolve_roundrhs(lp, LHS, FALSE);
+        Xupper = presolve_round(lp, LHS, FALSE);
         status = AUTOMATIC;
       }
       else if(LHS < Xupper + epsvalue)
@@ -1332,7 +1338,7 @@ STATIC MYBOOL presolve_multibounds(presolverec *psdata, int rownr, int colnr,
         RHS -= netX-coeff_a*Xupper;
         RHS /= coeff_a;
         if(RHS > Xlower + epsvalue) {
-          Xlower = presolve_roundrhs(lp, RHS, TRUE);
+          Xlower = presolve_round(lp, RHS, TRUE);
           status |= TRUE;
         }
         else if(RHS > Xlower - epsvalue)
@@ -1343,7 +1349,7 @@ STATIC MYBOOL presolve_multibounds(presolverec *psdata, int rownr, int colnr,
       RHS -= netX-coeff_a*Xlower;
       RHS /= coeff_a;
       if(RHS < Xupper - epsvalue) {
-        Xupper = presolve_roundrhs(lp, RHS, FALSE);
+        Xupper = presolve_round(lp, RHS, FALSE);
         status |= AUTOMATIC;
       }
       else if(RHS < Xupper + epsvalue)
@@ -1503,8 +1509,8 @@ STATIC MYBOOL presolve_coltighten(presolverec *psdata, int colnr, REAL LOnew, RE
 
   /* Now set the new variable bounds, if they are tighter */
   if(newcount > oldcount) {
-    UPnew = presolve_roundval(lp, UPnew);
-    LOnew = presolve_roundval(lp, LOnew);
+    UPnew = presolve_precision(lp, UPnew);
+    LOnew = presolve_precision(lp, LOnew);
     if(LOnew > UPnew) {
       if(LOnew-UPnew < margin) {
         LOnew = UPnew;
@@ -1574,13 +1580,13 @@ STATIC int presolve_rowtighten(presolverec *psdata, int rownr, int *tally, MYBOO
 
     VARlo = get_lowbo(lp, jx);
     VARup = get_upbo(lp, jx);
-    /* while((ix < idxn) && (jx == abs(jjx))) { */
-    while((ix < idxn) && (jx == abs((jjx = idxbound[ix])))) {
+    while((ix < idxn) && (jx == abs(jjx))) {
       if(jjx < 0)
         VARlo = newbound[ix];
       else
         VARup = newbound[ix];
       ix++;
+      jjx = idxbound[ix];
     }
     if(!presolve_coltighten(psdata, jx, VARlo, VARup, tally)) {
       status = presolve_setstatus(psdata, INFEASIBLE);
@@ -1698,7 +1704,7 @@ STATIC MYBOOL presolve_rowfix(presolverec *psdata, int rownr, REAL newvalue, MYB
     if(isneg) {
       if((ps->negupper[i] < lp->infinite) && lofinite) {
         ps->negupper[i] += mult*lovalue;
-        ps->negupper[i] = presolve_roundrhs(lp, ps->negupper[i], FALSE);
+        ps->negupper[i] = presolve_round(lp, ps->negupper[i], FALSE);
       }
       else if(remove && !lofinite)
         doupdate = TRUE;
@@ -1708,7 +1714,7 @@ STATIC MYBOOL presolve_rowfix(presolverec *psdata, int rownr, REAL newvalue, MYB
     else {
       if((ps->pluupper[i] < lp->infinite) && upfinite) {
         ps->pluupper[i] += mult*upvalue;
-        ps->pluupper[i] = presolve_roundrhs(lp, ps->pluupper[i], FALSE);
+        ps->pluupper[i] = presolve_round(lp, ps->pluupper[i], FALSE);
       }
       else if(remove && !upfinite)
         doupdate = TRUE;
@@ -1720,7 +1726,7 @@ STATIC MYBOOL presolve_rowfix(presolverec *psdata, int rownr, REAL newvalue, MYB
     if(isneg) {
       if((ps->neglower[i] > -lp->infinite) && upfinite) {
         ps->neglower[i] += mult*upvalue;
-        ps->neglower[i] = presolve_roundrhs(lp, ps->neglower[i], TRUE);
+        ps->neglower[i] = presolve_round(lp, ps->neglower[i], TRUE);
       }
       else if(remove && !upfinite)
         doupdate = TRUE;
@@ -1730,7 +1736,7 @@ STATIC MYBOOL presolve_rowfix(presolverec *psdata, int rownr, REAL newvalue, MYB
     else {
       if((ps->plulower[i] > -lp->infinite) && lofinite) {
         ps->plulower[i] += mult*lovalue;
-        ps->plulower[i] = presolve_roundrhs(lp, ps->plulower[i], TRUE);
+        ps->plulower[i] = presolve_round(lp, ps->plulower[i], TRUE);
       }
       else if(remove && !lofinite)
         doupdate = TRUE;
@@ -1907,7 +1913,7 @@ Restart:
     if(isneg) {
       if((ps->negupper[i] < lp->infinite) && lofinite) {
         ps->negupper[i] += mult*lovalue;
-        ps->negupper[i] = presolve_roundrhs(lp, ps->negupper[i], FALSE);
+        ps->negupper[i] = presolve_round(lp, ps->negupper[i], FALSE);
       }
       else if(remove && !lofinite)
         doupdate = TRUE;
@@ -1917,7 +1923,7 @@ Restart:
     else {
       if((ps->pluupper[i] < lp->infinite) && upfinite) {
         ps->pluupper[i] += mult*upvalue;
-        ps->pluupper[i] = presolve_roundrhs(lp, ps->pluupper[i], FALSE);
+        ps->pluupper[i] = presolve_round(lp, ps->pluupper[i], FALSE);
       }
       else if(remove && !upfinite)
         doupdate = TRUE;
@@ -1929,7 +1935,7 @@ Restart:
     if(isneg) {
       if((ps->neglower[i] > -lp->infinite) && upfinite) {
         ps->neglower[i] += mult*upvalue;
-        ps->neglower[i] = presolve_roundrhs(lp, ps->neglower[i], TRUE);
+        ps->neglower[i] = presolve_round(lp, ps->neglower[i], TRUE);
       }
       else if(remove && !upfinite)
         doupdate = TRUE;
@@ -1939,7 +1945,7 @@ Restart:
     else {
       if((ps->plulower[i] > -lp->infinite) && lofinite) {
         ps->plulower[i] += mult*lovalue;
-        ps->plulower[i] = presolve_roundrhs(lp, ps->plulower[i], TRUE);
+        ps->plulower[i] = presolve_round(lp, ps->plulower[i], TRUE);
       }
       else if(remove && !lofinite)
         doupdate = TRUE;
@@ -2015,7 +2021,7 @@ STATIC int presolve_rowfixzero(presolverec *psdata, int rownr, int *nv)
 STATIC MYBOOL presolve_colfixdual(presolverec *psdata, int colnr, REAL *fixValue, int *status)
 {
   lprec   *lp = psdata->lp;
-  MYBOOL  hasOF, isDualFREE = TRUE;
+  MYBOOL  hasOF, isMI, isDualFREE = TRUE;
   int     i, ix, ie, *rownr, signOF;
   REAL    *value, loX, upX, eps = psdata->epsvalue;
   MATrec  *mat = lp->matA;
@@ -2027,7 +2033,7 @@ STATIC MYBOOL presolve_colfixdual(presolverec *psdata, int colnr, REAL *fixValue
      (fabs(upX-loX) < lp->epsvalue) ||
      SOS_is_member_of_type(lp->SOS, colnr, SOSn))
     return( FALSE );
-  //isMI = (MYBOOL) (upX <= 0);
+  isMI = (MYBOOL) (upX <= 0);
 
   /* Retrieve OF (standard form assuming maximization) */
   ix = mat->col_end[colnr - 1];
@@ -2055,9 +2061,9 @@ STATIC MYBOOL presolve_colfixdual(presolverec *psdata, int colnr, REAL *fixValue
         return( FALSE );
       }
       if(loR > loX + psdata->epsvalue)
-        loX = presolve_roundrhs(lp, loR, TRUE);
+        loX = presolve_round(lp, loR, TRUE);
       if(upR < upX - psdata->epsvalue)
-        upX = presolve_roundrhs(lp, upR, FALSE);
+        upX = presolve_round(lp, upR, FALSE);
       continue;
     }
     else
@@ -2106,7 +2112,6 @@ STATIC MYBOOL presolve_colfixdual(presolverec *psdata, int colnr, REAL *fixValue
   return( isDualFREE );
 }
 
-#if 0
 STATIC MYBOOL presolve_probefix01(presolverec *psdata, int colnr, REAL *fixvalue)
 {
   lprec    *lp = psdata->lp;
@@ -2152,73 +2157,6 @@ STATIC MYBOOL presolve_probefix01(presolverec *psdata, int colnr, REAL *fixvalue
   }
   return( canfix );
 }
-#else
-STATIC MYBOOL presolve_probefix01(presolverec *psdata, int colnr, REAL *fixvalue)
-{
-  lprec    *lp = psdata->lp;
-  int      i, ix, item;
-  REAL     loLim, upLim, range, absvalue, epsvalue = psdata->epsvalue, tolgap;
-  MATrec   *mat = lp->matA;
-  MYBOOL   chsign, status = FALSE;
-
-  if(!is_binary(lp, colnr))
-    return( status );
-
-  /* Loop over all active rows to search for fixing opportunity.  The logic is that if a
-     constraint gets violated by setting a variable at one of its bounds, then it can be
-     fixed at its opposite bound. */
-  item = 0;
-
-  for(ix = presolve_nextrow(psdata, colnr, &item); (ix >= 0); ix = presolve_nextrow(psdata, colnr, &item)) {
-    i = COL_MAT_ROWNR(ix);
-    *fixvalue = COL_MAT_VALUE(ix);
-    absvalue = fabs(*fixvalue);
-    SETMIN(absvalue, 100);
-    tolgap = epsvalue*MAX(1, absvalue);
-    chsign = is_chsign(lp, i);
-
-    /* Get the constraint value limits based on variable bounds, normalized to LE constraint */
-    loLim = presolve_sumplumin(lp, i, psdata->rows, FALSE);
-    upLim = presolve_sumplumin(lp, i, psdata->rows, TRUE);
-    if(chsign) {
-      loLim = my_chsign(chsign, loLim);
-      upLim = my_chsign(chsign, upLim);
-      swapREAL(&loLim, &upLim);
-    }
-
-    /* Check the upper constraint bound for possible violation if the value were to be fixed at 1 */
-    if(loLim + *fixvalue > lp->orig_rhs[i]+tolgap) {
-      if(*fixvalue < 0)
-        presolve_setstatus(psdata, INFEASIBLE);
-      *fixvalue = 0;
-      break;
-    }
-
-    /* Check the lower constraint bound for possible violation if the value were to be fixed at 1 */
-    range = get_rh_range(lp, i);
-    if(!my_infinite(lp, range) &&
-       (upLim + *fixvalue < lp->orig_rhs[i]-range-tolgap)) {
-      if(*fixvalue > 0)
-        presolve_setstatus(psdata, INFEASIBLE);
-      *fixvalue = 0;
-      break;
-    }
-
-    /* Check if we have to fix the value at 1 to avoid constraint infeasibility */
-    if(psdata->rows->infcount[i] >= 1)
-      continue;
-    if(((*fixvalue < 0) && (upLim + *fixvalue >= loLim-tolgap) && (upLim > lp->orig_rhs[i]+tolgap)) ||
-       ((*fixvalue > 0) && (loLim + *fixvalue <= upLim+tolgap) && (loLim < lp->orig_rhs[i]-range-tolgap) && !my_infinite(lp, range))) {
-      *fixvalue = 1;
-      break;
-    }
-  }
-  status = (MYBOOL) (ix >= 0);
-
-  /* Returns TRUE if fixing opportunity was identified */
-  return( status );
-}
-#endif
 
 STATIC int presolve_probetighten01(presolverec *psdata, int colnr)
 {
@@ -2832,7 +2770,7 @@ STATIC int presolve_elimeq2(presolverec *psdata, int *nn, int *nr, int *nc, int 
           if(is_int(lp, jjx))
             lp->orig_upbo[k] = floor(bound + lp->epsint);
           else
-            lp->orig_upbo[k] = presolve_roundrhs(lp, bound, FALSE);
+            lp->orig_upbo[k] = presolve_round(lp, bound, FALSE);
         }
       }
       else {
@@ -2841,7 +2779,7 @@ STATIC int presolve_elimeq2(presolverec *psdata, int *nn, int *nr, int *nc, int 
           if(is_int(lp, jjx))
             lp->orig_lowbo[k] = ceil(bound - lp->epsint);
           else
-            lp->orig_lowbo[k] = presolve_roundrhs(lp, bound, TRUE);
+            lp->orig_lowbo[k] = presolve_round(lp, bound, TRUE);
         }
       }
     }
@@ -2854,7 +2792,7 @@ STATIC int presolve_elimeq2(presolverec *psdata, int *nn, int *nr, int *nc, int 
           if(is_int(lp, jjx))
             lp->orig_upbo[k] = floor(bound + lp->epsint);
           else
-            lp->orig_upbo[k] = presolve_roundrhs(lp, bound, FALSE);
+            lp->orig_upbo[k] = presolve_round(lp, bound, FALSE);
         }
       }
       else {
@@ -2863,7 +2801,7 @@ STATIC int presolve_elimeq2(presolverec *psdata, int *nn, int *nr, int *nc, int 
           if(is_int(lp, jjx))
             lp->orig_lowbo[k] = ceil(bound - lp->epsint);
           else
-            lp->orig_lowbo[k] = presolve_roundrhs(lp, bound, TRUE);
+            lp->orig_lowbo[k] = presolve_round(lp, bound, TRUE);
         }
       }
     }
@@ -3428,8 +3366,6 @@ STATIC presolverec *presolve_init(lprec *lp)
         ROW_MAT_VALUE(ix) *= hold;
       }
       lp->orig_rhs[i] *= hold;
-      if(!my_infinite(lp, lp->orig_upbo[i]))
-        lp->orig_upbo[i] *= hold; /* KE: Fix due to Andy Loto - 20070619 */
     }
   }
 
@@ -3621,17 +3557,13 @@ STATIC MYBOOL presolve_finalize(presolverec *psdata)
   for(n = 1; n <= ke; n++)
     my_roundzero(lp->orig_rhs[n], lp->epsvalue);
 
-  /* Update the SOS sparse mapping */
-  if(SOS_count(lp) > 0)
-    SOS_member_updatemap(lp->SOS);
-
   /* Validate matrix and reconstruct row indexation */
   return(mat_validate(lp->matA));
 }
 
 STATIC MYBOOL presolve_debugdump(lprec *lp, presolverec *psdata, char *filename, MYBOOL doappend)
 {
-  FILE   *output = stdout;
+  FILE   *output; /* = stdout; */
   int   size;
   MYBOOL ok;
 
@@ -3915,7 +3847,6 @@ Finish:
   return( status );
 }
 
-#if 0
 STATIC int presolve_coldominance01(presolverec *psdata, int *nConRemoved, int *nVarsFixed, int *nSum)
 /* The current version of this routine eliminates binary variables
    that are dominated via set coverage or unit knapsack constraints */
@@ -4043,9 +3974,8 @@ STATIC int presolve_coldominance01(presolverec *psdata, int *nConRemoved, int *n
         }
         /* Also make sure we have a compatible RHS (since this version of the
           dominance logic only applies to "sets") */
-        rhsval = scale*lp->orig_rhs[jx] - 1.0;
-        /* if((rhsval < 0) || (rhsval > 1 + psdata->epsvalue)) */
-        if(fabs(rhsval) > psdata->epsvalue)
+        rhsval = scale*lp->orig_rhs[jx];
+        if((rhsval < 0) || (rhsval > 1 + psdata->epsvalue))
           break;
       }
 
@@ -4091,204 +4021,6 @@ Finish:
 
   return( status );
 }
-#else
-
-/* DEVELOPMENT/TEST CODE FOR POSSIBLE REPLACEMENT OF SIMILAR FUNCTION IN lp_presolve.c */
-
-#define NATURAL int
-
-STATIC int presolve_coldominance01(presolverec *psdata, NATURAL *nConRemoved, NATURAL *nVarsFixed, NATURAL *nSum)
-/* The current version of this routine eliminates binary variables
-   that are dominated via set coverage or unit knapsack constraints */
-{
-  lprec    *lp = psdata->lp;
-  MATrec   *mat = lp->matA;
-  NATURAL  i, ib, ie, jx, item, item2,
-           n = lp->int_vars, iVarFixed = 0, nrows = lp->rows,
-           *coldel = NULL;
-  int      jb, jj, ii,
-           status = RUNNING;
-  REAL     rhsval = 0.0,
-           *colvalues = NULL, *colobj = NULL;
-  LLrec    *sets = NULL;
-  UNIONTYPE QSORTrec *QS = (UNIONTYPE QSORTrec *) calloc(n+1, sizeof(*QS));
-
-  /* Check if we were able to obtain working memory */
-  if(QS == NULL)
-    return( status);
-  if(n == 0)
-    goto Finish;
-
-  /* Create list of set coverage and knapsack constraints */
-  createLink(nrows, &sets, NULL);
-  for(i = firstActiveLink(psdata->rows->varmap); i != 0; i = nextActiveLink(psdata->rows->varmap, i)) {
-    if((lp->orig_rhs[i] < 0) || (psdata->rows->negcount[i] > 0))
-      continue;
-    item = 0;
-    for(jb = presolve_nextcol(psdata, i, &item); jb >= 0;
-        jb = presolve_nextcol(psdata, i, &item)) {
-      jx = ROW_MAT_COLNR(jb);
-      if(!is_binary(lp, jx))
-        break;
-      rhsval = ROW_MAT_VALUE(jb) - 1;
-      if(fabs(rhsval) > lp->epsvalue)
-        break;
-    }
-    if(jb < 0)
-      setLink(sets, i);
-  }
-  if(countActiveLink(sets) == 0)
-    goto Finish;
-
-  /* A column dominates another binary variable column with the following criteria:
-      1) The relative matrix non-zero entries are identical
-      2) The relative objective coefficient is worse than the other;
-         if the OF coefficients are identical, we can delete an arbitrary variable */
-  n = 0;
-  for(i = firstActiveLink(psdata->cols->varmap); i != 0; i = nextActiveLink(psdata->cols->varmap, i))
-    if(is_binary(lp, i) && !SOS_is_member(lp->SOS, 0, i)) {
-      /* Make sure the column is member of at least one set */
-      item = 0;
-      for(jb = presolve_nextrow(psdata, i, &item); jb >= 0;
-          jb = presolve_nextrow(psdata, i, &item)) {
-        jx = COL_MAT_ROWNR(jb);
-        if(isActiveLink(sets, jx))
-          break;
-      }
-
-      /* Add to list if set membership test is Ok */
-      if(jb >= 0) {
-        QS[n].int4.intval = i;
-        item = 0;
-        ii = presolve_nextrow(psdata, i, &item);
-        QS[n].int4.intpar1 = COL_MAT_ROWNR(ii);
-        ii = presolve_collength(psdata, i);
-        QS[n].int4.intpar2 = ii;
-        n++;
-      }
-    }
-  if(n <= 1) {
-    FREE(QS);
-    return( status );
-  }
-  QS_execute(QS, n, (findCompare_func *) compRedundant, NULL);
-
-  /* Let us start from the top of the list, going forward and looking
-    for the longest possible dominated column */
-  if(!allocREAL(lp, &colvalues, nrows + 1, TRUE) ||
-     !allocREAL(lp, &colobj, n + 1, FALSE) ||
-     !allocINT(lp, &coldel, n + 1, FALSE))
-    goto Finish;
-
-  for(ib = 0; ib < n; ib++) {
-
-    /* Get column and check if it was previously eliminated */
-    i = QS[ib].int4.intval;
-    if(!isActiveLink(psdata->cols->varmap, i))
-      continue;
-
-    /* Load the non-zero column values */
-    item = 0;
-    for(jb = presolve_nextrow(psdata, i, &item); jb >= 0;
-        jb = presolve_nextrow(psdata, i, &item)) {
-      jx = COL_MAT_ROWNR(jb);
-      colvalues[jx] = COL_MAT_VALUE(jb);
-    }
-
-    /* Store data for current column */
-    coldel[0] = 1;
-    coldel[1] = i;
-    colobj[1] = lp->orig_obj[i];
-
-    /* Loop over all other columns to see if they have equal constraint coefficients */
-    for(ie = ib+1; ie < n; ie++) {
-
-      /* Check if this column was previously eliminated */
-      ii = QS[ie].int4.intval;
-      if(!isActiveLink(psdata->cols->varmap, ii))
-        continue;
-
-      /* Insist on identical column lengths (sort is decending in column lengths) */
-      ii = QS[ib].int4.intpar2 - QS[ie].int4.intpar2;
-      if(ii != 0)
-        break;
-
-      /* Also insist on identical starting positions */
-      ii = QS[ib].int4.intpar1 - QS[ie].int4.intpar1;
-      if(ii != 0)
-        break;
-
-      /* Get column and check if it was previously eliminated */
-      ii = QS[ie].int4.intval;
-
-#ifdef Paranoia
-      if((QS[ib].int4.intpar1 > QS[ie].int4.intpar1) ||
-         ((QS[ib].int4.intpar1 == QS[ie].int4.intpar1) && (QS[ib].int4.intpar2 < QS[ie].int4.intpar2)))
-        report(lp, SEVERE, "presolve_coldominance01: Invalid sorted column order\n");
-#endif
-
-      /* Loop over every column member to confirm that the candidate is identical in every row;
-         we also compute the minimal set order */
-      rhsval = lp->infinite;
-      item = 0;
-      item2 = 0;
-      for(jb = presolve_nextrow(psdata, ii, &item),
-          jj = presolve_nextrow(psdata, i, &item2); jb >= 0;
-          jb = presolve_nextrow(psdata, ii, &item),
-          jj = presolve_nextrow(psdata, i, &item2)) {
-        jx = COL_MAT_ROWNR(jb);
-        if(jx != COL_MAT_ROWNR(jj))
-          break;
-        if(isActiveLink(sets, jx))
-          SETMIN(rhsval, lp->orig_rhs[jx]);
-      }
-
-      /* "We have contact" */
-      if(jb < 0) {
-        coldel[++coldel[0]] = ii;
-        colobj[coldel[0]] = lp->orig_obj[ii];
-      }
-    }
-
-    /* Find the dominant columns, fix and delete the others */
-    if(coldel[0] > 1) {
-      qsortex(colobj+1, coldel[0], 0, sizeof(*colobj), FALSE, compareREAL, coldel+1, sizeof(*coldel));
-      /* if(rhsval+lp->epsvalue < lp->infinite) { */
-        jb = (NATURAL) (rhsval+lp->epsvalue);
-        /* printf("%f / %d\n", rhsval, jb); */
-        for(jb++; jb <= coldel[0]; jb++) {
-          jx = coldel[jb];
-          if(!presolve_colfix(psdata, jx, lp->orig_lowbo[nrows+jx], TRUE, &iVarFixed)) {
-            status = presolve_setstatus(psdata, INFEASIBLE);
-            goto Finish;
-          }
-          presolve_colremove(psdata, jx, TRUE);
-        }
-      /*} */
-    }
-
-    /* Clear the non-zero row values ahead of the next row candidate */
-    if(ib + 1 < n) {
-      ie = mat->col_end[i-1];
-      ii = mat->col_end[i];
-      for(; ie < ii; ie++)
-        colvalues[COL_MAT_ROWNR(ie)] = 0;
-    }
-  }
-Finish:
-  freeLink(&sets);
-  FREE(QS);
-  FREE(colvalues);
-  FREE(coldel);
-  FREE(colobj);
-
-  (*nVarsFixed) += iVarFixed;
-  (*nSum)       += iVarFixed;
-
-  return( status );
-}
-
-#endif
 
 STATIC int presolve_aggregate(presolverec *psdata, int *nConRemoved, int *nVarsFixed, int *nSum)
 /* This routine combines compatible or identical columns */
@@ -4573,7 +4305,7 @@ STATIC int presolve_makesparser(presolverec *psdata, int *nCoeffChanged, int *nC
     test = ratio = 0.0;
     itemEQ = 0;
     nzidx[0] = 0;
-    while(((jjx = presolve_nextcol(psdata, ii, &itemEQ)) >= 0) && /*(itemEQ > 0) && */
+    while(((jjx = presolve_nextcol(psdata, ii, &itemEQ)) >= 0) && //(itemEQ > 0) &&
            (fabs(test-ratio) < psdata->epsvalue)) {
       valueEQ = ROW_MAT_VALUE(jjx);
       if(valueEQ == 0)
@@ -4642,7 +4374,7 @@ STATIC int presolve_makesparser(presolverec *psdata, int *nCoeffChanged, int *nC
       itemEQ = 0;
       item = 0;
       nzidx[0] = 0;
-      while(((jjx = presolve_nextcol(psdata, ii, &itemEQ)) >= 0) && /*(itemEQ > 0) &&*/
+      while(((jjx = presolve_nextcol(psdata, ii, &itemEQ)) >= 0) && //(itemEQ > 0) &&
              (fabs(test-ratio) < psdata->epsvalue)) {
         valueEQ = ROW_MAT_VALUE(jjx);
         if(valueEQ == 0)
@@ -4888,14 +4620,14 @@ STATIC int presolve_boundconflict(presolverec *psdata, int baserowno, int colno)
 STATIC int presolve_columns(presolverec *psdata, int *nCoeffChanged, int *nConRemove, int *nVarFixed, int *nBoundTighten, int *nSum)
 {
   lprec    *lp = psdata->lp;
-  MYBOOL   candelete, isOFNZ,
+  MYBOOL   candelete, isOFNZ, unbounded,
            probefix = is_presolve(lp, PRESOLVE_PROBEFIX),
 #if 0
            probereduce = is_presolve(lp, PRESOLVE_PROBEREDUCE),
 #endif
            colfixdual = is_presolve(lp, PRESOLVE_COLFIXDUAL);
   int      iCoeffChanged = 0, iConRemove = 0, iVarFixed = 0, iBoundTighten = 0,
-           status = RUNNING, ix, j, countNZ;
+           status = RUNNING, ix, j, countNZ, item;
   REAL     Value1;
 
   for(j = firstActiveLink(psdata->cols->varmap); (j != 0) && (status == RUNNING); ) {
@@ -4910,13 +4642,14 @@ STATIC int presolve_columns(presolverec *psdata, int *nCoeffChanged, int *nConRe
     countNZ = presolve_collength(psdata, j);
     isOFNZ  = isnz_origobj(lp, j);
     Value1  = get_lowbo(lp, j);
-    //unbounded = is_unbounded(lp, j);
+    unbounded = is_unbounded(lp, j);
 
     /* Clear unnecessary semicont-definitions */
     if((lp->sc_vars > 0) && (Value1 == 0) && is_semicont(lp, j))
       set_semicont(lp, j, FALSE);
 
     candelete = FALSE;
+    item = 0;
     ix = lp->rows + j;
 
     /* Check if the variable is unused */
@@ -5144,7 +4877,7 @@ STATIC int presolve_freeandslacks(presolverec *psdata, int *nCoeffChanged, int *
           }
           else {
             *target += ValueA * coeff_bu;
-            *target = presolve_roundrhs(lp, *target, FALSE);
+            *target = presolve_round(lp, *target, FALSE);
           }
         }
       }
@@ -5168,7 +4901,7 @@ STATIC int presolve_freeandslacks(presolverec *psdata, int *nCoeffChanged, int *
         }
         else {
           *target -= ValueA * coeff_bu;
-          *target = presolve_roundrhs(lp, *target, FALSE);
+          *target = presolve_round(lp, *target, FALSE);
         }
       }
       presolve_colfix(psdata, j, coeff_bl, TRUE, &iVarFixed);
@@ -5229,11 +4962,11 @@ STATIC int presolve_preparerows(presolverec *psdata, int *nBoundTighten, int *nS
       }
 
       if(losum > lorhs+epsvalue) {
-        set_rh_lower(lp, i, presolve_roundrhs(lp, losum, TRUE));
+        set_rh_lower(lp, i, presolve_round(lp, losum, TRUE));
         iRangeTighten++;
       }
       if(upsum < uprhs-epsvalue) {
-        set_rh_upper(lp, i, presolve_roundrhs(lp, upsum, FALSE));
+        set_rh_upper(lp, i, presolve_round(lp, upsum, FALSE));
         iRangeTighten++;
       }
     }
@@ -5331,12 +5064,10 @@ STATIC int presolve_rows(presolverec *psdata, int *nCoeffChanged, int *nConRemov
         if((fabs(Value2-Value1) < epsvalue) && (fabs(Value2) > epsvalue)) {
           MYBOOL isSOS     = (MYBOOL) (SOS_is_member(lp->SOS, 0, j) != FALSE),
                  deleteSOS = isSOS && presolve_candeletevar(psdata, j);
-          if((Value1 != 0) && deleteSOS) 
-          {
+          if((Value1 != 0) && deleteSOS) {
             if(!presolve_fixSOS1(psdata, j, Value1, &iConRemove, &iVarFixed))
               status = presolve_setstatus(psdata, INFEASIBLE);
-
-          	psdata->forceupdate = TRUE;
+              psdata->forceupdate = TRUE;
           }
           else {
             if(!presolve_colfix(psdata, j, Value1, (MYBOOL) !isSOS, NULL))
@@ -5473,7 +5204,8 @@ STATIC int presolve(lprec *lp)
   /* Produce original model statistics (do hoops to produce correct stats if we have SOS'es) */
   i = SOS_count(lp);
   if(i > 0) {
-    SOS_member_updatemap(lp->SOS);
+    if(lp->SOS->memberpos == NULL)
+      SOS_member_updatemap(lp->SOS);
     lp->sos_vars = SOS_memberships(lp->SOS, 0);
   }
   REPORT_modelinfo(lp, TRUE, "SUBMITTED");
@@ -5490,6 +5222,7 @@ STATIC int presolve(lprec *lp)
 write_lp(lp, "test_in.lp");    /* Write to lp-formatted file for debugging */
 /*write_mps(lp, "test_in.mps");*/  /* Write to lp-formatted file for debugging */
 #endif
+
 
   /* Update inf norms and check for potential factorization trouble */
   mat_computemax(mat /*, FALSE */);
@@ -5510,7 +5243,7 @@ write_lp(lp, "test_in.lp");    /* Write to lp-formatted file for debugging */
       )
       if((lp->simplex_strategy & SIMPLEX_DYNAMIC) > 0) {
         clear_action(&lp->algopt, ALGOPT_OBJINBASIS);
-        report(lp, NORMAL, "Moved objective function out of the basis matrix to enhance factorization accuracy.\n");
+        report(lp, NORMAL, "Moved objective function out of the basis matrix to preserve accuracy.\n");
       }
       else if(mat->dynrange > 1.0)
         report(lp, IMPORTANT, "Warning: Objective/matrix coefficient magnitude differences will cause inaccuracy!\n");
@@ -5533,12 +5266,9 @@ write_lp(lp, "test_in.lp");    /* Write to lp-formatted file for debugging */
     for(i = 1; i <= SOS_count(lp); i++) {
       k = SOS_infeasible(lp->SOS, i);
       if(k > 0) {
-        presolverec psdata;
-
-        psdata.lp = lp;
         report(lp, NORMAL, "presolve: Found SOS %d (type %d) to be range-infeasible on variable %d\n",
                             i, SOS_get_type(lp->SOS, i), k);
-        status = presolve_setstatus(&psdata, INFEASIBLE);
+        status = presolve_setstatus(psdata, INFEASIBLE);
         j++;
       }
     }
@@ -5653,7 +5383,7 @@ write_lp(lp, "test_in.lp");    /* Write to lp-formatted file for debugging */
       if(presolve_statuscheck(psdata, &status) && (psdata->EQmap->count > 1) &&
          is_presolve(lp, PRESOLVE_LINDEP)) {
 #if 0
-        REPORT_mat_mmsave(lp, "A.mtx", NULL, FALSE, "Constraint matrix A");
+        // REPORT_mat_mmsave(lp, "A.mtx", NULL, FALSE, "Constraint matrix A");
 #endif
         presolve_singularities(psdata, &iCoeffChanged, &iConRemove, &iVarFixed, &iSum);
       }
@@ -5710,11 +5440,6 @@ write_lp(lp, "test_in.lp");    /* Write to lp-formatted file for debugging */
       nSOS          += iSOS;
       nSum          += iSum;
 
-      iSum           = iConRemove + iVarFixed + iBoundTighten + iCoeffChanged;
-      if(iSum > 0)
-        report(lp, NORMAL, "Presolve O:%d -> Reduced rows:%5d, cols:%5d --- changed bnds:%5d, Ab:%5d.\n",
-                           psdata->outerloops, iConRemove, iVarFixed, iBoundTighten, iCoeffChanged);
-
    /* Do the outermost loop again if we were successful in this presolve sequences */
     } while(presolve_statuscheck(psdata, &status) &&
            (psdata->forceupdate || (oSum < nSum)) &&
@@ -5726,8 +5451,6 @@ write_lp(lp, "test_in.lp");    /* Write to lp-formatted file for debugging */
     i = presolve_debugcheck(lp, psdata->rows->varmap, psdata->cols->varmap);
     if(i > 0)
       report(lp, SEVERE, "presolve: %d internal consistency failure%s\n", i, my_plural_std(i));
-    if((SOS_count(lp) > 0) && !presolve_SOScheck(psdata))
-      report(lp, SEVERE, "presolve: SOS sparse member mapping problem - part 1\n");
 #endif
     /* Perform bound relaxation to reduce chance of degeneracy. */
     if((status == RUNNING) && !is_presolve(lp, PRESOLVE_IMPLIEDFREE))
@@ -5771,14 +5494,13 @@ write_lp(lp, "test_in.lp");    /* Write to lp-formatted file for debugging */
       else
         presolve_rangeorig(lp, 0, psdata->rows, &Value1, &Value2, -initrhs0);
       if((fabs(Value1 - Value2) < psdata->epsvalue) || (fabs(my_reldiff(Value1, Value2)) < psdata->epsvalue)) {
+        report(lp, NORMAL, "%20s OPTIMAL solution found............... %-g", "", Value1);
         if((lp->rows == 0) && (lp->columns == 0)) {
           status = PRESOLVED;
-          Value1 = my_chsign(is_maxim(lp), Value1);
           lp->solution[0] = Value1;
           lp->best_solution[0] = Value1;
           lp->full_solution[0] = Value1;
         }
-        report(lp, NORMAL, "%20s OPTIMAL solution found............... %-g", "", Value1);
       }
       else if((status == RUNNING) && (i >= NORMAL)) {
         char lonum[20], upnum[20];
@@ -5821,10 +5543,8 @@ write_lp(lp, "test_in.lp");    /* Write to lp-formatted file for debugging */
      lp->usermessage(lp, lp->msghandle, MSG_PRESOLVE);
 
   /* Create master SOS variable list */
-  if(SOS_count(lp) > 0) {
-    /*SOS_member_updatemap(lp->SOS); */
+  if(SOS_count(lp) > 0)
     make_SOSchain(lp, (MYBOOL) ((lp->do_presolve & PRESOLVE_LASTMASKMODE) != PRESOLVE_NONE));
-  }
 
   /* Finalize model not identified as infeasible or unbounded */
   if(status == RUNNING) {
@@ -5916,7 +5636,7 @@ STATIC MYBOOL postsolve(lprec *lp, int status)
   if(varmap_canunlock(lp))
     lp->varmap_locked = FALSE;
 #if 0
-  REPORT_mat_mmsave(lp, "basis.mtx", NULL, FALSE);  /* Write the current basis matrix (no OF) */
+  // REPORT_mat_mmsave(lp, "basis.mtx", NULL, FALSE);  /* Write the current basis matrix (no OF) */
 #endif
 
   return( TRUE );

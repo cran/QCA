@@ -29,24 +29,28 @@ function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, c
     sol.matrix <- NULL
     other.args <- list(...)
     enter <- ifelse (is.element("enter", names(other.args)), other.args$enter, TRUE)
+    complex <- FALSE
     if (is.list(expressions)) {
         mtrx <- expressions[[2]]
         sol.matrix <- expressions[[3]]
+        if (length(expressions) > 3) {
+            complex <- expressions[[4]]
+        }
         if (is.null(sol.matrix)) {
             if (enter) cat("\n")
             stop(simpleError(paste("There are no solutions, given these constraints.", ifelse(enter, "\n\n", ""))))
         }
-        if (ncol(sol.matrix) == 1 & is.double(sol.matrix)) {
-            warning(simpleWarning("The PI chart is too complex, only the first minimal solution returned.\n\n"))
-        }
         expressions <- expressions[[1]]
-    }
-    else if (is.matrix(expressions)) { 
-        if (nrow(expressions) == 1 & identical(unique(as.vector(expressions)), 0L)) {
-            if (enter) cat("\n")
-            stop(simpleError(paste0("All truth table configurations are used, all conditions are minimized.\n",
-                   "       Please check the truth table.", ifelse(enter, "\n\n", ""))))
+        if (nrow(unique(expressions)) != nrow(expressions)) {
+            expressions <- unique(expressions)
+            mtrx <- NULL
+            sol.matrix <- NULL
         }
+    }
+    if (nrow(expressions) == 1 & identical(unique(as.vector(expressions)), 0L)) {
+        if (enter) cat("\n")
+        stop(simpleError(paste0("All truth table configurations are used, all conditions are minimized.\n",
+                "       Please check the truth table.", ifelse(enter, "\n\n", ""))))
     }
     if (FALSE) {
         if (!missing(indata)) {
@@ -78,7 +82,7 @@ function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, c
     notempty <- apply(mtrx, 1, any)
         expressions <- expressions[notempty, , drop = FALSE]
         mtrx <- mtrx[notempty, , drop = FALSE]
-    setColnames(mtrx, rownames(inputt)) 
+    setColnames(mtrx, initial)
     reduced <- list(expressions = expressions, mtrx = mtrx)
     if (nrow(mtrx) > 0) {
         if (row.dom & is.null(sol.matrix)) {
@@ -106,5 +110,5 @@ function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, c
         solution.list <- NA
         solm <- NA
     }
-    return(list(expressions=expressions, mtrx=mtrx, reduced=reduced, all.PIs=all.PIs, solution.list=solution.list, sol.matrix=solm))
+    return(list(expressions=expressions, mtrx=mtrx, reduced=reduced, all.PIs=all.PIs, solution.list=solution.list, sol.matrix=solm, complex = complex))
 }

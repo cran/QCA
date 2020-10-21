@@ -16,7 +16,8 @@ makeChart(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ..
 
 findmin(chart, ...)
 
-solveChart(chart, row.dom = FALSE, all.sol = FALSE, depth, ...)
+solveChart(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, max.comb = 0,
+           first.min = FALSE, ...)
 }
 
 \arguments{
@@ -33,6 +34,9 @@ solveChart(chart, row.dom = FALSE, all.sol = FALSE, depth, ...)
   \item{all.sol}{Derive all possible solutions, irrespective if the disjunctive number of
         prime implicants is minimal or not.}
   \item{depth}{A maximum number of prime implicants for any disjunctive solution.}
+  \item{max.comb}{Numeric, to stop searching for solutions (see Details).}
+  \item{first.min}{Logical, to return only the very first minimal solution (see
+        Details).}
   \item{...}{Other arguments (mainly for backwards compatibility).}
 }
 
@@ -75,6 +79,14 @@ activated, and it is automatically increased if the minimal number of rows \code
 cover all columns is larger. By default, it bounds the disjunctive solutions to at most 5 prime
 implicants, but this number can be increased to widen the search space, with a cost of
 increasing the search time.
+
+The argument \bold{\code{max.comb}} sets a maximum number of combinations to find solutions.
+It is counted in billions and defaulted to zero to signal counting to the maximum possible
+extent. If too complex, the search is stopped and the algorithm returns all found solutions
+up to that point.
+
+For extremly difficult PI charts, the argument \bold{\code{first.min}} controls returning only
+one (the very first found) solution.
 }
 
 \value{

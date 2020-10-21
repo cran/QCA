@@ -214,19 +214,15 @@ STATIC BBrec *pop_BB(BBrec *BB)
   }
 
   /* Unwind other variables */
-  if(lp->bb_upperchange != NULL) {
+  restoreUndoLadder(lp->bb_upperchange, BB->upbo);
+  for(; BB->UBtrack > 0; BB->UBtrack--) {
+    decrementUndoLadder(lp->bb_upperchange);
     restoreUndoLadder(lp->bb_upperchange, BB->upbo);
-    for(; BB->UBtrack > 0; BB->UBtrack--) {
-      decrementUndoLadder(lp->bb_upperchange);
-      restoreUndoLadder(lp->bb_upperchange, BB->upbo);
-    }
   }
-  if(lp->bb_lowerchange != NULL) {
+  restoreUndoLadder(lp->bb_lowerchange, BB->lowbo);
+  for(; BB->LBtrack > 0; BB->LBtrack--) {
+    decrementUndoLadder(lp->bb_lowerchange);
     restoreUndoLadder(lp->bb_lowerchange, BB->lowbo);
-    for(; BB->LBtrack > 0; BB->LBtrack--) {
-      decrementUndoLadder(lp->bb_lowerchange);
-      restoreUndoLadder(lp->bb_lowerchange, BB->lowbo);
-    }
   }
   lp->bb_level--;
   k = BB->varno - lp->rows;
@@ -368,9 +364,12 @@ STATIC MYBOOL initbranches_BB(BBrec *BB)
     /* Otherwise check if we should do automatic branching */
     else if(get_var_branch(lp, k) == BRANCH_AUTOMATIC) {
       new_bound = modf(BB->lastsolution/get_pseudorange(lp->bb_PseudoCost, k, BB->vartype), &temp);
-      if(isnan(new_bound))
+#if 0
+      if(_isnan(new_bound))
         new_bound = 0;
       else if(new_bound < 0)
+#endif
+      if (new_bound < 0)
         new_bound += 1.0;
       BB->isfloor = (MYBOOL) (new_bound <= 0.5);
 
@@ -452,7 +451,7 @@ STATIC MYBOOL fillbranches_BB(BBrec *BB)
     BB->UPbound = lp->infinite;
 
     /* Handle SC-variables for the [0-LoBound> range */
-    if((SC_bound > 0) && (fabs(BB->lastsolution) < SC_bound-intmargin)) {
+    if((SC_bound > 0) && (fabs(BB->lastsolution) < SC_bound)) {
       new_bound = 0;
     }
     /* Handle pure integers (non-SOS, non-SC) */
@@ -483,11 +482,11 @@ STATIC MYBOOL fillbranches_BB(BBrec *BB)
 
     /* Check if the new bound might conflict and possibly make adjustments */
     if(new_bound < BB->lowbo[K])
-      new_bound = BB->lowbo[K] - my_avoidtiny(new_bound-BB->lowbo[K], intmargin);
+      new_bound = BB->lowbo[K] - my_avoidtiny(new_bound-BB->lowbo[K], lp->epsvalue);
     if(new_bound < BB->lowbo[K]) {
 #ifdef Paranoia
       debug_print(lp,
-          "fillbranches_BB: New upper bound value %g conflicts with old lower bound %g\n",
+          "New upper bound value %g conflicts with old lower bound %g\n",
           new_bound, BB->lowbo[K]);
 #endif
       BB->nodesleft--;
@@ -525,7 +524,7 @@ SetLB:
     }
     /* Handle pure integers (non-SOS, non-SC, but Ok for GUB!) */
     else if(BB->vartype == BB_INT) {
-      if((ceil(BB->lastsolution) == BB->lastsolution) ||    /* Skip branch 0 if the current solution is integer */
+      if(((ceil(BB->lastsolution) == BB->lastsolution)) ||    /* Skip branch 0 if the current solution is integer */
          (ceil(BB->lastsolution) >   /* Skip cases where the upper bound becomes violated */
           unscaled_value(lp, ult_upbo, K)+intmargin) ||
           (BB->isSOS && (BB->lastsolution == 0))) {           /* Don't branch 0 since this is handled in SOS logic */
@@ -557,11 +556,11 @@ SetLB:
 
     /* Check if the new bound might conflict and possibly make adjustments */
     if(new_bound > BB->upbo[K])
-      new_bound = BB->upbo[K] + my_avoidtiny(new_bound-BB->upbo[K], intmargin);
+      new_bound = BB->upbo[K] + my_avoidtiny(new_bound-BB->upbo[K], lp->epsvalue);
     if(new_bound > BB->upbo[K]) {
 #ifdef Paranoia
       debug_print(lp,
-        "fillbranches_BB: New lower bound value %g conflicts with old upper bound %g\n",
+        "New lower bound value %g conflicts with old upper bound %g\n",
         new_bound, BB->upbo[K]);
 #endif
       BB->nodesleft--;
@@ -605,11 +604,9 @@ Finish:
           BB->isfloor = FALSE;
         else if(fabs(BB->upbo[K]-BB->UPbound) < intmargin)
           BB->isfloor = TRUE;
-        else {
-          BB->isfloor = TRUE;
+        else
           report(BB->lp, IMPORTANT, "fillbranches_BB: Inconsistent equal-valued bounds for %s\n",
                                     get_col_name(BB->lp, k));
-        }
       }
       if((BB->nodesleft == 1) &&
          ((BB->isfloor && (BB->UPbound >= lp->infinite)) ||
@@ -617,7 +614,7 @@ Finish:
         BB->isfloor = !BB->isfloor;
       /* Header initialization */
       BB->isfloor = !BB->isfloor;
-      while(!OKstatus && /* !userabort(lp, -1) */ lp->spx_status != TIMEOUT && !lp->bb_break && (BB->nodesleft > 0))
+      while(!OKstatus && !lp->bb_break && (BB->nodesleft > 0))
         OKstatus = nextbranch_BB( BB );
     }
 
@@ -870,22 +867,10 @@ STATIC int solve_LP(lprec *lp, BBrec *BB)
 
   /* Handle the different simplex outcomes */
   if(status != OPTIMAL) {
-    if(lp->bb_level <= 1)
-      lp->bb_parentOF = lp->infinite;
+    lp->bb_parentOF = lp->infinite;
     if((status == USERABORT) || (status == TIMEOUT)) {
       /* Construct the last feasible solution, if available */
       if((lp->solutioncount == 0) &&
-         /*
-            30/01/08 <peno> added MIP_count test because in following situation thing were wrong:
-             - The model contains integers
-             - A break at first is set
-             - A timeout is set
-             - The timeout occurs before a first integer solution is found
-             - When the timeout occurs, the simplex algorithm is in phase 2 and has a feasible (but non-integer) solution, but not optimal yet.
-            If above situation occurs then a (sub-optimal) solution was returned while no integer
-            solution isn't found yet at this time
-         */
-         (MIP_count(lp) == 0) &&
          ((lp->simplex_mode & (SIMPLEX_Phase2_PRIMAL | SIMPLEX_Phase2_DUAL)) > 0)) {
         lp->solutioncount++;
         construct_solution(lp, NULL);
@@ -899,15 +884,6 @@ STATIC int solve_LP(lprec *lp, BBrec *BB)
       report(lp, NORMAL, "The model %s\n",
       (status == UNBOUNDED) ? "is UNBOUNDED" :
       ((status == INFEASIBLE) ? "is INFEASIBLE" : "FAILED"));
-    else {
-#ifdef Paranoia
-      if((status != FATHOMED) && (status != INFEASIBLE))
-        report(lp, SEVERE, "spx_solve: Invalid return code %d during B&B\n", status);
-#endif
-      /* If we fathomed a node due to an inferior OF having been detected, return infeasible */
-      if(status == FATHOMED)
-        lp->spx_status = INFEASIBLE;
-    }
   }
 
   else { /* ... there is a good solution */
@@ -922,18 +898,12 @@ STATIC int solve_LP(lprec *lp, BBrec *BB)
 
     else if((lp->bb_totalnodes == 0) && (MIP_count(lp) > 0)) {
       if(lp->lag_status != RUNNING) {
-        report(lp, NORMAL, "\nRelaxed solution  " RESULTVALUEMASK " after %10.0f iter is B&B base.\n",
-                           lp->solution[0], (double) lp->total_iter);
+       report(lp, NORMAL, "\nRelaxed solution  " RESULTVALUEMASK " after %10.0f iter is B&B base.\n",
+                          lp->solution[0], (double) lp->total_iter);
         report(lp, NORMAL, " \n");
       }
-      if((lp->usermessage != NULL) && (lp->msgmask & MSG_LPOPTIMAL)) {
-        REAL *best_solution = lp->best_solution;
-
-        /* transfer_solution(lp, TRUE); */
-        lp->best_solution = lp->solution;
+      if((lp->usermessage != NULL) && (lp->msgmask & MSG_LPOPTIMAL))
         lp->usermessage(lp, lp->msghandle, MSG_LPOPTIMAL);
-        lp->best_solution = best_solution;
-      }
       set_var_priority(lp);
     }
 
@@ -986,14 +956,7 @@ STATIC int rcfbound_BB(BBrec *BB, int varno, MYBOOL isINT, REAL *newbound, MYBOO
   rangeLU = upbo - lowbo;
 
   if(rangeLU > lp->epsprimal) {
-#if 1      /* v5.5 problematic - Gap between current node and the current best bound */
     deltaOF = lp->rhs[0] - lp->bb_workOF;
-#elif 0    /* v6 less aggressive - Gap between current best bound and the relaxed problem */
-    deltaOF = my_chsign(is_maxim(lp), lp->real_solution) - lp->bb_workOF;
-#else      /* v6 more aggressive - Gap between current node and the relaxed problem */
-    deltaOF = my_chsign(is_maxim(lp), lp->real_solution) - lp->rhs[0];
-#endif
-
     deltaRC = my_chsign(!lp->is_lower[varno], lp->drow[varno]);
     /* Protect against divisions with tiny numbers and stray sign
        reversals of the reduced cost */
@@ -1043,7 +1006,7 @@ STATIC int rcfbound_BB(BBrec *BB, int varno, MYBOOL isINT, REAL *newbound, MYBOO
 
 STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
 {
-  int    countsossc, countnint, k, reasonmsg = MSG_NONE;
+  int    countsossc, countnint, k;
   REAL   varsol;
   MYBOOL is_better = FALSE, is_equal = FALSE, is_feasible = TRUE;
   lprec  *lp = BB->lp;
@@ -1138,7 +1101,7 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
     /* Check if we have reached the depth limit for any individual variable
       (protects against infinite recursions of mainly integer variables) */
     k = *varno-lp->rows;
-    if((*varno > 0) && (lp->bb_limitlevel != 0) && (lp->bb_varactive[k] >= abs(lp->bb_limitlevel) /* abs(DEF_BB_LIMITLEVEL) */)) {
+    if((*varno > 0) && (lp->bb_varactive[k] >= abs(DEF_BB_LIMITLEVEL))) {
       /* if(!is_action(lp->nomessage, NOMSG_BBLIMIT)) {*/
 /*
         report(lp, IMPORTANT, "findnode_BB: Reached B&B depth limit %d for variable %d; will not dive further.\n\n",
@@ -1153,28 +1116,15 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
     /* Check if the current MIP solution is optimal; equal or better */
     if(*varno == 0) {
       is_better = (MYBOOL) (lp->solutioncount == 0) || bb_better(lp, OF_INCUMBENT | OF_DELTA, OF_TEST_BT);
-#if 1
       is_better &= bb_better(lp, OF_INCUMBENT | OF_DELTA, OF_TEST_BT | OF_TEST_RELGAP);
-#else
-      /* Check if we can determine clear improvement */
-      is_better = (MYBOOL) (lp->solutioncount == 0) ||
-                  (MYBOOL) ((lp->bb_deltaOF > 0) &&
-                            (my_chsign(is_maxim(lp), lp->solution[0]-lp->best_solution[0]) < 0));
-
-      /* Apply gap-based improvement testing if the current solution is not clearly better */
-
-      if(!is_better) {
-        is_better  = bb_better(lp, OF_INCUMBENT | OF_DELTA, OF_TEST_BT);
-        is_better |= bb_better(lp, OF_INCUMBENT | OF_DELTA, OF_TEST_BT | OF_TEST_RELGAP);
-      }
-#endif
       is_equal  = !is_better;
 
       if(is_equal) {
         if((lp->solutionlimit <= 0) || (lp->solutioncount < lp->solutionlimit)) {
           lp->solutioncount++;
           SETMIN(lp->bb_solutionlevel, lp->bb_level);
-          reasonmsg = MSG_MILPEQUAL;
+          if((lp->usermessage != NULL) && (lp->msgmask & MSG_MILPEQUAL))
+            lp->usermessage(lp, lp->msghandle, MSG_MILPEQUAL);
         }
       }
 
@@ -1198,11 +1148,11 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
                  lp->solution[0], (double) lp->total_iter, (double) lp->bb_totalnodes,
                  100.0*fabs(my_reldiff(lp->solution[0], lp->bb_limitOF)));
         }
-        if(MIP_count(lp) > 0) {
-          if(lp->bb_improvements == 0)
-            reasonmsg = MSG_MILPFEASIBLE;
-          else
-            reasonmsg = MSG_MILPBETTER;
+        if((lp->usermessage != NULL) && (MIP_count(lp) > 0)) {
+          if((lp->msgmask & MSG_MILPFEASIBLE) && (lp->bb_improvements == 0))
+            lp->usermessage(lp, lp->msghandle, MSG_MILPFEASIBLE);
+          else if((lp->msgmask & MSG_MILPBETTER) && (lp->msgmask & MSG_MILPBETTER))
+            lp->usermessage(lp, lp->msghandle, MSG_MILPBETTER);
         }
 
         lp->bb_status = FEASFOUND;
@@ -1244,9 +1194,6 @@ STATIC MYBOOL findnode_BB(BBrec *BB, int *varno, int *vartype, int *varcus)
          ) {
       }
     }
-    if((reasonmsg != MSG_NONE) && (lp->msgmask & reasonmsg) && (lp->usermessage != NULL))
-      lp->usermessage(lp, lp->msghandle, reasonmsg);
-
     if(lp->print_sol != FALSE) {
       print_objective(lp);
       print_solution(lp, 1);
@@ -1400,19 +1347,8 @@ STATIC int run_BB(lprec *lp)
 
   /* Perform the branch & bound loop */
   while(lp->bb_level > 0) {
+
     status = solve_BB(currentBB);
-
-#if 0
-    if((lp->bb_level == 1) && (MIP_count(lp) > 0)) {
-      if(status == RUNNING)
-        ;
-
-      /* Check if there was an integer solution of an aborted model */
-      else if((status == SUBOPTIMAL) && (lp->solutioncount == 1) &&
-              findnode_BB(currentBB, &varno, &vartype, &varcus))
-        status = USERABORT;
-    }
-#endif
 
     if((status == OPTIMAL) && findnode_BB(currentBB, &varno, &vartype, &varcus))
       currentBB = push_BB(lp, currentBB, varno, vartype, varcus);
@@ -1428,7 +1364,7 @@ STATIC int run_BB(lprec *lp)
 
   /* Check if we should adjust status */
   if(lp->solutioncount > prevsolutions) {
-    if((status == PROCBREAK) || (status == USERABORT) || (status == TIMEOUT) || userabort(lp, -1))
+    if((status == PROCBREAK) || (status == USERABORT) || (status == TIMEOUT))
       status = SUBOPTIMAL;
     else
       status = OPTIMAL;

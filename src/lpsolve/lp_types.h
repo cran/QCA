@@ -1,10 +1,6 @@
 #ifndef HEADER_lp_types
 #define HEADER_lp_types
 
-#ifdef WIN32
-  #include <windows.h>
-#endif
-
 /* Define data types                                                         */
 /* ------------------------------------------------------------------------- */
 #ifndef LLONG
@@ -64,9 +60,9 @@
 #endif
 #ifndef MAXUINT64
   #if defined _LONGLONG || defined __LONG_LONG_MAX__ || defined LLONG_MAX
-    #define MAXUINT64 18446744073709551615ll
+    #define MAXUINT64 18446744073709551616ll
   #else
-    #define MAXUINT64 18446744073709551615l
+    #define MAXUINT64 18446744073709551616l
   #endif
 #endif
 
@@ -197,10 +193,10 @@
 #endif
 #define my_if(t, x, y)          ((t) ? (x) : (y))
 #define my_sign(x)              ((x) < 0 ? -1 : 1)
-#if 1
+#if 0
   #define my_chsign(t, x)       ( ((t) && ((x) != 0)) ? -(x) : (x))
 #else
-  #define my_chsign(t, x)       ( (2*((t) == 0) - 1) * (x) )  /* "Pipelined", but problem with "negative zero" and possible problems on AIX  */
+  #define my_chsign(t, x)       ( (2*((t) == 0) - 1) * (x) )  /* "Pipelined" */
 #endif
 #define my_flipsign(x)          ( fabs((REAL) (x)) == 0 ? 0 : -(x) )
 #define my_roundzero(val, eps)  if (fabs((REAL) (val)) < eps) val = 0

@@ -32,7 +32,12 @@ function(chart, ...) {
             stop(simpleError("Use a logical, T/F matrix. See makeChart()'s output.\n\n"))
         }
     }
-    result <- .Call("C_findmin", chart * 1)
+    if (all(colSums(chart) > 0)) {
+        result <- .Call("C_findmin", matrix(as.logical(chart), nrow = nrow(chart)), PACKAGE = "QCA")
+    }
+    else {
+        result <- 0
+    }
     class(result) <- c("numeric", "QCA_findmin")
     return(result)
 }

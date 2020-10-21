@@ -190,7 +190,7 @@ STATIC MYBOOL mat_validate(MATrec *mat);
 STATIC MYBOOL mat_equalRows(MATrec *mat, int baserow, int comprow);
 STATIC int mat_findelm(MATrec *mat, int row, int column);
 STATIC int mat_findins(MATrec *mat, int row, int column, int *insertpos, MYBOOL validate);
-STATIC void mat_multcol(MATrec *mat, int col_nr, REAL mult, MYBOOL DoObj);
+STATIC void mat_multcol(MATrec *mat, int col_nr, REAL mult);
 STATIC REAL mat_getitem(MATrec *mat, int row, int column);
 STATIC MYBOOL mat_setitem(MATrec *mat, int row, int column, REAL value);
 STATIC MYBOOL mat_additem(MATrec *mat, int row, int column, REAL delta);

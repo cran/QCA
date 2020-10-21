@@ -52,7 +52,6 @@
 #include "lp_mipbb.h"
 #include "lp_report.h"
 #include "lp_MDO.h"
-#include "lp_bit.h"
 
 #if INVERSE_ACTIVE==INVERSE_LUMOD
   #include "lp_LUMOD.h"
@@ -86,7 +85,15 @@
 # include "lp_fortify.h"
 #endif
 
-#define sensrejvar TRUE
+
+/* ---------------------------------------------------------------------------------- */
+/* Define some globals                                                                */
+/* ---------------------------------------------------------------------------------- */
+int callcount = 0;
+
+/* buttrey remove */
+int buttrey_thing = 0;
+FILE *buttrey_debugfile;
 
 /* Return lp_solve version information */
 void __WINAPI lp_solve_version(int *majorversion, int *minorversion, int *release, int *build)
@@ -106,10 +113,32 @@ void __WINAPI lp_solve_version(int *majorversion, int *minorversion, int *releas
 /* Various interaction elements                                                       */
 /* ---------------------------------------------------------------------------------- */
 
+#if defined INLINE
+INLINE void set_biton(MYBOOL *bitarray, int item)
+{
+  bitarray[item / 8] |= (1 << (item % 8));
+}
+INLINE MYBOOL is_biton(MYBOOL *bitarray, int item)
+{
+  return( (MYBOOL) ((bitarray[item / 8] & (1 << (item % 8))) != 0) );
+}
+#else
+void set_biton(MYBOOL *bitarray, int item);
+MYBOOL set_bitoff(MYBOOL *bitarray, int item);
+MYBOOL is_biton(MYBOOL *bitarray, int item);
+#endif
+/* This next line went with "if defined INLINE" above SEB April 14 2006 */
+#if 0
+INLINE void set_bitoff(MYBOOL *bitarray, int item)
+{
+  bitarray[item / 8] &= ~(1 << (item % 8));
+}
+#endif
+
 MYBOOL __WINAPI userabort(lprec *lp, int message)
 {
-  MYBOOL abort;
-  int spx_save;
+  static MYBOOL abort;
+  static int spx_save;
 
   spx_save = lp->spx_status;
   lp->spx_status = RUNNING;
@@ -128,8 +157,10 @@ MYBOOL __WINAPI userabort(lprec *lp, int message)
 
 STATIC int yieldformessages(lprec *lp)
 {
+  static double currenttime;
+
   if((lp->sectimeout > 0) &&
-     ((timeNow()-lp->timestart)-(REAL)lp->sectimeout>0))
+     (((currenttime = timeNow()) -lp->timestart)-(REAL)lp->sectimeout>0))
     lp->spx_status = TIMEOUT;
 
   if(lp->ctrlc != NULL) {
@@ -147,15 +178,15 @@ STATIC int yieldformessages(lprec *lp)
 
 void __WINAPI set_outputstream(lprec *lp, FILE *stream)
 {
-  if((lp->outstream != NULL) && (lp->outstream != stdout)) {
+  if((lp->outstream != NULL) ) { /* && (lp->outstream != stdout)) { */
     if(lp->streamowned)
       fclose(lp->outstream);
     else
       fflush(lp->outstream);
   }
-  if(stream == NULL)
-    lp->outstream = stdout;
-  else
+/*  if(stream == NULL)
+**    lp->outstream = stdout;
+**  else */
     lp->outstream = stream;
   lp->streamowned = FALSE;
 }
@@ -163,7 +194,7 @@ void __WINAPI set_outputstream(lprec *lp, FILE *stream)
 MYBOOL __WINAPI set_outputfile(lprec *lp, char *filename)
 {
   MYBOOL ok;
-  FILE   *output = stdout;
+  FILE   *output; /* = stdout; */
 
   ok = (MYBOOL) ((filename == NULL) || (*filename == 0) || ((output = fopen(filename,"w")) != NULL));
   if(ok) {
@@ -216,88 +247,64 @@ void __WINAPI put_msgfunc(lprec *lp, lphandleint_func newmsg, void *msghandle, i
 /* ---------------------------------------------------------------------------------- */
 /* DLL exported function                                                              */
 /* ---------------------------------------------------------------------------------- */
-lprec * __WINAPI read_MPS(char *filename, int options)
+lprec * __WINAPI read_MPS(char *filename, int verbose)
 {
   lprec *lp = NULL;
-  int typeMPS;
 
-  typeMPS = (options & ~0x07) >> 2;
-  if ((typeMPS & (MPSFIXED|MPSFREE)) == 0)
-    typeMPS |= MPSFIXED;
-  if(MPS_readfile(&lp, filename, typeMPS, options & 0x07))
+  if(MPS_readfile(&lp, filename, MPSFIXED, verbose))
     return( lp );
   else
     return( NULL );
 }
-lprec * __WINAPI read_mps(FILE *filename, int options)
+lprec * __WINAPI read_mps(FILE *filename, int verbose)
 {
   lprec *lp = NULL;
-  int typeMPS;
 
-  typeMPS = (options & ~0x07) >> 2;
-  if ((typeMPS & (MPSFIXED|MPSFREE)) == 0)
-    typeMPS |= MPSFIXED;
-  if(MPS_readhandle(&lp, filename, typeMPS, options & 0x07))
+  if(MPS_readhandle(&lp, filename, MPSFIXED, verbose))
     return( lp );
   else
     return( NULL );
 }
-/* #if defined develop */
-lprec * __WINAPI read_mpsex(void *userhandle, read_modeldata_func read_modeldata, int options)
+#if defined develop
+lprec * __WINAPI read_mpsex(void *userhandle, read_modeldata_func read_modeldata, int verbose)
 {
   lprec *lp = NULL;
-  int typeMPS;
 
-  typeMPS = (options & ~0x07) >> 2;
-  if ((typeMPS & (MPSFIXED|MPSFREE)) == 0)
-    typeMPS |= MPSFIXED;
-  if(MPS_readex(&lp, userhandle, read_modeldata, typeMPS, options & 0x07))
+  if(MPS_readex(&lp, userhandle, read_modeldata, MPSFIXED, verbose))
     return( lp );
   else
     return( NULL );
 }
-/* #endif */
-lprec * __WINAPI read_freeMPS(char *filename, int options)
+#endif
+lprec * __WINAPI read_freeMPS(char *filename, int verbose)
 {
   lprec *lp = NULL;
-  int typeMPS;
 
-  typeMPS = (options & ~0x07) >> 2;
-  typeMPS &= ~MPSFIXED;
-  typeMPS |= MPSFREE;
-  if(MPS_readfile(&lp, filename, typeMPS, options & 0x07))
+  if(MPS_readfile(&lp, filename, MPSFREE, verbose))
     return( lp );
   else
     return( NULL );
 }
-lprec * __WINAPI read_freemps(FILE *filename, int options)
+lprec * __WINAPI read_freemps(FILE *filename, int verbose)
 {
   lprec *lp = NULL;
-  int typeMPS;
 
-  typeMPS = (options & ~0x07) >> 2;
-  typeMPS &= ~MPSFIXED;
-  typeMPS |= MPSFREE;
-  if(MPS_readhandle(&lp, filename, typeMPS, options & 0x07))
+  if(MPS_readhandle(&lp, filename, MPSFREE, verbose))
     return( lp );
   else
     return( NULL );
 }
-/* #if defined develop */
-lprec * __WINAPI read_freempsex(void *userhandle, read_modeldata_func read_modeldata, int options)
+#if defined develop
+lprec * __WINAPI read_freempsex(void *userhandle, read_modeldata_func read_modeldata, int verbose)
 {
   lprec *lp = NULL;
-  int typeMPS;
 
-  typeMPS = (options & ~0x07) >> 2;
-  typeMPS &= ~MPSFIXED;
-  typeMPS |= MPSFREE;
-  if(MPS_readex(&lp, userhandle, read_modeldata, typeMPS, options & 0x07))
+  if(MPS_readex(&lp, userhandle, read_modeldata, MPSFREE, verbose))
     return( lp );
   else
     return( NULL );
 }
-/* #endif */
+#endif
 MYBOOL __WINAPI write_mps(lprec *lp, char *filename)
 {
   return(MPS_writefile(lp, MPSFIXED, filename));
@@ -366,7 +373,7 @@ void __WINAPI reset_params(lprec *lp)
 
   lp->epsmachine        = DEF_EPSMACHINE;
   lp->epsperturb        = DEF_PERTURB;
-  /* lp->lag_accept        = DEF_LAGACCEPT; */
+  lp->lag_accept        = DEF_LAGACCEPT;
   set_epslevel(lp, EPS_DEFAULT);
 
   lp->tighten_on_set    = FALSE;
@@ -444,10 +451,6 @@ void __WINAPI unscale(lprec *lp)
 }
 int __WINAPI solve(lprec *lp)
 {
-#if defined FPUexception
-  catchFPU(_EM_INVALID | _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW);
-#endif
-
   if(has_BFP(lp)) {
     lp->solvecount++;
     if(is_add_rowmode(lp))
@@ -567,7 +570,6 @@ MYBOOL __WINAPI is_anti_degen(lprec *lp, int testmask)
 
 void __WINAPI set_presolve(lprec *lp, int presolvemode, int maxloops)
 {
-  presolvemode &= ~PRESOLVE_REDUCEMIP; /* disable PRESOLVE_REDUCEMIP since it is very rare that this is effective, and also that it adds code complications and delayed presolve effects that are not captured properly. */
   lp->do_presolve = presolvemode;
   lp->presolveloops = maxloops;
 }
@@ -612,7 +614,7 @@ int __WINAPI get_bb_rule(lprec *lp)
   return(lp->bb_rule);
 }
 
-/* INLINE */ MYBOOL is_bb_rule(lprec *lp, int bb_rule)
+INLINE MYBOOL is_bb_rule(lprec *lp, int bb_rule)
 {
   return( (MYBOOL) ((lp->bb_rule & NODE_STRATEGYMASK) == bb_rule) );
 }
@@ -996,9 +998,7 @@ COUNTER __WINAPI get_total_iter(lprec *lp)
 
 REAL __WINAPI get_objective(lprec *lp)
 {
-  if(lp->spx_status == OPTIMAL)
-    ;
-  else if(!lp->basis_valid) {
+  if(!lp->basis_valid) {
     report(lp, CRITICAL, "get_objective: Not a valid basis\n");
     return(0.0);
   }
@@ -1083,9 +1083,7 @@ REAL __WINAPI get_var_dualresult(lprec *lp, int index)
 
 MYBOOL __WINAPI get_variables(lprec *lp, REAL *var)
 {
-  if(lp->spx_status == OPTIMAL)
-    ;
-  else if(!lp->basis_valid) {
+  if(!lp->basis_valid) {
     report(lp, CRITICAL, "get_variables: Not a valid basis\n");
     return(FALSE);
   }
@@ -1096,9 +1094,7 @@ MYBOOL __WINAPI get_variables(lprec *lp, REAL *var)
 
 MYBOOL __WINAPI get_ptr_variables(lprec *lp, REAL **var)
 {
-  if(lp->spx_status == OPTIMAL)
-    ;
-  else if(!lp->basis_valid) {
+  if(!lp->basis_valid) {
     report(lp, CRITICAL, "get_ptr_variables: Not a valid basis\n");
     return(FALSE);
   }
@@ -1110,9 +1106,7 @@ MYBOOL __WINAPI get_ptr_variables(lprec *lp, REAL **var)
 
 MYBOOL __WINAPI get_constraints(lprec *lp, REAL *constr)
 {
-  if(lp->spx_status == OPTIMAL)
-    ;
-  else if(!lp->basis_valid) {
+  if(!lp->basis_valid) {
     report(lp, CRITICAL, "get_constraints: Not a valid basis\n");
     return(FALSE);
   }
@@ -1123,9 +1117,7 @@ MYBOOL __WINAPI get_constraints(lprec *lp, REAL *constr)
 
 MYBOOL __WINAPI get_ptr_constraints(lprec *lp, REAL **constr)
 {
-  if(lp->spx_status == OPTIMAL)
-    ;
-  else if(!lp->basis_valid) {
+  if(!lp->basis_valid) {
     report(lp, CRITICAL, "get_ptr_constraints: Not a valid basis\n");
     return(FALSE);
   }
@@ -1251,13 +1243,13 @@ MYBOOL __WINAPI get_ptr_sensitivity_objex(lprec *lp, REAL **objfrom, REAL **objt
   }
 
   if((objfromvalue != NULL) /* || (objtillvalue != NULL) */) {
-    if(lp->objfromvalue == NULL) {
+    if(lp->objfromvalue == NULL /* || (lp->objtillvalue == NULL) */) {
       if((MIP_count(lp) > 0) && (lp->bb_totalnodes > 0)) {
         report(lp, CRITICAL, "get_ptr_sensitivity_objex: Sensitivity unknown\n");
         return(FALSE);
       }
       construct_sensitivity_duals(lp);
-      if(lp->objfromvalue == NULL)
+      if(lp->objfromvalue == NULL /* || (lp->objtillvalue == NULL) */)
         return(FALSE);
     }
   }
@@ -1370,10 +1362,7 @@ lprec * __WINAPI make_lp(int rows, int columns)
 {
   lprec *lp;
 
-# if defined FORTIFY
-   /* Fortify_EnterScope(); */
-# endif
-
+  callcount++;
   if(rows < 0 || columns < 0)
     return(NULL);
 
@@ -1385,7 +1374,6 @@ lprec * __WINAPI make_lp(int rows, int columns)
   lp->names_used    = FALSE;
   lp->use_row_names = TRUE;
   lp->use_col_names = TRUE;
-  lp->rowcol_name   = NULL;
 
   /* Do standard initializations ------------------------------------------------------------ */
 #if 1
@@ -1484,12 +1472,6 @@ lprec * __WINAPI make_lp(int rows, int columns)
 
   set_minim(lp);
   set_infiniteex(lp, DEF_INFINITE, TRUE);
-  /* set_break_numeric_accuracy(lp, DEF_INFINITE); */
-  /* set_break_numeric_accuracy(lp, 1e-5); */
-  /* set_break_numeric_accuracy(lp, 5e-5); */
-  /* set_break_numeric_accuracy(lp, 1e-6); */
-  /* set_break_numeric_accuracy(lp, 5e-6); */
-  set_break_numeric_accuracy(lp, 5e-7);
 
   initPricer(lp);
 
@@ -1504,7 +1486,6 @@ lprec * __WINAPI make_lp(int rows, int columns)
   lp->msghandle = NULL;
 
   lp->timecreate = timeNow();
-
   return(lp);
 }
 
@@ -1542,7 +1523,6 @@ void __WINAPI delete_lp(lprec *lp)
   if(lp == NULL)
     return;
 
-  FREE(lp->rowcol_name);
   FREE(lp->lp_name);
   FREE(lp->ex_status);
   if(lp->names_used) {
@@ -1644,36 +1624,6 @@ void __WINAPI delete_lp(lprec *lp)
 
   FREE(lp);
 
-# if defined FORTIFY
-    /* Fortify_LeaveScope(); */
-# endif
-}
-
-static MYBOOL get_SOS(lprec *lp, int index, char *name, int *sostype, int *priority, int *count, int *sosvars, REAL *weights)
-{
-  SOSrec *SOS;
-
-  if((index < 1) || (index > SOS_count(lp)))
-    return( FALSE );
-  SOS = lp->SOS->sos_list[index-1];
-  if(name != NULL)
-    strcpy(name, SOS->name);
-  if(sostype != NULL)
-    *sostype = SOS->type;
-  if(priority != NULL)
-    *priority = SOS->priority;
-  if(count != NULL) {
-    *count = SOS->size;
-    if(sosvars != NULL) {
-      int i;
-      for(i = 1; i <= *count; i++) {
-        sosvars[i-1] = SOS->members[i];
-        if(weights != NULL)
-          weights[i-1] = SOS->weights[i];
-      }
-    }
-  }
-  return( TRUE );
 }
 
 /* Make a copy of the existing model using (mostly) high-level
@@ -1681,132 +1631,70 @@ static MYBOOL get_SOS(lprec *lp, int index, char *name, int *sostype, int *prior
 lprec* __WINAPI copy_lp(lprec *lp)
 {
   int   i, n, *idx = NULL;
-  REAL  hold, *val = NULL, infinite;
+  REAL  hold, *val = NULL;
   lprec *newlp = NULL;
-  char buf[256], ok = FALSE;
-  int sostype, priority, count, *sosvars, rows, columns;
-  REAL *weights = NULL;
 
 #if 0
   if(lp->wasPresolved)
     return( newlp );
 #endif
 
-  rows = get_Nrows(lp);
-  columns = get_Ncolumns(lp);
-
-  if(!allocINT(lp, &idx, rows+1, FALSE) ||
-     !allocREAL(lp, &val, rows+1, FALSE))
+  if(!allocINT(lp, &idx, lp->rows+1, FALSE) ||
+     !allocREAL(lp, &val, lp->rows+1, FALSE))
     goto Finish;
 
   /* Create the new object */
-  newlp = make_lp(rows, 0);
-  if(newlp == NULL)
-    goto Finish;
-  if(!resize_lp(newlp, rows, columns))
-    goto Finish;
+  newlp = make_lp(lp->rows, 0);
+  resize_lp(newlp, lp->rows, lp->columns);
   set_sense(newlp, is_maxim(lp));
-  set_use_names(newlp, FALSE, is_use_names(lp, FALSE));
-  set_use_names(newlp, TRUE, is_use_names(lp, TRUE));
-  if(!set_lp_name(newlp, get_lp_name(lp)))
-    goto Finish;
-  /* set_algopt(newlp, get_algopt(lp)); */ /* v6 */
-  set_verbose(newlp, get_verbose(lp));
 
-  /* Transfer standard simplex parameters */
+  /* Transfer parameters */
   set_epspivot(newlp, get_epspivot(lp));
   set_epsel(newlp, get_epsel(lp));
   set_epsb(newlp, get_epsb(lp));
   set_epsd(newlp, get_epsd(lp));
+  set_epsint(newlp, get_epsint(lp));
   set_pivoting(newlp, get_pivoting(lp));
   set_negrange(newlp, lp->negrange);
   set_infinite(newlp, get_infinite(lp));
   set_presolve(newlp, get_presolve(lp), get_presolveloops(lp));
   set_scaling(newlp, get_scaling(lp));
-  set_scalelimit(newlp, get_scalelimit(lp));
   set_simplextype(newlp, get_simplextype(lp));
-  set_epsperturb(newlp, get_epsperturb(lp));
-  set_anti_degen(newlp, get_anti_degen(lp));
-  set_improve(newlp, get_improve(lp));
-  set_basiscrash(newlp, get_basiscrash(lp));
-  set_maxpivot(newlp, get_maxpivot(lp));
-  set_timeout(newlp, get_timeout(lp));
-
-  /* Transfer MILP parameters */
-  set_epsint(newlp, get_epsint(lp));
-  set_bb_rule(newlp, get_bb_rule(lp));
-  set_bb_depthlimit(newlp, get_bb_depthlimit(lp));
-  set_bb_floorfirst(newlp, get_bb_floorfirst(lp));
-  set_mip_gap(newlp, TRUE, get_mip_gap(lp, TRUE));
-  set_mip_gap(newlp, FALSE, get_mip_gap(lp, FALSE));
-  set_break_at_first(newlp, is_break_at_first(lp));
-  set_break_at_value(newlp, get_break_at_value(lp));
 
   /* Set RHS and range */
-  infinite = get_infinite(lp);
-  for(i = 0; i <= rows; i++) {
+  for(i = 0; i <= lp->rows; i++) {
     if(i > 0)
-      if(!set_constr_type(newlp, i, get_constr_type(lp, i)))
-        goto Finish;
-    if(!set_rh(newlp, i, get_rh(lp, i)))
-      goto Finish;
-    if((i > 0) && ((hold = get_rh_range(lp, i)) < infinite))
-      if(!set_rh_range(newlp, i, hold))
-        goto Finish;
-    if(lp->names_used && lp->use_row_names && (lp->row_name[i] != NULL) && (lp->row_name[i]->name != NULL))
-      if(!set_row_name(newlp, i, get_row_name(lp, i)))
-        goto Finish;
+      set_constr_type(newlp, 0, get_constr_type(lp, i));
+    set_rh(newlp, i, get_rh(lp, 0));
+    if((i > 0) && ((hold = get_rh_range(lp, i)) < lp->infinite))
+      set_rh_range(newlp, i, hold);
+    if(lp->names_used)
+      set_row_name(newlp, i, get_row_name(lp, i));
   }
-
   /* Load the constraint matrix and variable definitions */
-  for(i = 1; i <= columns; i++) {
+  for(i = 1; i <= lp->columns; i++) {
     n = get_columnex(lp, i, val, idx);
-    if ((n < 0) || (!add_columnex(newlp, n, val, idx)))
-      goto Finish;
-    if(is_binary(lp, i)) {
-      if (!set_binary(newlp, i, TRUE))
-        goto Finish;
-    }
+    add_columnex(newlp, n, val, idx);
+    if(is_binary(lp, i))
+      set_binary(newlp, i, TRUE);
     else {
       if(is_int(lp, i))
-        if(!set_int(newlp, i, TRUE))
-          goto Finish;
+        set_int(newlp, i, TRUE);
       if((hold = get_lowbo(lp, i)) != 0)
-        if(!set_lowbo(newlp, i, hold))
-          goto Finish;
-      if((hold = get_upbo(lp, i)) < infinite)
-        if(!set_upbo(newlp, i, hold))
-          goto Finish;
+        set_lowbo(newlp, i, hold);
+      if((hold = get_upbo(lp, i)) < lp->infinite)
+        set_upbo(newlp, i, hold);
     }
     if(is_semicont(lp, i))
-      if(!set_semicont(newlp, i, TRUE))
-        goto Finish;
-    if(lp->names_used && lp->use_col_names && (lp->col_name[i] != NULL) && (lp->col_name[i]->name != NULL))
-      if(!set_col_name(newlp, i, get_col_name(lp, i)))
-        goto Finish;
+      set_semicont(newlp, i, TRUE);
+    if(lp->names_used)
+      set_col_name(newlp, i, get_col_name(lp, i));
   }
 
-  /* copy SOS data */
-  for(i = 1; get_SOS(lp, i, buf, &sostype, &priority, &count, NULL, NULL); i++)
-    if (count) {
-      if(!allocINT(lp, &sosvars, count, FALSE) ||
-         !allocREAL(lp, &weights, count, FALSE))
-        n = 0;
-      else {
-        get_SOS(lp, i, buf, &sostype, &priority, &count, sosvars, weights);
-        n = add_SOS(newlp, buf, sostype, priority, count, sosvars, weights);
-      }
-      FREE(weights);
-      FREE(sosvars);
-      if(n == 0)
-        goto Finish;
-    }
-
-#if 0
   /* Other parameters set if the source model was previously solved */
   if(lp->solvecount > 0) {
     MEMCOPY(newlp->scalars, lp->scalars, lp->sum+1);
-    MEMCOPY(newlp->var_basic, lp->var_basic, rows+1);
+    MEMCOPY(newlp->var_basic, lp->var_basic, lp->rows+1);
     MEMCOPY(newlp->is_basic, lp->is_basic, lp->sum+1);
     MEMCOPY(newlp->is_lower, lp->is_lower, lp->sum+1);
     MEMCOPY(newlp->solution, lp->solution, lp->sum+1);
@@ -1817,14 +1705,9 @@ lprec* __WINAPI copy_lp(lprec *lp)
     newlp->solutioncount = lp->solutioncount;
     newlp->solvecount = lp->solvecount;
   }
-#endif
-
-  ok = TRUE;
 
   /* Clean up before returning */
 Finish:
-  if(!ok)
-    free_lp(&newlp);
   FREE(val);
   FREE(idx);
 
@@ -1854,8 +1737,7 @@ MYBOOL __WINAPI dualize_lp(lprec *lp)
   swapINT(&lp->rows, &lp->columns);
   swapINT(&lp->rows_alloc, &lp->columns_alloc);
   swapREAL(lp->orig_rhs, lp->orig_obj);
-  if ((lp->rhs != NULL) && (lp->obj != NULL))
-    swapREAL(lp->rhs, lp->obj);
+  swapREAL(lp->rhs, lp->obj);
 
   /* Reallocate storage */
 /*
@@ -1967,25 +1849,22 @@ STATIC void varmap_add(lprec *lp, int base, int delta)
 STATIC void varmap_delete(lprec *lp, int base, int delta, LLrec *varmap)
 {
   int             i, ii, j;
-  MYBOOL          preparecompact = (MYBOOL) (varmap != NULL);
+  MYBOOL          preparecompact;
   presolveundorec *psundo = lp->presolve_undo;
 
   /* Set the model "dirty" if we are deleting row of constraint */
-  lp->model_is_pure &= (MYBOOL) ((lp->solutioncount == 0) && !preparecompact);
+  lp->model_is_pure  = FALSE;
 
   /* Don't do anything if
      1) variables aren't locked yet, or
      2) the constraint was added after the variables were locked */
   if(!lp->varmap_locked) {
-#if 0
+#if 1
    if(lp->names_used)
      varmap_lock(lp);
    else
-     return;
-#else
-    if(!lp->model_is_pure && lp->names_used)
-      varmap_lock(lp);
 #endif
+     return;
   }
 
   /* Do mass deletion via a linked list */
@@ -2031,7 +1910,6 @@ STATIC void varmap_delete(lprec *lp, int base, int delta, LLrec *varmap)
      2) shift the deleted variable to original mappings left
      3) decrement all subsequent original-to-current pointers
   */
-  if(varmap_canunlock(lp))    lp->varmap_locked = FALSE;
   for(i = base; i < base-delta; i++) {
     ii = psundo->var_to_orig[i];
     if(ii > 0)
@@ -2441,8 +2319,7 @@ STATIC MYBOOL shift_coldata(lprec *lp, int base, int delta, LLrec *usedmap)
 {
   int i, ii;
 
-  if(lp->bb_totalnodes == 0)
-    free_duals(lp);
+  free_duals(lp);
 
   /* Shift A matrix data */
   if(lp->matA->is_roworder)
@@ -2676,12 +2553,6 @@ STATIC MYBOOL shift_coldata(lprec *lp, int base, int delta, LLrec *usedmap)
 /* Utility group for incrementing row and column vector storage space */
 STATIC void inc_rows(lprec *lp, int delta)
 {
-  int i;
-
-  if(lp->names_used && (lp->row_name != NULL))
-    for(i = lp->rows + delta; i > lp->rows; i--)
-      lp->row_name[i] = NULL;
-
   lp->rows += delta;
   if(lp->matA->is_roworder)
     lp->matA->columns += delta;
@@ -2691,12 +2562,6 @@ STATIC void inc_rows(lprec *lp, int delta)
 
 STATIC void inc_columns(lprec *lp, int delta)
 {
-  int i;
-
-  if(lp->names_used && (lp->col_name != NULL))
-    for(i = lp->columns + delta; i > lp->columns; i--)
-      lp->col_name[i] = NULL;
-
   lp->columns += delta;
   if(lp->matA->is_roworder)
     lp->matA->rows += delta;
@@ -2801,12 +2666,7 @@ STATIC MYBOOL inc_row_space(lprec *lp, int deltarows)
     rowsum = lp->matA->columns_alloc;
   }
   else {
-#if 0
-    if((lp->rows_alloc > 0) && (lp->rows + deltarows > lp->rows_alloc))
-      i = deltarows; /* peno 25/12/06 */
-    else
-#endif
-      i -= lp->matA->rows_alloc;
+    i -= lp->matA->rows_alloc;
     SETMIN(i, deltarows);
     if(i > 0)
       inc_matrow_space(lp->matA, i);
@@ -3119,7 +2979,7 @@ MYBOOL __WINAPI add_constraintex(lprec *lp, int count, REAL *row, int *colno, in
     lp->orig_rhs[lp->rows] = rh;
 
   /* Insert the non-zero constraint values */
-  if(colno == NULL && row != NULL)
+  if(colno == NULL)
     n = lp->columns;
   else
     n = count;
@@ -3197,7 +3057,7 @@ STATIC MYBOOL del_constraintex(lprec *lp, LLrec *rowmap)
   if(!lp->varmap_locked) {
     presolve_setOrig(lp, lp->rows, lp->columns);
     if(lp->names_used)
-      del_varnameex(lp, lp->row_name, lp->rows, lp->rowname_hashtab, 0, rowmap);
+      del_varnameex(lp, lp->row_name, lp->rowname_hashtab, 0, rowmap);
   }
 
 #ifdef Paranoia
@@ -3217,46 +3077,20 @@ MYBOOL __WINAPI del_constraint(lprec *lp, int rownr)
     report(lp, IMPORTANT, "del_constraint: Attempt to delete non-existing constraint %d\n", rownr);
     return(FALSE);
   }
-  /*
   if(lp->matA->is_roworder) {
     report(lp, IMPORTANT, "del_constraint: Cannot delete constraint while in row entry mode.\n");
     return(FALSE);
   }
-  */
 
   if(is_constr_type(lp, rownr, EQ) && (lp->equalities > 0))
     lp->equalities--;
 
   varmap_delete(lp, my_chsign(preparecompact, rownr), -1, NULL);
   shift_rowdata(lp, my_chsign(preparecompact, rownr), -1, NULL);
-
-/*
-   peno 04.10.07
-   Fixes a problem with del_constraint.
-   Constraints names were not shifted and reported variable result was incorrect.
-   See UnitTest1, UnitTest2
-
-   min: -2 x3;
-
-   c1: +x2 -x1 <= 10;
-   c: 0 x3 <= 0;
-   c2: +x3 +x2 +x1 <= 20;
-
-   2 <= x3 <= 3;
-   x1 <= 30;
-
-   // del_constraint(lp, 2);
-
-   // See write_LP and print_solution result
-
-   // To fix, commented if(!lp->varmap_locked)
-
-*/
-  if(!lp->varmap_locked)
-  {
+  if(!lp->varmap_locked) {
     presolve_setOrig(lp, lp->rows, lp->columns);
     if(lp->names_used)
-      del_varnameex(lp, lp->row_name, lp->rows, lp->rowname_hashtab, rownr, NULL);
+      del_varnameex(lp, lp->row_name, lp->rowname_hashtab, rownr, NULL);
   }
 
 #ifdef Paranoia
@@ -3388,9 +3222,9 @@ MYBOOL __WINAPI add_columnex(lprec *lp, int count, REAL *column, int *rowno)
                        lp->columns);
   else
 #ifdef Paranoia
-  if(lp->columns != (lp->matA->is_roworder ? lp->matA->rows : lp->matA->columns)) {
+  if(lp->columns != lp->matA->columns) {
     report(lp, SEVERE, "add_columnex: Column count mismatch %d vs %d\n",
-                       lp->columns, (lp->matA->is_roworder ? lp->matA->rows : lp->matA->columns));
+                       lp->columns, lp->matA->columns);
   }
   else if(is_BasisReady(lp) && (lp->P1extraDim == 0) && !verify_basis(lp))
     report(lp, SEVERE, "add_columnex: Invalid basis detected for column %d\n",
@@ -3438,7 +3272,7 @@ MYBOOL __WINAPI str_add_column(lprec *lp, char *col_string)
   return( ret );
 }
 
-STATIC MYBOOL del_varnameex(lprec *lp, hashelem **namelist, int items, hashtable *ht, int varnr, LLrec *varmap)
+STATIC MYBOOL del_varnameex(lprec *lp, hashelem **namelist, hashtable *ht, int varnr, LLrec *varmap)
 {
   int i, n;
 
@@ -3448,10 +3282,9 @@ STATIC MYBOOL del_varnameex(lprec *lp, hashelem **namelist, int items, hashtable
   else
     i = varnr;
   while(i > 0) {
-    if(namelist[i] != NULL) {
-      if(namelist[i]->name != NULL)
-        drophash(namelist[i]->name, namelist, ht);
-    }
+    if((namelist[i] != NULL) &&
+       (namelist[i]->name != NULL))
+      drophash(namelist[i]->name, namelist, ht);
     if(varmap != NULL)
       i = nextInactiveLink(varmap, i);
     else
@@ -3475,8 +3308,6 @@ STATIC MYBOOL del_varnameex(lprec *lp, hashelem **namelist, int items, hashtable
     i++;
     if(varmap != NULL)
       n = nextActiveLink(varmap, i);
-    else if(n <= items) /* items has been updated for the new count */
-      n++;
     else
       n = 0;
   }
@@ -3490,7 +3321,7 @@ STATIC MYBOOL del_columnex(lprec *lp, LLrec *colmap)
   if(!lp->varmap_locked) {
     presolve_setOrig(lp, lp->rows, lp->columns);
     if(lp->names_used)
-      del_varnameex(lp, lp->col_name, lp->columns, lp->colname_hashtab, 0, colmap);
+      del_varnameex(lp, lp->col_name, lp->colname_hashtab, 0, colmap);
   }
 #ifdef Paranoia
   if(is_BasisReady(lp) && (lp->P1extraDim == 0) && !verify_basis(lp))
@@ -3509,12 +3340,10 @@ MYBOOL __WINAPI del_column(lprec *lp, int colnr)
     report(lp, IMPORTANT, "del_column: Column %d out of range\n", colnr);
     return(FALSE);
   }
-  /*
   if(lp->matA->is_roworder) {
     report(lp, IMPORTANT, "del_column: Cannot delete column while in row entry mode.\n");
     return(FALSE);
   }
-  */
 
   if((lp->var_is_free != NULL) && (lp->var_is_free[colnr] > 0))
     del_column(lp, lp->var_is_free[colnr]); /* delete corresponding split column (is always after this column) */
@@ -3524,7 +3353,7 @@ MYBOOL __WINAPI del_column(lprec *lp, int colnr)
   if(!lp->varmap_locked) {
     presolve_setOrig(lp, lp->rows, lp->columns);
     if(lp->names_used)
-      del_varnameex(lp, lp->col_name, lp->columns, lp->colname_hashtab, colnr, NULL);
+      del_varnameex(lp, lp->col_name, lp->colname_hashtab, colnr, NULL);
   }
 #ifdef Paranoia
   if(is_BasisReady(lp) && (lp->P1extraDim == 0) && !verify_basis(lp))
@@ -3588,8 +3417,6 @@ MYBOOL __WINAPI set_upbo(lprec *lp, int colnr, REAL value)
     set_action(&lp->spx_action, ACTION_REBASE);
     if(value > lp->infinite)
       value = lp->infinite;
-    if (value < lp->infinite && lp->orig_lowbo[lp->rows + colnr] > -lp->infinite && value != lp->orig_lowbo[lp->rows + colnr] && fabs(value - lp->orig_lowbo[lp->rows + colnr]) < lp->epsvalue)
-      value = lp->orig_lowbo[lp->rows + colnr];
     lp->orig_upbo[lp->rows + colnr] = value;
   }
   return(TRUE);
@@ -3636,8 +3463,6 @@ MYBOOL __WINAPI set_lowbo(lprec *lp, int colnr, REAL value)
     set_action(&lp->spx_action, ACTION_REBASE);
     if(value < -lp->infinite)
       value = -lp->infinite;
-    if (value > -lp->infinite && lp->orig_upbo[lp->rows + colnr] < lp->infinite && value != lp->orig_upbo[lp->rows + colnr] && fabs(value - lp->orig_upbo[lp->rows + colnr]) < lp->epsvalue)
-      value = lp->orig_upbo[lp->rows + colnr];
     lp->orig_lowbo[lp->rows + colnr] = value;
   }
   return(TRUE);
@@ -3770,7 +3595,7 @@ int __WINAPI add_SOS(lprec *lp, char *name, int sostype, int priority, int count
   /* Make sure SOSes of order 3 and higher are properly defined */
   if(sostype > 2) {
     int j;
-    for(k = 0; k < count; k++) {
+    for(k = 1; k <= count; k++) {
       j = sosvars[k];
       if(!is_int(lp, j) || !is_semicont(lp, j)) {
         report(lp, IMPORTANT, "add_SOS: SOS3+ members all have to be integer or semi-continuous.\n");
@@ -4312,12 +4137,7 @@ MYBOOL __WINAPI set_constr_type(lprec *lp, int rownr, int con_type)
   else
     lp->row_type[rownr] = con_type;
   if(oldchsign != is_chsign(lp, rownr)) {
-    MATrec *mat = lp->matA;
-
-    if(mat->is_roworder)
-      mat_multcol(mat, rownr, -1, FALSE);
-    else
-      mat_multrow(mat, rownr, -1);
+    mat_multrow(lp->matA, rownr, -1);
     if(lp->orig_rhs[rownr] != 0)
       lp->orig_rhs[rownr] *= -1;
     set_action(&lp->spx_action, ACTION_RECOMPUTE);
@@ -4522,7 +4342,6 @@ REAL __WINAPI get_mat(lprec *lp, int rownr, int colnr)
 {
   REAL value;
   int  elmnr;
-  int colnr1 = colnr, rownr1 = rownr;
 
   if((rownr < 0) || (rownr > lp->rows)) {
     report(lp, IMPORTANT, "get_mat: Row %d out of range", rownr);
@@ -4532,15 +4351,18 @@ REAL __WINAPI get_mat(lprec *lp, int rownr, int colnr)
     report(lp, IMPORTANT, "get_mat: Column %d out of range", colnr);
     return(0);
   }
+  if(lp->matA->is_roworder) {
+    report(lp, IMPORTANT, "get_mat: Cannot read a matrix value while in row entry mode.\n");
+    return(0);
+  }
+
   if(rownr == 0) {
     value = lp->orig_obj[colnr];
     value = my_chsign(is_chsign(lp, rownr), value);
     value = unscaled_mat(lp, value, rownr, colnr);
   }
   else {
-    if(lp->matA->is_roworder)
-      swapINT(&colnr1, &rownr1);
-    elmnr = mat_findelm(lp->matA, rownr1, colnr1);
+    elmnr = mat_findelm(lp->matA, rownr, colnr);
     if(elmnr >= 0) {
       MATrec *mat = lp->matA;
       value = my_chsign(is_chsign(lp, rownr), COL_MAT_VALUE(elmnr));
@@ -4569,11 +4391,20 @@ REAL __WINAPI get_mat_byindex(lprec *lp, int matindex, MYBOOL isrow, MYBOOL adju
     return( result );
 }
 
-static int mat_getrow(lprec *lp, int rownr, REAL *row, int *colno)
+int __WINAPI get_rowex(lprec *lp, int rownr, REAL *row, int *colno)
 {
   MYBOOL isnz;
   int    j, countnz = 0;
   REAL   a;
+
+  if((rownr < 0) || (rownr > lp->rows)) {
+    report(lp, IMPORTANT, "get_rowex: Row %d out of range\n", rownr);
+    return( -1 );
+  }
+  if(lp->matA->is_roworder) {
+    report(lp, IMPORTANT, "get_rowex: Cannot return a matrix row while in row entry mode.\n");
+    return( -1 );
+  }
 
   if((rownr == 0) || !mat_validate(lp->matA)) {
     for(j = 1; j <= lp->columns; j++) {
@@ -4590,35 +4421,18 @@ static int mat_getrow(lprec *lp, int rownr, REAL *row, int *colno)
     }
   }
   else {
-    MYBOOL chsign = FALSE;
+    MYBOOL chsign;
     int    ie, i;
     MATrec *mat = lp->matA;
 
-    if(colno == NULL)
-      MEMCLEAR(row, lp->columns+1);
-    if(mat->is_roworder) {
-     /* Add the objective function */
-      a = get_mat(lp, 0, rownr);
-      if(colno == NULL) {
-        row[countnz] = a;
-        if(a != 0)
-          countnz++;
-      }
-      else if(a != 0) {
-        row[countnz] = a;
-        colno[countnz] = 0;
-        countnz++;
-      }
-    }
     i = mat->row_end[rownr-1];
     ie = mat->row_end[rownr];
-    if(!lp->matA->is_roworder)
-      chsign = is_chsign(lp, rownr);
+    chsign = is_chsign(lp, rownr);
+    if(colno == NULL)
+      MEMCLEAR(row, lp->columns+1);
     for(; i < ie; i++) {
       j = ROW_MAT_COLNR(i);
       a = get_mat_byindex(lp, i, TRUE, FALSE);
-      if(lp->matA->is_roworder)
-        chsign = is_chsign(lp, j);
       a = my_chsign(chsign, a);
       if(colno == NULL)
         row[j] = a;
@@ -4632,27 +4446,39 @@ static int mat_getrow(lprec *lp, int rownr, REAL *row, int *colno)
   return( countnz );
 }
 
-static int mat_getcolumn(lprec *lp, int colnr, REAL *column, int *nzrow)
+MYBOOL __WINAPI get_row(lprec *lp, int rownr, REAL *row)
+{
+  return((MYBOOL) (get_rowex(lp, rownr, row, NULL) >= 0) );
+}
+
+int __WINAPI get_columnex(lprec *lp, int colnr, REAL *column, int *nzrow)
 {
   int    n = 0, i, ii, ie, *rownr;
   REAL   hold, *value;
   MATrec *mat = lp->matA;
 
+  if((colnr > lp->columns) || (colnr < 1)) {
+    report(lp, IMPORTANT, "get_columnex: Column %d out of range\n", colnr);
+    return( -1 );
+  }
+  if(mat->is_roworder) {
+    report(lp, IMPORTANT, "get_columnex: Cannot return a column while in row entry mode\n");
+    return( -1 );
+  }
+
+  /* Add the objective function */
   if(nzrow == NULL)
     MEMCLEAR(column, lp->rows + 1);
-  if(!mat->is_roworder) {
-     /* Add the objective function */
-    hold = get_mat(lp, 0, colnr);
-    if(nzrow == NULL) {
-      column[n] = hold;
-      if(hold != 0)
-        n++;
-    }
-    else if(hold != 0) {
-      column[n] = hold;
-      nzrow[n] = 0;
+  hold = get_mat(lp, 0, colnr);
+  if(nzrow == NULL) {
+    column[n] = hold;
+    if(hold != 0)
       n++;
-    }
+  }
+  else if(hold != 0) {
+    column[n] = hold;
+    nzrow[n] = 0;
+    n++;
   }
 
   i  = lp->matA->col_end[colnr - 1];
@@ -4665,7 +4491,7 @@ static int mat_getcolumn(lprec *lp, int colnr, REAL *column, int *nzrow)
       i++, rownr += matRowColStep, value += matValueStep) {
     ii = *rownr;
 
-    hold = my_chsign(is_chsign(lp, (mat->is_roworder) ? colnr : ii), *value);
+    hold = my_chsign(is_chsign(lp, ii), *value);
     hold = unscaled_mat(lp, hold, ii, colnr);
     if(nzrow == NULL)
       column[ii] = hold;
@@ -4678,40 +4504,9 @@ static int mat_getcolumn(lprec *lp, int colnr, REAL *column, int *nzrow)
   return( n );
 }
 
-int __WINAPI get_columnex(lprec *lp, int colnr, REAL *column, int *nzrow)
-{
-  if((colnr > lp->columns) || (colnr < 1)) {
-    report(lp, IMPORTANT, "get_columnex: Column %d out of range\n", colnr);
-    return( -1 );
-  }
-
-  if(lp->matA->is_roworder)
-    return(mat_getrow(lp, colnr, column, nzrow));
-  else
-    return(mat_getcolumn(lp, colnr, column, nzrow));
-}
-
 MYBOOL __WINAPI get_column(lprec *lp, int colnr, REAL *column)
 {
   return( (MYBOOL) (get_columnex(lp, colnr, column, NULL) >= 0) );
-}
-
-int __WINAPI get_rowex(lprec *lp, int rownr, REAL *row, int *colno)
-{
-  if((rownr < 0) || (rownr > lp->rows)) {
-    report(lp, IMPORTANT, "get_rowex: Row %d out of range\n", rownr);
-    return( -1 );
-  }
-
-  if(rownr != 0 && lp->matA->is_roworder)
-    return(mat_getcolumn(lp, rownr, row, colno));
-  else
-    return(mat_getrow(lp, rownr, row, colno));
-}
-
-MYBOOL __WINAPI get_row(lprec *lp, int rownr, REAL *row)
-{
-  return((MYBOOL) (get_rowex(lp, rownr, row, NULL) >= 0) );
 }
 
 STATIC void set_OF_override(lprec *lp, REAL *ofVector)
@@ -4726,6 +4521,8 @@ MYBOOL modifyOF1(lprec *lp, int index, REAL *ofValue, REAL mult)
 /* Adjust objective function values for primal/dual phase 1, if appropriate */
 {
   MYBOOL accept = TRUE;
+/*  static MYBOOL accept;
+  accept = TRUE;  */
 
   /* Primal simplex: Set user variables to zero or BigM-scaled */
   if(((lp->simplex_mode & SIMPLEX_Phase1_PRIMAL) != 0) && (abs(lp->P1extraDim) > 0)) {
@@ -5085,8 +4882,8 @@ MYBOOL set_callbacks(lprec *lp)
   lp->put_bb_branchfunc       = put_bb_branchfunc;
   lp->put_logfunc             = put_logfunc;
   lp->put_msgfunc             = put_msgfunc;
-  lp->read_LP                 = read_LP;
-  lp->read_MPS                = read_MPS;
+  lp->read_LPhandle           = LP_readhandle;
+  lp->read_MPShandle          = MPS_readhandle;
   lp->read_XLI                = read_XLI;
   lp->read_basis              = read_basis;
   lp->reset_basis             = reset_basis;
@@ -5526,6 +5323,8 @@ MYBOOL __WINAPI set_BFP(lprec *lp, char *filename)
   return( (MYBOOL) (result == LIB_LOADED));
 }
 
+#include <R.h>
+#include <R_ext/Print.h>
 
 /* External language interface routines */
 /* DON'T MODIFY */
@@ -5539,10 +5338,10 @@ lprec * __WINAPI read_XLI(char *xliname, char *modelname, char *dataname, char *
     lp->verbose = verbose;
     if(!set_XLI(lp, xliname)) {
       free_lp(&lp);
-      printf("read_XLI: No valid XLI package selected or available.\n");
+      Rprintf("read_XLI: No valid XLI package selected or available.\n");
     }
     else {
-      if(!lp->xli_readmodel(lp, modelname, (dataname != NULL) && (*dataname != 0) ? dataname : NULL, options, verbose))
+      if(!lp->xli_readmodel(lp, modelname, dataname, options, verbose))
         free_lp(&lp);
     }
   }
@@ -5714,20 +5513,16 @@ STATIC int get_basisOF(lprec *lp, int coltarget[], REAL crow[], int colno[])
 
     for(i = 1, coltarget++; i <= m; i++, coltarget++) {
       ix = *coltarget;
-      /* Finalize the computation of the reduced costs, based on the format that
-         duals are computed as negatives, ref description for step 1 above */
-      value = crow[ix];
+      value = -crow[ix];
       if(ix > n)
         value += obj[ix - n];
+      crow[ix] = value;
 /*      if(value != 0) { */
       if(fabs(value) > epsvalue) {
         nz++;
         if(colno != NULL)
           colno[nz] = ix;
       }
-      else
-        value = 0.0;
-      crow[ix] = value;
     }
   }
 
@@ -5737,13 +5532,10 @@ STATIC int get_basisOF(lprec *lp, int coltarget[], REAL crow[], int colno[])
 
     for(i = 1, crow++, basvar++; i <= n;
          i++, crow++, basvar++) {
-      /* Load the objective value of the active basic variable; note that we
-         change the sign of the value to maintain computational compatibility with
-         the calculation of duals using in-basis storage of the basic OF values */
       if(*basvar <= n)
         *crow = 0;
       else
-        *crow = -obj[(*basvar) - n];
+        *crow = obj[(*basvar) - n];
       if((*crow) != 0) {
 /*      if(fabs(*crow) > epsvalue) { */
         nz++;
@@ -5794,9 +5586,7 @@ int __WINAPI get_basiscolumn(lprec *lp, int j, int rn[], double bj[])
 
 MYBOOL __WINAPI get_primal_solution(lprec *lp, REAL *pv)
 {
-  if(lp->spx_status == OPTIMAL)
-    ;
-  else if(!lp->basis_valid) {
+  if(!lp->basis_valid) {
     report(lp, CRITICAL, "get_primal_solution: Not a valid basis");
     return(FALSE);
   }
@@ -6077,6 +5867,7 @@ char * __WINAPI get_row_name(lprec *lp, int rownr)
 char * __WINAPI get_origrow_name(lprec *lp, int rownr)
 {
   MYBOOL newrow;
+  static char name[50];
   char   *ptr;
 
   newrow = (MYBOOL) (rownr < 0);
@@ -6099,14 +5890,11 @@ char * __WINAPI get_origrow_name(lprec *lp, int rownr)
     ptr = lp->row_name[rownr]->name;
   }
   else {
-    if(lp->rowcol_name == NULL)
-      if (!allocCHAR(lp, &lp->rowcol_name, 20, FALSE))
-        return(NULL);
-    ptr = lp->rowcol_name;
     if(newrow)
-      sprintf(ptr, ROWNAMEMASK2, rownr);
+      sprintf(name, ROWNAMEMASK2, rownr);
     else
-      sprintf(ptr, ROWNAMEMASK, rownr);
+      sprintf(name, ROWNAMEMASK, rownr);
+    ptr = name;
   }
   return(ptr);
 }
@@ -6147,6 +5935,7 @@ char * __WINAPI get_origcol_name(lprec *lp, int colnr)
 {
   MYBOOL newcol;
   char   *ptr;
+  static char name[50];
 
   newcol = (MYBOOL) (colnr < 0);
   colnr = abs(colnr);
@@ -6167,14 +5956,11 @@ char * __WINAPI get_origcol_name(lprec *lp, int colnr)
     ptr = lp->col_name[colnr]->name;
   }
   else {
-    if(lp->rowcol_name == NULL)
-      if (!allocCHAR(lp, &lp->rowcol_name, 20, FALSE))
-        return(NULL);
-    ptr = lp->rowcol_name;
     if(newcol)
-      sprintf(ptr, COLNAMEMASK2, colnr);
+      sprintf((char *) name, COLNAMEMASK2, colnr);
     else
-      sprintf(ptr, COLNAMEMASK, colnr);
+      sprintf((char *) name, COLNAMEMASK, colnr);
+    ptr = name;
   }
   return(ptr);
 }
@@ -6409,11 +6195,11 @@ STATIC int row_decimals(lprec *lp, int rownr, MYBOOL intsonly, REAL *intscalar)
       f -= floor (f + epsvalue);
     }
     if(i > MAX_FRACSCALE)
-      /* i = MAX_FRACSCALE */ break;
+      break;
     SETMAX(basi, i);
   }
   if(j > ncols)
-    *intscalar = pow(10.0, basi);
+    *intscalar = pow(10, basi);
   else {
     basi = -1;
     *intscalar = 1;
@@ -6421,18 +6207,22 @@ STATIC int row_decimals(lprec *lp, int rownr, MYBOOL intsonly, REAL *intscalar)
   return( basi );
 }
 
-STATIC int row_intstats(lprec *lp, int rownr, int pivcolnr, int *maxndec,
-                        int *plucount, int *intcount, int *intval, REAL *valGCD, REAL *pivcolval)
+STATIC int row_intstats(lprec *lp, int rownr, int pivcolnr,
+                         int *plucount, int *intcount, int *intval, REAL *valGCD, REAL *pivcolval)
 {
-  int    jb, je, jj, nn = 0, multA, multB, intGCD = 0;
+  int    ndec, jb, je, jj, nn = 0, multA, multB, intGCD;
   REAL   rowval, inthold, intfrac;
   MATrec *mat = lp->matA;
+
+/* Get rid of a warning by initializing: SEB April 19 2006. */
+    intGCD = 0;
 
   /* Do we have a valid matrix? */
   if(mat_validate(mat)) {
 
     /* Get smallest fractional row value */
-    *maxndec = row_decimals(lp, rownr, AUTOMATIC, &intfrac);
+    ndec = row_decimals(lp, rownr, AUTOMATIC, &intfrac);
+    ndec = ndec + 0; /* So the compiler thinks we used ndec! -- Buttrey */
 
     /* Get OF row starting and ending positions, as well as the first column index */
     if(rownr == 0) {
@@ -6482,7 +6272,7 @@ STATIC int row_intstats(lprec *lp, int rownr, int pivcolnr, int *maxndec,
       if(rowval > 0)
         (*plucount)++;
 
-      /* Check if the parameter value is integer and update the row's GCD */
+      /* Check if the parameter value is integer and update the row's GDC */
       rowval = fabs(rowval) * intfrac;
       rowval += rowval*lp->epsmachine;
       rowval = modf(rowval, &inthold);
@@ -6501,7 +6291,6 @@ STATIC int row_intstats(lprec *lp, int rownr, int pivcolnr, int *maxndec,
   return(nn);
 }
 
-#if 0
 REAL MIP_stepOF(lprec *lp)
 /* This function tries to find a non-zero minimum improvement
    if the OF contains all integer variables (logic only applies if we are
@@ -6509,8 +6298,7 @@ REAL MIP_stepOF(lprec *lp)
 */
 {
   MYBOOL OFgcd;
-  int    colnr, rownr, n, ib, ie, maxndec,
-         pluscount, intcount, intval;
+  int    OFrow, colnr, n, pluscount, intcount, intval;
   REAL   value, valOF, divOF, valGCD;
   MATrec *mat = lp->matA;
 
@@ -6518,376 +6306,47 @@ REAL MIP_stepOF(lprec *lp)
   if((lp->int_vars > 0) && (lp->solutionlimit == 1) && mat_validate(mat)) {
 
     /* Get statistics for integer OF variables and compute base stepsize */
-    n = row_intstats(lp, 0, -1, &maxndec, &pluscount, &intcount, &intval, &valGCD, &divOF);
-    if((n == 0) || (maxndec < 0))
+    n = row_intstats(lp, 0, -1, &pluscount, &intcount, &intval, &valGCD, &divOF);
+    if(n == 0)
       return( value );
     OFgcd = (MYBOOL) (intval > 0);
     if(OFgcd)
       value = valGCD;
 
     /* Check non-ints in the OF to see if we can get more info */
-    if(n - intcount > 0) {
-      int nrv = 0;
+    if(n - intcount > 0)
+    for(colnr = 1; colnr <= lp->columns; colnr++) {
 
-      /* See if we have equality constraints */
-      ie = lp->rows;
-      for(ib = 1; ib <= ie; ib++) {
-        if(is_constr_type(lp, ib, EQ))
-          break;
-      }
-
-      /* If so, there may be a chance to find an improved stepsize */
-      if(ib < ie)
-      for(colnr = 1; colnr <= lp->columns; colnr++) {
-
-        /* Go directly to the next variable if this is an integer or
-          there is no row candidate to explore for hidden bounds for
-          real-valued variables (limit scan to one row!) */
-        if(is_int(lp, colnr))
-          continue;
-        nrv++;
-        /* Scan equality constraints */
-        ib = mat->col_end[colnr-1];
-        ie = mat->col_end[colnr];
-        while(ib < ie) {
-          if(is_constr_type(lp, (rownr = COL_MAT_ROWNR(ib)), EQ)) {
-
-            /* Get "child" row statistics, but break out if we don't
-              find enough information, i.e. no integers with coefficients of proper type */
-            n = row_intstats(lp, rownr, colnr, &maxndec, &pluscount, &intcount, &intval, &valGCD, &divOF);
-            if((intval < n - 1) || (maxndec < 0)) {
-              value = 0;
-              break;
-            }
-
-            /* We can update */
-            valOF = unscaled_mat(lp, lp->orig_obj[colnr], 0, colnr);
-            valOF = fabs( valOF * (valGCD / divOF) );
-            if(OFgcd) {
-              SETMIN(value, valOF);
-            }
-            else {
-              OFgcd = TRUE;
-              value = valOF;
-            }
-          }
-          ib++;
-        }
-
-        /* No point in continuing scan if we failed in current column */
-        if(value == 0)
-          break;
-      }
-
-      /* Check if we found information for any real-valued variable;
-         if not, then we must set the iprovement delta to 0 */
-      if(nrv == 0)
-        value = 0;
-    }
-  }
-  return( value );
-}
-#elif 0
-/*
-    original v5.5 implementation giving problems with some models
-
-    ex:
-
-        min: +r1 +r2;
-
-        R1: +r1 +r2 >= 1;
-        R2: +r1 -5.345 b1 = 0;
-        R3: +r2 -4.456 b2 = 0;
-
-        b1 <= 1;
-        b2 <= 1;
-
-        //b2>0.1;
-
-        int b1,b2;
-
-*/
-REAL MIP_stepOF(lprec *lp)
-/* This function tries to find a non-zero minimum improvement
-   if the OF contains all integer variables (logic only applies if we are
-   looking for a single solution, not possibly several equal-valued ones). */
-{
-  MYBOOL  OFgcd;
-  int     colnr, rownr, n, ib, ie,
-          pluscount, intcount;
-  int     intval, maxndec;
-  REAL    value = 0, valOF, divOF, valGCD;
-  MATrec  *mat = lp->matA;
-
-  if((lp->int_vars > 0) && (lp->solutionlimit == 1) && mat_validate(mat)) {
-
-    /* Get statistics for integer OF variables and compute base stepsize */
-    n = row_intstats(lp, 0, 0, &maxndec, &pluscount, &intcount, &intval, &valGCD, &divOF);
-    if((n == 0) || (maxndec < 0))
-      return( value );
-    OFgcd = (MYBOOL) (intval > 0);
-    if(OFgcd)
-      value = valGCD;
-
-    /* Check non-ints in the OF to see if we can get more info */
-    if(n - intcount > 0) {
-      int nrv = n - intcount; /* Number of real variables in the objective */
-      int niv = 0;            /* Number of real variables identified as integer */
-      int nrows = lp->rows;
-
-      /* See if we have equality constraints */
-      for(ib = 1; ib <= nrows; ib++) {
-        if(is_constr_type(lp, ib, EQ))
-          break;
-      }
-
-      /* If so, there may be a chance to find an improved stepsize */
-      if(ib <= nrows)
-      for(colnr = 1; colnr <= lp->columns; colnr++) {
-
-        /* Go directly to the next variable if this is an integer or
-          there is no row candidate to explore for hidden bounds for
-          real-valued variables (limit scan to one row/no recursion) */
-        if((lp->orig_obj[colnr] == 0) || is_int(lp, colnr))
-          continue;
-
-        /* Scan equality constraints */
-        ib = mat->col_end[colnr-1];
-        ie = mat->col_end[colnr];
-        while(ib < ie) {
-          if(is_constr_type(lp, (rownr = COL_MAT_ROWNR(ib)), EQ)) {
-
-            /* Get "child" row statistics, but break out if we don't
-              find enough information, i.e. no integers with coefficients of proper type */
-            n = row_intstats(lp, rownr, colnr, &maxndec, &pluscount, &intcount, &intval, &valGCD, &divOF);
-            if((intval < n - 1) || (maxndec < 0)) {
-              value = 0;
-              break;
-            }
-            niv++;
-
-            /* We can update */
-            valOF = unscaled_mat(lp, lp->orig_obj[colnr], 0, colnr);
-            valOF = fabs( valOF * (valGCD / divOF) );
-            if(OFgcd) {
-              SETMIN(value, valOF);
-            }
-            else {
-              OFgcd = TRUE;
-              value = valOF;
-            }
-          }
-          ib++;
-        }
-
-        /* No point in continuing scan if we failed in current column */
-        if(value == 0)
-          break;
-      }
-
-      /* Check if we found information for any real-valued variable;
-         if not, then we must set the improvement delta to 0 */
-      if(nrv > niv)
-        value = 0;
-    }
-  }
-  return( value );
-}
-#else
-
-STATIC REAL row_plusdelta(lprec *lp, int rownr, int excludecol, int *intcount, int *realcount)
-{
-  MATrec   *mat = lp->matA;
-  int      j, jb, je, jj, bincount,
-           n = 0, nrows = lp->rows;
-  REAL     rowval, deltaOF = 0,
-           *obj_orig = lp->orig_obj, *obj_sort = NULL;
-
-  *realcount = 0;
-  *intcount  = 0;
-  bincount = 0;
-
-  /* Get OF row starting and ending positions, as well as the first column index */
-  if(rownr == 0) {
-    jb = 1;
-    je = lp->columns+1;
-  }
-  else {
-    jb = mat->row_end[rownr-1];
-    je = mat->row_end[rownr];
-  }
-
-  /* Fill the array */
-  for(j = jb; j < je; j++) {
-
-    if(rownr == 0) {
-      if(obj_orig[j] == 0)
+      /* Go directly to the next variable if this is an integer or
+        there is no row candidate to explore */
+      if(is_int(lp, colnr) ||
+         (mat_collength(mat, colnr) != 1) ||
+         (!is_constr_type(lp, (OFrow = COL_MAT_ROWNR(mat->col_end[colnr-1])), EQ)))
         continue;
-      jj = j;
-    }
-    else
-      jj = ROW_MAT_COLNR(j);
 
-    /* Check for exclusion column */
-    if(jj == excludecol)
-      continue;
-
-    /* Check that the variable is integer */
-    if(is_int(lp, jj)) {
-      rowval = lp->orig_upbo[nrows + jj];
-      if((rowval < lp->infinite) && (fabs(unscaled_value(lp, rowval - lp->orig_lowbo[nrows + jj], nrows + jj) - 1) < lp->epsint)) // difference between upper and lower = 1 is ok
-        bincount++;
-      if(rownr == 0)
-        rowval = unscaled_mat(lp, obj_orig[jj], 0, jj);
-      else
-        rowval = get_mat_byindex(lp, j, TRUE, FALSE);
-
-      /* Allocate array of coefficients to be sorted */
-      if(n == 0)
-        allocREAL(lp, &obj_sort, je-jb, FALSE);
-
-      obj_sort[n++] = rowval;
-    }
-    else
-      (*realcount)++;
-
-  }
-  (*intcount) = n;
-
-  if(*realcount == 0) {
-    if (n == 0 || bincount < n)
-      deltaOF = 0;
-    else if(n == 1)
-      deltaOF = obj_sort[0];
-    else {
-
-      REAL   newval;
-      MYBOOL loops = 0;
-
-      while(n > 0) {
-
-        /* Sort the coefficients in ascending order */
-        qsortex(obj_sort, n, 0, sizeof(*obj_sort), FALSE, compareREAL, NULL, 0);
-
-        /* Eliminate array duplicates (could consider applying an eps) */
-        j = 0; jb = 1;
-        do {
-          rowval = obj_sort[j];
-          while((jb < n) && (obj_sort[jb] == rowval)) jb++;
-          if((jb < n) && (++j < jb))
-            obj_sort[j] = obj_sort[jb];
-        } while(++jb < n);
-        n = j+1;
-
-        /* Get the reference minimum stepsize on the first iteration */
-        if(loops == 0) {
-          /* Spool to the coefficient closest to zero, which is the reference OF stepsize */
-          for(j = 0; (j < n) && (obj_sort[j] < 0); j++);
-
-          /* Case 1: All negative coefficients */
-          if(j >= n)
-            deltaOF = -obj_sort[n-1];
-          /* Case2: All positive coefficients */
-          else if(j == 0)
-            deltaOF = obj_sort[j];
-          /* Case 3: Both negative and positive coefficients */
-          else
-            deltaOF = MIN(-obj_sort[j-1], obj_sort[j]);
-        }
-
-        /* Adjust the reference minimum stepsize on next iterations */
-        loops++;
-
-        /* Loop over non-zero coefficient differences to
-             obtain minimum change, i.e. if one increases */
-        newval = lp->infinite;
-        for(j = 1; j < n; j++) {
-          rowval = obj_sort[j]-obj_sort[j-1];
-          SETMIN(newval, rowval);
-          obj_sort[j-1] = rowval;
-        }
-        n--;
-        SETMIN(deltaOF, newval);
-      }
-    }
-  }
-
-  /* Dispose of the work array */
-  FREE(obj_sort);
-
-  return( deltaOF );
-}
-
-/* v6.0 implementation converted to v5.5 */
-
-STATIC REAL MIP_stepOF(lprec *lp)
-/* This function tries to find a non-zero minimum improvement
-   if the OF contains all integer variables (logic only applies if we are
-   looking for a single solution, not possibly several equal-valued ones). */
-{
-  REAL    OFdelta = 0;
-  MATrec  *mat = lp->matA;
-
-  if((lp->int_vars > 0) && (lp->solutionlimit == 1) && mat_validate(mat)) {
-
-    int colnr, ib, ie,
-        intcount, realcount;
-
-    /* Get statistics for integer OF variables and compute base stepsize */
-    OFdelta = row_plusdelta(lp, 0, 0, &intcount, &realcount);
-/*    return( value ); */
-
-    /* Check non-ints in the OF to see if we can get more info */
-    if(realcount > 0) {
-      int niv = 0;            /* Number of real variables identified as integer */
-      //int nrows = lp->rows;
-      REAL    rowdelta;
-
-      OFdelta = lp->infinite;
-      for(colnr = 1; (colnr <= lp->columns) && (niv < realcount); colnr++) {
-
-        /* Go directly to the next variable if this is an integer or
-          there is no row candidate to explore for hidden bounds for
-          real-valued variables (limit scan to one row/no recursion) */
-        if((lp->orig_obj[colnr] == 0) || is_int(lp, colnr))
-          continue;
-
-        /* Scan equality constraints */
-        ib = mat->col_end[colnr-1];
-        ie = mat->col_end[colnr];
-        while(ib < ie) {
-
-          /* Get "child" row statistics, but break out if we don't find enough
-             information, i.e. no integers with coefficients of proper type. */
-          rowdelta = row_plusdelta(lp, COL_MAT_ROWNR(ib), colnr, &intcount, &realcount);
-          if(realcount > 0) {
-            OFdelta = 0;
-            break;
-          }
-
-          /* We can update */
-          SETMIN(OFdelta, rowdelta);
-          ib++;
-        }
-
-        /* No point in continuing scan if we failed in the current column */
-        if(OFdelta == 0)
-          break;
-
-        /* We found an implied integer, update count */
-        niv++;
+      /* Get "child" row statistics, but break out if we don't
+        find enough information, i.e. integers with integer coefficients */
+      n = row_intstats(lp, OFrow, colnr, &pluscount, &intcount, &intval, &valGCD, &divOF);
+      if(intval < n - 1) {
+        value = 0;
+        break;
       }
 
-      /* Check if we found information for any real-valued variable;
-         if not, then we must set the improvement delta to 0 */
-      if(realcount > niv)
-        OFdelta = 0;
+      /* We can update */
+      valOF = unscaled_mat(lp, lp->orig_obj[colnr], 0, colnr);
+      valOF = fabs( valOF * (valGCD / divOF) );
+      if(OFgcd) {
+        SETMIN(value, valOF);
+      }
+      else {
+        OFgcd = TRUE;
+        value = valOF;
+      }
+
     }
   }
-  return( OFdelta );
+  return( value );
 }
-
-#endif
 
 STATIC MYBOOL isPrimalSimplex(lprec *lp)
 {
@@ -7081,18 +6540,15 @@ STATIC MYBOOL isDualFeasible(lprec *lp, REAL tol, int *boundflipcount, int infea
 
   varnr = lp->rows + 1;
   for(i = 1; i <= lp->columns; i++, varnr++) {
-    if (mat_collength(lp->matA, i) == 0) {
-      islower = lp->is_lower[varnr];
-      if((my_chsign(islower, lp->orig_obj[i]) > 0) && !SOS_is_member(lp->SOS, 0, i)) {
-        lp->is_lower[varnr] = !islower;
-        if((islower && my_infinite(lp,  lp->upbo[varnr] /* lp->orig_upbo[varnr] */)) ||
-           (!islower && my_infinite(lp,  my_lowbo(lp, varnr) /* lp->orig_lowbo[varnr] */))) {
-          lp->spx_status = UNBOUNDED;
-          break;
-        }
-        /* lp->is_lower[varnr] = !islower; */
-        n++;
+    islower = lp->is_lower[varnr];
+    if((my_chsign(islower, lp->orig_obj[i]) > 0) && (mat_collength(lp->matA, i) == 0) && !SOS_is_member(lp->SOS, 0, i)) {
+      lp->is_lower[varnr] = !islower;
+      if((islower && my_infinite(lp, lp->upbo[varnr])) ||
+         (!islower && my_infinite(lp, my_lowbo(lp, varnr)))) {
+        lp->spx_status = UNBOUNDED;
+        break;
       }
+      n++;
     }
   }
 
@@ -7261,23 +6717,44 @@ STATIC MYBOOL is_slackbasis(lprec *lp)
 
 STATIC MYBOOL verify_basis(lprec *lp)
 {
-  int    i, ii;
+  int    i, ii; /* , k = 0; */
   MYBOOL result = FALSE;
+if (buttrey_thing > 0)
+{
+buttrey_debugfile = fopen ("h:/temp/egaddeath.txt", "w");
+}
 
   for(i = 1; i <= lp->rows; i++) {
     ii = lp->var_basic[i];
+    if (buttrey_thing > 0) {
+        fprintf (buttrey_debugfile, "i %i, rows %i, ii %i, sum %i, basic[%i] %i\n",
+            i, lp->rows, ii, lp->sum, ii, lp->is_basic[ii]);
+        fflush (buttrey_debugfile);
+    }
     if((ii < 1) || (ii > lp->sum) || !lp->is_basic[ii]) {
-      //k = i;
+        if (buttrey_thing > 0) {
+            fprintf (buttrey_debugfile, "lp lib: We're inside.\n");
+        fflush (buttrey_debugfile);
+        }
+      /* k = i; */
       ii = 0;
       goto Done;
     }
   }
+    if (buttrey_thing > 0) {
+        fprintf (buttrey_debugfile, "lp lib: We're down here now.\n");
+        fflush (buttrey_debugfile);
+    }
 
   ii = lp->rows;
   for(i = 1; i <= lp->sum; i++) {
     if(lp->is_basic[i])
       ii--;
   }
+    if (buttrey_thing > 0) {
+        fprintf (buttrey_debugfile, "lp lib: About to return.\n");
+        fflush (buttrey_debugfile);
+    }
   result = (MYBOOL) (ii == 0);
 
 Done:
@@ -7608,15 +7085,13 @@ STATIC MYBOOL is_sc_violated(lprec *lp, int column)
 {
   int  varno;
   REAL tmpreal;
-  REAL eps = lp->epsvalue;                                    /* � adding eps here*/
 
   varno = lp->rows+column;
   tmpreal = unscaled_value(lp, lp->sc_lobound[column], varno);
-  return( (MYBOOL) ((tmpreal > 0) &&                          /* it is an (inactive) SC variable...    */
-                    (lp->solution[varno] < tmpreal - eps) &&  /* ...and the NZ lower bound is violated */
-                    (lp->solution[varno] > eps)) );           /* ...and the Z lowerbound is violated   */
+  return( (MYBOOL) ((tmpreal > 0) &&                    /* it is an (inactive) SC variable...    */
+                    (lp->solution[varno] < tmpreal) &&  /* ...and the NZ lower bound is violated */
+                    (lp->solution[varno] > 0)) );       /* ...and the Z lowerbound is violated   */
 }
-
 STATIC int find_sc_bbvar(lprec *lp, int *count)
 {
   int    i, ii, n, bestvar;
@@ -7788,7 +7263,7 @@ STATIC int find_int_bbvar(lprec *lp, int *count, BBrec *BB, MYBOOL *isfeasible)
   depthfirstmode = is_bb_mode(lp, NODE_DEPTHFIRSTMODE);
   breadthfirstmode = is_bb_mode(lp, NODE_BREADTHFIRSTMODE) &&
                      (MYBOOL) (lp->bb_level <= lp->int_vars);
-  rcostmode      = (MYBOOL) /* FALSE */ (BB->lp->solutioncount > 0) && is_bb_mode(lp, NODE_RCOSTFIXING) ; /* 5/2/08 peno disabled NODE_RCOSTFIXING because it results in non-optimal solutions with some models */ /* 15/2/8 peno enabled NODE_RCOSTFIXING again because a fix is found. See lp_simplex.c NODE__RCOSTFIXING fix */
+  rcostmode      = (MYBOOL) (BB->lp->solutioncount > 0) && is_bb_mode(lp, NODE_RCOSTFIXING);
   pseudocostmode = is_bb_mode(lp, NODE_PSEUDOCOSTMODE);
   pseudocostsel  = is_bb_rule(lp, NODE_PSEUDOCOSTSELECT) ||
                    is_bb_rule(lp, NODE_PSEUDONONINTSELECT) ||
@@ -8130,10 +7605,12 @@ STATIC void update_pseudocost(BBPSrec *pc, int mipvar, int varcode, MYBOOL capup
   else
     OFsol = pc->lp->solution[0];              /* The problem's objective function value */
 
-  if(isnan(varsol)) {
+#if 0
+  if(_isnan(varsol)) {
     pc->lp->bb_parentOF = OFsol;
     return;
   }
+#endif
 
   /* Point to the applicable (lower or upper) bound and increment attempted update count */
   if(capupper) {
@@ -8189,8 +7666,10 @@ STATIC REAL get_pseudonodecost(BBPSrec *pc, int mipvar, int vartype, REAL varsol
 
   uplim = get_pseudorange(pc, mipvar, vartype);
   varsol = modf(varsol/uplim, &hold);
-  if(isnan(varsol))
+#if 0
+  if(_isnan(varsol))
     varsol = 0;
+#endif
 
   hold = pc->LOcost[mipvar].value*varsol +
          pc->UPcost[mipvar].value*(1-varsol);
@@ -8294,9 +7773,9 @@ STATIC MYBOOL check_degeneracy(lprec *lp, REAL *pcol, int *degencount)
 STATIC MYBOOL performiteration(lprec *lp, int rownr, int varin, LREAL theta, MYBOOL primal, MYBOOL allowminit,
                                REAL *prow, int *nzprow, REAL *pcol, int *nzpcol, int *boundswaps)
 {
-  int    varout;
-  REAL   pivot, epsmargin, leavingValue, leavingUB, enteringUB;
-  MYBOOL leavingToUB = FALSE, enteringFromUB, enteringIsFixed, leavingIsFixed;
+  static int    varout;
+  static REAL   pivot, epsmargin, leavingValue, leavingUB, enteringUB;
+  static MYBOOL leavingToUB, enteringFromUB, enteringIsFixed, leavingIsFixed;
   MYBOOL *islower = &(lp->is_lower[varin]);
   MYBOOL minitNow = FALSE, minitStatus = ITERATE_MAJORMAJOR;
   LREAL  deltatheta = theta;
@@ -8332,9 +7811,6 @@ STATIC MYBOOL performiteration(lprec *lp, int rownr, int varin, LREAL theta, MYB
   leavingUB  = lp->upbo[varout];
   enteringIsFixed = (MYBOOL) (fabs(enteringUB) < epsmargin);
   leavingIsFixed  = (MYBOOL) (fabs(leavingUB) < epsmargin);
-#if defined _PRICE_NOBOUNDFLIP
-  allowminit     &= !ISMASKSET(lp->piv_strategy, PRICE_NOBOUNDFLIP);
-#endif
 #ifdef Paranoia
   if(enteringUB < 0)
     report(lp, SEVERE, "performiteration: Negative range for entering variable %d at iter %.0f\n",
@@ -8535,20 +8011,6 @@ STATIC REAL get_refactfrequency(lprec *lp, MYBOOL final)
   else
     return( (MYBOOL) (lp->upbo[variable]-lp->lowbo[variable] < lp->epsprimal) );
 } /* is_fixedvar */
-#else
-MYBOOL is_fixedvar(lprec *lp, int varnr)
-{
-  if(lp->bb_bounds == NULL) {
-    if(varnr <= lp->rows)
-      return( (MYBOOL) (lp->orig_upbo[varnr] < lp->epsmachine) );
-    else
-      return( (MYBOOL) (lp->orig_upbo[varnr]-lp->orig_lowbo[varnr] < lp->epsmachine) );
-  }
-  else if((varnr <= lp->rows) || (lp->bb_bounds->UBzerobased == TRUE))
-    return( (MYBOOL) (lp->upbo[varnr] < lp->epsvalue) );
-  else
-    return( (MYBOOL) (lp->upbo[varnr]-lp->lowbo[varnr] < lp->epsvalue) );
-}
 #endif
 
 STATIC MYBOOL solution_is_int(lprec *lp, int index, MYBOOL checkfixed)
@@ -8747,11 +8209,11 @@ STATIC MYBOOL bb_better(lprec *lp, int target, int mode)
                        break;
     case OF_INCUMBENT: refvalue = lp->best_solution[0];
                        break;
-    case OF_WORKING:  refvalue = my_chsign(!ismax, lp->bb_workOF /* unscaled_value(lp, lp->bb_workOF, 0) */ );
+    case OF_WORKING:  refvalue = my_chsign(!ismax, lp->bb_workOF);
                        if(fcast)
                          testvalue = my_chsign(!ismax, lp->longsteps->obj_last) - epsvalue;
                        else
-                         testvalue = my_chsign(!ismax, lp->rhs[0] /* unscaled_value(lp, lp->rhs[0], 0) */);
+                         testvalue = my_chsign(!ismax, lp->rhs[0]);
                        break;
     case OF_USERBREAK: refvalue = lp->bb_breakOF;
                        break;
@@ -8897,35 +8359,25 @@ STATIC void construct_solution(lprec *lp, REAL *target)
       }
 
       /* Do MIP-related tests and computations */
-      if((lp->int_vars > 0) && mat_validate(lp->matA) /* && !lp->wasPresolved */) { /* && !lp->wasPresolved uncommented by findings of William H. Patton. The code was never executed when the test was there. The code has effect in an integer model with all integer objective coeff. to cut-off optimization and thus make it faster */
+      if((lp->int_vars > 0) && mat_validate(lp->matA) && !lp->wasPresolved) {
         REAL fixedOF = unscaled_value(lp, lp->orig_rhs[0], 0);
 
         /* Check if we have an all-integer OF */
         basi = lp->columns;
         for(j = 1; j <= basi; j++) {
-          f = fabs(get_mat(lp, 0, j)) + lp->epsint / 2;
-          if(f > lp->epsint) { /* If coefficient is 0 then it doesn't influence OF, even it variable is not integer */
-            if(!is_int(lp, j) || (fmod(f, 1) > lp->epsint))
-              break;
-          }
+          f = fabs(get_mat(lp, 0, j)) + lp->epsint/2;
+          f = fmod(f, 1);
+          if(!is_int(lp, j) || (f > lp->epsint))
+            break;
         }
 
         /* If so, we can round up the fractional OF */
         if(j > basi) {
           f = my_chsign(is_maxim(lp), lp->real_solution) + fixedOF;
           f = floor(f+(1-epsvalue));
-          f = my_chsign(is_maxim(lp), f - fixedOF);
-          if(is_infinite(lp, lp->bb_limitOF))
-            lp->bb_limitOF = f;
-          else if(is_maxim(lp)) {
-            SETMIN(lp->bb_limitOF, f);
-          }
-          else {
-            SETMAX(lp->bb_limitOF, f);
-          }
+          lp->bb_limitOF = my_chsign(is_maxim(lp), f - fixedOF);
         }
       }
-
       /* Check that a user limit on the OF is feasible */
       if((lp->int_vars > 0) &&
          (my_chsign(is_maxim(lp), my_reldiff(lp->best_solution[0],lp->bb_limitOF)) < -epsvalue)) {
@@ -8941,27 +8393,22 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
                           REAL *upbo, REAL *lowbo, REAL tolerance)
 {
 /*#define UseMaxValueInCheck*/
-#define RelativeAccuracyCheck
   MYBOOL isSC;
-  REAL   test, value, diff, maxdiff = 0.0, maxerr = 0.0;
-#ifndef RelativeAccuracyCheck
-  REAL   hold;
-#endif
+  REAL   test, value, hold, diff, maxdiff = 0.0, maxerr = 0.0, *matValue,
 #ifdef UseMaxValueInCheck
-  REAL *maxvalue = NULL;
-#elif !defined RelativeAccuracyCheck
-  REAL *plusum = NULL, *negsum = NULL;
+         *maxvalue = NULL,
+#else
+         *plusum = NULL, *negsum = NULL;
 #endif
-  int    i,j,n, errlevel = IMPORTANT, errlimit = 10;
-  //MATrec *mat = lp->matA;
-  int    solveStatus = OPTIMAL;
+  int    i,j,n, errlevel = IMPORTANT, errlimit = 10, *matRownr, *matColnr;
+  MATrec *mat = lp->matA;
 
   report(lp, NORMAL, " \n");
   if(MIP_count(lp) > 0)
-    report(lp, NORMAL, "%s solution  " RESULTVALUEMASK " after %10.0f iter, %9.0f nodes (gap %.1f%%).\n",
-                       my_if(lp->bb_break && !bb_better(lp, OF_DUALLIMIT, OF_TEST_BE) && bb_better(lp, OF_RELAXED, OF_TEST_NE), "Subopt.", "Optimal"),
+    report(lp, NORMAL, "%sOptimal solution " RESULTVALUEMASK " after %10.0f iter, %9.0f nodes (gap %.1f%%).\n",
+                       my_if(lp->bb_break, "-", "+"),
                        solution[0], (double) lp->total_iter, (double) lp->bb_totalnodes,
-                       100.0*fabs(my_reldiff(solution[0], lp->bb_limitOF)));
+                       100.0*fabs(my_reldiff(lp->solution[0], lp->bb_limitOF)));
   else
     report(lp, NORMAL, "Optimal solution  " RESULTVALUEMASK " after %10.0f iter.\n",
                        solution[0], (double) lp->total_iter);
@@ -8971,12 +8418,10 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
   allocREAL(lp, &maxvalue, lp->rows + 1, FALSE);
   for(i = 0; i <= lp->rows; i++)
     maxvalue[i] = fabs(get_rh(lp, i));
-#elif !defined RelativeAccuracyCheck
+#else
   allocREAL(lp, &plusum, lp->rows + 1, TRUE);
   allocREAL(lp, &negsum, lp->rows + 1, TRUE);
 #endif
-
-#if defined UseMaxValueInCheck || !defined RelativeAccuracyCheck
   n = get_nonzeros(lp);
   matRownr = &COL_MAT_ROWNR(0);
   matColnr = &COL_MAT_COLNR(0);
@@ -8990,14 +8435,14 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
     test = fabs(test);
     if(test > maxvalue[*matRownr])
       maxvalue[*matRownr] = test;
-#elif !defined RelativeAccuracyCheck
+#else
     if(test > 0)
       plusum[*matRownr] += test;
     else
       negsum[*matRownr] += test;
 #endif
   }
-#endif
+
 
  /* Check if solution values are within the bounds; allowing a margin for numeric errors */
   n = 0;
@@ -9013,23 +8458,14 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
       test = unscaled_value(lp, lowbo[i], i);
 
     isSC = is_semicont(lp, i - lp->rows);
-    diff = -my_reldiff(value, test);
-#ifdef RelativeAccuracyCheck
-    if (isSC && diff > 0 && my_reldiff(fabs(value), 0.0) < diff)
-        diff = my_reldiff(fabs(value), 0.0);
-#else
-    if(isSC && diff > 0 && (value < test/2))
-      test = 0;
-#endif
-    if(diff > 0) {
-      SETMAX(maxdiff, diff);
-#ifdef RelativeAccuracyCheck
-      maxerr = maxdiff;
-#else
-      SETMAX(maxerr, test - value);
-#endif
+    diff = my_reldiff(value, test);
+    if(diff < 0) {
+      if(isSC && (value < test/2))
+        test = 0;
+      SETMAX(maxerr, fabs(value-test));
+      SETMAX(maxdiff, fabs(diff));
     }
-    if((diff > tolerance) && !isSC)  {
+    if((diff < -tolerance) && !isSC)  {
       if(n < errlimit)
       report(lp, errlevel,
         "check_solution: Variable   %s = " RESULTVALUEMASK " is below its lower bound " RESULTVALUEMASK "\n",
@@ -9040,12 +8476,8 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
     test = unscaled_value(lp, upbo[i], i);
     diff = my_reldiff(value, test);
     if(diff > 0) {
-      SETMAX(maxdiff, diff);
-#ifdef RelativeAccuracyCheck
-      maxerr = maxdiff;
-#else
-      SETMAX(maxerr, value - test);
-#endif
+      SETMAX(maxerr, fabs(value-test));
+      SETMAX(maxdiff, fabs(diff));
     }
     if(diff > tolerance) {
       if(n < errlimit)
@@ -9058,8 +8490,8 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
 
  /* Check if constraint values are within the bounds; allowing a margin for numeric errors */
   for(i = 1; i <= lp->rows; i++) {
-    test = lp->orig_rhs[i];
 
+    test = lp->orig_rhs[i];
     if(is_infinite(lp, test))
       continue;
 
@@ -9081,8 +8513,7 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
 #ifndef LegacySlackDefinition
     value += test;
 #endif
-    diff = my_reldiff(value, test);
-#ifndef RelativeAccuracyCheck
+/*    diff = my_reldiff(value, test); */
 #ifdef UseMaxValueInCheck
     hold = maxvalue[i];
 #else
@@ -9090,16 +8521,10 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
 #endif
     if(hold < lp->epsvalue)
       hold = 1;
-
     diff = my_reldiff((value+1)/hold, (test+1)/hold);
-#endif
     if(diff > 0) {
-      SETMAX(maxdiff, diff);
-#ifdef RelativeAccuracyCheck
-      maxerr = maxdiff;
-#else
-      SETMAX(maxerr, value-test);
-#endif
+      SETMAX(maxerr, fabs(value-test));
+      SETMAX(maxdiff, fabs(diff));
     }
     if(diff > tolerance) {
       if(n < errlimit)
@@ -9135,8 +8560,7 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
 #ifndef LegacySlackDefinition
     value += test;
 #endif
-    diff = -my_reldiff(value, test);
-#ifndef RelativeAccuracyCheck
+/*    diff = my_reldiff(value, test); */
 #ifdef UseMaxValueInCheck
     hold = maxvalue[i];
 #else
@@ -9144,17 +8568,12 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
 #endif
     if(hold < lp->epsvalue)
       hold = 1;
-    diff = -my_reldiff((value+1)/hold, (test+1)/hold);
-#endif
-    if(diff > 0) {
-      SETMAX(maxdiff, diff);
-#ifdef RelativeAccuracyCheck
-      maxerr = maxdiff;
-#else
-      SETMAX(maxerr, test-value);
-#endif
+    diff = my_reldiff((value+1)/hold, (test+1)/hold);
+    if(diff < 0) {
+      SETMAX(maxerr, fabs(value-test));
+      SETMAX(maxdiff, fabs(diff));
     }
-    if(diff > tolerance) {
+    if(diff < -tolerance) {
       if(n < errlimit)
       report(lp, errlevel,
         "check_solution: Constraint %s = " RESULTVALUEMASK " is below its %s " RESULTVALUEMASK "\n",
@@ -9166,23 +8585,15 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
 
 #ifdef UseMaxValueInCheck
   FREE(maxvalue);
-#elif !defined RelativeAccuracyCheck
+#else
   FREE(plusum);
   FREE(negsum);
 #endif
 
-#ifdef RelativeAccuracyCheck
-  report(lp, NORMAL, "\nRelative numeric accuracy ||*|| = %g\n", maxdiff);
-  if (maxdiff > lp->accuracy_error)
-  {
-    report(lp, IMPORTANT, "\nUnacceptable accuracy found (worse than required %g)\n", lp->accuracy_error);
-    solveStatus = ACCURACYERROR;
-  }
-#else
   if(n > 0) {
     report(lp, IMPORTANT, "\nSeriously low accuracy found ||*|| = %g (rel. error %g)\n",
                maxerr, maxdiff);
-    solveStatus = NUMFAILURE;
+    return(NUMFAILURE);
   }
   else {
     if(maxerr > 1.0e-7)
@@ -9195,28 +8606,11 @@ STATIC int check_solution(lprec *lp, int  lastcolumn, REAL *solution,
       report(lp, NORMAL, "\nVery good numeric accuracy ||*|| = %g\n", maxerr);
     else
       report(lp, NORMAL, "\nExcellent numeric accuracy ||*|| = %g\n", maxerr);
+
+    return(OPTIMAL);
   }
-#endif
 
-  lp->accuracy = maxerr;
-
-  return(solveStatus);
 } /* check_solution */
-
-REAL __WINAPI get_accuracy(lprec *lp)
-{
-  return(lp->accuracy);
-}
-
-void __WINAPI set_break_numeric_accuracy(lprec *lp, REAL accuracy)
-{
-  lp->accuracy_error = accuracy;
-}
-
-REAL __WINAPI get_break_numeric_accuracy(lprec *lp)
-{
-  return(lp->accuracy_error);
-}
 
 STATIC void transfer_solution_var(lprec *lp, int uservar)
 {
@@ -9401,13 +8795,14 @@ STATIC MYBOOL construct_sensitivity_duals(lprec *lp)
         /* Search for the rows(s) which first result in further iterations */
         for (k=1; k<=lp->rows; k++) {
           if (fabs(pcol[k])>epsvalue) {
-            a = lp->rhs[k]/pcol[k];
+            a = unscaled_value(lp, lp->rhs[k]/pcol[k], varnr);
             if((varnr > lp->rows) && (fabs(lp->solution[varnr]) <= epsvalue) && (a < objfromvalue) && (a >= lp->lowbo[varnr]))
               objfromvalue = a;
             if ((a<=0.0) && (pcol[k]<0.0) && (-a<from)) from=my_flipsign(a);
             if ((a>=0.0) && (pcol[k]>0.0) && ( a<till)) till= a;
             if (lp->upbo[lp->var_basic[k]] < infinite) {
               a = (REAL) ((lp->rhs[k]-lp->upbo[lp->var_basic[k]])/pcol[k]);
+              a = unscaled_value(lp, a, varnr);
               if((varnr > lp->rows) && (fabs(lp->solution[varnr]) <= epsvalue) && (a < objfromvalue) && (a >= lp->lowbo[varnr]))
                 objfromvalue = a;
               if ((a<=0.0) && (pcol[k]>0.0) && (-a<from)) from=my_flipsign(a);
@@ -9429,24 +8824,21 @@ STATIC MYBOOL construct_sensitivity_duals(lprec *lp)
       }
 
       if (from!=infinite)
-        lp->dualsfrom[varnr]=lp->solution[varnr]-unscaled_value(lp, from, varnr);
+        lp->dualsfrom[varnr]=lp->solution[varnr]-from;
       else
         lp->dualsfrom[varnr]=-infinite;
       if (till!=infinite)
-        lp->dualstill[varnr]=lp->solution[varnr]+unscaled_value(lp, till, varnr);
+        lp->dualstill[varnr]=lp->solution[varnr]+till;
       else
         lp->dualstill[varnr]=infinite;
 
       if (varnr > lp->rows) {
         if (objfromvalue != infinite) {
-          if ((!sensrejvar) || (lp->upbo[varnr] != 0.0)) {
-            if (!lp->is_lower[varnr])
-              objfromvalue = lp->upbo[varnr] - objfromvalue;
-            if ((lp->upbo[varnr] < infinite) && (objfromvalue > lp->upbo[varnr]))
-              objfromvalue = lp->upbo[varnr];
-          }
+          if (!lp->is_lower[varnr])
+            objfromvalue = lp->upbo[varnr] - objfromvalue;
+          if ((lp->upbo[varnr] < infinite) && (objfromvalue > lp->upbo[varnr]))
+            objfromvalue = lp->upbo[varnr];
           objfromvalue += lp->lowbo[varnr];
-          objfromvalue = unscaled_value(lp, objfromvalue, varnr);
         }
         else
           objfromvalue = -infinite;
@@ -9508,9 +8900,9 @@ Abandon:
         a = unscaled_mat(lp, drow[varnr], 0, i);
         if(is_maxim(lp))
           a = -a;
-        if ((!sensrejvar) && (lp->upbo[varnr] == 0.0))
+        if (lp->upbo[varnr] == 0.0)
           /* ignore, because this case doesn't results in further iterations */ ;
-        else if(((lp->is_lower[varnr] != 0) == (is_maxim(lp) == FALSE)) && (a > -epsvalue))
+        else if((lp->is_lower[varnr] != 0) == (is_maxim(lp) == FALSE))
           from = OrigObj[i] - a; /* less than this value gives further iterations */
         else
           till = OrigObj[i] - a; /* bigger than this value gives further iterations */
@@ -9555,13 +8947,13 @@ Abandon:
           if (is_maxim(lp)) {
             if (a - lp->lowbo[varnr] < epsvalue)
               from = -infinite; /* if variable is at lower bound then decrementing objective coefficient will not result in extra iterations because it would only extra decrease the value, but since it is at its lower bound ... */
-            else if (((!sensrejvar) || (lp->upbo[varnr] != 0.0)) && (lp->lowbo[varnr] + lp->upbo[varnr] - a < epsvalue))
+            else if (lp->lowbo[varnr] + lp->upbo[varnr] - a < epsvalue)
               till = infinite;  /* if variable is at upper bound then incrementing objective coefficient will not result in extra iterations because it would only extra increase the value, but since it is at its upper bound ... */
           }
           else {
             if (a - lp->lowbo[varnr] < epsvalue)
               till = infinite;  /* if variable is at lower bound then incrementing objective coefficient will not result in extra iterations because it would only extra decrease the value, but since it is at its lower bound ... */
-            else if (((!sensrejvar) || (lp->upbo[varnr] != 0.0)) && (lp->lowbo[varnr] + lp->upbo[varnr] - a < epsvalue))
+            else if (lp->lowbo[varnr] + lp->upbo[varnr] - a < epsvalue)
               from = -infinite; /* if variable is at upper bound then decrementing objective coefficient will not result in extra iterations because it would only extra increase the value, but since it is at its upper bound ... */
           }
         }
@@ -9764,7 +9156,7 @@ STATIC void initialize_solution(lprec *lp, MYBOOL shiftbounds)
   }
 
   /* Do final pass to get the maximum value */
-  i = my_idamax(lp->rows /* +1 */, lp->rhs, 1);
+  i = idamaxlpsolve(lp->rows+1, lp->rhs, 1);
   lp->rhsmax = fabs(lp->rhs[i]);
 
   if(shiftbounds == INITSOL_SHIFTZERO)
@@ -9994,9 +9386,6 @@ STATIC MYBOOL pre_MIPOBJ(lprec *lp)
   }
 #endif
   lp->bb_deltaOF = MIP_stepOF(lp);
-  if(lp->bb_deltaOF < MAX(lp->epsvalue, lp->mip_absgap))
-      lp->bb_deltaOF = 0;
-
   return( TRUE );
 }
 STATIC MYBOOL post_MIPOBJ(lprec *lp)
@@ -10122,7 +9511,7 @@ int preprocess(lprec *lp)
       if((lp->var_is_free != NULL) && (lp->var_is_free[j] > 0))
         del_column(lp, lp->var_is_free[j]);
       /* Negate the column / flip to the positive range */
-      mat_multcol(lp->matA, j, -1, TRUE);
+      mat_multcol(lp->matA, j, -1);
       if(lp->var_is_free == NULL) {
         if(!allocINT(lp, &lp->var_is_free, MAX(lp->columns, lp->columns_alloc) + 1, TRUE))
           return(FALSE);
@@ -10166,7 +9555,7 @@ int preprocess(lprec *lp)
           ok = FALSE;
           break;
         }
-        mat_multcol(lp->matA, lp->columns, -1, TRUE);
+        mat_multcol(lp->matA, lp->columns, -1);
         if(scaled)
           lp->scalars[lp->rows+lp->columns] = lp->scalars[i];
         lp->scaling_used = (MYBOOL) scaled;
@@ -10236,12 +9625,12 @@ void postprocess(lprec *lp)
 
  /* Must compute duals here in case we have free variables; note that in
     this case sensitivity analysis is not possible unless done here */
-  if((lp->bb_totalnodes == 0) && (lp->var_is_free == NULL)) {
-    if(is_presolve(lp, PRESOLVE_DUALS))
-      construct_duals(lp);
-    if(is_presolve(lp, PRESOLVE_SENSDUALS))
-      if(!construct_sensitivity_duals(lp) || !construct_sensitivity_obj(lp))
-        report(lp, IMPORTANT, "postprocess: Unable to allocate working memory for duals.\n");
+  if((MIP_count(lp) == 0) &&
+     (is_presolve(lp, PRESOLVE_DUALS) || (lp->var_is_free != NULL)))
+    construct_duals(lp);
+  if(is_presolve(lp, PRESOLVE_SENSDUALS)) {
+    if(!construct_sensitivity_duals(lp) || !construct_sensitivity_obj(lp))
+      report(lp, IMPORTANT, "postprocess: Unable to allocate working memory for duals.\n");
   }
 
  /* Loop over all columns */
@@ -10251,7 +9640,7 @@ void postprocess(lprec *lp)
     if((lp->var_is_free != NULL) && (lp->var_is_free[j] < 0)) {
       /* Check if we have the simple case where the UP and LB are negated and switched */
       if(-lp->var_is_free[j] == j) {
-        mat_multcol(lp->matA, j, -1, TRUE);
+        mat_multcol(lp->matA, j, -1);
         hold = lp->orig_upbo[i];
         lp->orig_upbo[i] = my_flipsign(lp->orig_lowbo[i]);
         lp->orig_lowbo[i] = my_flipsign(hold);
