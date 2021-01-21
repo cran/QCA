@@ -1,4 +1,4 @@
-# Copyright (c) 2020, Adrian Dusa
+# Copyright (c) 2016 - 2021, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -810,7 +810,7 @@
         print(admisc::prettyTable(x$tt))
         if (alloutzero) {
             if (enter) cat("\n")
-            cat(paste("It seems that all outcome values have been coded to zero.",
+            cat(paste("It seems that all output values have been coded to zero.",
                       "Suggestion: lower the inclusion score for the presence of the outcome,", 
                       sprintf("the relevant argument is \"incl.cut\" which now has a value of %s.\n", x$options$incl.cut[1]), sep = "\n"))
         }

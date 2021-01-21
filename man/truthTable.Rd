@@ -198,8 +198,7 @@ Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods. Qualitat
 Comparative Analysis (QCA) and Related Techniques}, SAGE.
 
 Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}. 
-Springer International Publishing, DOI:
-\href{http://dx.doi.org/10.1007/978-3-319-75668-4}{10.1007/978-3-319-75668-4}.
+Springer International Publishing, \doi{10.1007/978-3-319-75668-4}.
 
 Lipset, S.M. (1959) \dQuote{Some Social Requisites of Democracy: Economic Development
 and Political Legitimacy}, \emph{American Political Science Review} vol.53, pp.69-105.

@@ -158,19 +158,17 @@ implicant.
 \references{
 Cebotari, V.; Vink, M.P. (2013) \dQuote{A Configurational Analysis of Ethnic
 Protest in Europe}. \emph{International Journal of Comparative Sociology}
-vol.54, no.4, pp.298-324, DOI:
-\href{http://dx.doi.org/10.1177/0020715213508567}{10.1177/0020715213508567}.
+vol.54, no.4, pp.298-324, \doi{10.1177/0020715213508567}.
 
 Cebotari, Victor; Vink, Maarten Peter (2015) \emph{Replication Data for: A
 configurational analysis of ethnic protest in Europe}, Harvard Dataverse, V2,
-DOI: \href{http://dx.doi.org/10.7910/DVN/PT2IB9}{10.7910/DVN/PT2IB9}.
+\doi{10.7910/DVN/PT2IB9}.
 
 Dusa, A. (2007b) \emph{Enhancing Quine-McCluskey}.
-WP 2007-49, \href{http://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
+WP 2007-49, \href{https://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
 
 Dusa, Adrian (2010) \dQuote{A Mathematical Approach to the Boolean Minimization 
-Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113, DOI:
-\href{http://dx.doi.org/10.1007/s11135-008-9183-x}{10.1007/s11135-008-9183-x}.
+Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113, \doi{10.1007/s11135-008-9183-x}.
 
 Lipset, S. M. (1959) \dQuote{Some Social Requisites of Democracy: Economic Development
 and Political Legitimacy}, \emph{American Political Science Review} vol.53, pp.69-105.

@@ -72,8 +72,7 @@ Protest in Europe}. \emph{International Journal of Comparative Sociology}
 vol.54, no.4, pp.298-324.
 
 Cebotari, V.; Vink, M.P. (2015) \dQuote{Replication Data for: A configurational
-analysis of ethnic protest in Europe}, DOI:
-\url{http://dx.doi.org/10.7910/DVN/PT2IB9}, Harvard Dataverse, V2
+analysis of ethnic protest in Europe}, \doi{10.7910/DVN/PT2IB9}, Harvard Dataverse, V2
 }
 
 \keyword{datasets}

@@ -56,8 +56,8 @@ specify conjunctural directional expectations in the minimization function.
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 3.10\cr
-    Date:    \tab 2020-10-20\cr
+    Version: \tab 3.11\cr
+    Date:    \tab 2021-01-21\cr
     License: \tab GPL (>= 3)\cr
     }
 }
@@ -77,35 +77,33 @@ Adrian Dusa
 \references{
 Ambuehl, M. et al (2015) \emph{A Package for Coincidence Analysis (CNA),
 R Package Version 2.0 [Computer Program]},
-\href{https://cran.r-project.org/package=cna}{CRAN}.
+\href{https://cran.r-project.org/package=cna/}{CRAN}.
 
 Caren, N.; Panofsky, A. (2005) \dQuote{TQCA: A Technique for Adding 
 Temporality to Qualitative Comparative Analysis.} 
 \emph{Sociological Methods & Research} vol.34, no.2, pp.147-172.
 
 Cronqvist, L. (2016) \emph{Tosmana: Tool for Small-N Analysis, Version 1.522 
-[Computer Program]}. Trier: University of Trier.\cr
-URL: \url{https://www.tosmana.net}
+[Computer Program]}. Trier: University of Trier. url: \url{https://www.tosmana.net/}
 
 Dusa, A. (2007a) \dQuote{User manual for the QCA(GUI) package in R}.
-\emph{Journal of Business Research} vol.60, no.5, pp.576-586, DOI: 
-\href{https://doi.org/10.1016/j.jbusres.2007.01.002}{10.1016/j.jbusres.2007.01.002}
+\emph{Journal of Business Research} vol.60, no.5, pp.576-586,
+\doi{10.1016/j.jbusres.2007.01.002}
 
 Dusa, A. (2007b) \emph{Enhancing Quine-McCluskey}.
-WP 2007-49, \href{http://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
+WP 2007-49, \href{https://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
 
 Dusa, A. (2010) \dQuote{A Mathematical Approach to the Boolean Minimization 
-Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113, DOI:
-\href{http://dx.doi.org/10.1007/s11135-008-9183-x}{10.1007/s11135-008-9183-x}
+Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113,
+\doi{10.1007/s11135-008-9183-x}
 
 Dusa, A.; Thiem, A. (2015) \dQuote{Enhancing the Minimization of Boolean and
 Multivalue Output Functions With eQMC} \emph{Journal of Mathematical Sociology}
 vol.39, no.2, pp.92-108,\cr
-DOI: \href{http://dx.doi.org/10.1080/0022250X.2014.897949}{10.1080/0022250X.2014.897949}
+\doi{10.1080/0022250X.2014.897949}
 
 Dusa, A. (2018) \dQuote{Consistency Cubes: A Fast, Efficient Method for Boolean
-Minimization}, R Journal, DOI:
-\href{http://dx.doi.org/10.32614/RJ-2018-080}{10.32614/RJ-2018-080}
+Minimization}, R Journal, \doi{10.32614/RJ-2018-080}
 
 Ragin, C.C. (1987) \emph{The Comparative Method: Moving beyond Qualitative and 
 Quantitative Strategies}. Berkeley: University of California Press.
@@ -127,7 +125,7 @@ Irvine: Department of Sociology, University of California.
 Thiem, A.; Dusa, A. (2013) \dQuote{Boolean Minimization in Social 
 Science Research: A Review of Current Software for Qualitative Comparative 
 Analysis (QCA).} \emph{Social Science Computer Review} vol.31, no.4, pp.505-521,
-DOI \href{http://dx.doi.org/10.1177/0894439313478999}{10.1177/0894439313478999}
+\doi{10.1177/0894439313478999}
 }
 
 

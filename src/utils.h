@@ -1,58 +1,40 @@
-/*
-Copyright (c) 2020, Adrian Dusa
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, in whole or in part, are permitted provided that the
-following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * The names of its contributors may NOT be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
 #include <stdbool.h>
 #include "row_dominance.h"
 #include "sort_cols.h"
+
+// void printfarray3(int* arr, int nr, int nc);
+// void printfarray4(double* arr, int nr, int nc);
+
 void resize(
     int **array,
     const int rows,
     const int newcols,
     const int oldcols
 );
+
 bool too_complex(
     const int foundPI,
     const int solmin,
     const double maxcomb
 );
+
 void over_transpose(
     int matrix[],
     const int nr,
     const int nc,
-    const int type 
+    const int type // 0 boolean, 1 int, 2 double
 );
+
 bool altb(
     double a,
     double b
 );
+
 bool agteb(
     double a,
     double b
 );
+
 bool nonredundant(
     const int p_implicants[],
     const int p_indx[],
@@ -63,6 +45,7 @@ bool nonredundant(
     const int k,
     const int prevfoundPI
 );
+
 void push_PI(
     int p_implicants[],
     int p_indx[],
@@ -78,6 +61,7 @@ void push_PI(
     const int posrows,
     const int foundPI
 );
+
 void increment(
     int k,
     int *e,
@@ -86,6 +70,7 @@ void increment(
     int *tempk,
     int minval
 );
+
 void populate_posneg(
     int *rowpos,
     int *rowneg,
@@ -96,18 +81,21 @@ void populate_posneg(
     int posmat[],
     int negmat[]
 );
+
 void get_noflevels(
     int noflevels[],
     const int p_tt[],
     int nconds,
     int ttrows
 );
+
 void fill_mbase(
     int mbase[],
     const int tempk[],
     const int noflevels[],
     const int k
 );
+
 void get_decimals(
     const int posrows,
     const int negrows,
@@ -119,6 +107,7 @@ void get_decimals(
     const int tempk[],
     const int mbase[]
 );
+
 void get_uniques(
     const int posrows,
     int *found,
@@ -126,6 +115,7 @@ void get_uniques(
     bool possiblePI[],
     int possiblePIrows[]
 );
+
 void verify_possible_PI(
     const int compare,
     const int negrows,
@@ -135,12 +125,14 @@ void verify_possible_PI(
     const int decpos[],
     const int decneg[]
 );
+
 void get_frows(
     int frows[],
     const bool possiblePI[],
     const int possiblePIrows[],
     const int compare
 );
+
 void fill_matrix(
     int nrows,
     int ncols,
@@ -150,6 +142,7 @@ void fill_matrix(
     int cols[],
     int plus1
 );
+
 void calculate_rows(
     int *nrows,
     int ncols,
@@ -157,6 +150,7 @@ void calculate_rows(
     int arrange,
     int maxprod
 );
+
 int fillCombinationTasks(
     const int n,
     int k,
@@ -164,12 +158,14 @@ int fillCombinationTasks(
     const int arrayMaxSize,
     int* outNumItemsFilled
 );
+
 int GetNextComb(
     int *arr, 
     int k, 
     int n, 
     int indexLimit
 );
+
 bool all_covered(
     const int p_pichart[],
     const int pirows,

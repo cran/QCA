@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020, Adrian Dusa
+Copyright (c) 2016 - 2021, Adrian Dusa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -32,13 +32,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # include <Rinternals.h>
 # include <Rmath.h>
 # include <R_ext/Rdynload.h>
-# include "lpSolve/lp_min.h"
-# include "CCubes/utils.h"
-# include "CCubes/find_min.h"
-# include "CCubes/find_models.h"
-# include "CCubes/generate_matrix.h"
-# include "CCubes/sort_matrix.h"
-# include "CCubes/CCubes.h"
+# include "utils.h"
+# include "find_min.h"
+# include "find_models.h"
+# include "generate_matrix.h"
+# include "sort_matrix.h"
+# include "CCubes.h"
 #ifdef _OPENMP
   #include <omp.h>
 #endif
@@ -250,7 +249,7 @@ SEXP C_solveChart(SEXP pichart, SEXP allsol, SEXP vdepth, SEXP k, SEXP maxcomb, 
         LOGICAL(toocomplex)[0] = too_complex(foundPI, INTEGER(k)[0], REAL(maxcomb)[0]);
     }
     free(p_solutions);
-    UNPROTECT(1);
+    UNPROTECT(2);
     return(out);
 }
 void printfarray(int* arr, int size)
@@ -1412,17 +1411,18 @@ SEXP C_simplify(SEXP mat, SEXP noflevels, SEXP partial) {
     return(simplified);
 }
 SEXP C_Cubes(SEXP list) {
-    int posdata =       getpos(list, "data");       
-    int posallsol =     getpos(list, "all.sol");    
-    int posrowdom =     getpos(list, "row.dom");    
-    int posminpin =     getpos(list, "min.pin");    
-    int pospicons =     getpos(list, "pi.cons");    
-    int posdepth =      getpos(list, "depth");      
-    int posolcons =     getpos(list, "sol.cons");   
-    int posolcov  =     getpos(list, "sol.cov");    
-    int posfs =         getpos(list, "fs");         
-    int posmaxcomb =    getpos(list, "max.comb");   
-    int pos1stmin =     getpos(list, "first.min");  
+    int posdata =      getpos(list, "data");       
+    int posallsol =    getpos(list, "all.sol");    
+    int posrowdom =    getpos(list, "row.dom");    
+    int posminpin =    getpos(list, "min.pin");    
+    int pospicons =    getpos(list, "pi.cons");    
+    int posdepth =     getpos(list, "depth");      
+    int posolcons =    getpos(list, "sol.cons");   
+    int posolcov  =    getpos(list, "sol.cov");    
+    int posfs =        getpos(list, "fs");         
+    int posmaxcomb =   getpos(list, "max.comb");   
+    int pos1stmin =    getpos(list, "first.min");  
+    int poskeeptry =   getpos(list, "keep.trying");
     SEXP usage = PROTECT(allocVector(VECSXP, 7));
     SEXP   tt, data,    fsconds;
     SET_VECTOR_ELT(usage, 0, tt = coerceVector(VECTOR_ELT(list, 0), INTSXP));
@@ -1441,6 +1441,7 @@ SEXP C_Cubes(SEXP list) {
     Rboolean allsol = (posallsol >= 0) ? (LOGICAL(VECTOR_ELT(list, posallsol))[0]) : FALSE;
     Rboolean rowdom = (posrowdom >= 0) ? (LOGICAL(VECTOR_ELT(list, posrowdom))[0]) : FALSE;
     Rboolean minpin = (posminpin >= 0) ? (LOGICAL(VECTOR_ELT(list, posminpin))[0]) : FALSE;
+    Rboolean keeptrying = (poskeeptry >= 0) ? (LOGICAL(VECTOR_ELT(list, poskeeptry))[0]) : FALSE;
     double picons = (pospicons >= 0) ? (REAL(VECTOR_ELT(list, pospicons))[0]) : 0;
     int pidepth = 0;
     int soldepth = 5; 
@@ -1479,7 +1480,7 @@ SEXP C_Cubes(SEXP list) {
         maxcomb = REAL(VECTOR_ELT(list, posmaxcomb))[0]; 
     }
     CCubes(
-        p_tt, ttrows, nconds, p_data, nrdata, allsol, rowdom, minpin, picons, pidepth, p_fsconds, soldepth, solcons, solcov, maxcomb,
+        p_tt, ttrows, nconds, p_data, nrdata, allsol, rowdom, minpin, picons, pidepth, p_fsconds, soldepth, solcons, solcov, maxcomb, keeptrying,
         &p_pichart, &p_impmat, &p_models, &foundPI, &solrows, &solcols, &complexpic,
         firstmin 
     ); 

@@ -43,12 +43,12 @@ The outcome is the union recognition \bold{\code{EBA}}, also binary crisp with t
 Caren, N; Panofsky, A. (2005) \dQuote{TQCA: A Technique for Adding Temporality 
 to Qualitative Comparative Analysis.} \emph{Sociological Methods & Research}
 vol. 34, no.2, pp.147-172, \cr
-DOI: \href{http://dx.doi.org/10.1177/0049124105277197}{10.1177/0049124105277197}.
+\doi{10.1177/0049124105277197}.
 
 Ragin, C.C.; Strand, S.I. (2008) \dQuote{Using Qualitative Comparative 
 Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).} 
-\emph{Sociological Methods & Research} vol.36, no.4, pp.431-441, DOI:
-\href{http://dx.doi.org/10.1177/0049124107313903}{10.1177/0049124107313903}.
+\emph{Sociological Methods & Research} vol.36, no.4, pp.431-441,
+\doi{10.1177/0049124107313903}.
 }
 
 \keyword{datasets}

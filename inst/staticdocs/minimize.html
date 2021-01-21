@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>minimize. QCA 3.10</title>
+<title>minimize. QCA 3.11</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.10</a>
+      <a class="brand" href="#">QCA 3.11</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -70,9 +70,10 @@ algorithm that is built for performance.</p>
     </div>
     
     <h2>Usage</h2>
-<pre><div>minimize(input, include = &quot;&quot;, dir.exp = NULL, details = FALSE, all.sol = FALSE,
-         row.dom = FALSE, min.pin = FALSE, pi.cons = 0, pi.depth = 0, sol.cons = 0,
-         sol.cov = 1, sol.depth = 0, method = &quot;CCubes&quot;, ...)</div></pre>
+<pre><div>minimize(input, include = &quot;&quot;, , dir.exp = NULL, details = FALSE, all.sol = FALSE,
+        pi.cons = 0, pi.depth = 0, sol.cons = 0, sol.cov = 1, sol.depth = 0,
+        row.dom = FALSE, min.pin = FALSE, max.comb = 0, first.min = FALSE,
+        method = "CCubes", ...)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -93,6 +94,16 @@ algorithm that is built for performance.</p>
             <td></td><td></td><td></td>
             <td>Character, a vector of directional expectations to derive intermediate
         solutions.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>details</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, print more details about the solution.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>all.sol</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, search for all possible solutions.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>pi.cons</code></b></td>
@@ -125,26 +136,27 @@ algorithm that is built for performance.</p>
         searching for disjunctive solutions.</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>min.pin</code></b></td>
-            <td></td><td></td><td></td>
-            <td>Logical, terminate the search at the depth where newly found
-        prime implicants do not contribute to minimally solving the PI chart.</td>
-        </tr>
-        <tr>
             <td valign="top"><b><code>row.dom</code></b></td>
             <td></td><td></td><td></td>
             <td>Logical, perform row dominance in the prime implicants' chart to
         eliminate redundant prime implicants.</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>all.sol</code></b></td>
+            <td valign="top"><b><code>min.pin</code></b></td>
             <td></td><td></td><td></td>
-            <td>Logical, search for all possible solutions.</td>
+            <td>Logical, terminate the search at the depth where newly found
+        prime implicants do not contribute to minimally solving the PI chart.</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>details</code></b></td>
+            <td valign="top"><b><code>max.comb</code></b></td>
             <td></td><td></td><td></td>
-            <td>Logical, print more details about the solution.</td>
+            <td>Numeric real, to limit the size of the PI chart (see Details).</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>first.min</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, to return only the very first minimal solution (see
+                Details).</td>
         </tr>
         <tr>
             <td valign="top"><b><code>method</code></b></td>
@@ -235,35 +247,25 @@ Quine-McCluskey. When either of them is modified from the default value of 0, th
 method is automatically set to <b><code>&quot;CCubes&quot;</code></b> and the remainders are
 automatically included in the minimization.</p>
 
-    <p>The search time is larger the higher these depths, or inversely the search time can be
+    <p>The higher these depths, the higher the search time. Connversely, the search time can be
 significantly shorter if these depths are smaller. Irrespective of how large 
 <b><code>pi.depth</code></b> is, the algorithm will always stop at a maximum complexity level
-where no new, non-redundant prime implicants are found.</p>
+where no new, non-redundant prime implicants are found. The argument <b><code>sol.depth</code></b>
+is relevant only when activating the argument <b><code>all.sol</code></b> to solve the PI chart.</p>
 
-    <p><b><code>sol.depth</code></b> is relevant only when solving the PI chart by activating
-the argument <b><code>all.sol</code></b>. In such a situation, the number of combinations of all
-possible numbers of prime implicants is potentially too large to be solved in a polynomial time
-and if not otherwise specified, the depth for the disjunctive solutions is automatically bounded
-to 5 prime implicants.</p>
-
-    <p>The default method to solve the PI chart (when <b><code>all.sol = FALSE</code></b>),
-is to find the minimal number (<b><code>k</code></b>) of prime implicants needed to cover all
-initial positive output configurations (minterms), then exhaustively search through all possible
-disjunctions of <b><code>k</code></b> prime implicants which do cover those configurations.</p>
+    <p>The default method (when <b><code>all.sol</code></b>), is to find the minimal number
+(<b><code>k</code></b>) of prime implicants needed to cover all initial positive output
+configurations (minterms), then exhaustively search through all possible disjunctions of
+<b><code>k</code></b> prime implicants which do cover those configurations.</p>
 
     <p>The argument <b><code>min.pin</code></b> introduces an additional parameter to 
 control when to stop the search for prime implicants.  It is especially useful for very
 large truth tables and uses an observation by
 <a href = "http://dx.doi.org/10.13140/RG.2.2.36359.19361/4">Dusa (2017)</a> that out of the
 entire set of non redundant prime implicants, only a subset actually contribute to
-solving the PI chart. The search depth can be shortened if the next subset of PIs do not
-decrease the minimum <b><code>k</code></b>.</p>
-
-<p>When the objective is to find all possible combinations of PIs (regardless of their
-complexity) that minimally solve the PI chart, the argument <b><code>all.sol</code></b> can
-be activated and the algorithm will stop at the complexity level where the next subset of PIs
-do not contribute at all to solve it. This way, CCubes avoids spending unnecessary time on
-finding all possible irredundant PIs, with a dramatically improved overall performance.</p>
+solving the PI chart. The search depth can be shortened when the PIs found at the
+next complexity level do not decrease the minimum <b><code>k</code></b>, thus producing absolute
+minimal models in both number of disjunctive prime implicants, and their depth level.</p>
 
     <p>Once the PI chart is constructed using the prime implicants found in the previous
 stages, the argument <b><code>row.dom</code></b> can be used to further eliminate
@@ -289,6 +291,26 @@ the method of solving the PI chart. Normally, once the solutions are found among
 combinations of <b><code>k</code></b> prime implicants, consistencies and coverages are 
 subsequently calculated. When <b><code>sol.cons</code></b> is lower than 1, then solutions
 are searched based on their consistencies, which should be at least equal to this threshold.</p>
+
+    <p>A large number of causal conditions (i.e. over 15), combined with a large number of cases
+(i.e. hundreds) usually produce a very large number of prime implicants, resulting in a huge
+and extremely complex PI chart with sometimes thousands of rows and hundreds of columns.</p>
+
+    <p>For such a complex PI chart, even finding a minimum is a formidable task, and exhaustively
+solving it is very likely impossible in polynomial time. For this reason, after each level
+of complexity the CCubes algorithm determines if the PI chart is too difficult, by
+calculating the total number of combinations of minimum <b><code>k</code></b> PIs necessary to
+cover all columns.</p>
+
+    <p>The argument \bold{\code{max.comb}} controls this maximum number of combinations. It is a
+rational number counted in (fractions of) billions, defaulted at zero to signal searching
+to the maximum possible extent. If the total number of combinations exceeds a positive
+value of <b><code>max.comb</code></b>, the PI chart is determined as too complex, the search is
+stopped and CCubes attempts to return all possible models using the PIs from the previous
+levels of complexity, when the PI chart was still not too complex.</p>
+
+    <p>In the extreme situation even this is not feasible, the argument <b><code>first.min</code></b>
+controls returning only one (the very first found) minimal model, if at all possible.</p>
 
     </div>
 
@@ -363,6 +385,11 @@ the following components:</p>
             <td>A list of components specific to intermediate solution(s), each having
       a PI chart, prime implicant membership scores, (non-simplifying) easy
       counterfactuals and difficult counterfactuals.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>complex</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Flag solutions from a too complex PI chart.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>call</code></b></td>

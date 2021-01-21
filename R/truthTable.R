@@ -1,4 +1,4 @@
-# Copyright (c) 2020, Adrian Dusa
+# Copyright (c) 2016 - 2021, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -88,9 +88,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         conditions <- setdiff(colnames(data), admisc::notilde(outcome))
     }
     else {
-        if (is.character(conditions) & length(conditions) == 1) {
             conditions <- admisc::splitstr(conditions)
-        }
     }
     if (length(conditions) > 30) {
         cat("\n")

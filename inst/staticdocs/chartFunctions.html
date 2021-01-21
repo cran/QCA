@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>PI chart functions: makeChart, findmin, solveChart. QCA 3.10</title>
+<title>PI chart functions: makeChart, findmin, solveChart. QCA 3.11</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.10</a>
+      <a class="brand" href="#">QCA 3.11</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -67,7 +67,8 @@ show how to solve it using a minimum number of prime implicants.</p>
 <div>makeChart(primes = &quot;&quot;, configs = &quot;&quot;, snames = &quot;&quot;, mv = FALSE, 
           collapse = &quot;*&quot;, ...)</div>
 <div>findmin(chart)</div>
-<div>solveChart(chart, row.dom = FALSE, all.sol = FALSE, depth, ...)</div></pre>
+<div>solveChart(chart, row.dom = FALSE, all.sol = FALSE, depth = NULL, max.comb = 0,
+          first.min = FALSE, ...)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -121,6 +122,17 @@ show how to solve it using a minimum number of prime implicants.</p>
             <td>A maximum number of prime implicants for any disjunctive solution.</td>
         </tr>
         <tr>
+            <td valign="top"><b><code>max.comb</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Numeric real, to limit the size of the PI chart (see Details).</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>first.min</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, to return only the very first minimal solution (see
+                Details).</td>
+        </tr>
+        <tr>
             <td valign="top"><b><code>...</code></b></td>
             <td></td><td></td><td></td>
             <td>Other arguments (mainly for backwards compatibility).</td>
@@ -172,6 +184,14 @@ deactivates the argument <b><code>row.dom</code></b>.</p>
 of rows <b><code>M</code></b> needed to cover all columns is larger. By default, it bounds the
 disjunctive solutions to at most 5 prime implicants, but this number can be increased to widen
 the search space, with a cost of increasing the search time.</p>
+  
+  <p>The argument <b><code>max.comb</code></b> sets a maximum number of combinations to find solutions.
+It is counted in (fractions of) billions, defaulted at zero to signal searching to the maximum
+possible extent. If too complex, the search is stopped and the algorithm returns all found solutions
+up to that point.</p>
+  
+<p>For extremly difficult PI charts, the argument<b><code>first.min</code></b> controls returning only
+one (the very first found) solution.</p>
   
     </div>
 

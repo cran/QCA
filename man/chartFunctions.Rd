@@ -81,8 +81,8 @@ implicants, but this number can be increased to widen the search space, with a c
 increasing the search time.
 
 The argument \bold{\code{max.comb}} sets a maximum number of combinations to find solutions.
-It is counted in billions and defaulted to zero to signal counting to the maximum possible
-extent. If too complex, the search is stopped and the algorithm returns all found solutions
+It is counted in (fractions of) billions, defaulted at zero to signal searching to the maximum
+possible extent. If too complex, the search is stopped and the algorithm returns all found solutions
 up to that point.
 
 For extremly difficult PI charts, the argument \bold{\code{first.min}} controls returning only

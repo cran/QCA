@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020, Adrian Dusa
+Copyright (c) 2016 - 2021, Adrian Dusa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -661,6 +661,23 @@ function any(obj, rule, value) {
         }
     }
     return(check);
+}
+function order(x, descending = false) {
+    let values = new Array();
+    for (let v = 0; v < x.length; v++) {
+        values.push(x[v]);
+    }
+    for (var i = 0; i < values.length; i++) {
+        values[i] = [values[i], i];
+    }
+    values.sort(function(left, right) {
+        return((descending ? -1 : 1) * (left[0] < right[0] ? -1 : 1))
+    });
+    let result = [];
+    for (var j = 0; j < values.length; j++) {
+        result.push(values[j][1]);
+    }
+    return result;
 }
 function rep(rule, times) {
     var result = new Array(times);

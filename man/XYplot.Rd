@@ -110,8 +110,7 @@ vol.54, no.4, pp.298-324.
 
 Schneider, C.; Rohlfing, I. (2016) \dQuote{Case Studies Nested in Fuzzy-set QCA on
 Sufficiency. Formalizing Case Selection and Causal Inference}. \emph{Sociological
-Methods and Research} vol.45, no.3, pp.536-568, DOI:
-\href{https://doi.org/10.1177/0049124114532446}{10.1177/0049124114532446}
+Methods and Research} vol.45, no.3, pp.536-568, \doi{10.1177/0049124114532446}
 }
 
 \examples{

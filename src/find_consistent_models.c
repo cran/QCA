@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020, Adrian Dusa
+Copyright (c) 2016 - 2021, Adrian Dusa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@ void find_consistent_models(
     int **solutions,
     int *nr,
     int *nc) {
-    int estimsol = 100;
+    int estimsol = 1000;
     int maxk = posrows;
     if (foundPI < maxk) {
         maxk = foundPI;

@@ -84,8 +84,7 @@ Adrian Dusa
     
 Thiem, A.; Spoehel, R.; Dusa, A. (2015) \dQuote{Replication Package for:
 Enhancing Sensitivity Diagnostics for Qualitative Comparative Analysis: A Combinatorial
-Approach}, Harvard Dataverse, V1.
-DOI: \url{http://dx.doi.org/10.7910/DVN/QE27H9}
+Approach}, Harvard Dataverse, V1. \doi{10.7910/DVN/QE27H9}
 
 Thiem, A.; Spoehel, R.; Dusa, A. (2016) \dQuote{Enhancing Sensitivity
 Diagnostics for Qualitative Comparative Analysis: A Combinatorial Approach.}

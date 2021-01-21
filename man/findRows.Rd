@@ -21,7 +21,7 @@ findRows(expression = "", obj, remainders = TRUE, type = 1, ...)
   \item{remainders}{Logical: find remainders only or also observed configurations,
         when \code{obj} is a truth table.}
   \item{type}{Numeric vector, specifying the type(s) of untenable configurations.}
-  \item{...}{Additional arguments to be passed to function \bold{\code{\link{truthTable}()}},
+  \item{...}{Additional arguments to be passed to function \code{\link{truthTable}()},
         for the negation of the outcome.}
 }
 

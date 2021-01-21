@@ -136,8 +136,7 @@ Approach to the Multidimensional Analysis of Poverty}. In \emph{Economic Notes},
 vol.1, pp.115-134.
 
 Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}. 
-Springer International Publishing, DOI:
-\href{http://dx.doi.org/10.1007/978-3-319-75668-4}{10.1007/978-3-319-75668-4}.
+Springer International Publishing, \doi{10.1007/978-3-319-75668-4}.
 
 Ragin, C. (2008) \dQuote{Fuzzy Sets: Calibration Versus Measurement.}
 In \emph{The Oxford Handbook of Political Methodology}, edited by Janet

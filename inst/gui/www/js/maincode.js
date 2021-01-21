@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020, Adrian Dusa
+Copyright (c) 2016 - 2021, Adrian Dusa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -1496,6 +1496,7 @@ function checkeqtt() {
             papers["minimize"]["main"].pri_cut.attr({"text": commobj.minimize.pri_cut});
             papers["minimize"]["main"].n_cut.attr({"text": commobj.minimize.n_cut});
             papers["minimize"]["main"].neg_out.refresh(commobj.minimize.neg_out);
+            papers["minimize"]["main"].show_cases.refresh(commobj.minimize.show_cases);
             papers["minimize"]["main"].use_letters.refresh(commobj.minimize.use_letters);
         }
         else if (commobj.minimize.source == "tt" && commobj.minimize.dataset != "") {
@@ -1508,6 +1509,7 @@ function checkeqtt() {
                 papers["minimize"]["main"].pri_cut.attr({"text": info["tt"][commobj.minimize.dataset].options["pri.cut"]});
                 papers["minimize"]["main"].n_cut.attr({"text": info["tt"][commobj.minimize.dataset].options["n.cut"]});
                 papers["minimize"]["main"].neg_out.refresh(info["tt"][commobj.minimize.dataset].options["neg.out"]);
+                papers["minimize"]["main"].show_cases.refresh(info["tt"][commobj.minimize.dataset].options["show.cases"]);
                 papers["minimize"]["main"].use_letters.refresh(info["tt"][commobj.minimize.dataset].options["use.letters"]);
             }
         }
@@ -7061,7 +7063,7 @@ $("#menu_about").click(function() {
     else {
         createDialog(settings["about"]);
         var messages = [
-            "R package: QCA, version 3.10",
+            "R package: QCA, version 3.11",
             "",
             "Author: Adrian Dușa (dusa.adrian@unibuc.ro)",
             "Former coauthors:",

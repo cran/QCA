@@ -49,8 +49,7 @@ Adrian Dusa
 
 \references{
 Dusa, A. (2018) \dQuote{Consistency Cubes: A Fast, Efficient Method for Boolean
-Minimization}, R Journal, DOI:
-\href{http://dx.doi.org/10.32614/RJ-2018-080}{10.32614/RJ-2018-080}
+Minimization}, R Journal, \doi{10.32614/RJ-2018-080}
 }
 
 \examples{

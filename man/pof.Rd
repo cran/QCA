@@ -134,8 +134,7 @@ Adrian Dusa
 \references{
 Cebotari, V.; Vink, M.P. (2013) \dQuote{A Configurational Analysis of Ethnic
 Protest in Europe}. \emph{International Journal of Comparative Sociology}
-vol.54, no.4, pp.298-324, DOI: 
-\href{http://dx.doi.org/10.1177/0020715213508567}{10.1177/0020715213508567}
+vol.54, no.4, pp.298-324, \doi{10.1177/0020715213508567}
 
 Schneider, C. and Wagemann, C. (2012) \emph{Set-Theoretic Metods for the Social Sciences.
 A Guide to Qualitative Comparative Analysis}. Cambridge: Cambridge University Press.

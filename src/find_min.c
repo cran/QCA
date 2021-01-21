@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020, Adrian Dusa
+Copyright (c) 2016 - 2021, Adrian Dusa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include <string.h>
 #include "utils.h"
-#include "../lpSolve/lp_min.h"
+#include "lp_min.h"
 #include "find_min.h"
 void find_min(const int p_pichart[], const int pirows, const int picols, int *solmin, int p_indices[]) {
     double *p_objective = malloc((picols + 1) * sizeof(double));

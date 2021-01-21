@@ -13,13 +13,12 @@ Quine-McCluskey, the enhanced Quine-McCluskey and the latest Consistency Cubes
 algorithm that is built for performance.
 
 All algorithms return the same, exact solutions, see
-\href{http://dx.doi.org/10.32614/RJ-2018-080}{Dusa (2018)}
-and \href{http://dx.doi.org/10.1080/0022250X.2014.897949}{Dusa and Thiem (2015)}.
+\href{https://journal.r-project.org/archive/2018/RJ-2018-080/}{Dusa (2018)}
+and \href{https://www.tandfonline.com/doi/full/10.1080/0022250X.2014.897949}{Dusa and Thiem (2015)}.
 }
 
 \usage{
 minimize(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
-        pi.cons = 0, pi.depth = 0, sol.cons = 0, sol.cov = 1, sol.depth = 0,
         row.dom = FALSE, min.pin = FALSE, max.comb = 0, first.min = FALSE,
         method = "CCubes", ...)
 }
@@ -33,16 +32,6 @@ minimize(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
         intermediate solution.}
   \item{details}{Logical, print more details about the solution.}
   \item{all.sol}{Logical, search for all possible models, including the non-minimal.}
-  \item{pi.cons}{Numerical fuzzy value between 0 and 1, minimal consistency
-        threshold for a prime implicant to be declared as sufficient.}
-  \item{pi.depth}{Integer, a maximum number of causal conditions to be used
-        when searching for conjunctive prime implicants.}
-  \item{sol.cons}{Numerical fuzzy value between 0 and 1, minimal consistency 
-        threshold for a model to be declared as sufficient.}
-  \item{sol.cov}{Numerical fuzzy value between 0 and 1, minimal coverage 
-        threshold for a model to be declared as necessary.}
-  \item{sol.depth}{Integer, a maximum number of prime implicants to be used when
-        searching for disjunctive models.}
   \item{row.dom}{Logical, perform row dominance in the prime implicants' chart to
         eliminate redundant prime implicants.}
   \item{min.pin}{Logical, terminate the search at the depth where newly found
@@ -131,7 +120,8 @@ configurations (minterms), then exhaustively search through all possible disjunc
 
 The argument \bold{\code{min.pin}} introduces an additional parameter to control when to
 stop the search for prime implicants. It is especially useful for very large truth tables
-and uses an observation by \href{https://doi.org/10.32614/RJ-2018-080}{Dusa (2018)} that
+and uses an observation by
+\href{https://journal.r-project.org/archive/2018/RJ-2018-080/}{Dusa (2018)} that
 out of the entire set of non redundant prime implicants, only a subset actually contribute
 to minimally solving the PI chart. The search depth is shortened when the PIs found at the
 next complexity level do not decrease the minimum \bold{\code{k}}, thus producing absolute
@@ -144,24 +134,6 @@ dominance: if a prime implicant A covers the same (intial) positive output
 configurations as another prime implicant B and in the same time covers
 other configurations which B does not cover, then B is irrelevant and eliminated.
 
-Depending on the complexity of the PI chart, it sometimes may take a very long time
-to identify all possible irredundant (disjunctions that are not subsets of
-previously found) disjunctive models. In such a situation, the number of
-combinations of all possible numbers of prime implicants is potentially too large to be
-solved in a polynomial time and if not otherwise specified, the depth for the disjunctive
-models is automatically bounded to 5 prime implicants.
-
-If minimizing a dataset instead of a truth table, unless otherwise specified the 
-argument \bold{\code{incl.cut}} is automatically set to the minimum value between
-\bold{\code{pi.cons}} and \bold{\code{sol.cons}}, then passed to the function
-\bold{\code{truthTable()}}.
-
-The argument \bold{\code{sol.cons}} introduces another method of solving the PI chart.
-Normally, once the solution models are found among all possible combinations of
-\bold{\code{k}} prime implicants, consistencies and coverages are subsequently
-calculated. When \bold{\code{sol.cons}} is lower than 1, then models are searched
-based on their consistencies, which should be at least equal to this threshold.
-
 A large number of causal conditions (i.e. over 15), combined with a large number of cases
 (i.e. hundreds) usually produce a very large number of prime implicants, resulting in a huge
 and extremely complex PI chart with sometimes thousands of rows and hundreds of columns.
@@ -173,14 +145,14 @@ calculating the total number of combinations of minimum \bold{\code{k}} PIs nece
 cover all columns.
 
 The argument \bold{\code{max.comb}} controls this maximum number of combinations. It is a
-rational number counted in billions (or fractions of billions), being defaulted to zero to
-signal searching to the maximum possible extent. If the total number of combinations exceeds
-a positive value of \bold{\code{max.comb}}, the PI chart is determined as too complex, the
-search is stopped and CCubes attempts to return all possible models using the PIs from the
-previous levels of complexity, when the PI chart was still not too complex. 
+rational number counted in (fractions of) billions, defaulted at zero to signal searching
+to the maximum possible extent. If the total number of combinations exceeds a positive
+value of \bold{\code{max.comb}}, the PI chart is determined as too complex, the search is
+stopped and CCubes attempts to return all possible models using the PIs from the previous
+levels of complexity, when the PI chart was still not too complex. 
 
 In the extreme situation even this is not feasible, the argument \bold{\code{first.min}}
-controls returning only one (the very first found) minimal model, if at all possible. 
+controls returning only one (the very first found) minimal model, if at all possible.
 }
 
 \value{
@@ -212,12 +184,10 @@ Adrian Dusa
 \references{
 Cebotari, V.; Vink, M.P. (2013) \dQuote{A Configurational Analysis of Ethnic
 Protest in Europe}. \emph{International Journal of Comparative Sociology}
-vol.54, no.4, pp.298-324, DOI:
-\href{http://dx.doi.org/10.1177/0020715213508567}{10.1177/0020715213508567}.
+vol.54, no.4, pp.298-324, \doi{10.1177/0020715213508567}.
 
 Cebotari, V.; Vink, M.P. (2015) \dQuote{Replication Data for: A configurational
-analysis of ethnic protest in Europe}, Harvard Dataverse, V2, DOI:
-\href{http://dx.doi.org/10.7910/DVN/PT2IB9}{10.7910/DVN/PT2IB9}.
+analysis of ethnic protest in Europe}, Harvard Dataverse, V2, \doi{10.7910/DVN/PT2IB9}.
 
 Cronqvist, L.; Berg-Schlosser, D. (2009) \dQuote{Multi-Value QCA (mvQCA)}, in
 Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods. Qualitative
@@ -226,18 +196,17 @@ Comparative Analysis (QCA) and Related Techniques}, SAGE.
 Dusa, A.; Thiem, A. (2015) \dQuote{Enhancing the Minimization of Boolean and
 Multivalue Output Functions With eQMC} \emph{Journal of Mathematical Sociology}
 vol.39, no.2, pp.92-108,\cr
-DOI: \href{http://dx.doi.org/10.1080/0022250X.2014.897949}{10.1080/0022250X.2014.897949}.
+\doi{10.1080/0022250X.2014.897949}.
 
 Dusa, A. (2018) \dQuote{Consistency Cubes: A Fast, Efficient Method for Boolean
-Minimization}, R Journal vol.10, issue 2, pp. 357-370, DOI:
-\href{http://dx.doi.org/10.32614/RJ-2018-080}{10.32614/RJ-2018-080}
+Minimization}, R Journal vol.10, issue 2, pp. 357-370, \doi{10.32614/RJ-2018-080}
 
 Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}. 
-Springer International Publishing, DOI:
-\href{http://dx.doi.org/10.1007/978-3-319-75668-4}{10.1007/978-3-319-75668-4}.
+Springer International Publishing, \doi{10.1007/978-3-319-75668-4}.
 
-Ragin, C. (2003) \emph{Recent Advances in Fuzzy-Set Methods and Their Application to Policy Questions}.
-WP 2003-9, \href{http://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
+Ragin, C. (2003) \emph{Recent Advances in Fuzzy-Set Methods and Their Application to
+Policy Questions}. WP 2003-9,
+\href{https://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
 
 Ragin, C. (2009) \dQuote{Qualitative Comparative Analysis Using Fuzzy-Sets (fsQCA)},
 in Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods.
@@ -245,8 +214,8 @@ Qualitative Comparative Analysis (QCA) and Related Techniques}, SAGE.
 
 Ragin, C.C.; Strand, S.I. (2008) \dQuote{Using Qualitative Comparative 
 Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).} 
-\emph{Sociological Methods & Research} vol.36, no.4, pp.431-441, DOI:
-\href{http://dx.doi.org/10.1177/0049124107313903}{10.1177/0049124107313903}.
+\emph{Sociological Methods & Research} vol.36, no.4, pp.431-441,
+\doi{10.1177/0049124107313903}.
 
 Rihoux, B.; De Meur, G. (2009) \dQuote{Crisp Sets Qualitative Comparative Analysis
 (mvQCA)}, in Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods.
