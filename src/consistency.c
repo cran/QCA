@@ -55,7 +55,7 @@ double consistency(const double p_x[], const int nrowsx, const int nconds, int k
             }
         }
         sumx += pminx;
-        sumxy += ((pminx < p_x[nconds * nrowsx + r]) ? pminx: p_x[nconds * nrowsx + r]);
+        sumxy += ((pminx < p_x[nconds * nrowsx + r]) ? pminx : p_x[nconds * nrowsx + r]);
     }
     free(p_y);
     return(sumxy / sumx);

@@ -24,9 +24,9 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `minimize` <-
-function(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
-        row.dom = FALSE, min.pin = FALSE, max.comb = 0, first.min = FALSE,
-        method = "CCubes", ...) {
+function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
+        sol.cons = 0, all.sol = FALSE, row.dom = FALSE, min.pin = FALSE,
+        max.comb = 0, first.min = FALSE, method = "CCubes", ...) {
     metacall <- match.call()
     dots <- substitute(list(...))
     if (is.element("data", names(dots))) {
@@ -90,9 +90,7 @@ function(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
     inf.test    <- if (is.element("inf.test",    names(dots))) dots$inf.test     else ""
     relation    <- if (is.element("relation",    names(dots))) dots$relation     else "sufficiency"
     neg.out     <- if (is.element("neg.out",     names(dots))) dots$neg.out      else FALSE
-    pi.cons     <- if (is.element("pi.cons",     names(dots))) dots$pi.cons      else 0
     pi.depth    <- if (is.element("pi.depth",    names(dots))) dots$pi.depth     else 0
-    sol.cons    <- if (is.element("sol.cons",    names(dots))) dots$sol.cons     else 0
     sol.cov     <- if (is.element("sol.cov",     names(dots))) dots$sol.cov      else 1
     sol.depth   <- if (is.element("sol.depth",   names(dots))) dots$sol.depth    else 0
     exclude     <- if (is.element("exclude",     names(dots))) dots$exclude      else NULL
@@ -254,6 +252,7 @@ function(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
         cat(enter)
         stop(simpleError(paste0("Nothing to explain. Please check the truth table.", enter, enter)))
     }
+    include <- admisc::trimstr(include)
     incl.rem <- is.element("?", include)
     if (nrow(neg.matrix) == 0 & incl.rem & !is.element("causalChain", names(dots))) { 
         cat(enter)
@@ -281,10 +280,6 @@ function(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
     setColnames(neg.matrix, colnms)
     rownames(neg.matrix) <- (neg.matrix - 1) %*% mbase + 1
     output$initials <- admisc::writePrimeimp(inputt, mv = mv, collapse = collapse)
-    if (any(c(pi.cons, sol.cons) > 0)) {
-        incl.rem <- TRUE
-        method <- "CCubes"
-    }
     expressions <- .Call("C_QMC", expressions, noflevels, PACKAGE = "QCA")
     if (is.element("simplify", names(dots))) {
         expressions <- admisc::sortExpressions(expressions)
@@ -293,6 +288,9 @@ function(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
                     initial=rownms, all.sol=all.sol, indata=indata, curly=curly)
     callist <- c(callist, dots)
     if (!incl.rem || (!is.null(dir.exp) & !identical(include, ""))) {
+        if (pi.cons > 0) {
+            callist$outcome <- outcome
+        }
         c.sol <- p.sol <- do.call("getSolution", callist)
     }
     if (incl.rem) {
@@ -397,6 +395,36 @@ function(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
     }
     if (!is.element("simplify", names(dots))) {
         listIC <- do.call("pof", poflist)
+        if (sol.cons > 0 & identical(include, "")) {
+            error <- FALSE
+            if (is.element("overall", names(listIC))) {
+                lind <- length(listIC$individual)
+                eligible <- logical(lind)
+                for (i in seq(lind)) {
+                    eligible[i] <- listIC$individual[[i]]$sol.incl.cov[1, 1] >= sol.cons
+                }
+                if (sum(eligible) == 0) {
+                    error <- TRUE
+                }
+                else if (sum(eligible) == 1) {
+                    wel <- which(eligible)
+                    listIC <- list(incl.cov = listIC$individual[wel]$incl.cov,
+                                    pims = listIC$individual[wel]$pims,
+                                    sol.incl.cov = listIC$individual[wel]$sol.incl.cov,
+                                    options = listIC$options)
+                }
+                else {
+                    listIC$individual <- listIC$individual[wel]
+                }
+            }
+            else {
+                error <- listIC$sol.incl.cov[1, 1] < sol.cons
+            }
+            if (error) {
+                cat(enter)
+                stop(simpleError(paste("There are no solutions, given these constraints.", enter, enter)))
+            }
+        }
         listIC$options$show.cases <- show.cases
         output$pims <- listIC$pims
         attr(output$pims, "conditions") <- conditions
@@ -511,7 +539,9 @@ function(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
                                     conditions = conditions, relation = "sufficiency", minimize = TRUE)
                     if (length(i.sol.index$solution.list[[1]]) > 1) {
                         poflist$solution.list <- i.sol.index$solution.list[[1]]
-                        poflist$essential <- i.sol.index$solution.list[[2]]
+                        if (!identical(i.sol.index$solution.list[[1]], i.sol.index$solution.list[[2]])) {
+                            poflist$essential <- i.sol.index$solution.list[[2]]
+                        }
                     }
                     i.sol[[index]]$IC <- do.call("pof", poflist)
                     i.sol[[index]]$IC$options$show.cases <- show.cases

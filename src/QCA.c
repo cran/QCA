@@ -41,20 +41,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef _OPENMP
   #include <omp.h>
 #endif
-#define FRAME_LOCK_MASK (1<<14)
-#define FRAME_IS_LOCKED(e) (ENVFLAGS(e) & FRAME_LOCK_MASK)
-#define UNLOCK_FRAME(e) SET_ENVFLAGS(e, ENVFLAGS(e) & (~ FRAME_LOCK_MASK))
-SEXP C_unlock(SEXP env) {
-    if (TYPEOF(env) == NILSXP)
-        error("use of NULL environment is defunct");
-    if (TYPEOF(env) != ENVSXP)
-        error("not an environment");
-    UNLOCK_FRAME(env);
-    SEXP result = PROTECT( Rf_allocVector(LGLSXP, 1) );
-    LOGICAL(result)[0] = FRAME_IS_LOCKED(env) == 0;
-    UNPROTECT(1);
-    return result;
-}
 static R_INLINE SEXP Rtranspose(SEXP matrix) {
     SEXPTYPE type = TYPEOF(matrix);
     int nr = nrows(matrix);
@@ -252,24 +238,6 @@ SEXP C_solveChart(SEXP pichart, SEXP allsol, SEXP vdepth, SEXP k, SEXP maxcomb, 
     UNPROTECT(2);
     return(out);
 }
-void printfarray(int* arr, int size)
-{
-    for (int i = 0; i < size; i++)
-    {
-        Rprintf("%d ", arr[i]);
-    } 
-    Rprintf("\n");
-}
-#ifdef SHOW_DEBUG_PROFILE
-#define PRINT_PROFILE_STATS \
-    const double cleanup_time = omp_get_wtime(); \
-    Rprintf("Init time: %f\n", findingPIsStart_time - init_time); \
-    Rprintf("PI finding time middle: %f\n", findingPIsEnd_time - findingPIsStart_time); \
-    Rprintf("cleanup time: %f\n", cleanup_time - findingPIsEnd_time);  \
-    Rprintf("total time: %f\n", cleanup_time - init_time); 
-#else 
-#define PRINT_PROFILE_STATS {}
-#endif
 SEXP C_getRow(SEXP input) {
     PROTECT(input);
     SEXP rowno, noflevels, mbase, matrix;

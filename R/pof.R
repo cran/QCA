@@ -184,18 +184,25 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             stop(simpleError("Outcome is missing, with no default.\n\n"))
         }
         if (is.element("character", class(outcome))) {
-            if (admisc::tilde1st(gsub("1-", "", funargs$outcome))) {
-                outnegated <- !outnegated
-            }
-            if (identical(substr(funargs$outcome, 1, 2), "1-")) {
-                outnegated <- !outnegated
-            }
-            outcome <- admisc::notilde(gsub("1-", "", funargs$outcome))
-            if (grepl("\\{", outcome)) {
-                outcomename <- admisc::curlyBrackets(outcome, outside = TRUE)
+            if (grepl("\\+|\\*", outcome)) {
+                outcomename <- outcome
             }
             else {
-                outcomename <- admisc::squareBrackets(outcome, outside = TRUE)
+                if (admisc::tilde1st(gsub("1-", "", funargs$outcome))) {
+                    outnegated <- !outnegated
+                }
+                oneminus <- identical(substr(funargs$outcome, 1, 2), "1-")
+                if (oneminus) {
+                    outnegated <- !outnegated
+                    outcome <- gsub("1-", "", funargs$outcome)
+                }
+                outcome <- admisc::notilde(outcome)
+                if (grepl("\\{", outcome)) {
+                    outcomename <- admisc::curlyBrackets(outcome, outside = TRUE)
+                }
+                else {
+                    outcomename <- admisc::squareBrackets(outcome, outside = TRUE)
+                }
             }
             if (is.null(data)) {
                 cat("\n")
@@ -399,7 +406,22 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             individual[[i]]$sol.incl.cov <- incl.cov[nrow(incl.cov), 1:3]
             individual[[i]]$pims <- as.data.frame(temp)
         }
-        return(structure(list(overall=result.list, individual=individual, essential=other.args$essential, pims=as.data.frame(setms), relation=relation, options=funargs[-1]), class="QCA_pof"))
+        return(structure(list(
+            overall = result.list,
+            individual = individual,
+            essential = other.args$essential,
+            pims = as.data.frame(setms),
+            relation = relation,
+            options = c(
+                list(setms = setms,
+                    outcome = outcome,
+                    data = data,
+                    relation = relation,
+                    inf.test = inf.test,
+                    incl.cut = incl.cut,
+                    add = add),
+                other.args)
+            ), class = "QCA_pof"))
     }
     if (!is.null(add)) {
         if (!(is.list(add) | is.function(add))) {
@@ -441,9 +463,14 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         }
         result.list$incl.cov <- cbind(result.list$incl.cov, toadd)
     }
-    funargs[["setms"]] <- setms
-    funargs[["outcome"]] <- outcome
-    funargs$relation <- relation
-    result.list$options <- funargs
+    result.list$options <- c(
+        list(setms = setms,
+            outcome = outcome,
+            data = data,
+            relation = relation,
+            inf.test = inf.test,
+            incl.cut = incl.cut,
+            add = add),
+        other.args)
     return(structure(result.list, class = "QCA_pof"))
 }

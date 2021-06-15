@@ -27,8 +27,10 @@
 function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, curly, ...) {
     mtrx <- NULL
     sol.matrix <- NULL
-    other.args <- list(...)
-    enter <- ifelse (is.element("enter", names(other.args)), other.args$enter, TRUE)
+    dots <- list(...)
+    enter <- ifelse (is.element("enter", names(dots)), dots$enter, TRUE)
+    pi.cons <- if (is.element("pi.cons", names(dots))) dots$pi.cons else 0
+    outcome <- if (is.element("outcome", names(dots))) dots$outcome else ""
     complex <- FALSE
     if (is.list(expressions)) {
         mtrx <- expressions[[2]]
@@ -73,6 +75,18 @@ function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, c
     }
     PI <- admisc::writePrimeimp(expressions, mv = mv, collapse = collapse, curly = curly)
     rownames(expressions) <- PI
+    if (pi.cons > 0 & outcome != "") {
+        pofPI <- pof(paste(PI, collapse = " + "), outcome = indata[, dots$outcome], data = indata, relation = "sufficiency")
+        inclS <- pofPI$incl.cov[seq(length(PI)), 1]
+        filterPI <- admisc::agteb(inclS, pi.cons)
+        expressions <- expressions[filterPI, , drop = FALSE]
+        PI <- PI[filterPI]
+        mtrx <- makeChart(expressions, inputt, mv = mv, collapse = collapse, getSolution = TRUE, curly = curly)
+        if (any(colSums(mtrx) == 0)) {
+            if (enter) cat("\n")
+            stop(simpleError(paste("There are no solutions, given these constraints.", ifelse(enter, "\n\n", ""))))
+        }
+    }
     if (is.null(mtrx)) {
         mtrx <- makeChart(expressions, inputt, mv = mv, collapse = collapse, getSolution = TRUE, curly = curly)
     }

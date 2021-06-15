@@ -67,21 +67,24 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         testoutcome <- ifelse(curly,
                             admisc::curlyBrackets(admisc::notilde(outcome), outside = TRUE),
                             admisc::squareBrackets(admisc::notilde(outcome), outside = TRUE))
-        if (!is.element(testoutcome, colnames(data))) {
+        if (grepl("\\+|\\*", outcome)) {
+            initial.data[, outcome] <- data[, outcome] <- admisc::compute(outcome, data)
+        }
+        else if (grepl(mvregexp, outcome)) {
+            if (curly) {
+                outcome.value <- admisc::curlyBrackets(outcome)
+                outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
+            }
+            else {
+                outcome.value <- admisc::squareBrackets(outcome)
+                outcome <- admisc::squareBrackets(outcome, outside = TRUE)
+            }
+            data[, admisc::notilde(outcome)] <- is.element(data[, admisc::notilde(outcome)], admisc::splitstr(outcome.value)) * 1
+        }
+        else if (!is.element(testoutcome, colnames(data))) {
             cat("\n")
             stop(simpleError(paste0("Inexisting outcome name.", ifelse(enter, "\n\n", ""))))
         }
-    }
-    if (grepl(mvregexp, outcome)) {
-        if (curly) {
-            outcome.value <- admisc::curlyBrackets(outcome)
-            outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
-        }
-        else {
-            outcome.value <- admisc::squareBrackets(outcome)
-            outcome <- admisc::squareBrackets(outcome, outside = TRUE)
-        }
-        data[, admisc::notilde(outcome)] <- is.element(data[, admisc::notilde(outcome)], admisc::splitstr(outcome.value)) * 1
     }
     conditions <- admisc::recreate(substitute(conditions), colnames(data))
     if (identical(conditions, "")) {

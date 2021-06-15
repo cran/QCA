@@ -276,11 +276,13 @@
                 x$individual[[i]]$incl.cov <- x$individual[[i]]$incl.cov[!is.element(rownames(x$individual[[i]]$incl.cov), essential.PIs), ]
             }
         }
-        for (i in seq(ind.len)) {
-            incl.cov <- cbind(incl.cov, "     ", stringsAsFactors = FALSE)
-            colnames(incl.cov)[ncol(incl.cov)] <- format(ifelse(ind.len < line.length, paste("(M", i, ")", sep = ""), paste("M", i, sep = "")), width = 5)
-            if (length(x$individual[[i]]$incl.cov$covU) > 0) {
-                incl.cov[rownames(x$individual[[i]]$incl.cov), ncol(incl.cov)] <- formatC(x$individual[[i]]$incl.cov$covU, digits = 3, format = "f")
+        if (nrow(incl.cov) > 0) {
+            for (i in seq(ind.len)) {
+                incl.cov <- cbind(incl.cov, "     ", stringsAsFactors = FALSE)
+                colnames(incl.cov)[ncol(incl.cov)] <- format(ifelse(ind.len < line.length, paste("(M", i, ")", sep = ""), paste("M", i, sep = "")), width = 5)
+                if (length(x$individual[[i]]$incl.cov$covU) > 0) {
+                    incl.cov[rownames(x$individual[[i]]$incl.cov), ncol(incl.cov)] <- formatC(x$individual[[i]]$incl.cov$covU, digits = 3, format = "f")
+                }
             }
         }
         sol.incl.cov <- matrix(unlist(lapply(x$individual, "[", "sol.incl.cov")),

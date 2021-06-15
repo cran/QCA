@@ -18,9 +18,9 @@ and \href{https://www.tandfonline.com/doi/full/10.1080/0022250X.2014.897949}{Dus
 }
 
 \usage{
-minimize(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
-        row.dom = FALSE, min.pin = FALSE, max.comb = 0, first.min = FALSE,
-        method = "CCubes", ...)
+minimize(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
+        sol.cons = 0, all.sol = FALSE, row.dom = FALSE, min.pin = FALSE,
+        max.comb = 0, first.min = FALSE, method = "CCubes", ...)
 }
       
 \arguments{
@@ -31,6 +31,10 @@ minimize(input, include = "", dir.exp = NULL, details = FALSE, all.sol = FALSE,
   \item{dir.exp}{Character, a vector of directional expectations to derive the
         intermediate solution.}
   \item{details}{Logical, print more details about the solution.}
+  \item{pi.cons}{Numerical fuzzy value between 0 and 1, minimal consistency
+        threshold for a prime implicant to be declared as sufficient.}
+  \item{sol.cons}{Numerical fuzzy value between 0 and 1, minimal consistency 
+        threshold for a model to be declared as sufficient.}
   \item{all.sol}{Logical, search for all possible models, including the non-minimal.}
   \item{row.dom}{Logical, perform row dominance in the prime implicants' chart to
         eliminate redundant prime implicants.}
@@ -349,5 +353,3 @@ minimize(RS, outcome = REC, details = TRUE)
 }
 
 \keyword{functions}
-
-

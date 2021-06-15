@@ -1,3 +1,10 @@
+Version 3.12
+    o arguments pi.cons and sol.cons are re-introduced as formals in function
+      minimize(), and they remain formal arguments in function causalChain()
+      as well (thanks to Carsten Schneider for the suggestion)
+    o configurational outcomes are now possible
+    o function getName() moved to package admisc
+      
 Version 3.11
     o Improved: error trapping in function pof()
     o Fixed: occasional (but non-disruptive) R level error messages, likely
@@ -25,7 +32,7 @@ Version 3.9
     o Fixed: row numbers bigger than the total number of rows in a truth
       table are now ignored from the "exclude" argument
       (thanks to Philipp Bentz for the report)
-    o Fixed: minor bug diplaying additional parameters of fit in function pof()
+    o Fixed: minor bug displaying additional parameters of fit in function pof()
     o Changed: function minimize() no longer returns with an error when 
       including remainders on saturated truth tables
       (thanks to Michael Baumgartner for the suggestion)
@@ -46,12 +53,12 @@ Version 3.8
     o Fixed: bug leading to a C error when simplifying assumptions do not exist
       for some intermediate models (thanks to Oliver Klein for the report)
     o Changed: function minimize() now gives an error when including remainders
-      but all possile configurations are observed
+      but all possible configurations are observed
     o Changed: reverted back to using the easy counterfactuals method for the
       intermediate solution, since it is not always possible to restrict it
       to a single model (thanks to Max Netherworlds for the example)
     o Changed: notation for multi-value conditions now uses square brackets
-      instead of curly brackets, but the later are still recognized
+      instead of curly brackets, but the later are still recognised
     o Changed: the sufficiency and necessity relations are now denoted using
       the simpler notation -> and <- instead of => and <=
 
@@ -697,4 +704,3 @@ Version 0.2-1
 
 Version 0.2-0
     o New: function factorize() finds all common factors in Boolean products
-

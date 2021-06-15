@@ -55,7 +55,6 @@ export(.onAttach,
 
     nec,
     suf,
-    getName,
     getSolution,
     rowDominance,
     sortMatrix,

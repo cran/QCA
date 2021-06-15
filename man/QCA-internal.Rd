@@ -70,7 +70,6 @@
 
 \alias{nec}
 \alias{suf}
-\alias{getName}
 
 
 \alias{getSolution}

@@ -35,7 +35,7 @@
     tildenegated <- badnames <- cols <- logical(length(funargs))
     for (i in seq(length(funargs))) {
         badnames[i] <- grepl("\\(|:", funargs[i])
-        cols[i] <- getName(admisc::notilde(funargs[i]))
+        cols[i] <- admisc::getName(admisc::notilde(funargs[i]))
         tildenegated[i] <- admisc::tilde1st(funargs[i])
         funargs[i] <- admisc::notilde(funargs[i])
     }

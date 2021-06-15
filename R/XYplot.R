@@ -25,7 +25,7 @@
 
 `XYplot` <- function(x, y, data, relation = "sufficiency", mguides = TRUE,
                      jitter = FALSE, clabels = NULL, enhance = FALSE, model = FALSE, ...) {
-    other.args <- list(...)
+    dots <- list(...)
     funargs <- unlist(lapply(match.call(), deparse)[-1])
     if (missing(x)) {
         cat("\n")
@@ -36,9 +36,9 @@
         y <- admisc::recreate(substitute(y))
     }
     via.web <- FALSE
-    if (length(testarg <- which(names(other.args) == "via.web")) > 0) {
-        via.web <- other.args$via.web
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "via.web")) > 0) {
+        via.web <- dots$via.web
+        dots <- dots[-testarg]
     }
     negated <- logical(2)
     xname <- yname <- ""
@@ -146,9 +146,9 @@
             }
             negated[1] <- oneminus | admisc::tilde1st(funargs[1])
             xname <- "X"
-            tc <- capture.output(tryCatch(getName(funargs[1]), error = function(e) e, warning = function(w) w))
+            tc <- capture.output(tryCatch(admisc::getName(funargs[1]), error = function(e) e, warning = function(w) w))
             if (!grepl("simpleError", tc)) {
-                xname <- admisc::notilde(getName(funargs[1]))
+                xname <- admisc::notilde(admisc::getName(funargs[1]))
             }
         }
         if (length(y) > 1 & is.numeric(y)) { 
@@ -161,9 +161,9 @@
             }
             negated[2] <- oneminus | admisc::tilde1st(funargs[2])
             yname <- "Y"
-            tc <- capture.output(tryCatch(getName(funargs[2]), error = function(e) e, warning = function(w) w))
+            tc <- capture.output(tryCatch(admisc::getName(funargs[2]), error = function(e) e, warning = function(w) w))
             if (!grepl("simpleError", tc)) {
-                yname <- admisc::notilde(getName(funargs[2]))
+                yname <- admisc::notilde(admisc::getName(funargs[2]))
             }
         }
         if (length(y) == 1 & is.character(y)) {
@@ -212,8 +212,8 @@
     pch <- rep(21, length(x))
     cexpoints <- rep(0.8, length(x))
     bgpoints <- rep("#707070", length(x)) # "#ababab"
-    if (length(testarg <- which(names(other.args) == "pch")) > 0) {
-        pch <- other.args$pch
+    if (length(testarg <- which(names(dots) == "pch")) > 0) {
+        pch <- dots$pch
         if (length(pch) == 1) {
             pch <- rep(pch, length(x))
         }
@@ -223,10 +223,10 @@
                 stop(simpleError(sprintf("Length of argument \"pch\" different from the %s.\n\n", ifelse(missing(data), "length of \"x\"", "number of rows in the data"))))
             }
         }
-        other.args <- other.args[-testarg]
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "cex")) > 0) {
-        cexpoints <- other.args$cex
+    if (length(testarg <- which(names(dots) == "cex")) > 0) {
+        cexpoints <- dots$cex
         if (length(cexpoints) == 1) {
             cexpoints <- rep(cexpoints, length(x))
         }
@@ -236,11 +236,11 @@
                 stop(simpleError(sprintf("Length of argument \"cex\" different from the %s.\n\n", ifelse(missing(data), "length of \"x\"", "number of rows in the data"))))
             }
         }
-        other.args <- other.args[-testarg]
+        dots <- dots[-testarg]
     }
-    bginput <- is.element("bg", names(other.args))
-    if (length(testarg <- which(names(other.args) == "bg")) > 0) {
-        bgpoints <- other.args$bg
+    bginput <- is.element("bg", names(dots))
+    if (length(testarg <- which(names(dots) == "bg")) > 0) {
+        bgpoints <- dots$bg
         if (length(bgpoints) == 1) {
             bgpoints <- rep(bgpoints, length(x))
         }
@@ -250,29 +250,29 @@
                 stop(simpleError(sprintf("Length of argument \"bg\" different from the %s.\n\n", ifelse(missing(data), "length of \"x\"", "number of rows in the data"))))
             }
         }
-        other.args <- other.args[-testarg]
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "factor")) > 0) {
-        jitfactor <- other.args$factor
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "factor")) > 0) {
+        jitfactor <- dots$factor
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "amount")) > 0) {
-        jitamount <- other.args$amount
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "amount")) > 0) {
+        jitamount <- dots$amount
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "hadj")) > 0) {
-        hadj <- other.args$hadj
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "hadj")) > 0) {
+        hadj <- dots$hadj
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "padj")) > 0) {
-        padj <- other.args$padj
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "padj")) > 0) {
+        padj <- dots$padj
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "line")) > 0) {
-        linex <- other.args$line[1]
-        liney <- ifelse(is.na(other.args$line[2]), other.args$line[1], other.args$line[2])
-        linet <- ifelse(is.na(other.args$line[3]), other.args$line[1], other.args$line[3])
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "line")) > 0) {
+        linex <- dots$line[1]
+        liney <- ifelse(is.na(dots$line[2]), dots$line[1], dots$line[2])
+        linet <- ifelse(is.na(dots$line[3]), dots$line[1], dots$line[3])
+        dots <- dots[-testarg]
     }
     if (!is.null(clabels)) {
         if (is.numeric(clabels)) {
@@ -376,17 +376,17 @@
     xlabel <- paste0(ifelse(negated[1], "~", ""), xname)
     ylabel <- paste0(ifelse(negated[2], "~", ""), yname)
     if (model) xlabel <- "MODEL"
-    if (length(testarg <- which(names(other.args) == "xlab")) > 0) {
-        xlabel <- other.args$xlab
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "xlab")) > 0) {
+        xlabel <- dots$xlab
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "ylab")) > 0) {
-        ylabel <- other.args$ylab
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "ylab")) > 0) {
+        ylabel <- dots$ylab
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "cex.axis")) > 0) {
-        cexaxis <- other.args$cex.axis
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "cex.axis")) > 0) {
+        cexaxis <- dots$cex.axis
+        dots <- dots[-testarg]
     }
     toplot$type <- "n"
     toplot$xlim <- c(0, 1)
@@ -394,8 +394,8 @@
     toplot$xlab <- ""
     toplot$ylab <- ""
     toplot$axes <- FALSE
-    if (length(other.args) > 0) {
-        toplot <- c(toplot, other.args)
+    if (length(dots) > 0) {
+        toplot <- c(toplot, dots)
     }
     par(mar = c(3, 3.1, 2.5, 0.5), cex.axis = cexaxis, tck = -.015,
         las = 1, xpd = FALSE, mgp = c(1.5, 0.5, 0))
@@ -414,14 +414,14 @@
     }
     abline(0, 1, col = "gray")
     plotpoints <- list(x, y, pch = pch, cex = cexpoints, bg = bgpoints) 
-    suppressWarnings(do.call("points", c(plotpoints, other.args)))
+    suppressWarnings(do.call("points", c(plotpoints, dots)))
     inclcov <- round(pof(setms = xcopy, outcome = ycopy, relation = relation)$incl.cov[1, 1:3], 3)
         inclcov[is.na(inclcov)] <- 0
     inclcov <- sprintf("%.3f", inclcov)
     mtext(paste(c("Inclusion:", "Coverage:", ifelse(nec(relation), "Relevance:", "PRI:")),
                 inclcov[c(1, 3, 2)], collapse = "   "), at = 0, adj = 0, cex = cexaxis)
-    cexl <- ifelse(any(names(other.args) == "cex"), other.args$cex, 1)
-    srtl <- ifelse(any(names(other.args) == "srt"), other.args$srt, 0)
+    cexl <- ifelse(any(names(dots) == "cex"), dots$cex, 1)
+    srtl <- ifelse(any(names(dots) == "srt"), dots$srt, 0)
     if (!is.null(clabels)) {
         text(x, y + 0.02, labels = clabels, srt = srtl, cex = cexlabels*cexl)
     }
