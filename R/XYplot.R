@@ -28,8 +28,9 @@
     dots <- list(...)
     funargs <- unlist(lapply(match.call(), deparse)[-1])
     if (missing(x)) {
-        cat("\n")
-        stop(simpleError("Argument x is mandatory.\n\n"))
+        admisc::stopError(
+            "Argument x is mandatory."
+        )
     }
     x <- admisc::recreate(substitute(x))
     if (!missing(y)) {
@@ -85,12 +86,14 @@
                 x <- admisc::trimstr(x[1])
             }
             if (missing(y)) {
-                cat("\n")
-                stop(simpleError("The outcome's name is missing.\n\n"))
+                admisc::stopError(
+                    "The outcome's name is missing."
+                )
             }
             else if (!is.character(y)) {
-                cat("\n")
-                stop(simpleError("Unknown x and/or y arguments.\n\n"))
+                admisc::stopError(
+                    "Unknown <x> and/or <y> arguments."
+                )
             }
         }
         else {
@@ -103,8 +106,9 @@
             x <- x[1]
         }
         if (missing(data)) {
-            cat("\n")
-            stop(simpleError("Data is missing.\n\n"))
+            admisc::stopError(
+                "Data is missing."
+            )
         }
         else {
             verify.qca(data)
@@ -117,8 +121,16 @@
         negated[1] <- identical(unname(substring(x, 1, 2)), "1-")
         negated[2] <- identical(unname(substring(y, 1, 2)), "1-")
         if (any(checks <- grepl("1-", c(x, y)) & !negated)) {
-            cat("\n")
-            stop(simpleError(paste("Incorrect expression in \"", paste(c(x, y)[checks], collapse = "\" and \""), "\".\n\n", sep = "")))
+            admisc::stopError(
+                paste0(
+                    "Incorrect expression in \"",
+                    paste(
+                        c(x, y)[checks],
+                        collapse = "\" and \""
+                    ),
+                    "\"."
+                )
+            )
         }
         x <- admisc::compute(x, data = data)
         y <- admisc::compute(y, data = data)
@@ -127,8 +139,9 @@
     else if (is.data.frame(x) | is.matrix(x)) {
         verify.qca(as.data.frame(x))
         if (ncol(x) < 2) {
-            cat("\n")
-            stop(simpleError("At least two columns are needed.\n\n"))
+            admisc::stopError(
+                "At least two columns are needed."
+            )
         }
         xname <- colnames(x)[1]
         yname <- colnames(x)[2]
@@ -141,12 +154,19 @@
             if (any((admisc::hastilde(funargs[1])    & !admisc::tilde1st(funargs[1])) | 
                     (grepl("1-", funargs[1]) & !oneminus)
                    )) {
-                cat("\n")
-                stop(simpleError(paste("Incorrect expression in \"", funargs[1], "\".\n\n", sep = "")))
+                admisc::stopError(
+                    paste0("Incorrect expression in \"", funargs[1], "\".")
+                )
             }
             negated[1] <- oneminus | admisc::tilde1st(funargs[1])
             xname <- "X"
-            tc <- capture.output(tryCatch(admisc::getName(funargs[1]), error = function(e) e, warning = function(w) w))
+            tc <- capture.output(
+                tryCatch(
+                    admisc::getName(funargs[1]),
+                    error = function(e) e,
+                    warning = function(w) w
+                )
+            )
             if (!grepl("simpleError", tc)) {
                 xname <- admisc::notilde(admisc::getName(funargs[1]))
             }
@@ -156,20 +176,28 @@
             if (any((admisc::hastilde(funargs[2])    & !admisc::tilde1st(funargs[2])) | 
                     (grepl("1-", funargs[2]) & !oneminus)
                    )) {
-                cat("\n")
-                stop(simpleError(paste("Incorrect expression in \"", funargs[2], "\".\n\n", sep = "")))
+                admisc::stopError(
+                    paste0("Incorrect expression in \"", funargs[2], "\".")
+                )
             }
             negated[2] <- oneminus | admisc::tilde1st(funargs[2])
             yname <- "Y"
-            tc <- capture.output(tryCatch(admisc::getName(funargs[2]), error = function(e) e, warning = function(w) w))
+            tc <- capture.output(
+                tryCatch(
+                    admisc::getName(funargs[2]),
+                    error = function(e) e,
+                    warning = function(w) w
+                )
+            )
             if (!grepl("simpleError", tc)) {
                 yname <- admisc::notilde(admisc::getName(funargs[2]))
             }
         }
         if (length(y) == 1 & is.character(y)) {
             if (missing(data)) {
-                cat("\n")
-                stop(simpleError("Data is missing.\n\n"))
+                admisc::stopError(
+                    "Data is missing."
+                )
             }
             else {
                 verify.qca(data)
@@ -178,20 +206,23 @@
             y <- gsub(minus, "-", gsub("[[:space:]]", "", y))
             negated[2] <- identical(unname(substring(y, 1, 2)), "1-")
             if (grepl("1-", y) & !negated[2]) {
-                cat("\n")
-                stop(simpleError(paste("Incorrect expression in \"", y, "\".\n\n", sep = "")))
+                admisc::stopError(
+                    paste0("Incorrect expression in \"", y, "\".")
+                )
             }
             y <- admisc::compute(y, data = data)
             negated[2] <- FALSE
         }
     }
     else {
-        cat("\n")
-        stop(simpleError("Either a dataframe with two columns or two vectors are needed.\n\n"))
+        admisc::stopError(
+            "Either a dataframe with two columns or two vectors are needed."
+        )
     }
     if (any(x > 1) | any(y > 1)) {
-        cat("\n")
-        stop(simpleError("Values should be bound between 0 and 1.\n\n"))
+        admisc::stopError(
+            "Values should be bound between 0 and 1."
+        )
     }
     xcopy <- x
     ycopy <- y
@@ -219,8 +250,16 @@
         }
         else {
             if (length(pch) != length(x)) {
-                cat("\n")
-                stop(simpleError(sprintf("Length of argument \"pch\" different from the %s.\n\n", ifelse(missing(data), "length of \"x\"", "number of rows in the data"))))
+                admisc::stopError(
+                    sprintf(
+                        "Length of argument \"pch\" different from the %s.",
+                        ifelse(
+                            missing(data),
+                            "length of \"x\"",
+                            "number of rows in the data"
+                        )
+                    )
+                )
             }
         }
         dots <- dots[-testarg]
@@ -232,8 +271,16 @@
         }
         else {
             if (length(cexpoints) != length(x)) {
-                cat("\n")
-                stop(simpleError(sprintf("Length of argument \"cex\" different from the %s.\n\n", ifelse(missing(data), "length of \"x\"", "number of rows in the data"))))
+                admisc::stopError(
+                    sprintf(
+                        "Length of argument \"cex\" different from the %s.",
+                        ifelse(
+                            missing(data),
+                            "length of \"x\"",
+                            "number of rows in the data"
+                        )
+                    )
+                )
             }
         }
         dots <- dots[-testarg]
@@ -246,8 +293,16 @@
         }
         else {
             if (length(bgpoints) != length(x)) {
-                cat("\n")
-                stop(simpleError(sprintf("Length of argument \"bg\" different from the %s.\n\n", ifelse(missing(data), "length of \"x\"", "number of rows in the data"))))
+                admisc::stopError(
+                    sprintf(
+                        "Length of argument \"bg\" different from the %s.",
+                        ifelse(
+                            missing(data),
+                            "length of \"x\"",
+                            "number of rows in the data"
+                        )
+                    )
+                )
             }
         }
         dots <- dots[-testarg]
@@ -283,15 +338,24 @@
                     clabels <- rownms
                 }
                 else {
-                    cat("\n")
-                    stop(simpleError("Values in the argument \"clabels\" outside the rows of the data.\n\n"))
+                    admisc::stopError(
+                        "Values in the argument <clabels> outside the data rows."
+                    )
                 }
             }
             clabels <- as.character(clabels)
         }
         if (length(clabels) != length(x)) {
-            cat("\n")
-            stop(simpleError(sprintf("Length of argument \"clabels\" larger than %s.\n\n", ifelse(missing(data), "length of \"x\"", "number of rows in the data"))))
+            admisc::stopError(
+                sprintf(
+                    "Length of argument <clabels> larger than %s.",
+                    ifelse(
+                        missing(data),
+                        "length of <x>",
+                        "number of rows in the data"
+                    )
+                )
+            )
         }
         if (is.logical(clabels)) {
             if (missing(data)) {
@@ -341,7 +405,9 @@
                 ys <- y[selection]
                 pch[selection] <- 23
                 if (!bginput) {
-                    bgpoints[which(selection)][which.min(1 - (ys - xs)/xs)] <- "#cccccc"
+                    bgpoints[which(selection)][
+                        which.min(1 - (ys - xs)/xs)
+                    ] <- "#cccccc"
                 }
             }
             if (any(selection <- x < 0.5 & y < 0.5)) {
@@ -406,23 +472,65 @@
     title(xlab = xlabel, cex.lab = cexaxis + 0.1, font.lab = 2, line = linex)
 	
     title(ylab = ylabel, cex.lab = cexaxis + 0.1, font.lab = 2, line = liney)
-	title(main = paste(ifelse(nec(relation), "Necessity", "Sufficiency"), "relation"),
-          cex.main = cexaxis/0.8, font.main = 2, line = linet)
+	title(
+        main = paste(
+            ifelse(
+                nec(relation),
+                "Necessity",
+                "Sufficiency"
+            ),
+            "relation"
+            ),
+        cex.main = cexaxis/0.8,
+        font.main = 2,
+        line = linet
+    )
     if (mguides) {
         abline(v = .5, lty = 2, col = "gray")
         abline(h = .5, lty = 2, col = "gray")
     }
     abline(0, 1, col = "gray")
-    plotpoints <- list(x, y, pch = pch, cex = cexpoints, bg = bgpoints) 
+    plotpoints <- list(
+        x,
+        y,
+        pch = pch,
+        cex = cexpoints,
+        bg = bgpoints
+    ) 
     suppressWarnings(do.call("points", c(plotpoints, dots)))
-    inclcov <- round(pof(setms = xcopy, outcome = ycopy, relation = relation)$incl.cov[1, 1:3], 3)
-        inclcov[is.na(inclcov)] <- 0
+    inclcov <- round(
+        pof(
+            setms = xcopy,
+            outcome = ycopy,
+            relation = relation
+        )$incl.cov[1, 1:3],
+        3
+    )
+    inclcov[is.na(inclcov)] <- 0
     inclcov <- sprintf("%.3f", inclcov)
-    mtext(paste(c("Inclusion:", "Coverage:", ifelse(nec(relation), "Relevance:", "PRI:")),
-                inclcov[c(1, 3, 2)], collapse = "   "), at = 0, adj = 0, cex = cexaxis)
+    mtext(
+        paste(
+            c(
+                "Inclusion:",
+                "Coverage:",
+                ifelse(nec(relation), "Relevance:", "PRI:")
+            ),
+            inclcov[c(1, 3, 2)],
+            collapse = "   "
+        ),
+        at = 0,
+        adj = 0,
+        cex = cexaxis
+    )
     cexl <- ifelse(any(names(dots) == "cex"), dots$cex, 1)
     srtl <- ifelse(any(names(dots) == "srt"), dots$srt, 0)
     if (!is.null(clabels)) {
-        text(x, y + 0.02, labels = clabels, srt = srtl, cex = cexlabels*cexl)
+        text(
+            x,
+            y + 0.02,
+            labels = clabels,
+            srt = srtl,
+            cex = cexlabels * cexl
+        )
     }
 }

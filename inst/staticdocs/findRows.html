@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>findRows. QCA 3.12</title>
+<title>findRows. QCA 3.13</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.12</a>
+      <a class="brand" href="#">QCA 3.13</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -64,7 +64,7 @@ certain remainders or some observed configurations from the minimization process
     </div>
     
     <h2>Usage</h2>
-    <pre><div>findRows(expression = &quot;&quot;, obj, remainders = TRUE, type = 1, ...)</div></pre>
+    <pre><div>findRows(expression = &quot;&quot;, obj, observed = FALSE, type = 1, ...)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -79,9 +79,9 @@ certain remainders or some observed configurations from the minimization process
             <td>A truth table (an object of class <code>"QCA_tt"</code>) or a, equivalent numerical matrix.</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>remainders</code></b></td>
+            <td valign="top"><b><code>observed</code></b></td>
             <td></td><td></td><td></td>
-            <td>Logical: find remainders only or also observed configurations,
+            <td>Logical: also return subset relations for observed configurations,
         when <b><code>obj</code></b> is a truth table.</td>
         </tr>
         <tr>
@@ -108,9 +108,10 @@ column names.</p>
       <p>It started as a function to find rows that are subsets of a given SOP expression, and
 it developed to cover even more untenable asumptions.</p>
   
-      <p>Subset rows can be anything, from remainders to the observed configurations
-(positive output, negative output and contradictions), but the function returns only the
-subset configurations which do not have a positive output.</p>
+      <p>Subset rows can be anything, from remainders to the observed configurations: positive
+output, negative output and contradictions). By default, the function returns only the
+subset configurations for the remaiders, but activating the argument <b><code>observed</code></b>
+adds the corresponding observed configurations to the output.</p>
   
       <p>It might ocasionally find negative output configurations or contradictions, but that
 doesn't have any side effect because they are going to be excluded from the minimization
@@ -188,8 +189,8 @@ findRows("DEV*~IND*STB", ttLC)
 </div>
 <div class='input'>
 
-## all subset rows from the truth table, not only the remainders
-findRows("DEV*~IND*STB", ttLC, remainders = FALSE)
+## all subset rows from the truth table, also for observed configurations
+findRows("DEV*~IND*STB", ttLC, observed = TRUE)
 </div>
 <div class='output'>[1] 18 22 26 30
 </div>

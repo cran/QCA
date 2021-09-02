@@ -38,15 +38,17 @@
             x <- x[-rowvar]
         }
         else {
-            cat("\n")
-            stop(simpleError("invalid 'row.names' specification.\n\n"))
+            admisc::stopError(
+                "invalid 'row.names' specification."
+            )
         }
         if (is.object(row.names) || !(is.integer(row.names))) {
             row.names <- as.character(row.names)
         }
         if (anyNA(row.names)) {
-            cat("\n")
-            stop(simpleError("missing values in 'row.names' are not allowed.\n\n"))
+            admisc::stopError(
+                "missing values in 'row.names' are not allowed."
+            )
         }
         attr(x, "row.names") <- row.names
     }
@@ -66,13 +68,33 @@
     classes <- lapply(x, class)
     clevels <- lapply(x, levels)
     cordered <- lapply(x, is.ordered)
-    x <- eval(parse(text = sprintf("x[%s, %s, drop = %s]", funargs["i"], funargs["j"], drop)))
+    x <- eval(
+        parse(
+            text = sprintf(
+                "x[%s, %s, drop = %s]",
+                funargs["i"],
+                funargs["j"],
+                drop
+            )
+        )
+    )
     if (!is.null(dim(x))) {
         x <- as.matrix(x)
-        rownms <- eval(parse(text = sprintf("rownms[%s]", funargs["i"])))
+        rownms <- eval(
+            parse(
+                text = sprintf(
+                    "rownms[%s]",
+                    funargs["i"]
+                )
+            )
+        )
         row.names(x) <- rownms
-        x <- rebuild(as.data.frame(x, stringsAsFactors = FALSE),
-                     classes[colnames(x)], clevels[colnames(x)], cordered[colnames(x)])
+        x <- rebuild(
+            as.data.frame(x, stringsAsFactors = FALSE),
+            classes[colnames(x)],
+            clevels[colnames(x)],
+            cordered[colnames(x)]
+        )
         class(x) <- c("QCA_panel", "data.frame")
     }
     return(x)
@@ -83,7 +105,12 @@
     cordered <- lapply(x, is.ordered)
     x <- as.matrix(x)
     setRownames(x, value)
-    x <- rebuild(as.data.frame(x, stringsAsFactors = FALSE), classes, clevels, cordered)
+    x <- rebuild(
+        as.data.frame(x, stringsAsFactors = FALSE),
+        classes,
+        clevels,
+        cordered
+    )
     class(x) <- c("QCA_panel", "data.frame")
     return(x)
 }

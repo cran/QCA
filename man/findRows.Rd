@@ -11,14 +11,14 @@ certain remainders or some observed configurations from the minimization process
 }
 
 \usage{
-findRows(expression = "", obj, remainders = TRUE, type = 1, ...)
+findRows(expression = "", obj, observed = FALSE, type = 1, ...)
 }
 
 \arguments{
   \item{expression}{String: a QCA expression written in sum of products form.}
   \item{obj}{A truth table (an object of class \code{"QCA_tt"}) or an equivalent
         numerical matrix.}
-  \item{remainders}{Logical: find remainders only or also observed configurations,
+  \item{observed}{Logical: also return subset relations for observed configurations,
         when \code{obj} is a truth table.}
   \item{type}{Numeric vector, specifying the type(s) of untenable configurations.}
   \item{...}{Additional arguments to be passed to function \code{\link{truthTable}()},
@@ -34,9 +34,10 @@ column names.
 It started as a function to find rows that are subsets of a given SOP expression, and
 it developed to cover even more untenable asumptions.
 
-Subset rows can be anything, from remainders to the observed configurations (positive
-output, negative output and contradictions), but the function returns only the
-subset configurations which do not have a positive output.
+Subset rows can be anything, from remainders to the observed configurations: positive
+output, negative output and contradictions). By default, the function returns only the
+subset configurations for the remaiders, but activating the argument \bold{\code{observed}}
+adds the corresponding observed configurations to the output.
 
 It might ocasionally find negative output configurations or contradictions, but that
 doesn't have any side effect because they are going to be excluded from the minimization
@@ -98,8 +99,8 @@ ttLC <- truthTable(LC, "SURV", show.cases = TRUE)
 
 findRows("DEV*~IND*STB", ttLC)
 
-## all subset rows from the truth table, not only the remainders
-findRows("DEV*~IND*STB", ttLC, remainders = FALSE)
+## all subset rows from the truth table, also for observed configurations
+findRows("DEV*~IND*STB", ttLC, observed = TRUE)
 
 
 # Lipset's fuzzy version

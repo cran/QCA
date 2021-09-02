@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `Xplot` <- function(x, jitter = FALSE, at = pretty(x), ...) {
-    other.args <- list(...)
+    dots <- list(...)
     funargs <- unlist(lapply(match.call(), deparse)[-1])
     xname <- getName(funargs[1])
     linex <- 1.75
@@ -34,37 +34,37 @@
     cexaxis <- 0.8
     pch <- 21
     bgpoints <- NA
-    if (length(testarg <- which(names(other.args) == "line")) > 0) {
-        linex <- other.args$line
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "line")) > 0) {
+        linex <- dots$line
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "factor")) > 0) {
-        jitfactor <- other.args$factor
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "factor")) > 0) {
+        jitfactor <- dots$factor
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "amount")) > 0) {
-        jitamount <- other.args$amount
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "amount")) > 0) {
+        jitamount <- dots$amount
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "cex")) > 0) {
-        cexpoints <- other.args$cex
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "cex")) > 0) {
+        cexpoints <- dots$cex
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "cex.axis")) > 0) {
-        cexaxis <- other.args$cex.axis
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "cex.axis")) > 0) {
+        cexaxis <- dots$cex.axis
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "pch")) > 0) {
-        pch <- other.args$pch
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "pch")) > 0) {
+        pch <- dots$pch
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "bg")) > 0) {
-        bgpoints <- other.args$bg
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "bg")) > 0) {
+        bgpoints <- dots$bg
+        dots <- dots[-testarg]
     }
-    if (length(testarg <- which(names(other.args) == "xlab")) > 0) {
-        xname <- other.args$xlab
-        other.args <- other.args[-testarg]
+    if (length(testarg <- which(names(dots) == "xlab")) > 0) {
+        xname <- dots$xlab
+        dots <- dots[-testarg]
     }
     y <- rep(1, length(x))
     if (jitter) {
@@ -79,13 +79,13 @@
     toplot$xlab <- ""
     toplot$ylab <- ""
     toplot$axes <- FALSE
-    if (length(other.args) > 0) {
-        toplot <- c(toplot, other.args)
+    if (length(dots) > 0) {
+        toplot <- c(toplot, dots)
     }
     par(mar = c(ifelse(xname == "", 2, 3), 0.3, 0, 0))
     suppressWarnings(eval(as.call(toplot)))
     axis(1, at = at, cex.axis = cexaxis)
     title(xlab = xname, cex.lab = cexaxis + 0.1, font.lab = 2, line = linex)
     plotpoints <- list(as.name("points"), x, y, pch = pch, cex = cexpoints, bg = bgpoints)
-    suppressWarnings(eval(as.call(c(plotpoints, other.args))))
+    suppressWarnings(eval(as.call(c(plotpoints, dots))))
 }

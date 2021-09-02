@@ -26,19 +26,22 @@
 `modelFit` <-
 function(model, theory = "") {
     if (!(methods::is(model, "QCA_min") | methods::is(model, "admisc_deMorgan"))) {
-        cat("\n")
-        stop(simpleError("The model should be a minimization object or its negation.\n\n"))
+        admisc::stopError(
+            "The model should be a minimization object or its negation."
+        )
     }
     theory <- admisc::recreate(substitute(theory))
     if (is.character(theory)) {
         if (length(theory) != 1) {
-            cat("\n")
-            stop(simpleError("Theory should be a single character expression.\n\n"))
+            admisc::stopError(
+                "Theory should be a single character expression."
+            )
         }
     }
     else {
-        cat("\n")
-        stop(simpleError("Theory should be a character expression or its negation.\n\n"))
+        admisc::stopError(
+            "Theory should be a character expression or its negation."
+        )
     }
     noflevels <- model$tt$noflevels
     snames <- model$tt$options$conditions
@@ -81,10 +84,43 @@ function(model, theory = "") {
         cpims$model <- admisc::compute(expression, data = model$tt$initial.data)
         cpims$theory <- admisc::compute(theory, data = model$tt$initial.data)
         intersections <- rep("", 4)
-        intersections[1] <- do.call(admisc::intersection, c(list(theory, expression), arglist))
-        intersections[2] <- do.call(admisc::intersection, c(list(negate(theory, snames = snames), expression), arglist))
-        intersections[3] <- do.call(admisc::intersection, c(list(theory, negate(expression, snames = snames)), arglist))
-        intersections[4] <- do.call(admisc::intersection, c(list(negate(theory, snames = snames), negate(expression, snames = snames)), arglist))
+        intersections[1] <- do.call(
+            admisc::intersection,
+            c(
+                list(theory, expression),
+                arglist
+            )
+        )
+        intersections[2] <- do.call(
+            admisc::intersection,
+            c(
+                list(
+                    negate(theory, snames = snames),
+                    expression
+                ),
+                arglist
+            )
+        )
+        intersections[3] <- do.call(
+            admisc::intersection,
+            c(
+                list(
+                    theory,
+                    negate(expression, snames = snames)
+                ),
+                arglist
+            )
+        )
+        intersections[4] <- do.call(
+            admisc::intersection,
+            c(
+                list(
+                    negate(theory, snames = snames),
+                    negate(expression, snames = snames)
+                ),
+                arglist
+            )
+        )
         intnms <- c("model*theory", "model*~theory", "~model*theory", "~model*~theory")
         for (nm in seq(4)) {
             int <- intersections[nm]
@@ -97,10 +133,18 @@ function(model, theory = "") {
         }
         intersections[intersections == ""] <- "-"
         names(intersections) <- intnms
-        pofobj <- pof(cpims, model$tt$initial.data[, model$tt$options$outcome], relation = "sufficiency")
+        pofobj <- pof(
+            cpims,
+            model$tt$initial.data[, model$tt$options$outcome],
+            relation = "sufficiency"
+        )
         pofobj$incl.cov <- pofobj$incl.cov[, 1:3]
         pofobj$incl.cov[is.na(pofobj$incl.cov[, 1]), 3] <- NA
-        pofobj$modelfit <- list(model = expression, theory = theory, intersections = intersections)
+        pofobj$modelfit <- list(
+            model = expression,
+            theory = theory,
+            intersections = intersections
+        )
         result[[i]] <- pofobj
     }
     if (length(result) == 1) {

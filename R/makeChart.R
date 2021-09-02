@@ -30,23 +30,34 @@ function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...
     snames <- admisc::recreate(substitute(snames))
     prmat <- is.matrix(primes)
     comat <- is.matrix(configs)
-    other.args <- list(...)
-    curly <- other.args$curly
+    dots <- list(...)
+    curly <- dots$curly
     if (is.null(curly)) curly <- FALSE
     if (prmat & comat) {
         if (!(is.numeric(primes) & is.numeric(configs))) {
-            cat("\n")
-            stop(simpleError("Matrices have to be numeric.\n\n"))
+            admisc::stopError(
+                "Matrices have to be numeric."
+            )
         }
         if (any(primes < 0) | any(configs < 0)) {
-            cat("\n")
-            stop(simpleError("Matrix values have to be non-negative.\n\n"))
+            admisc::stopError(
+                "Matrix values have to be non-negative."
+            )
         }
-        if (!is.element("getSolution", names(other.args))) {
-            if (any(apply(primes, 1, sum) == 0) | any(apply(configs, 1, sum) == 0)) {
-                cat("\n")
-                stop(simpleError("Matrices have to be specified at implicants level.\n\n"))
-            }
+        if (
+            !is.element("getSolution", names(dots)) &&
+            (
+                any(
+                    apply(primes, 1, sum) == 0
+                ) |
+                any(
+                    apply(configs, 1, sum) == 0
+                )
+            )
+        ) {
+            admisc::stopError(
+                "Matrices have to be specified at implicants level."
+            )
         }
         if (nrow(primes == 1) & sum(primes) == 0) {
             mtrx = matrix(nrow = 0, ncol = nrow(configs))
@@ -65,9 +76,19 @@ function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...
             else {
                 mtrx <- t(mtrx)
             }
-            rownames(mtrx) <- admisc::writePrimeimp(primes, mv = mv, collapse = collapse, curly = curly)
+            rownames(mtrx) <- admisc::writePrimeimp(
+                primes,
+                mv = mv,
+                collapse = collapse,
+                curly = curly
+            )
         }
-        colnames(mtrx) <- admisc::writePrimeimp(configs, mv = mv, collapse = collapse, curly = curly)
+        colnames(mtrx) <- admisc::writePrimeimp(
+            configs,
+            mv = mv,
+            collapse = collapse,
+            curly = curly
+        )
         class(mtrx) <- c("matrix", "pic")
         return(mtrx)
     }
@@ -78,14 +99,24 @@ function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...
             }
         }
         noflevels <- rep(2, length(snames))
-        if (is.element("noflevels", names(other.args))) {
-            noflevels <- other.args$noflevels
+        if (is.element("noflevels", names(dots))) {
+            noflevels <- dots$noflevels
         }
-        tconfigs <- attr(admisc::translate(configs, snames, noflevels, retlist = TRUE), "retlist")
+        tconfigs <- attr(
+            admisc::translate(
+                configs, snames, noflevels, retlist = TRUE
+            ),
+            "retlist"
+        )
         if (identical(snames, "")) {
             snames <- names(tconfigs[[1]])
         }
-        tprimes <- attr(admisc::translate(primes, snames, noflevels, retlist = TRUE), "retlist")
+        tprimes <- attr(
+            admisc::translate(
+                primes, snames, noflevels, retlist = TRUE
+            ),
+            "retlist"
+        )
         mtrx <- matrix(FALSE, nrow = length(tprimes), ncol = length(tconfigs))
         for (i in seq(nrow(mtrx))) {
             for (j in seq(ncol(mtrx))) {
@@ -93,7 +124,10 @@ function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...
                 s <- 1
                 while (subset & s <= length(tprimes[[i]])) {
                     if (tprimes[[i]][[s]] >= 0) {
-                        subset <- is.element(tprimes[[i]][[s]], tconfigs[[j]][[s]])
+                        subset <- is.element(
+                            tprimes[[i]][[s]],
+                            tconfigs[[j]][[s]]
+                        )
                     }
                     s <- s + 1
                 }
@@ -106,7 +140,8 @@ function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...
         return(mtrx)
     }
     else {
-        cat("\n")
-        stop(simpleError("Both arguments have to be matrices.\n\n"))
+        admisc::stopError(
+            "Both arguments have to be matrices."
+        )
     }
 }

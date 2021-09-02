@@ -27,11 +27,17 @@
 function(data, outcome = "", conditions = "", relation = "necessity", incl.cut = 1,
     cov.cut = 0, ron.cut = 0, pri.cut = 0, use.letters = FALSE, depth = NULL,
     add = NULL, ...) {
-    funargs <- lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x))
+    funargs <- lapply(
+        lapply(match.call(), deparse)[-1],
+        function(x) {
+            gsub("\"|[[:space:]]", "", x)
+        }
+    )
     dots <- list(...)
     if (missing(data)) {
-        cat("\n")
-        stop(simpleError("Data is missing.\n\n"))
+        admisc::stopError(
+            "Data is missing."
+        )
     }
     funargs <- lapply(match.call(), deparse)
     outcome <- admisc::recreate(substitute(outcome), colnames(data))
@@ -45,8 +51,9 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         cov.cut <- cov.cut - .Machine$double.eps ^ 0.5
     }
     if (identical(outcome, "")) {
-        cat("\n")
-        stop(simpleError("The outcome was not specified.\n\n"))
+        admisc::stopError(
+            "The outcome was not specified."
+        )
     }
     if (is.character(outcome)) {
         funargs$outcome <- outcome
@@ -60,20 +67,32 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         curly <- grepl("\\{", funargs$outcome)
         if (curly) {
             outcome.value <- admisc::curlyBrackets(funargs$outcome)
-            funargs$outcome <- admisc::curlyBrackets(funargs$outcome, outside = TRUE)
+            funargs$outcome <- admisc::curlyBrackets(
+                funargs$outcome,
+                outside = TRUE
+            )
         }
         else {
             outcome.value <- admisc::squareBrackets(funargs$outcome)
-            funargs$outcome <- admisc::squareBrackets(funargs$outcome, outside = TRUE)
+            funargs$outcome <- admisc::squareBrackets(
+                funargs$outcome,
+                outside = TRUE
+            )
         }
     }
     if (is.character(outcome)) {
         if (!is.element(notilde(funargs$outcome), colnames(data))) {
-            cat("\n")
-            stop(simpleError("The outcome name does not exist in the data.\n\n"))
+            admisc::stopError(
+                "The outcome name does not exist in the data."
+            )
         }
         if (mvoutcome) {
-            outcome <- as.numeric(is.element(data[, funargs$outcome], admisc::splitstr(outcome.value)))
+            outcome <- as.numeric(
+                is.element(
+                    data[, funargs$outcome],
+                    admisc::splitstr(outcome.value)
+                )
+            )
         }
     }
     else {
@@ -93,9 +112,19 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
             conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
         }
     }
-    if (!(nec(relation) | suf(relation) | is.element(relation, c("sufnec", "necsuf")))) {
-        cat("\n")
-        stop(simpleError("The relationship should be \"necessity\", \"sufficiency\", \"sufnec\" or \"necsuf\".\n\n"))
+    if (
+        !(
+            nec(relation) |
+            suf(relation) |
+            is.element(
+                relation,
+                c("sufnec", "necsuf")
+            )
+        )
+    ) {
+        admisc::stopError(
+            "The relationship should be \"necessity\", \"sufficiency\", \"sufnec\" or \"necsuf\"."
+        )
     }
     relationcopy <- relation
     if (is.element(relation, c("sufnec", "necsuf"))) {
@@ -162,14 +191,19 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     if (nec(relation)) {
         lexprnec <- nrow(CMatrix[[2]])
         if (lexprnec + lexpressions == 0) {
-            cat("\n")
-            stop(simpleError(paste("\nThere are no configurations, using these cutoff values.\n\n", sep="")))
+            admisc::stopError(
+                "There are no configurations, using these cutoff values."
+            )
         }
         if (lexprnec > 0) {
             result.matrix2 <- CMatrix[[4]]
             rownames(result.matrix2) <- seq(lexprnec) + lexpressions
             colnames(result.matrix2) <- conditions
-            row_names2 <- admisc::writePrimeimp(result.matrix2, mv = mv, collapse = "+")
+            row_names2 <- admisc::writePrimeimp(
+                result.matrix2,
+                mv = mv,
+                collapse = "+"
+            )
             rownames(CMatrix[[2]]) <- row_names2
             mins2 <- CMatrix[[6]]
             if (prev.result) {
@@ -188,8 +222,14 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         }
     }
     if (lexprnec + lexpressions == 0) {
-        cat("\n")
-        stop(simpleError(paste("There are no combinations with incl.cut = ", round(incl.cut, 3), " and cov.cut = ", round(cov.cut, 3), "\n\n", sep="")))
+        admisc::stopError(
+            paste0(
+                "There are no combinations with incl.cut = ",
+                round(incl.cut, 3),
+                " and cov.cut = ",
+                round(cov.cut, 3)
+            )
+        )
     }
     colnames(mins) <- rownames(result)
     rownames(mins) <- rownames(data)
@@ -210,8 +250,16 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     mins <- mins[, tokeep, drop = FALSE]
     attr(mins, "conditions") <- conditions 
     if (nrow(result) == 0) {
-        cat("\n")
-        stop(simpleError(paste("There are no combinations with", ifelse(nec(relation), paste("ron.cut =", round(ron.cut, 3)), paste("pri.cut =", round(pri.cut, 3))), "\n\n")))
+        admisc::stopError(
+            paste0(
+                "There are no combinations with",
+                ifelse(
+                    nec(relation),
+                    paste("ron.cut =", round(ron.cut, 3)),
+                    paste("pri.cut =", round(pri.cut, 3))
+                )
+            )
+        )
     }
     if (!is.null(add)) {
         toadd <- pof(mins,

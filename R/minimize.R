@@ -23,26 +23,31 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`minimize` <-
-function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
-        sol.cons = 0, all.sol = FALSE, row.dom = FALSE, min.pin = FALSE,
-        max.comb = 0, first.min = FALSE, method = "CCubes", ...) {
+`minimize` <- function(
+    input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
+    sol.cons = 0, all.sol = FALSE, row.dom = FALSE, min.pin = FALSE,
+    max.comb = 0, first.min = FALSE, method = "CCubes", ...
+) {
     metacall <- match.call()
     dots <- substitute(list(...))
     if (is.element("data", names(dots))) {
         input <- eval.parent(dots$data)
         dots$data <- NULL
     }
-    enter <- if (is.element("enter", names(dots))) "" else "\n" 
+    enter <- if (is.element("enter", names(dots))) dots$enter else "\n" 
     if (missing(input)) {
-        cat(enter)
-        stop(simpleError(paste0("The input (a truth table or a dataset) is missing.", enter, enter)))
+        admisc::stopError(
+            "The input (a truth table or a dataset) is missing.",
+            enter
+        )
     }
     else {
         if (is.matrix(input)) {
             if (is.null(colnames(input))) {
-                cat(enter)
-                stop(simpleError(paste0("The data should have column names.", enter, enter)))
+                admisc::stopError(
+                    "The data should have column names.",
+                    enter
+                )
             }
             if (any(duplicated(rownames(input)))) {
                 rownames(input) <- seq(nrow(input))
@@ -55,8 +60,10 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
             }
         }
         if(!(is.data.frame(input) | methods::is(input, "QCA_tt"))) {
-            cat(enter)
-            stop(simpleError(paste0("The input should be a truth table or a dataset.", enter, enter)))
+            admisc::stopError(
+                "The input should be a truth table or a dataset.",
+                enter
+            )
         }
     }
     ttinput <- methods::is(input, "QCA_tt")
@@ -73,8 +80,11 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
         }
     }
     dots <- eval(dots)
-    back.args <- c("outcome", "conditions", "n.cut", "incl.cut", "complete", "show.cases", sort.by = "", "use.letters", "inf.test",
-                   "rowdom", "direxp", "neg.out", "data", "relation", "explain", "omit", "exclude")
+    back.args <- c(
+        "outcome", "conditions", "n.cut", "incl.cut", "complete", "show.cases",
+        "sort.by" = "", "use.letters", "inf.test", "rowdom", "direxp", "neg.out",
+        "data", "relation", "explain", "omit", "exclude"
+    )
     check.args <- pmatch(names(dots), back.args)
     names(dots)[!is.na(check.args)] <- back.args[check.args[!is.na(check.args)]]
     explain     <- if (is.element("explain",     names(dots))) dots$explain      else "1"
@@ -101,8 +111,10 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
         }
     }
     if (is.null(include)) {
-        cat(enter)
-        stop(simpleError(paste0("The \"include\" argument cannot be NULL.", enter, enter)))
+        admisc::stopError(
+            "The <include> argument cannot be NULL.",
+            enter
+        )
     }
     dir.exp <- admisc::recreate(substitute(dir.exp))
     row.dom     <- if (is.element("rowdom",      names(dots))) dots$rowdom       else row.dom
@@ -115,8 +127,10 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
             if (grepl(":", dir.exp)) {
                 des <- unlist(strsplit(dir.exp, split = ":"))
                 if (!all(is.element(des, nms))) {
-                    cat(enter)
-                    stop(simpleError(paste0("Inexisting condition(s) in the sequence of directional expectations.", enter, enter)))
+                    admisc::stopError(
+                        "Inexisting condition(s) in the sequence of directional expectations.",
+                        enter
+                    )
                 }
                 dir.exp <- nms[seq(which(nms == des[1]), which(nms == des[2]))]
             }
@@ -127,8 +141,10 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
     }
     if (identical(include, "")) {
         if (!is.null(dir.exp)) {
-            cat(enter)
-            stop(simpleError(paste0("Directional expectations cannot be specified without including the remainders.", enter, enter)))
+            admisc::stopError(
+                "Directional expectations cannot be specified without including the remainders.",
+                enter
+            )
         }
     }
     if (is.character(explain) & !identical(explain, "1")) {
@@ -159,8 +175,10 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
     }
     else {
         if (identical(outcome, "")) {
-            cat(enter)
-            stop(simpleError(paste0("Consider creating a truth table first, or formally specify the argument \"outcome\".", enter, enter)))
+            admisc::stopError(
+                "Consider creating a truth table first, or formally specify the argument <outcome>.",
+                enter
+            )
         }
         if (any(c(pi.cons, sol.cons) > 0) & incl.cut[1] == 1) {
             incl.cut[1] <- min(c(pi.cons, sol.cons))
@@ -175,8 +193,10 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
                             admisc::curlyBrackets(admisc::notilde(outcome), outside = TRUE),
                             admisc::squareBrackets(admisc::notilde(outcome), outside = TRUE))
         if (!is.element(testoutcome, colnames(input))) {
-            cat(enter)
-            stop(simpleError(paste0("Outcome not found in the data.", enter, enter)))
+            admisc::stopError(
+                "Outcome not found in the data.",
+                enter
+            )
         }
         outcome.name <- testoutcome
         if (identical(conditions, "")) {
@@ -235,8 +255,10 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
     neg.matrix <- matrix(as.numeric(neg.matrix), ncol = length(noflevels)) + 1
     rownames(neg.matrix) <- drop((neg.matrix - 1) %*% mbase) + 1
     if (sum(subset.pos) == 0) {
-        cat(enter)
-        stop(simpleError(paste0("None of the values in OUT is explained. Please check the truth table.", enter, enter)))
+        admisc::stopError(
+            "None of the values in OUT is explained. Please check the truth table.",
+            enter
+        )
     }
     inputt <- as.matrix(tt$tt[is.element(ttrownms, subset.tt), seq(length(noflevels)), drop = FALSE])
     rownames(inputt) <- drop(inputt %*% mbase) + 1
@@ -249,15 +271,22 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
     output$negatives <- sort(drop((neg.matrix - 1) %*% mbase) + 1)
     rownms <- rownames(inputt)
     if (nrow(pos.matrix) == 0) {
-        cat(enter)
-        stop(simpleError(paste0("Nothing to explain. Please check the truth table.", enter, enter)))
+        admisc::stopError(
+            "Nothing to explain. Please check the truth table.",
+            enter
+        )
     }
     include <- admisc::trimstr(include)
     incl.rem <- is.element("?", include)
     if (nrow(neg.matrix) == 0 & incl.rem & !is.element("causalChain", names(dots))) { 
-        cat(enter)
-        stop(simpleError(paste0("All truth table configurations are used, all conditions are minimized.\n",
-                   "       Please check the truth table.", enter, enter)))
+        admisc::stopError(
+            paste(
+                "All truth table configurations are used, all conditions are minimized.",
+                "       Please check the truth table.",
+                sep = enter
+            ),
+            enter
+        )
     }
     expressions <- pos.matrix
     recdata[, conditions] <- as.data.frame(lapply(recdata[, conditions, drop = FALSE], function(x) {
@@ -285,7 +314,7 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
         expressions <- admisc::sortExpressions(expressions)
     }
     callist <- list(expressions=expressions, mv=mv, collapse=collapse, inputt=inputt, row.dom=row.dom,
-                    initial=rownms, all.sol=all.sol, indata=indata, curly=curly)
+                    initial=rownms, all.sol=all.sol, indata=indata, curly=curly, enter=enter)
     callist <- c(callist, dots)
     if (!incl.rem || (!is.null(dir.exp) & !identical(include, ""))) {
         if (pi.cons > 0) {
@@ -421,8 +450,10 @@ function(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
                 error <- listIC$sol.incl.cov[1, 1] < sol.cons
             }
             if (error) {
-                cat(enter)
-                stop(simpleError(paste("There are no solutions, given these constraints.", enter, enter)))
+                admisc::stopError(
+                    "There are no solutions, given these constraints.",
+                    enter
+                )
             }
         }
         listIC$options$show.cases <- show.cases

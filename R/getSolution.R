@@ -23,12 +23,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`getSolution` <-
-function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, curly, ...) {
+`getSolution` <- function(
+    expressions, mv, collapse, inputt, row.dom,
+    initial, all.sol, indata, curly, ...
+) {
     mtrx <- NULL
     sol.matrix <- NULL
     dots <- list(...)
-    enter <- ifelse (is.element("enter", names(dots)), dots$enter, TRUE)
+    enter <- ifelse (is.element("enter", names(dots)), dots$enter, "\n")
     pi.cons <- if (is.element("pi.cons", names(dots))) dots$pi.cons else 0
     outcome <- if (is.element("outcome", names(dots))) dots$outcome else ""
     complex <- FALSE
@@ -39,8 +41,10 @@ function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, c
             complex <- expressions[[4]]
         }
         if (is.null(sol.matrix)) {
-            if (enter) cat("\n")
-            stop(simpleError(paste("There are no solutions, given these constraints.", ifelse(enter, "\n\n", ""))))
+            admisc::stopError(
+                "There are no solutions, given these constraints.",
+                enter
+            )
         }
         expressions <- expressions[[1]]
         if (nrow(unique(expressions)) != nrow(expressions)) {
@@ -49,10 +53,23 @@ function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, c
             sol.matrix <- NULL
         }
     }
-    if (nrow(expressions) == 1 & identical(unique(as.vector(expressions)), 0L)) {
-        if (enter) cat("\n")
-        stop(simpleError(paste0("All truth table configurations are used, all conditions are minimized.\n",
-                "       Please check the truth table.", ifelse(enter, "\n\n", ""))))
+    if (
+        nrow(expressions) == 1 &&
+        identical(
+            unique(
+                as.vector(expressions)
+            ),
+            0L
+        )
+    ) {
+        admisc::stopError(
+            paste(
+                "All truth table configurations are used, all conditions are minimized.",
+                "       Please check the truth table.",
+                sep = "\n"
+            ),
+            enter
+        )
     }
     if (FALSE) {
         if (!missing(indata)) {
@@ -73,22 +90,51 @@ function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, c
             }
         }
     }
-    PI <- admisc::writePrimeimp(expressions, mv = mv, collapse = collapse, curly = curly)
+    PI <- admisc::writePrimeimp(
+        expressions,
+        mv = mv,
+        collapse = collapse,
+        curly = curly
+    )
     rownames(expressions) <- PI
     if (pi.cons > 0 & outcome != "") {
-        pofPI <- pof(paste(PI, collapse = " + "), outcome = indata[, dots$outcome], data = indata, relation = "sufficiency")
+        pofPI <- pof(
+            paste(
+                PI,
+                collapse = " + "
+            ),
+            outcome = indata[, dots$outcome],
+            data = indata,
+            relation = "sufficiency"
+        )
         inclS <- pofPI$incl.cov[seq(length(PI)), 1]
         filterPI <- admisc::agteb(inclS, pi.cons)
         expressions <- expressions[filterPI, , drop = FALSE]
         PI <- PI[filterPI]
-        mtrx <- makeChart(expressions, inputt, mv = mv, collapse = collapse, getSolution = TRUE, curly = curly)
+        mtrx <- makeChart(
+            expressions,
+            inputt,
+            mv = mv,
+            collapse = collapse,
+            getSolution = TRUE,
+            curly = curly
+        )
         if (any(colSums(mtrx) == 0)) {
-            if (enter) cat("\n")
-            stop(simpleError(paste("There are no solutions, given these constraints.", ifelse(enter, "\n\n", ""))))
+            admisc::stopError(
+                "There are no solutions, given these constraints.",
+                enter
+            )
         }
     }
     if (is.null(mtrx)) {
-        mtrx <- makeChart(expressions, inputt, mv = mv, collapse = collapse, getSolution = TRUE, curly = curly)
+        mtrx <- makeChart(
+            expressions,
+            inputt,
+            mv = mv,
+            collapse = collapse,
+            getSolution = TRUE,
+            curly = curly
+        )
     }
     else {
         rownames(mtrx) <- PI
@@ -124,5 +170,15 @@ function(expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, c
         solution.list <- NA
         solm <- NA
     }
-    return(list(expressions=expressions, mtrx=mtrx, reduced=reduced, all.PIs=all.PIs, solution.list=solution.list, sol.matrix=solm, complex = complex))
+    return(
+        list(
+            expressions = expressions,
+            mtrx = mtrx,
+            reduced = reduced,
+            all.PIs = all.PIs,
+            solution.list = solution.list,
+            sol.matrix = solm,
+            complex = complex
+        )
+    )
 }

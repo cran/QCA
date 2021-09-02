@@ -28,7 +28,14 @@ function(data, ordering = NULL, strict = FALSE, pi.cons = 0, pi.depth = 0,
         sol.cons = 0, sol.cov = 1, sol.depth = 0, ...) {
     metacall <- match.call(expand.dots = TRUE)
     allargs <- as.list(metacall)[-1]
-    allargs <- allargs[-which(is.element(c("data", "ordering", "strict"), names(allargs)))]
+    allargs <- allargs[
+        -which(
+            is.element(
+                c("data", "ordering", "strict"),
+                names(allargs)
+            )
+        )
+    ]
     sol.cons <- 1
     if (is.element("sol.cons", names(allargs))) {
         sol.cons <- allargs$sol.cons
@@ -38,7 +45,10 @@ function(data, ordering = NULL, strict = FALSE, pi.cons = 0, pi.depth = 0,
     if (is.element("pi.cons", names(allargs))) {
         pi.cons <- allargs$pi.cons
     }
-    if (any(c(pi.cons, sol.cons) < 1) & !is.element("incl.cut", names(allargs))) {
+    if (
+        any(c(pi.cons, sol.cons) < 1) & 
+        !is.element("incl.cut", names(allargs))
+    ) {
         allargs$incl.cut <- 0.5
     }
     verify.qca(data)
@@ -52,16 +62,18 @@ function(data, ordering = NULL, strict = FALSE, pi.cons = 0, pi.depth = 0,
         }
         else {
             if (any(grepl("<", ordering))) {
-                cat("\n")
-                stop(simpleError("Causal ordering character \"<\" requires a single string.\n\n"))
+                admisc::stopError(
+                    "Causal ordering character \"<\" requires a single string."
+                )
             }
         }
         ordering <- lapply(ordering, admisc::splitstr)
     }
     if (length(allout <- unlist(ordering)) > 0) {
         if (length(setdiff(allout, colnames(data))) > 0) {
-            cat("\n")
-            stop(simpleError("Some elements in the \"ordering\" argument not found in the data.\n\n"))
+            admisc::stopError(
+                "Some elements in the argument <ordering> not found in the data."
+            )
         }
     }
     allargs <- c(list(input = data), allargs)
@@ -83,14 +95,20 @@ function(data, ordering = NULL, strict = FALSE, pi.cons = 0, pi.depth = 0,
         allargs$SA <- FALSE
     }
     minimizeit <- function(allargs) {
-        return(tryCatch(do.call("minimize", allargs), error = function(e) NA))
+        return(
+            tryCatch(
+                do.call("minimize", allargs),
+                error = function(e) NA
+            )
+        )
     }
-    allargs$enter <- FALSE
+    allargs$enter <- ""
     minimize.list <- list()
     if (length(ordering) > 0) {
         if (any(table(unlist(ordering)) > 1)) {
-            cat("\n")
-            stop(simpleError("Same condition(s) in multiple ordering levels.\n\n"))
+            admisc::stopError(
+                "Same condition(s) in multiple ordering levels."
+            )
         }
         allcols <- colnames(data)
         if (length(restcols <- setdiff(allcols, unlist(ordering))) > 0) {
@@ -101,7 +119,7 @@ function(data, ordering = NULL, strict = FALSE, pi.cons = 0, pi.depth = 0,
             if (i == 1) {
                 if (!strict & length(nextcols) > 1) {
                     for (j in seq(length(nextcols))) {
-                        allargs$input <- data[, nextcols, drop = FALSE]
+                        allargs$input <- subset(data, select = nextcols)
                         if (mv[nextcols[j]]) {
                             uniqv <- sort(unique(data[, nextcols[j]]))
                             for (v in seq(noflevels[nextcols[j]] - 1)) {
@@ -128,7 +146,7 @@ function(data, ordering = NULL, strict = FALSE, pi.cons = 0, pi.depth = 0,
                         allcols <- c(restcols, nextcols)
                     }
                     allcols <- allcols[order(match(allcols, colnames(data)))]
-                    allargs$input <- data[, allcols, drop = FALSE]
+                    allargs$input <- subset(data, select = allcols)
                     if (mv[nextcols[j]]) {
                         uniqv <- sort(unique(data[, nextcols[j]]))
                         for (v in seq(noflevels[nextcols[j]] - 1)) {

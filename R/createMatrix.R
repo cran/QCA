@@ -25,24 +25,24 @@
 
 `createMatrix` <-
 function(noflevels = NULL, ...) {
-    other.args <- list(...)
+    dots <- list(...)
     RAM <- 2
-    if (is.element("RAM", names(other.args))) {
-        if (length(other.args$RAM) == 1) {
-            if (is.numeric(other.args$RAM) & other.args$RAM > 0) {
-                RAM <- other.args$RAM
+    if (is.element("RAM", names(dots))) {
+        if (length(dots$RAM) == 1) {
+            if (is.numeric(dots$RAM) & dots$RAM > 0) {
+                RAM <- dots$RAM
             }
         }
     }
     arrange <- FALSE
-    if (is.element("arrange", names(other.args))) {
-        arrange <- other.args$arrange
+    if (is.element("arrange", names(dots))) {
+        arrange <- dots$arrange
     }
     depth <- length(noflevels)
-    if (is.element("depth", names(other.args))) {
-        if (!is.null(other.args$depth)) {
-            if (is.numeric(other.args$depth)) {
-                depth <- other.args$depth
+    if (is.element("depth", names(dots))) {
+        if (!is.null(dots$depth)) {
+            if (is.numeric(dots$depth)) {
+                depth <- dots$depth
                 if (depth < length(noflevels)) {
                     arrange <- TRUE
                 }
@@ -50,20 +50,28 @@ function(noflevels = NULL, ...) {
         }
     }
     if (any(abs(noflevels) %% 1 > .Machine$double.eps ^ 0.5)) {
-        cat("\n")
-        stop(simpleError("The number of levels need to be integers."))
+        admisc::stopError(
+            "The number of levels must be integers."
+        )
     }
     if (!is.logical(arrange)) {
-        cat("\n")
-        stop(simpleError("The number of \"arrange\" should be logical."))
+        admisc::stopError(
+            "The argument <arrange> should be logical."
+        )
     }
     if (abs(depth) %% 1 > .Machine$double.eps ^ 0.5) {
-        cat("\n")
-        stop(simpleError("The argument depth has to be an integer number."))
+        admisc::stopError(
+            "The argument depth has to be an integer number."
+        )
     }
     if ((mem <- prod(noflevels) * length(levels) * 8 / 1024^3) > RAM) {
-        cat("\n")
-        stop(simpleError(paste("Too much memory needed (", round(mem, 1), " Gb) to create the matrix.", sep = "")))
+        admisc::stopError(
+            paste0(
+                "Too much memory needed (",
+                round(mem, 1),
+                " Gb) to create the matrix."
+            )
+        )
     }
     noflevels <- as.integer(abs(noflevels))
     arrange <- as.integer(arrange * 1)
@@ -75,8 +83,8 @@ function(noflevels = NULL, ...) {
         }
     }
     tosend <- list(noflevels, arrange, depth)
-    if (is.element("colnames", names(other.args))) {
-        colnms <- other.args$colnames
+    if (is.element("colnames", names(dots))) {
+        colnms <- dots$colnames
         if (is.character(colnms)) {
             if (length(colnms) == length(noflevels)) {
                 tosend <- c(tosend, list(colnms))

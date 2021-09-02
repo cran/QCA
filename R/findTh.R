@@ -25,9 +25,9 @@
 
 `findTh` <-
 function(x, n = 1, hclustm = "complete", distm = "euclidean", ...) {
-    other.args <- list(...)
-    if (is.element("groups", names(other.args))) {
-        n <- other.args$groups - 1
+    dots <- list(...)
+    if (is.element("groups", names(dots))) {
+        n <- dots$groups - 1
     }
     x <- sort(x)
     cutpoints <- cumsum(rle(cutree(hclust(dist(x, method = distm), method = hclustm), k = n + 1))[[1]])

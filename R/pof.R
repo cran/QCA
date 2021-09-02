@@ -28,16 +28,21 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
          inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...) {
     setms <- admisc::recreate(substitute(setms))
     outcome <- admisc::recreate(outcome)
-    funargs <- lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x))
-    other.args <- list(...)
+    funargs <- lapply(
+        lapply(match.call(), deparse)[-1],
+        function(x) gsub("\"|[[:space:]]", "", x)
+    )
+    dots <- list(...)
     funargs$outcome <- paste(funargs$outcome, collapse = "")
     if (is.null(setms)) {
-        cat("\n")
-        stop(simpleError("The \"setms\" argument is missing.\n\n"))
+        admisc::stopError(
+            "The argument <setms> is missing."
+        )
     }
     if (!(nec(relation) | suf(relation))) {
-        cat("\n")
-        stop(simpleError("The relation should be either \"necessity\" or \"sufficiency\".\n\n"))
+        admisc::stopError(
+            "The relation should be either \"necessity\" or \"sufficiency\"."
+        )
     }
     icp <- 0.75
     ica <- 0.5
@@ -49,19 +54,19 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         ica <- incl.cut[2]
     }
         neg.out <- FALSE
-        if (is.element("neg.out", names(other.args))) {
-            neg.out <- other.args$neg.out
+        if (is.element("neg.out", names(dots))) {
+            neg.out <- dots$neg.out
         }
-        if (is.element("incl.cut1", names(other.args)) & identical(icp, 0.75)) {
-            icp <- other.args$incl.cut1
+        if (is.element("incl.cut1", names(dots)) & identical(icp, 0.75)) {
+            icp <- dots$incl.cut1
         }
-        if (is.element("incl.cut0", names(other.args)) & identical(ica, 0.5)) {
-            ica <- other.args$incl.cut0
+        if (is.element("incl.cut0", names(dots)) & identical(ica, 0.5)) {
+            ica <- dots$incl.cut0
         }
     complete <- FALSE
-    if (is.element("complete", names(other.args))) {
-        if (is.logical(other.args$complete)) {
-            complete <- other.args$complete
+    if (is.element("complete", names(dots))) {
+        if (is.logical(dots$complete)) {
+            complete <- dots$complete
         }
     }
     if (!is.null(data)) {
@@ -75,9 +80,9 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
                 }
             }
         }
-        if (is.element("minimize", names(other.args))) {
-            if (is.element("use.letters", names(other.args))) {
-                if (other.args$use.letters) {
+        if (is.element("minimize", names(dots))) {
+            if (is.element("use.letters", names(dots))) {
+                if (dots$use.letters) {
                     colnames(data)[seq(1, ncol(data) - 1)] <- LETTERS[seq(1, ncol(data) - 1)]
                 }
             }
@@ -87,8 +92,9 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
     condnegated <- outnegated <- FALSE
     `extract` <- function(x, snames = "", data = NULL) {
         if (grepl("<=>|<->", x)) {
-            cat("\n")
-            stop(simpleError("Incorrect expression: relation can be either necessity or sufficiency.\n\n"))
+            admisc::stopError(
+                "Incorrect expression: relation can be either necessity or sufficiency."
+            )
         }
         multivalue <- grepl("\\{|\\}|\\[|\\]", x)
         relation <- ifelse(grepl("=|-", x), ifelse(grepl("=>|->", x), "suf", "nec"), NA)
@@ -96,8 +102,9 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         x <- unlist(strsplit(x, split = "@"))
         if (grepl("\\+|\\*", x[2])) {
             if (grepl("\\+|\\*", x[1])) {
-                cat("\n")
-                stop(simpleError("Incorrect output in the right hand side.\n\n"))
+                admisc::stopError(
+                    "Incorrect output in the right hand side."
+                )
             }
             x <- rev(x)
             if (relation == "nec") {
@@ -131,12 +138,14 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
     addexpression <- FALSE
     if (is.element("character", class(setms))) {
         if (missing(data)) {
-            cat("\n")
-            stop(simpleError("The data argument is missing, with no default.\n\n"))
+            admisc::stopError(
+                "The data argument is missing, with no default."
+            )
         }
         if (length(setms) > 1) {
-            cat("\n")
-            stop(simpleError("Only one expression allowed.\n\n"))
+            admisc::stopError(
+                "Only one expression allowed."
+            )
         }
         toverify <- extract(setms, data = data)
         if (!is.na(toverify$relation)) {
@@ -145,23 +154,56 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         conditions <- colnames(toverify$condmtrx)
         if (is.na(toverify$outmtrx)) {
             if (missing(outcome)) {
-                cat("\n")
-                stop(simpleError("Expression without outcome.\n\n"))
+                admisc::stopError(
+                    "Expression without outcome."
+                )
             }
-            temp <- subset(data, select = which(is.element(colnames(data), conditions)))
+            temp <- subset(
+                data,
+                select = which(
+                    is.element(
+                        colnames(data),
+                        conditions
+                    )
+                )
+            )
             verify.qca(temp)
-            setms <- admisc::compute(toverify$expression, data = temp, separate = TRUE)
+            setms <- admisc::compute(
+                toverify$expression,
+                data = temp,
+                separate = TRUE
+            )
             funargs$setms <- toverify$expression
         }
         else {
             outcomename <- colnames(toverify$outmtrx)[1]
-            temp <- subset(data, select = which(is.element(colnames(data), c(conditions, outcomename))))
+            temp <- subset(
+                data,
+                select = which(
+                    is.element(
+                        colnames(data),
+                        c(conditions, outcomename)
+                    )
+                )
+            )
             verify.qca(temp)
             setms <- admisc::compute(toverify$expression, data = temp, separate = TRUE)
-            funargs$setms <- paste(paste(unlist(toverify$expression), collapse = "+"),
-                                    ifelse(toverify$relation == "suf", "->", "<-"),
-                                    rownames(toverify$outmtrx))
-            outcome <- admisc::compute(rownames(toverify$outmtrx)[1], data = temp) 
+            funargs$setms <- paste(
+                paste(
+                    unlist(toverify$expression),
+                    collapse = "+"
+                ),
+                ifelse(
+                    toverify$relation == "suf",
+                    "->",
+                    "<-"
+                ),
+                rownames(toverify$outmtrx)
+            )
+            outcome <- admisc::compute(
+                rownames(toverify$outmtrx)[1], 
+                data = temp
+            )
             checkoutcome <- FALSE
         }
         if (is.vector(setms)) {
@@ -169,7 +211,7 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             colnames(setms) <- toverify$expression
         }
         rownames(setms) <- rownames(data)
-        if (!is.element("minimize", names(other.args)) & ncol(setms) > 1) {
+        if (!is.element("minimize", names(dots)) & ncol(setms) > 1) {
             addexpression <- TRUE
         }
     }
@@ -180,8 +222,9 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
     }
     if (checkoutcome) {
         if (missing(outcome)) {
-            cat("\n")
-            stop(simpleError("Outcome is missing, with no default.\n\n"))
+            admisc::stopError(
+                "Outcome is missing, with no default."
+            )
         }
         if (is.element("character", class(outcome))) {
             if (grepl("\\+|\\*", outcome)) {
@@ -205,14 +248,18 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
                 }
             }
             if (is.null(data)) {
-                cat("\n")
-                stop(simpleError("The data argument is missing, with no default.\n\n"))
+                admisc::stopError(
+                    "The data argument is missing, with no default."
+                )
             }
             if (!is.element(outcomename, colnames(data))) {
-                cat("\n")
-                stop(simpleError("Outcome not found in the data.\n\n"))
+                admisc::stopError(
+                    "Outcome not found in the data."
+                )
             }
-            verify.qca(data[, which(colnames(data) == outcomename), drop = FALSE])
+            verify.qca(
+                data[, which(colnames(data) == outcomename), drop = FALSE]
+            )
             outcome <- admisc::compute(outcome, data = data)
             if (outnegated) {
                 outcome <- 1 - outcome
@@ -238,8 +285,13 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         verify.qca(outcome)
     }
     else {
-        cat("\n")
-        stop(simpleError("The outcome should be either a column name in a dataset\n       or a vector of set membership values.\n\n"))
+        admisc::stopError(
+            paste(
+                "The outcome should be either a column name in a dataset",
+                "       or a vector of set membership values.",
+                sep = "\n"
+            )
+        )
     }
     if (identical(substr(funargs$setms, 1, 2), "1-")) {
         condnegated <- !condnegated
@@ -299,12 +351,14 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         }
     }
     else {
-        cat("\n")
-        stop(simpleError("The \"setms\" argument is not standard.\n\n"))
+        admisc::stopError(
+            "The argument <setms> is not standard."
+        )
     }
     if (any(na.omit(cbind(setms, outcome) > 1))) {
-        cat("\n")
-        stop(simpleError("Set membership scores should be numbers between 0 and 1.\n\n"))
+        admisc::stopError(
+            "Set membership scores should be numbers between 0 and 1."
+        )
     }
     notmiss <- apply(cbind(setms, outcome), 1, function(x) !any(is.na(x)))
     outcome <- outcome[notmiss]
@@ -371,17 +425,17 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         }
     }
     rownames(result.list$incl.cov) <- colnms
-    if (is.element("show.cases", names(other.args))) {
-        if (other.args$show.cases) {
-            result.list$incl.cov <- cbind(result.list$incl.cov, cases = other.args$cases, stringsAsFactors = FALSE)
+    if (is.element("show.cases", names(dots))) {
+        if (dots$show.cases) {
+            result.list$incl.cov <- cbind(result.list$incl.cov, cases = dots$cases, stringsAsFactors = FALSE)
         }
     }
-    if (is.element("minimize", names(other.args))) {
+    if (is.element("minimize", names(dots))) {
         result.list$pims <- as.data.frame(setms)
         result.list$sol.incl.cov <- incl.cov[nrow(incl.cov), 1:3]
     }
-    if (is.element("solution.list", names(other.args))) {
-        solution.list <- other.args$solution.list
+    if (is.element("solution.list", names(dots))) {
+        solution.list <- dots$solution.list
         length.solution <- length(solution.list)
         individual <- vector("list", length = length.solution)
         for (i in seq(length.solution)) {
@@ -409,7 +463,7 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         return(structure(list(
             overall = result.list,
             individual = individual,
-            essential = other.args$essential,
+            essential = dots$essential,
             pims = as.data.frame(setms),
             relation = relation,
             options = c(
@@ -420,18 +474,20 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
                     inf.test = inf.test,
                     incl.cut = incl.cut,
                     add = add),
-                other.args)
+                dots)
             ), class = "QCA_pof"))
     }
     if (!is.null(add)) {
         if (!(is.list(add) | is.function(add))) {
-            cat("\n")
-            stop(simpleError("The argument \"add\" should be a function or a list of functions.\n\n"))
+            admisc::stopError(
+                "The argument <add> should be a function or a list of functions."
+            )
         }
         if (is.list(add)) {
             if (!all(unlist(lapply(add, is.function)))) {
-                cat("\n")
-                stop(simpleError("Components from the list argument \"add\" should be functions.\n\n"))
+                admisc::stopError(
+                    "Components from the list argument <add> should be functions."
+                )
             }
             toadd <- matrix(nrow = nrow(incl.cov), ncol = length(add))
             if (is.null(names(add))) {
@@ -442,7 +498,12 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             }
             colnames(toadd) <- substr(names(add), 1, 5)
             for (i in seq(length(add))) {
-                coltoadd <- apply(cbind(setms, fuzzyor(setms)), 2, add[[i]], outcome)
+                coltoadd <- apply(
+                    cbind(setms, fuzzyor(setms)),
+                    2,
+                    add[[i]],
+                    outcome
+                )
                 if (ncol(setms) == 1) {
                     coltoadd <- coltoadd[1]
                 }
@@ -471,6 +532,6 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             inf.test = inf.test,
             incl.cut = incl.cut,
             add = add),
-        other.args)
+        dots)
     return(structure(result.list, class = "QCA_pof"))
 }

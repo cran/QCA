@@ -26,13 +26,18 @@
 `calibrate` <-
 function (x, type = "fuzzy", method = "direct", thresholds = NA,
           logistic = TRUE, idm = 0.95, ecdf = FALSE, below = 1, above = 1, ...) {
-    other.args <- list(...)
-    funargs <- lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x))
-    if (is.element("q", names(other.args))) {
-        above <- other.args$q
+    dots <- list(...)
+    funargs <- lapply(
+        lapply(
+            match.call(), deparse
+        )[-1],
+        function(x) gsub("\"|[[:space:]]", "", x)
+    )
+    if (is.element("q", names(dots))) {
+        above <- dots$q
     }
-    if (is.element("p", names(other.args))) {
-        below <- other.args$p
+    if (is.element("p", names(dots))) {
+        below <- dots$p
     }
     if (admisc::possibleNumeric(x)) {
         x <- admisc::asNumeric(x) 
@@ -40,24 +45,25 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
     else {
         if (grepl("[$]", funargs$x) & is.null(x)) {
             x <- unlist(strsplit(funargs$x, split = "\\$"))
-            cat("\n")
-            stop(simpleError(sprintf("There is no column \"%s\" in the dataframe %s.\n\n", x[2], x[1])))
+            admisc::stopError(
+                sprintf(
+                    "There is no column \"%s\" in the dataframe %s.",
+                    x[2],
+                    x[1]
+                )
+            )
         }
-        cat("\n")
-        stop(simpleError("The input is not numeric.\n\n"))
+        admisc::stopError("The input is not numeric.")
     }
     if (!is.element(type, c("crisp", "fuzzy"))) {
-        cat("\n")
-        stop(simpleError("Incorrect calibration type.\n\n"))
+        admisc::stopError("Incorrect calibration type.")
     }
     if (!is.element(method, c("direct", "indirect", "TFR"))) {
-        cat("\n")
-        stop(simpleError("Incorrect calibration method.\n\n"))
+        admisc::stopError("Incorrect calibration method.")
     }
     if (method != "TFR") {
         if(all(is.na(thresholds))) {
-            cat("\n")
-            stop(simpleError("Threshold value(s) not specified.\n\n"))
+            admisc::stopError("Threshold value(s) not specified.")
         }
         if (is.character(thresholds) & length(thresholds) == 1) {
             thresholds <- admisc::splitstr(thresholds)
@@ -71,18 +77,19 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
             names(thresholds) <- nmsths
         }
         else {
-            cat("\n")
-            stop(simpleError("Thresholds must be numeric.\n\n"))
+            admisc::stopError("Thresholds must be numeric.")
         }
     }
     if (type == "crisp") {
         if (any(thresholds < min(x) | thresholds > max(x))) {
-            cat("\n")
-            stop(simpleError("Threshold value(s) outside the range of x.\n\n"))
+            admisc::stopError(
+                "Threshold value(s) outside the range of x."
+            )
         }
         if (!is.null(names(thresholds))) {
-            cat("\n")
-            stop(simpleError("Named thresholds require fuzzy type calibration.\n\n"))
+            admisc::stopError(
+                "Named thresholds require fuzzy type calibration."
+            )
         }
         thresholds <- sort(thresholds)
         return(findInterval(x, thresholds))
@@ -97,12 +104,14 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
         nth <- names(thresholds)
         if (method == "direct") {
             if (lth != 3 & lth != 6) {
-                cat("\n")
-                stop(simpleError("For fuzzy direct calibration, there should be either 3 or 6 thresholds\".\n\n"))
+                admisc::stopError(
+                    "For fuzzy direct calibration, there should be either 3 or 6 thresholds."
+                )
             }
             if (idm <= 0.5 | idm >= 1) {
-                cat("\n")
-                stop(simpleError("The inclusion degree of membership has to be bigger than 0.5 and less than 1.\n\n"))
+                admisc::stopError(
+                    "The inclusion degree of membership has to be bigger than 0.5 and less than 1."
+                )
             }
             if (lth == 3) {
                 if (!is.null(names(thresholds))) {
@@ -128,11 +137,15 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
                 else {
                     if (any(table(c(thEX, thCR, thIN)) > 1)) {
                         cat("\n")
-                        warning(simpleWarning("Some thresholds equal, that should not be equal.\n\n"))
+                        warning(
+                            simpleWarning("Some thresholds equal, that should not be equal.\n\n"),
+                            .call = FALSE
+                        )
                     }
                     if (above <= 0 | below <= 0) {
-                        cat("\n")
-                        stop(simpleError("Arguments \"above\" and \"below\" should be positive.\n\n"))
+                        admisc::stopError(
+                            "Arguments <above> and <below> should be positive."
+                        )
                     }
                     increasing <- TRUE
                     if (thIN < thCR & thCR < thEX) {
@@ -190,8 +203,18 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
             }
             else { 
                 if (!is.null(nth)) {
-                    if (length(unique(nth)) == sum(is.element(nth, c("e1", "c1", "i1", "i2", "c2", "e2")))) {
-                        thresholds <- thresholds[match(c("e1", "c1", "i1", "i2", "c2", "e2"), nth)]
+                    if (length(unique(nth)) == sum(
+                        is.element(
+                            nth,
+                            c("e1", "c1", "i1", "i2", "c2", "e2")
+                        )
+                    )) {
+                        thresholds <- thresholds[
+                            match(
+                                c("e1", "c1", "i1", "i2", "c2", "e2"),
+                                nth
+                            )
+                        ]
                     }
                 }
                 thresholds <- as.vector(thresholds)
@@ -202,19 +225,35 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
                 thCR2 <- thresholds[5]
                 thEX2 <- thresholds[6]
                 if (thCR1 < min(thEX1, thIN1) | thCR1 > max(thEX1, thIN1)) {
-                    cat("\n")
-                    stop(simpleError("First crossover threshold not between first exclusion and inclusion thresholds.\n\n"))
+                    admisc::stopError(
+                        "First crossover threshold not between first exclusion and inclusion thresholds."
+                    )
                 }
                 if (thCR2 < min(thEX2, thIN2) | thCR2 > max(thEX2, thIN2)) {
-                    cat("\n")
-                    stop(simpleError("Second crossover threshold not between second exclusion and inclusion thresholds.\n\n"))
+                    admisc::stopError(
+                        "Second crossover threshold not between second exclusion and inclusion thresholds."
+                    )
                 }
                 somequal <- FALSE
-                if (any(table(c(thEX1, thCR1, thIN1)) > 1) | any(table(c(thIN2, thCR2, thEX2)) > 1) | thCR1 == thCR2) {
+                if (
+                    any(
+                        table(c(thEX1, thCR1, thIN1)) > 1
+                    ) |
+                    any(
+                        table(c(thIN2, thCR2, thEX2)) > 1
+                    ) |
+                    thCR1 == thCR2
+                ) {
                     somequal <- TRUE
                 }  
                 increasing <- TRUE
-                if (thIN1 < thCR1 & thCR1 < thEX1 & thEX1 <= thEX2 & thEX2 < thCR2 & thCR2 < thIN2) {
+                if (
+                    thIN1 < thCR1 &
+                    thCR1 < thEX1 &
+                    thEX1 <= thEX2 &
+                    thEX2 < thCR2 &
+                    thCR2 < thIN2
+                ) {
                     increasing <- FALSE
                 }
                 if (increasing) {
@@ -228,12 +267,14 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
                     }
                 }
                 if (somequal) {
-                    cat("\n")
-                    stop(simpleError("Some thresholds equal, that should not be equal.\n\n"))
+                    admisc::stopError(
+                        "Some thresholds equal, that should not be equal."
+                    )
                 }
                 if (above <= 0 | below <= 0) {
-                    cat("\n")
-                    stop(simpleError("Arguments \"above\" and \"below\" should be positive.\n\n"))
+                    admisc::stopError(
+                        "Arguments <above> and <below> should be positive."
+                    )
                 }
                 fs <- rep(NA, length(x))
                 for (i in seq(length(x))) {
@@ -297,8 +338,16 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
                 y[x > thresholds[i]] = values[i + 1]
             }
             x[x == 0] <- 0.00001
-            fracpol <- glm(y ~ log(x) + I(x^(1/2)) + I(x^1) + I(x^2), family = quasibinomial(logit))
-            fs <- round(unname(predict(fracpol, type = "response")), 6)
+            fracpol <- glm(
+                y ~ log(x) + I(x^(1/2)) + I(x^1) + I(x^2),
+                family = quasibinomial(logit)
+            )
+            fs <- round(
+                unname(
+                    predict(fracpol, type = "response")
+                ),
+                6
+            )
             fs[fs < 0.0001] <- 0
             fs[fs > 0.9999] <- 1
             return(fs)

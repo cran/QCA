@@ -25,22 +25,18 @@
 
 complexity <- function(n, layers = NULL, noflevels = NULL) {
     if (!is.numeric(n)) {
-        cat("\n")
-        stop(simpleError("Argument \"n\" should be numeric.\n\n"))
+        admisc::stopError("Argument <n> should be numeric.")
     }
     if (length(n) != 1L) {
-        cat("\n")
-        stop(simpleError("Argument \"n\" should be a scalar of length 1.\n\n"))
+        admisc::stopError("Argument <n> should be a scalar of length 1.")
     }
     if (n < 0) {
-        cat("\n")
-        stop(simpleError("Argument \"n\" should be positive.\n\n"))
+        admisc::stopError("Argument <n> should be positive.")
     }
     if (is.null(noflevels)) noflevels <- rep(2, n)
     if (is.null(layers)) layers <- seq(n)
     if (any(layers > n)) {
-        cat("\n")
-        stop(simpleError("Argument \"layers\" cannot be greater than \"n\".\n\n"))
+        admisc::stopError("Argument <layers> cannot be greater than <n>.")
     }
     sumk <- .Call("C_omplexity", list(as.integer(n), as.integer(layers), as.integer(noflevels)), PACKAGE = "QCA")
     sumk[sumk < 0] <- Inf

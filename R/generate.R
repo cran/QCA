@@ -28,8 +28,9 @@
     snames <- admisc::recreate(substitute(snames))
     suf <- grepl("=>|->", expression)
     if (grepl("<=|<-", expression) & !suf) {
-        cat("\n")
-        stop(simpleError("Invalid expression, relation should (also) indicate sufficiency.\n\n"))
+        admisc::stopError(
+            "Invalid expression, relation should (also) indicate sufficiency."
+        )
     }
     if (!is.null(noflevels)) {
         if (is.character(noflevels) & length(noflevels) == 1) {
@@ -39,7 +40,16 @@
     outcome <- ""
     if (suf) {
         necsuf <- grepl("<=>|<->", expression)
-        expression <- unlist(strsplit(expression, split = ifelse(necsuf, "<=>|<->", "->|=>")))
+        expression <- unlist(
+            strsplit(
+                expression,
+                split = ifelse(
+                    necsuf,
+                    "<=>|<->",
+                    "->|=>"
+                )
+            )
+        )
         outcome <- trimstr(expression[2])
         expression <- trimstr(expression[1])
     }

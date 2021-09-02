@@ -29,9 +29,17 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
     outcome <- admisc::recreate(substitute(outcome))
     conditions <- admisc::recreate(substitute(conditions))
     type <- admisc::recreate(substitute(type))
-    if (any(grepl("\\{|\\[", c(outcome, conditions)))) {
-        cat("\n")
-        stop(simpleError("Only binary data allowed.\n\n"))
+    if (
+        any(
+            grepl(
+                "\\{|\\[",
+                c(outcome, conditions)
+            )
+        )
+    ) {
+        admisc::stopError(
+            "Only binary data allowed."
+        )
     }
     nms <- colnames(data)
     if (identical(conditions, "")) {
@@ -42,19 +50,22 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
         if (length(conditions) == 1 & any(grepl(":", conditions))) {
             cs <- unlist(strsplit(conditions, split = ":"))
             if (!all(is.element(conditions, nms))) {
-                cat("\n")
-                stop(simpleError("Conditions from sequence not found in the data.\n\n"))
+                admisc::stopError(
+                    "Conditions from sequence not found in the data."
+                )
             }
             conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
         }
         if (!all(is.element(conditions, nms))) {
-            cat("\n")
-            stop(simpleError("Conditions not found in the data.\n\n"))
+            admisc::stopError(
+                "Conditions not found in the data."
+            )
         }
     }
     if (!is.element(outcome, nms)) {
-        cat("\n")
-        stop(simpleError("Outcome not found in the data.\n\n"))
+        admisc::stopError(
+            "Outcome not found in the data."
+        )
     }
     data <- data[, c(conditions, outcome)]
     udata <- unique(data[, conditions])

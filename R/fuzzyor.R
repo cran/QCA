@@ -24,11 +24,16 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `fuzzyor` <- function(..., na.rm = FALSE) {
-    funargs <- unlist(lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x)))
+    funargs <- unlist(
+        lapply(
+            lapply(match.call(), deparse)[-1],
+            function(x) gsub("\"|[[:space:]]", "", x)
+        )
+    )
     if (!is.na(rem <- match("na.rm", names(funargs)))) {
         funargs <- funargs[-rem]
     }
-    other.args <- vector(mode = "list", length = length(funargs))
+    dots <- vector(mode = "list", length = length(funargs))
     funargs <- gsub(rawToChar(as.raw(c(226, 128, 147))), "-", funargs)
     negated <- grepl("1-", funargs)
     funargs <- gsub("1-", "", funargs)
@@ -48,69 +53,107 @@
         }
     }
     for (i in seq(length(funargs))) {
-        tc <- tryCatch(eval.parent(parse(text = funargs[i])), error = function(e) e, warning = function(w) w)
+        tc <- tryCatch(
+            eval.parent(
+                parse(text = funargs[i])
+            ),
+            error = function(e) e,
+            warning = function(w) w
+        )
         if (is.function(tc) | inherits(tc, "error")) {
-            cat("\n")
-            stop(simpleError(sprintf("Object '%s' not found.\n\n", funargs[i])))
+            admisc::stopError(sprintf(
+                "Object '%s' not found.", funargs[i])
+            )
         }
         else {
-            other.args[[i]] <- eval.parent(parse(text = funargs[i]), n = 1)
+            dots[[i]] <- eval.parent(parse(text = funargs[i]), n = 1)
         }
     }
-    if (is.element("name", names(attributes(other.args[[1]])))) {
-        other.args[[1]] <- as.vector(other.args[[1]])
+    if (is.element("name", names(attributes(dots[[1]])))) {
+        dots[[1]] <- as.vector(dots[[1]])
     }
-    if (is.vector(other.args[[1]])) {
-        if (any(!unlist(lapply(other.args, function(x) is.numeric(x) | is.logical(x))))) {
-            cat("\n")
-            stop(simpleError("Input vectors should be numeric or logical.\n\n"))
+    if (is.vector(dots[[1]])) {
+        if (
+            any(
+                !unlist(
+                    lapply(
+                        dots,
+                        function(x) is.numeric(x) | is.logical(x)
+                    )
+                )
+            )
+        ) {
+            admisc::stopError(
+                "Input vectors should be numeric or logical."
+            )
         }
-        other.args <- as.data.frame(other.args)
+        dots <- as.data.frame(dots)
     }
-    else if (is.matrix(other.args[[1]])) {
-        other.args <- other.args[[1]]
-        if (is.null(colnames(other.args))) {
-            if (ncol(other.args) > length(LETTERS)) {
-                cols <- paste("X", seq(ncol(other.args)), sep = "")
+    else if (is.matrix(dots[[1]])) {
+        dots <- dots[[1]]
+        if (is.null(colnames(dots))) {
+            if (ncol(dots) > length(LETTERS)) {
+                cols <- paste("X", seq(ncol(dots)), sep = "")
             }
             else {
-                cols <- LETTERS[seq(ncol(other.args))]
+                cols <- LETTERS[seq(ncol(dots))]
             }
         }
-        other.args <- as.data.frame(other.args)
-        negated <- logical(ncol(other.args))
-        tildenegated <- logical(ncol(other.args))
-        if (!all(unlist(lapply(other.args, function(x) is.numeric(x) | is.logical(x))))) {
-            cat("\n")
-            stop(simpleError("Input should be numeric or logical.\n\n"))
+        dots <- as.data.frame(dots)
+        negated <- logical(ncol(dots))
+        tildenegated <- logical(ncol(dots))
+        if (
+            !all(
+                unlist(
+                    lapply(
+                        dots,
+                        function(x) is.numeric(x) | is.logical(x)
+                    )
+                )
+            )
+        ) {
+            admisc::stopError(
+                "Input should be numeric or logical."
+            )
         }
     }
-    else if (is.data.frame(other.args[[1]])) {
-        other.args <- other.args[[1]]
-        negated <- logical(ncol(other.args))
-        tildenegated <- logical(ncol(other.args))
-        cols <- colnames(other.args)
-        if (!all(unlist(lapply(other.args, function(x) is.numeric(x) | is.logical(x))))) {
-            cat("\n")
-            stop(simpleError("Some columns are not numeric or logical.\n\n"))
+    else if (is.data.frame(dots[[1]])) {
+        dots <- dots[[1]]
+        negated <- logical(ncol(dots))
+        tildenegated <- logical(ncol(dots))
+        cols <- colnames(dots)
+        if (
+            !all(
+                unlist(
+                    lapply(
+                        dots,
+                        function(x) is.numeric(x) | is.logical(x)
+                    )
+                )
+            )
+        ) {
+            admisc::stopError(
+                "Some columns are not numeric or logical."
+            )
         }
     }
     else {
-        cat("\n")
-        stop(simpleError("The input should be vectors, or a matrix or a dataframe.\n\n"))
+        admisc::stopError(
+            "The input should be vectors, or a matrix or a dataframe."
+        )
     }
     for (i in seq(length(cols))) {
         if (tildenegated[i]) {
-            other.args[[i]] <- 1 - other.args[[i]]
+            dots[[i]] <- 1 - dots[[i]]
         }
         if (negated[i]) {
-            other.args[[i]] <- 1 - other.args[[i]]
+            dots[[i]] <- 1 - dots[[i]]
         }
         if (negated[i] + tildenegated[i] == 1) {
             cols[i] <- paste("~", cols[i], sep = "")
         }
     }
-    result <- apply(other.args, 1, max, na.rm = na.rm)
+    result <- apply(dots, 1, max, na.rm = na.rm)
     attr(result, "names") <- NULL
     attr(result, "name") <- paste(cols, collapse = " + ")
     class(result) <- c("numeric", "QCA_fuzzy")

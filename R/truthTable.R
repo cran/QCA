@@ -57,8 +57,9 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     initialcols <- colnames(data)
     outcome <- admisc::recreate(substitute(outcome), colnames(data))
     if (length(admisc::splitstr(outcome)) > 1) {
-        cat("\n")
-        stop(simpleError(paste0("Only one outcome is allowed.", ifelse(enter, "\n\n", ""))))
+        admisc::stopError(
+            "Only one outcome is allowed."
+        )
     }
     outcome.copy <- outcome
     initial.data <- as.data.frame(data) 
@@ -82,8 +83,9 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
             data[, admisc::notilde(outcome)] <- is.element(data[, admisc::notilde(outcome)], admisc::splitstr(outcome.value)) * 1
         }
         else if (!is.element(testoutcome, colnames(data))) {
-            cat("\n")
-            stop(simpleError(paste0("Inexisting outcome name.", ifelse(enter, "\n\n", ""))))
+            admisc::stopError(
+                "Inexisting outcome name."
+            )
         }
     }
     conditions <- admisc::recreate(substitute(conditions), colnames(data))
@@ -94,8 +96,9 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
             conditions <- admisc::splitstr(conditions)
     }
     if (length(conditions) > 30) {
-        cat("\n")
-        stop(simpleError(paste0("Impossible to run a QCA analysis with so many conditions.", ifelse(enter, "\n\n", ""))))
+        admisc::stopError(
+            "Impossible to run a QCA analysis with so many conditions."
+        )
     }
     if (is.character(sort.by) & length(sort.by) == 1 & !identical(sort.by, "")) {
         sort.by <- admisc::splitstr(sort.by)
@@ -112,8 +115,9 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     }
     if (is.matrix(data)) {
         if (is.null(colnames(data))) {
-            cat("\n")
-            stop(simpleError(paste0("The data should have column names.", ifelse(enter, "\n\n", ""))))
+            admisc::stopError(
+                "The data should have column names."
+            )
         }
         if (any(duplicated(rownames(data)))) {
             rownames(data) <- seq(nrow(data))
@@ -126,7 +130,15 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         }
         initial.data <- data
     }
-    verify.tt(data, admisc::notilde(outcome), conditions, complete, show.cases, ic1, ic0, inf.test)
+    verify.tt(
+        data, admisc::notilde(outcome),
+        conditions,
+        complete,
+        show.cases,
+        ic1,
+        ic0,
+        inf.test
+    )
     if (length(conditions) == 1) {
         if (grepl(":", conditions)) {
             nms <- colnames(data)
@@ -153,10 +165,18 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     condata <- data[, conditions, drop = FALSE]
     if (any(fuzzy.cc)) {
         if (any(data[, conditions[fuzzy.cc]] == 0.5)) {
-            cat("\n")
-            warning("Fuzzy causal conditions should not have values of 0.5 in the data.\n")
+            warning(
+                paste0(
+                    "\n",
+                    "Fuzzy causal conditions should not have values of 0.5 in the data.",
+                    "\n\n"
+                )
+            )
         }
-        condata[, fuzzy.cc] <- lapply(condata[, fuzzy.cc, drop = FALSE], function(x) as.numeric(x > 0.5))
+        condata[, fuzzy.cc] <- lapply(
+            condata[, fuzzy.cc, drop = FALSE], 
+            function(x) as.numeric(x > 0.5)
+        )
     }
     mbase <- c(rev(cumprod(rev(noflevels))), 1)[-1]
     line.data <- as.vector(as.matrix(condata) %*% mbase) + 1
@@ -165,35 +185,56 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     tt <- condata[uniq, , drop = FALSE]
     rownstt <- sort(line.data)[uniq]
     rownames(tt) <- rownstt
-    ipc <- .Call("C_truthTable", as.matrix(data[, conditions]), data[, outcome], as.matrix(tt), as.numeric(fuzzy.cc), PACKAGE = "QCA")
+    ipc <- .Call(
+        "C_truthTable",
+        as.matrix(data[, conditions]),
+        data[, outcome],
+        as.matrix(tt),
+        as.numeric(fuzzy.cc),
+        PACKAGE = "QCA"
+    )
     colnames(ipc) <- rownstt
     minmat <- ipc[seq(4, nrow(ipc)), , drop = FALSE]
     ipc <- ipc[1:3, , drop = FALSE]
     rownames(minmat) <- rownames(data)
     rownames(ipc) <- c("n", "incl", "PRI")
-    oremove <- ipc[1, ] < n.cut 
-    if (sum(!oremove) == 0) {
-        cat("\n")
-        stop(simpleError(paste0("There are no configurations, using these cutoff values.", ifelse(enter, "\n\n", ""))))
+    obremove <- ipc[1, ] < n.cut 
+    if (sum(!obremove) == 0) {
+        admisc::stopError(
+            "There are no configurations, using these cutoff values."
+        )
     }
     tt$OUT <- "?"
-    tt$OUT[!oremove] <- 1 * (admisc::agteb(ipc[2, !oremove], ic1) & admisc::agteb(ipc[3, !oremove], pri.cut))
-    tt$OUT[ipc[2, !oremove] < ic1 & admisc::agteb(ipc[2, !oremove], ic0)] <- "C"
+    tt$OUT[!obremove] <- 1 * (
+        admisc::agteb(ipc[2, !obremove], ic1) & 
+        admisc::agteb(ipc[3, !obremove], pri.cut)
+    )
+    tt$OUT[ipc[2, !obremove] < ic1 & admisc::agteb(ipc[2, !obremove], ic0)] <- "C"
     tt <- cbind(tt, t(ipc))
-    zero.five <- apply(data[, conditions, drop = FALSE], 1, function(x) any(admisc::aeqb(x, 0.5)))
+    zero.five <- apply(
+        data[, conditions, drop = FALSE],
+        1,
+        function(x) any(admisc::aeqb(x, 0.5))
+    )
     cases <- sapply(rownstt, function(x) {
         paste(rownames(data)[line.data == x & !zero.five], collapse = ",")
     })
     DCC <- apply(minmat, 2, function(x) {
         paste(rownames(data)[x > 0.5 & data[, outcome] < 0.5], collapse = ",")
     })
-    casesexcl <- cases[oremove]
-    rownstt <- rownstt[!oremove]
-    cases <- cases[!oremove]
-    DCC <- DCC[!oremove]
-    removed <- tt[oremove, , drop = FALSE]
-    removed$OUT <- 1 * (admisc::agteb(ipc[2, oremove], ic1) & admisc::agteb(ipc[3, oremove], pri.cut))
-    removed$OUT[ipc[2, oremove] < ic1 & admisc::agteb(ipc[2, oremove], ic0)]  <- "C"
+    casesexcl <- cases[obremove]
+    rownstt <- rownstt[!obremove]
+    cases <- cases[!obremove]
+    DCC <- DCC[!obremove]
+    removed <- tt[obremove, , drop = FALSE]
+    removed$OUT <- 1 * (
+        admisc::agteb(ipc[2, obremove], ic1) &
+        admisc::agteb(ipc[3, obremove], pri.cut)
+    )
+    removed$OUT[
+        ipc[2, obremove] < ic1 &
+        admisc::agteb(ipc[2, obremove], ic0)
+    ] <- "C"
     if (!is.null(exclude)) {
         if (admisc::possibleNumeric(exclude)) {
             exclude <- admisc::asNumeric(exclude)
@@ -202,7 +243,6 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
             exclude <- findRows(exclude, conditions, noflevels) 
         }
         if (length(exclude) > 0) {
-            exclude <- setdiff(exclude, rownames(tt))
             exclude <- exclude[exclude <= prod(noflevels)]
         }
     }
@@ -225,7 +265,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         tt <- ttc
     }
     else {
-        tt <- tt[!oremove, , drop = FALSE]
+        tt <- tt[!obremove, , drop = FALSE]
         if (!is.null(exclude)) {
             excl.matrix <- as.data.frame(getRow(exclude, noflevels))
             rownames(excl.matrix) <- exclude
@@ -252,7 +292,13 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
                         decreasing <- rep(decreasing, length(sort.by))
                     }
                     else if (length(decreasing) < length(sort.by)) {
-                        decreasing <- c(decreasing, rep(TRUE, length(sort.by) - length(decreasing)))
+                        decreasing <- c(
+                            decreasing,
+                            rep(
+                                TRUE,
+                                length(sort.by) - length(decreasing)
+                            )
+                        )
                     }
                 }
                 else {
@@ -265,7 +311,12 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         sort.by <- sort.by[is.element(sort.by, names(tt))]
         rowsorder <- seq_len(nrow(tt))
         for (i in rev(seq(length(sort.by)))) {
-            rowsorder <- rowsorder[order(tt[rowsorder, sort.by[i]], decreasing = decreasing[i])]
+            rowsorder <- rowsorder[
+                order(
+                    tt[rowsorder, sort.by[i]],
+                    decreasing = decreasing[i]
+                )
+            ]
         }
         sortvector <- rep(1, nrow(tt))
         sortvector[tt[rowsorder, "OUT"] == "?"] <- 2
@@ -282,7 +333,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     if (inf.test[1] == "binom") {
         statistical.testing <- TRUE
         if (length(inf.test) > 1) {
-            alpha <- as.numeric(inf.test[2]) 
+            alpha <- as.numeric(inf.test[2])
         }
         else {
             alpha <- 0.05
@@ -295,9 +346,19 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         }
         tt[observed, "OUT"] <- 0
         for (i in seq(length(observed))) {
-            pval1 <- tt[observed[i], "pval1"] <- binom.test(success[i], tt[observed[i], "n"], p = ic1, alternative = "greater")$p.value
+            pval1 <- tt[observed[i], "pval1"] <- binom.test(
+                success[i],
+                tt[observed[i], "n"],
+                p = ic1,
+                alternative = "greater"
+            )$p.value
             if (length(incl.cut) > 1) {
-                pval0 <- tt[observed[i], "pval0"] <- binom.test(success[i], tt[observed[i], "n"], p = ic0, alternative = "greater")$p.value
+                pval0 <- tt[observed[i], "pval0"] <- binom.test(
+                    success[i],
+                    tt[observed[i], "n"],
+                    p = ic0,
+                    alternative = "greater"
+                )$p.value
             }
             if (pval1 < alpha) {
                 tt[observed[i], "OUT"] <- 1
@@ -321,16 +382,45 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         }
     numerics <- unlist(lapply(initial.data, admisc::possibleNumeric))
     colnames(initial.data)[!numerics] <- initialcols[!numerics]
-    x <- list(tt = tt, indexes = rownstt, noflevels = as.vector(noflevels),
-              initial.data = initial.data, recoded.data = data, cases = cases, DCC = DCC, minmat = minmat,
-              options = list(outcome = outcome.copy, conditions = conditions, neg.out = neg.out, n.cut = n.cut,
-                            incl.cut = incl.cut, pri.cut = pri.cut, exclude = exclude, complete = complete,
-                            show.cases = show.cases, dcc = dcc, use.letters = use.letters, inf.test = statistical.testing))
-    if (any(oremove)) {
+    x <- list(
+        tt = tt,
+        indexes = rownstt,
+        noflevels = as.vector(noflevels),
+        initial.data = initial.data,
+        recoded.data = data,
+        cases = cases,
+        DCC = DCC,
+        minmat = minmat,
+        options = list(
+            outcome = outcome.copy,
+            conditions = conditions,
+            neg.out = neg.out,
+            n.cut = n.cut,
+            incl.cut = incl.cut,
+            pri.cut = pri.cut,
+            exclude = exclude,
+            complete = complete,
+            show.cases = show.cases,
+            dcc = dcc,
+            use.letters = use.letters,
+            inf.test = statistical.testing
+        )
+    )
+    if (any(obremove)) {
         removed$cases <- ""
         removed$cases <- casesexcl
-        x$removed <- structure(list(tt = removed,
-                                     options = list(complete = FALSE, show.cases = show.cases, dcc = dcc, removed = TRUE)), class = "QCA_tt")
+        x$removed <- structure(
+            list(
+                tt = removed,
+                options = list(
+                    complete = FALSE,
+                    show.cases = show.cases,
+                    dcc = dcc,
+                    removed = TRUE
+                )
+            ),
+            class = "QCA_tt"
+        )
     }
     if (use.letters & any(nchar(conditions) > 1)) { 
         colnames(x$tt)[seq(nofconditions)] <- LETTERS[seq(nofconditions)]

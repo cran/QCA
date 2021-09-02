@@ -24,20 +24,27 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `findRows` <-
-function(expression = "", obj, remainders = TRUE, type = 1, ...) {
+function(expression = "", obj, observed = FALSE, type = 1, ...) {
     expression <- admisc::recreate(substitute(expression))
+    dots <- list(...)
+    if (is.element("remainders", names(dots))) {
+        if (is.logical(dots$remainders)) {
+            observed <- !dots$remainders[1]
+        }
+    }
     if (any(type == 0)) {
         type <- 0
     }
     if (any(is.element(type, 0:1)) & identical(expression, "")) {
-        cat("\n")
-        stop(simpleError("The expression is missing, for type 0 or 1.\n\n"))
+        admisc::stopError(
+            "The expression is missing, for type 0 or 1."
+        )
     }
     if (missing(obj)) {
-        cat("\n")
-        stop(simpleError("The truth table object is missing.\n\n"))
+        admisc::stopError(
+            "The truth table object is missing."
+        )
     }
-    other.args <- list(...)
     if (methods::is(obj, "QCA_tt")) {
         noflevels <- obj$noflevels
         conditions <- obj$options$conditions
@@ -51,30 +58,33 @@ function(expression = "", obj, remainders = TRUE, type = 1, ...) {
                 call$outcome <- paste("~", call$outcome, sep = "")    
             }
             call$incl.cut <- rev(obj$options$incl.cut)
-            if (length(other.args) > 0) {
-                if (length(setdiff(names(other.args), c("incl.cut", "n.cut", "pri.cut"))) > 0) {
-                    cat("\n")
-                    stop(simpleError("Only cutoff arguments can be specified for the negation of the outcome.\n\n"))
+            if (length(dots) > 0) {
+                if (length(setdiff(names(dots), c("incl.cut", "n.cut", "pri.cut"))) > 0) {
+                    admisc::stopError(
+                        "Only cutoff arguments can be specified for the negation of the outcome."
+                    )
                 }
-                nms <- names(other.args)
+                nms <- names(dots)
                 for (i in seq(length(nms))) {
-                    call[[nms[i]]] <- other.args[[nms[i]]]
+                    call[[nms[i]]] <- dots[[nms[i]]]
                 }
             }
             nobj <- suppressWarnings(do.call("truthTable", call))
         }
     }
     else {
-        if (is.matrix(obj) & is.numeric(obj)) {
+        if (is.matrix(obj) && is.numeric(obj)) {
             conditions <- colnames(obj)
             if (is.null(conditions)) {
-                cat("\n")
-                stop(simpleError("The input matrix does not have column names.\n\n"))
+                admisc::stopError(
+                    "The input matrix does not have column names."
+                )
             }
         }
         else {
-            cat("\n")
-            stop(simpleError("Argument \"obj\" is not a truth table object or a numerical matrix.\n\n"))
+            admisc::stopError(
+                "Argument <obj> is not a truth table object or a numerical matrix."
+            )
         }
     }
     SBS <- NULL
@@ -109,7 +119,7 @@ function(expression = "", obj, remainders = TRUE, type = 1, ...) {
         if (methods::is(obj, "QCA_tt")) {
             mbase <- rev(c(1, cumprod(rev(noflevels))))[-1]
             diffwith <- NULL
-            if (remainders) {
+            if (!observed) {
                 diffwith <- obj$indexes
             }
             SBS <- setdiff(drop(result %*% mbase) + 1, diffwith)

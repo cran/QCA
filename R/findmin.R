@@ -25,11 +25,12 @@
 
 `findmin` <-
 function(chart, ...) {
-    other.args <- list(...)
+    dots <- list(...)
     if (!methods::is(chart, "QCA_pic")) {
         if (!is.matrix(chart) | (!is.logical(chart) & length(setdiff(chart, 0:1)) > 0)) {
-            cat("\n")
-            stop(simpleError("Use a logical, T/F matrix. See makeChart()'s output.\n\n"))
+            admisc::stopError(
+                "Use a logical, TRUE/FALSE matrix. See makeChart()'s output."
+            )
         }
     }
     if (all(colSums(chart) > 0)) {
