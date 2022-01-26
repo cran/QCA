@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,8 +23,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`removeRedundants` <-
-function(implicants, noflevels) {
-    mbase <- rev(c(1, cumprod(rev(noflevels))))[-1]
-    .Call("C_removeRedundants", implicants, noflevels - 1, mbase, PACKAGE = "QCA")
+`removeRedundants` <- function(
+    implicants, noflevels
+) {
+    .Call(
+        "C_removeRedundants",
+        implicants,
+        noflevels - 1,
+        rev(c(1, cumprod(rev(noflevels))))[-1], 
+        PACKAGE = "QCA"
+    )
 }

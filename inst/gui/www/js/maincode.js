@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016 - 2021, Adrian Dusa
+Copyright (c) 2016 - 2022, Adrian Dusa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -7063,7 +7063,7 @@ $("#menu_about").click(function() {
     else {
         createDialog(settings["about"]);
         var messages = [
-            "R package: QCA, version 3.13",
+            "R package: QCA, version 3.14",
             "",
             "Author: Adrian Dușa (dusa.adrian@unibuc.ro)",
             "Former coauthors:",

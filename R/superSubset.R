@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,10 +23,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`superSubset` <-
-function(data, outcome = "", conditions = "", relation = "necessity", incl.cut = 1,
-    cov.cut = 0, ron.cut = 0, pri.cut = 0, use.letters = FALSE, depth = NULL,
-    add = NULL, ...) {
+`superSubset` <- function(
+    data, outcome = "", conditions = "", relation = "necessity", incl.cut = 1,
+    cov.cut = 0, ron.cut = 0, pri.cut = 0, depth = NULL, use.letters = FALSE,
+    categorical = FALSE, add = NULL, ...
+) {
     funargs <- lapply(
         lapply(match.call(), deparse)[-1],
         function(x) {
@@ -35,9 +36,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     )
     dots <- list(...)
     if (missing(data)) {
-        admisc::stopError(
-            "Data is missing."
-        )
+        admisc::stopError("Data is missing.")
     }
     funargs <- lapply(match.call(), deparse)
     outcome <- admisc::recreate(substitute(outcome), colnames(data))
@@ -142,24 +141,23 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     if (neg.out) {
         data[, funargs$outcome] <- 1 - data[, funargs$outcome]
     }
-    mv <- any(data[, conditions] > 1)
     alreadyletters <- sum(nchar(conditions)) == length(conditions)
-    collapse <- "*"
     if (use.letters & !alreadyletters) {
         replacements <- LETTERS[seq(length(conditions))]
         names(replacements) <- conditions
         colnames(data)[seq(length(conditions))] <- conditions <- replacements
     }
-    noflevels <- apply(data[, conditions, drop = FALSE], 2, max) + 1L
-    fc <- apply(data[, conditions, drop = FALSE], 2, function(x) any(x %% 1 > 0))
-    noflevels[fc] <- 2
+    infodata <- admisc::getInfo(data)
+    noflevels <- infodata$noflevels
+    mv <- any(noflevels > 2)
+    fc <- infodata$fuzzy.cc
     mbase <- c(rev(cumprod(rev(noflevels + 1L))), 1)[-1]
     noflevels[noflevels == 1] <- 2 
     if (is.null(depth)) {
         depth <- nofconditions
     }
     CMatrix <- .Call("C_superSubset",
-                     as.matrix(data[, conditions]),
+                     as.matrix(infodata$data[, conditions]),
                      noflevels,
                      as.numeric(fc),
                      data[, funargs$outcome],
@@ -180,9 +178,13 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
     if (lexpressions > 0) {
         result.matrix <- CMatrix[[3]]
         rownames(result.matrix) <- expressions <- seq(lexpressions)
-        colnames(result.matrix) <- conditions
+        setColnames(result.matrix, conditions)
         prev.result <- TRUE
-        row_names <- admisc::writePrimeimp(result.matrix, mv = mv, collapse = collapse)
+        row_names <- admisc::writePrimeimp(
+            impmat = result.matrix,
+            mv = mv,
+            collapse = "*"
+        )
         rownames(CMatrix[[1]]) <- row_names
         result <- as.data.frame(CMatrix[[1]])
         mins <- CMatrix[[5]]
@@ -198,11 +200,11 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         if (lexprnec > 0) {
             result.matrix2 <- CMatrix[[4]]
             rownames(result.matrix2) <- seq(lexprnec) + lexpressions
-            colnames(result.matrix2) <- conditions
+            setColnames(result.matrix2, conditions)
             row_names2 <- admisc::writePrimeimp(
-                result.matrix2,
+                impmat = result.matrix2,
                 mv = mv,
-                collapse = "+"
+                collapse = " + "
             )
             rownames(CMatrix[[2]]) <- row_names2
             mins2 <- CMatrix[[6]]
@@ -231,7 +233,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
             )
         )
     }
-    colnames(mins) <- rownames(result)
+    colnames(mins) <- gsub("[[:space:]]", "", rownames(result))
     rownames(mins) <- rownames(data)
     mins <- as.data.frame(mins)
     if (relationcopy == "sufnec") {
@@ -274,18 +276,25 @@ function(data, outcome = "", conditions = "", relation = "necessity", incl.cut =
         }
         result <- cbind(result, toadd)
     }
-    out.list <- list(incl.cov = result, coms = mins, use.letters = use.letters)
+    noflevels <- infodata$noflevels[is.element(conditions, names(infodata$factor))]
+    toreturn <- list(
+        incl.cov = result,
+        coms = mins,
+        noflevels = noflevels,
+        categories = infodata$categories
+    )
     if (use.letters & !alreadyletters) {
-        out.list$letters <- replacements
+        toreturn$letters <- replacements
     }
-    out.list$options <- list(
+    toreturn$options <- list(
         outcome = outcome,
         neg.out = neg.out,
         conditions = conditions,
         relation = relation,
         incl.cut = incl.cut,
         cov.cut = cov.cut,
-        use.letters = use.letters
+        use.letters = use.letters,
+        categorical = categorical
     )
-    return(structure(out.list, class = "QCA_sS"))
+    return(structure(toreturn, class = "QCA_sS"))
 }

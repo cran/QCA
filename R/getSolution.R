@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -24,8 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `getSolution` <- function(
-    expressions, mv, collapse, inputt, row.dom,
-    initial, all.sol, indata, curly, ...
+    expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, curly, categorical, ...
 ) {
     mtrx <- NULL
     sol.matrix <- NULL
@@ -91,7 +90,7 @@
         }
     }
     PI <- admisc::writePrimeimp(
-        expressions,
+        impmat = expressions,
         mv = mv,
         collapse = collapse,
         curly = curly
@@ -105,7 +104,8 @@
             ),
             outcome = indata[, dots$outcome],
             data = indata,
-            relation = "sufficiency"
+            relation = "sufficiency",
+            categorical = categorical
         )
         inclS <- pofPI$incl.cov[seq(length(PI)), 1]
         filterPI <- admisc::agteb(inclS, pi.cons)

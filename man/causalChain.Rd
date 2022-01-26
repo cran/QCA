@@ -10,6 +10,7 @@ necessary and sufficient solutions for all possible outcomes in a specific datas
 }
 
 \usage{
+      
 causalChain(data, ordering = NULL, strict = FALSE, pi.cons = 0, pi.depth = 0,
       sol.cons = 0, sol.cov = 1, sol.depth = 0, ...)
 }
@@ -99,6 +100,35 @@ functions from package \pkg{QCA} are spending more time to make sure the search 
 exhaustive. Depths can be set via the arguments \bold{\code{pi.depth}} and
 \bold{\code{sol.depth}}, but unlike package \pkg{cna} these are not mandatory.
 
+By default, the package \pkg{QCA} employes a different search algorithm based on
+Consistency Cubes (Dusa, 2018), analysing all possible combinations of causal conditions
+and all possible combinations of their respective levels. The structure of the input
+dataset (number of causal conditions, number of levels, number of unique rows in the
+truth table) has a direct implication on the search time, as all of those characteristics
+become entry parameters when calculating all possible combinations.
+
+Consequently, two kinds of depth arguments are provided: 
+
+\tabular{rl}{
+\bold{\code{pi.depth}} \tab the maximum number of causal conditions needed to conjunctively\cr
+ \tab construct a prime implicant; it is the complexity level where the search\cr
+ \tab can be stopped, as long as the PI chart can be solved.\cr
+\bold{\code{sol.depth}} \tab the maximum number of prime implicants needed to disjunctively\cr
+ \tab build a solution model that covers all initial positive output configurations.
+}
+
+These arguments introduce a possible new way of deriving prime implicants and solution models,
+that can lead to different results (i.e. even more parsimonious) compared to the classical
+Quine-McCluskey. When either of them is modified from the default value of 0, the minimization
+method is automatically set to \bold{\code{"CCubes"}} and the remainders are automatically
+included in the minimization.
+
+The higher these depths, the higher the search time. Connversely, the search time can be
+significantly shorter if these depths are smaller. Irrespective of how large 
+\bold{\code{pi.depth}} is, the algorithm will always stop at a maximum complexity level
+where no new, non-redundant prime implicants are found. The argument \bold{\code{sol.depth}}
+is relevant only when activating the argument \bold{\code{all.sol}} to solve the PI chart.
+
 The argument \bold{\code{sol.cons}} introduces another method of solving the PI chart.
 Normally, once the solution models are found among all possible combinations of
 \bold{\code{k}} prime implicants, consistencies and coverages are subsequently
@@ -137,7 +167,7 @@ Adrian Dusa
 \dontrun{
 # The following examples assume the package cna is installed
 library(cna)
-cna(d.educate, what = "a")}
+cna(d.educate, what = "a")
 
 # same results with
 cc <- causalChain(d.educate)
@@ -147,27 +177,24 @@ cc
 cc$E$IC
 
 
-\dontrun{
 # another example, function cna() requires specific complexity depths
-cna(d.women, maxstep = c(3, 4, 9), what = "a")}
+cna(d.women, maxstep = c(3, 4, 9), what = "a")
 
 # same results with, no specific depths are required
 causalChain(d.women)
 
 
-\dontrun{
 # multivalue data require a different function in package cna
 mvcna(d.pban, ordering = list(c("C", "F", "T", "V"), "PB"),
-      cov = 0.95, maxstep = c(6, 6, 10), what = "a")}
+      cov = 0.95, maxstep = c(6, 6, 10), what = "a")
 
 # same results again, simpler command
 causalChain(d.pban, ordering = "C, F, T, V < PB", sol.cov = 0.95)
 
 
-\dontrun{
 # specifying a lower consistency threshold for the solutions
 mvcna(d.pban, ordering = list(c("C", "F", "T", "V"), "PB"), con = .93,
-      maxstep = c(6, 6, 10), what = "a")}
+      maxstep = c(6, 6, 10), what = "a")
 
 # same thing with
 causalChain(d.pban, ordering = "C, F, T, V < PB", pi.cons = 0.93,
@@ -179,15 +206,13 @@ causalChain(d.pban, ordering = "C, F, T, V < PB", pi.cons = 0.93,
 # function for fuzzy sets is needed in package cna)
 
 dat2 <- d.autonomy[15:30, c("AU","RE", "CN", "DE")]
-\dontrun{
 fscna(dat2, ordering = list("AU"), con = .9, con.msc = .85, cov = .85,
-      what = "a")}
+      what = "a")
 
 # again, the same results using the same function:
 causalChain(dat2, ordering = "AU", sol.cons = 0.9, pi.cons = 0.85,
             sol.cov = 0.85)
-
+}
 }
 
 \keyword{functions}
-

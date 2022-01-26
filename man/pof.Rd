@@ -12,10 +12,11 @@ of the \bold{\code{pof()}} function, to calculate parameters of fit for single c
 }
 
 \usage{
-pof(setms, outcome, data, relation = "necessity", inf.test = "",
-    incl.cut = c(0.75, 0.5), add, ...)
+pof(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
+    categorical = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...)
     
-pofind(data, outcome, conditions, relation = "necessity", ...)
+pofind(data = NULL, outcome = "", conditions = "", relation = "necessity",
+    categorical = FALSE, ...)
 }
 
 \arguments{
@@ -29,6 +30,7 @@ pofind(data, outcome, conditions, relation = "necessity", ...)
   \item{relation}{The set relation to \bold{\code{outcome}}, either \bold{\code{"necessity"}}
         or \bold{\code{"sufficiency"}}, partial words like \bold{\code{"suf"}} being
         accepted (see examples).}
+  \item{categorical}{Logical, use category labels if categorical causal conditions.}
   \item{inf.test}{Specifies the statistical inference test to be performed (currently 
        only \bold{\code{"binom"}}) and the critical significance level. It can be either
        a vector of length 2, or a single string containing both, separated by a comma.}
@@ -140,9 +142,10 @@ Schneider, C. and Wagemann, C. (2012) \emph{Set-Theoretic Metods for the Social 
 A Guide to Qualitative Comparative Analysis}. Cambridge: Cambridge University Press.
 }
 
-\seealso{\code{\link{minimize}}, \code{\link{superSubset}}, \code{\link[admisc]{translate}}}
+\seealso{\code{\link{minimize}}, \code{\link{superSubset}}}
 
 \examples{
+\dontrun{
 # -----
 # Cebotari & Vink (2013) fuzzy data
 
@@ -153,7 +156,7 @@ PROTEST <- CVF$PROTEST
 pof(conds, PROTEST)
 
 # parameters of fit negating the conditions
-pof(1 - conds, PROTEST)
+# pof(1 - conds, PROTEST)
 
 # negating the outcome
 pof(conds, 1 - PROTEST)
@@ -182,7 +185,7 @@ pof(nCVF$coms, 1 - PROTEST)
 cCVF <- minimize(CVF, outcome = PROTEST, incl.cut = 0.8, details = TRUE)
 
 # verify if their negations are also sufficient for the outcome
-pof(1 - cCVF$pims, PROTEST, relation = "sufficiency")
+# pof(1 - cCVF$pims, PROTEST, relation = "sufficiency")
 
 
 # -----
@@ -206,7 +209,7 @@ inclH <- function(x, y) {
 }
 
 pof(~NATPRIDE + GEOCON -> ~PROTEST, data = CVF, add = inclH)
-
+}
 }
 
 \keyword{functions}

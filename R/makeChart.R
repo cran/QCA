@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,16 +23,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`makeChart` <-
-function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...) {
+`makeChart` <- function(
+    primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...
+) {
     primes <- admisc::recreate(substitute(primes))
     configs <- admisc::recreate(substitute(configs))
     snames <- admisc::recreate(substitute(snames))
     prmat <- is.matrix(primes)
     comat <- is.matrix(configs)
     dots <- list(...)
-    curly <- dots$curly
-    if (is.null(curly)) curly <- FALSE
+    curly <- ifelse(is.null(dots$curly), FALSE, dots$curly)
     if (prmat & comat) {
         if (!(is.numeric(primes) & is.numeric(configs))) {
             admisc::stopError(
@@ -98,13 +98,16 @@ function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...
                 snames <- admisc::splitstr(snames)
             }
         }
-        noflevels <- rep(2, length(snames))
-        if (is.element("noflevels", names(dots))) {
-            noflevels <- dots$noflevels
+        noflevels <- dots$noflevels
+        if (!identical(snames, "") && is.null(noflevels)) {
+            noflevels <- rep(2, length(snames))
         }
         tconfigs <- attr(
             admisc::translate(
-                configs, snames, noflevels, retlist = TRUE
+                expression = configs,
+                snames = snames,
+                noflevels = noflevels,
+                retlist = TRUE
             ),
             "retlist"
         )
@@ -113,11 +116,18 @@ function(primes = "", configs = "", snames = "", mv = FALSE, collapse = "*", ...
         }
         tprimes <- attr(
             admisc::translate(
-                primes, snames, noflevels, retlist = TRUE
+                expression = primes,
+                snames = snames,
+                noflevels = noflevels,
+                retlist = TRUE
             ),
             "retlist"
         )
-        mtrx <- matrix(FALSE, nrow = length(tprimes), ncol = length(tconfigs))
+        mtrx <- matrix(
+            FALSE,
+            nrow = length(tprimes),
+            ncol = length(tconfigs)
+        )
         for (i in seq(nrow(mtrx))) {
             for (j in seq(ncol(mtrx))) {
                 subset <- TRUE

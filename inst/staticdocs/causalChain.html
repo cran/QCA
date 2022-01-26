@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>causalChain. QCA 3.13</title>
+<title>causalChain. QCA 3.14</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.13</a>
+      <a class="brand" href="#">QCA 3.14</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -63,7 +63,8 @@ finding all possible necessary and sufficient solutions for all possible outcome
     </div>
     
     <h2>Usage</h2>
-    <pre><div>causalChain(data, ordering, strict = FALSE, ...)</div></pre>
+    <pre><div>causalChain(data, ordering = NULL, strict = FALSE, pi.cons = 0, pi.depth = 0,
+      sol.cons = 0, sol.cov = 1, sol.depth = 0, ...)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -85,10 +86,41 @@ finding all possible necessary and sufficient solutions for all possible outcome
                 act as outcomes for each other.</td>
         </tr>
         <tr>
+            <td valign="top"><b><code>pi.cons</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Numerical fuzzy value between 0 and 1, minimal consistency
+        threshold for a prime implicant to be declared as sufficient.</td>
+        </tr>
+        <tr>
+          <td valign="top"><b><code>pi.depth</code></b></td>
+          <td></td><td></td><td></td>
+          <td>Integer, a maximum number of causal conditions to be used when
+          searching for conjunctive prime implicants.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>sol.cons</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Numerical fuzzy value between 0 and 1, minimal consistency 
+        threshold for a model to be declared as sufficient.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>sol.cov</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Numerical fuzzy value between 0 and 1, minimal coverage 
+        threshold for a model to be declared as necessary.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>sol.depth</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Integer, a maximum number of prime implicants to be used when
+        searching for disjunctive solutions.</td>
+        </tr>
+        <tr>
             <td valign="top"><b><code>...</code></b></td>
             <td></td><td></td><td></td>
-            <td>Other arguments to be passed to functions <b><code><a href='minimize.html'>minimize()</a></code></b>
-                and <b><code><a href='truthTable.html'>truthTable()</a></code></b>.</td>
+            <td>Other arguments to be passed to functions
+              <b><code><a href='minimize.html'>minimize()</a></code></b> and
+              <b><code><a href='truthTable.html'>truthTable()</a></code></b>.</td>
         </tr>
     </table>
 
@@ -174,8 +206,46 @@ more time to make sure the search is exhaustive. Depths can be set via the argum
 <b><code>pi.depth</code></b> and <b><code>sol.depth</code></b> from the arguments in function
 <b><code><a href='minimize.html'>minimize()</a></code></b>, but unlike package
 <b><span class = "pkg">cna</span></b> these are not mandatory.</p>
+
+<p>By default, the package <b><span class = "pkg">QCA</span></b> employes a different search
+algorithm based on Consistency Cubes (<a href = "http://dx.doi.org/10.13140/RG.2.2.36359.19361/4">Dusa, 2017</a>),
+analysing all possible combinations of causal conditions and all possible combinations of their 
+respective levels. The structure of the input dataset (number of causal conditions, number of levels, 
+number of unique rows in the truth table) has a direct implication on the search time, as all of those 
+characteristics become entry parameters when calculating all possible combinations.</p>
+
+<p>Consequently, two kinds of depth arguments are provided:</p>
+<table>
+    <tr>
+        <td valign="top"><b><code>pi.depth</code></b></b></td>
+        <td></td><td></td><td></td>
+        <td>the maximum number of causal conditions needed to construct a prime
+            implicant, the complexity level where the search can be stopped, as long as the
+            PI chart can be solved.</td>
+    </tr>
+    <tr>
+        <td valign="top"><b><code>sol.depth</code></b></td>
+        <td></td><td></td><td></td>
+        <td>the maximum number of prime implicants needed to find a solution (to cover all
+            initial positive output configurations)</td>
+    </tr>
+</table>
+
+<p></p>
+
+<p>These arguments introduce a possible new way of deriving prime implicants and solutions,
+that can lead to different results (i.e. even more parsimonious) compared to the classical
+Quine-McCluskey. When either of them is modified from the default value of 0, the minimization
+method is automatically set to <b><code>&quot;CCubes&quot;</code></b> and the remainders are
+automatically included in the minimization.</p>
+
+<p>The higher these depths, the higher the search time. Connversely, the search time can be
+significantly shorter if these depths are smaller. Irrespective of how large 
+<b><code>pi.depth</code></b> is, the algorithm will always stop at a maximum complexity level
+where no new, non-redundant prime implicants are found. The argument <b><code>sol.depth</code></b>
+is relevant only when activating the argument <b><code>all.sol</code></b> to solve the PI chart.</p>
       
-      <p>Exhaustiveness is guaranteed in package <b><span class = "pkg">QCA</span></b> precisely
+<p>Exhaustiveness is guaranteed in package <b><span class = "pkg">QCA</span></b> precisely
 because it uses a truth table as an input for the minimization procedure. The only exception is
 the option of finding solutions based on their consistency, with the argument
 <b><code>sol.cons</code></b>: for large PI charts, time can quickly increase to infinity. If not

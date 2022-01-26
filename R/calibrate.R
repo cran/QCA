@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,9 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`calibrate` <-
-function (x, type = "fuzzy", method = "direct", thresholds = NA,
-          logistic = TRUE, idm = 0.95, ecdf = FALSE, below = 1, above = 1, ...) {
+`calibrate` <- function (
+    x, type = "fuzzy", method = "direct", thresholds = NA,
+    logistic = TRUE, idm = 0.95, ecdf = FALSE, below = 1, above = 1, ...
+) {
     dots <- list(...)
     funargs <- lapply(
         lapply(
@@ -129,7 +130,7 @@ function (x, type = "fuzzy", method = "direct", thresholds = NA,
                         thIN <- thresholds[1]
                     }
                     y <- (x < thCR) + 1
-                    fs <- 1/(1 + exp(-((x - thCR) * (c(1, -1)[y]*log(idm/(1 - idm))/(c(thIN, thEX)[y] - thCR)))))
+                    fs <- 1/(1 + exp(c(-1, 1)[y] * (x - thCR) * log(idm/(1 - idm)) / (c(thIN, thEX)[y] - thCR)))
                     if (thresholds[1] > thresholds[3]) {
                         fs <- 1 - fs
                     }

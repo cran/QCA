@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,8 +23,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`findSupersets` <-
-function (input, noflevels = NULL, ...) {
+`findSupersets` <- function (
+    input, noflevels = NULL, ...
+) {
     dots <- list(...)
         if (is.element("input.combs", names(dots))) {
             input <- dots$input.combs

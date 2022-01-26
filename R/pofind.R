@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,8 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`pofind` <-
-function(data, outcome = "", conditions = "", relation = "necessity", ...) {
+`pofind` <- function(
+    data = NULL, outcome = "", conditions = "", relation = "necessity",
+    categorical = FALSE, ...
+) {
     if (missing(data)) {
         admisc::stopError(
             "Data is missing."
@@ -98,7 +100,8 @@ function(data, outcome = "", conditions = "", relation = "necessity", ...) {
         }
     }
     data <- data[, c(conditions, outcome)]
-    noflevels <- admisc::getInfo(data[, conditions, drop = FALSE])$noflevels
+    infodata <- admisc::getInfo(data[, conditions, drop = FALSE])
+    noflevels <- infodata$noflevels
     if (any(noflevels > 2)) { 
         expression <- paste(unlist(lapply(seq(length(conditions)), function(x) {
             values <- sort(unique(data[, conditions[x]]))
@@ -121,6 +124,7 @@ function(data, outcome = "", conditions = "", relation = "necessity", ...) {
         outcome = origoutcome,
         data = data,
         relation = relation,
+        categorical = categorical,
         ... = ...
     )
     result <- do.call(pof, pofargs)

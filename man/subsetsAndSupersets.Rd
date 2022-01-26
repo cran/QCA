@@ -14,8 +14,8 @@ or supersets, of a (prime) implicant or an initial causal configuration.
 
 \usage{
 superSubset(data, outcome = "", conditions = "", relation = "necessity",
-    incl.cut = 1, cov.cut = 0, ron.cut = 0, pri.cut = 0, use.letters = FALSE,
-    depth, add, ...)
+    incl.cut = 1, cov.cut = 0, ron.cut = 0, pri.cut = 0, depth = NULL,
+    use.letters = FALSE, categorical = FALSE, add = NULL, ...)
 
 findSubsets(input, noflevels = NULL, stop = NULL, ...)
 
@@ -39,6 +39,7 @@ findSupersets(input, noflevels = NULL, ...)
         inconsistency.}
   \item{use.letters}{Logical, use simple letters instead of original conditions'
         names.}
+  \item{categorical}{Logical, use category labels if categorical causal conditions.}
   \item{noflevels}{A vector containing the number of levels for each causal
         condition plus 1 (all subsets are located in the higher dimension, implicant
         matrix)}

@@ -30,9 +30,13 @@ All conditions are considered binary crisp, unless the number of levels are prov
 in conjunction with the set names, in the order of their specification from the
 \bold{\code{snames}} argument.
 
-This is an extension of the function \bold{\code{\link[admisc]{expand}()}}, the process
-of data generating process being essentially a Quine expansion to a Disjunctive
-Normal Form.
+This is an extension of the function \bold{\code{expand()}} from package admisc,
+the process of data generating process being essentially a Quine expansion to a
+Disjunctive Normal Form.
+}
+
+\value{
+A data frame.
 }
 
 \author{

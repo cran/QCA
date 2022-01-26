@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,8 +23,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`modelFit` <-
-function(model, theory = "") {
+`modelFit` <- function(
+    model, theory = ""
+) {
     if (!(methods::is(model, "QCA_min") | methods::is(model, "admisc_deMorgan"))) {
         admisc::stopError(
             "The model should be a minimization object or its negation."
@@ -95,7 +96,7 @@ function(model, theory = "") {
             admisc::intersection,
             c(
                 list(
-                    negate(theory, snames = snames),
+                    negate(theory, snames = snames)[[1]][1],
                     expression
                 ),
                 arglist
@@ -106,7 +107,7 @@ function(model, theory = "") {
             c(
                 list(
                     theory,
-                    negate(expression, snames = snames)
+                    negate(expression, snames = snames)[[1]][1]
                 ),
                 arglist
             )
@@ -115,8 +116,8 @@ function(model, theory = "") {
             admisc::intersection,
             c(
                 list(
-                    negate(theory, snames = snames),
-                    negate(expression, snames = snames)
+                    negate(theory, snames = snames)[[1]][1],
+                    negate(expression, snames = snames)[[1]][1]
                 ),
                 arglist
             )
@@ -133,10 +134,12 @@ function(model, theory = "") {
         }
         intersections[intersections == ""] <- "-"
         names(intersections) <- intnms
+        neg.out <- admisc::hastilde(model$tt$options$outcome)
         pofobj <- pof(
             cpims,
-            model$tt$initial.data[, model$tt$options$outcome],
-            relation = "sufficiency"
+            model$tt$initial.data[, admisc::notilde(model$tt$options$outcome)],
+            relation = "sufficiency",
+            neg.out = neg.out
         )
         pofobj$incl.cov <- pofobj$incl.cov[, 1:3]
         pofobj$incl.cov[is.na(pofobj$incl.cov[, 1]), 3] <- NA

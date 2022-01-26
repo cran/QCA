@@ -18,6 +18,7 @@
 \alias{print.tt}
 \alias{rebuild}
 \alias{removeRedundants}
+\alias{replaceCategories}
 \alias{setRownames}
 \alias{setColnames}
 \alias{setDimnames}

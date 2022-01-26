@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,8 +23,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`getRow` <- 
-function(row.no = NULL, noflevels = NULL, zerobased = FALSE, ...) {
+`getRow` <-  function(
+    row.no = NULL, noflevels = NULL, zerobased = FALSE, ...
+) {
     dots <- list(...)
     enter <- ifelse (is.element("enter", names(dots)), dots$enter, TRUE)
     max.combs <- prod(noflevels)

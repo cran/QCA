@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,9 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`retention` <- 
-function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
-         type = "corruption", dependent = TRUE, p.pert = 0.5, n.pert = 1) {
+`retention` <- function(
+    data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
+    type = "corruption", dependent = TRUE, p.pert = 0.5, n.pert = 1
+) {
     outcome <- admisc::recreate(substitute(outcome))
     conditions <- admisc::recreate(substitute(conditions))
     type <- admisc::recreate(substitute(type))

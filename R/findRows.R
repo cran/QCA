@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,8 +23,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`findRows` <-
-function(expression = "", obj, observed = FALSE, type = 1, ...) {
+`findRows` <- function(
+    expression = "", obj, observed = FALSE, type = 1, ...
+) {
     expression <- admisc::recreate(substitute(expression))
     dots <- list(...)
     if (is.element("remainders", names(dots))) {
@@ -68,6 +69,9 @@ function(expression = "", obj, observed = FALSE, type = 1, ...) {
                 for (i in seq(length(nms))) {
                     call[[nms[i]]] <- dots[[nms[i]]]
                 }
+            }
+            for (i in seq(length(call))) {
+                call[[i]] <- eval.parent(call[[i]])
             }
             nobj <- suppressWarnings(do.call("truthTable", call))
         }

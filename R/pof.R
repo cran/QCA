@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,9 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`pof` <-
-function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
-         inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...) {
+`pof` <- function(
+    setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
+    categorical = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...
+) {
     setms <- admisc::recreate(substitute(setms))
     outcome <- admisc::recreate(outcome)
     funargs <- lapply(
@@ -44,24 +45,24 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             "The relation should be either \"necessity\" or \"sufficiency\"."
         )
     }
-    icp <- 0.75
-    ica <- 0.5
+    ic1 <- 0.75
+    ic0 <- 0.5
     if (is.character(incl.cut) & length(incl.cut) == 1) {
         incl.cut <- admisc::splitstr(incl.cut)
     }
-    icp <- incl.cut[1]
+    ic1 <- incl.cut[1]
     if (length(incl.cut) > 1) {
-        ica <- incl.cut[2]
+        ic0 <- incl.cut[2]
     }
         neg.out <- FALSE
         if (is.element("neg.out", names(dots))) {
             neg.out <- dots$neg.out
         }
-        if (is.element("incl.cut1", names(dots)) & identical(icp, 0.75)) {
-            icp <- dots$incl.cut1
+        if (is.element("incl.cut1", names(dots)) & identical(ic1, 0.75)) {
+            ic1 <- dots$incl.cut1
         }
-        if (is.element("incl.cut0", names(dots)) & identical(ica, 0.5)) {
-            ica <- dots$incl.cut0
+        if (is.element("incl.cut0", names(dots)) & identical(ic0, 0.5)) {
+            ic0 <- dots$incl.cut0
         }
     complete <- FALSE
     if (is.element("complete", names(dots))) {
@@ -69,17 +70,20 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             complete <- dots$complete
         }
     }
+    odata <- data
+    infodata <- NULL
+    categories <- list()
+    if (is.element("categories", names(dots))) {
+        categories <- dots$categories
+        dots$categories <- NULL
+    }
     if (!is.null(data)) {
         if (is.element("data.frame", class(data)) | is.matrix(data)) {
             data <- as.data.frame(data)
         }
-        for (i in colnames(data)) {
-            if (!is.numeric(data[, i])) {
-                if (admisc::possibleNumeric(data[, i])) {
-                    data[, i] <- admisc::asNumeric(data[, i])
-                }
-            }
-        }
+        infodata <- admisc::getInfo(data)
+        categories <- infodata$categories
+        data <- infodata$data
         if (is.element("minimize", names(dots))) {
             if (is.element("use.letters", names(dots))) {
                 if (dots$use.letters) {
@@ -100,12 +104,14 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         relation <- ifelse(grepl("=|-", x), ifelse(grepl("=>|->", x), "suf", "nec"), NA)
         x <- gsub("<=|=>|<-|->", "@", gsub("[[:space:]]", "", x))
         x <- unlist(strsplit(x, split = "@"))
-        if (grepl("\\+|\\*", x[2])) {
-            if (grepl("\\+|\\*", x[1])) {
-                admisc::stopError(
-                    "Incorrect output in the right hand side."
-                )
+        xcopy <- x
+        if (!multivalue) {
+            x[1] <- mvSOP(x[1], snames = snames, data = data)
+            if (!is.na(x[2])) {
+                x[2] <- mvSOP(x[2], snames = snames, data = data)
             }
+        }
+        if (grepl("\\+|\\*", x[2])) {
             x <- rev(x)
             if (relation == "nec") {
                 relation <- "suf"
@@ -125,14 +131,30 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         }
         outmtrx <- NA
         if (length(x) > 1) {
-            outmtrx <- admisc::validateNames(x[2], snames = snames, data = data)
+            outmtrx <- validateNames(x[2], snames = snames, data = data)
         }
-        if (!is.na(outmtrx) & !is.null(data)) {
-            data <- data[, -which(is.element(colnames(data), colnames(outmtrx)))]
+        if (!is.na(outmtrx)) {
+            if (!multivalue) {
+                rownames(outmtrx) <- xcopy[2]
+            }
+            if (!is.null(data)) {
+                data <- data[, -which(is.element(colnames(data), colnames(outmtrx)))]
+            }
         }
-        condmtrx <- admisc::validateNames(x[1], snames = snames, data = data)
-        return(list(condmtrx = condmtrx, outmtrx = outmtrx, expression = x[1],
-            relation = relation, multivalue = multivalue))
+        condmtrx <- validateNames(x[1], snames = snames, data = data)
+        if (!multivalue & is.data.frame(condmtrx)) {
+            rownames(condmtrx) <- admisc::trimstr(unlist(strsplit(xcopy[1], split = "\\+")))
+        }
+        return(
+            list(
+                condmtrx = condmtrx,
+                outmtrx = outmtrx,
+                expression = x[1],
+                oexpr = xcopy[1],
+                relation = relation,
+                multivalue = multivalue
+            )
+        )
     }
     checkoutcome <- TRUE
     addexpression <- FALSE
@@ -147,7 +169,7 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
                 "Only one expression allowed."
             )
         }
-        toverify <- extract(setms, data = data)
+        toverify <- extract(setms, data = odata)
         if (!is.na(toverify$relation)) {
             relation <- toverify$relation
         }
@@ -173,10 +195,13 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
                 data = temp,
                 separate = TRUE
             )
+            if (!toverify$multivalue & is.data.frame(setms)) {
+                colnames(setms) <- admisc::trimstr(unlist(strsplit(toverify$oexpr, split = "\\+")))
+            }
             funargs$setms <- toverify$expression
         }
         else {
-            outcomename <- colnames(toverify$outmtrx)[1]
+            outcomename <- colnames(toverify$outmtrx)
             temp <- subset(
                 data,
                 select = which(
@@ -188,6 +213,9 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             )
             verify.qca(temp)
             setms <- admisc::compute(toverify$expression, data = temp, separate = TRUE)
+            if (!toverify$multivalue & is.data.frame(setms)) {
+                colnames(setms) <- admisc::trimstr(unlist(strsplit(toverify$oexpr, split = "\\+")))
+            }
             funargs$setms <- paste(
                 paste(
                     unlist(toverify$expression),
@@ -208,7 +236,7 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         }
         if (is.vector(setms)) {
             setms <- data.frame(setms)
-            colnames(setms) <- toverify$expression
+            colnames(setms) <- toverify$oexpr
         }
         rownames(setms) <- rownames(data)
         if (!is.element("minimize", names(dots)) & ncol(setms) > 1) {
@@ -316,17 +344,10 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         verify.qca(setms)
         colnames(setms) <- gsub("[[:space:]]", "", colnames(setms))
         if (identical(conditions, "")) {
-            if (any(grepl("[*]", colnames(setms)))) {
-                conditions <- colnames(extract(paste(colnames(setms), collapse = "+"))$condmtrx)
-            }
+            conditions <- all.vars(parse(text = paste(colnames(setms), collapse = "+")))
         }
         if (condnegated) {
-            if (any(grepl("[*]", conditions))) {
-                conditions <- colnames(extract(paste(conditions, collapse = "+"))$condmtrx)
-            }
-            else if (any(grepl("[+]", conditions))) {
-                conditions <- unique(unlist(strsplit(conditions, split = "[+]")))
-            }
+            conditions <- all.vars(parse(text = paste(conditions, collapse = "+")))
             if (any(grepl("\\$coms|\\$pims", funargs$setms))) {
                 toverify <- unlist(strsplit(admisc::notilde(gsub("1-", "", funargs$setms)), split = "\\$"))[1]
                 if (grepl("pims", funargs$setms)) { 
@@ -403,8 +424,8 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         success <- as.vector(round(nofcases * incl.cov[, which(grepl("incl", colnames(incl.cov)))[1]]))
         incl.cov$pval0 <- incl.cov$pval1 <- 0
         for (i in seq(length(success))) {
-            incl.cov[i, "pval1"] <- binom.test(success[i], nofcases[i], p = icp, alternative = "greater")$p.value
-            incl.cov[i, "pval0"] <- binom.test(success[i], nofcases[i], p = ica, alternative = "greater")$p.value
+            incl.cov[i, "pval1"] <- binom.test(success[i], nofcases[i], p = ic1, alternative = "greater")$p.value
+            incl.cov[i, "pval0"] <- binom.test(success[i], nofcases[i], p = ic0, alternative = "greater")$p.value
         }
     }
     result.list$incl.cov <- incl.cov
@@ -466,17 +487,22 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
             essential = dots$essential,
             pims = as.data.frame(setms),
             relation = relation,
+            categories = categories,
             options = c(
-                list(setms = setms,
+                list(
+                    setms = setms,
                     outcome = outcome,
                     data = data,
                     relation = relation,
                     inf.test = inf.test,
                     incl.cut = incl.cut,
-                    add = add),
+                    add = add,
+                    categorical = categorical
+                ),
                 dots)
             ), class = "QCA_pof"))
     }
+    result.list$categories <- categories
     if (!is.null(add)) {
         if (!(is.list(add) | is.function(add))) {
             admisc::stopError(
@@ -525,13 +551,16 @@ function(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
         result.list$incl.cov <- cbind(result.list$incl.cov, toadd)
     }
     result.list$options <- c(
-        list(setms = setms,
+        list(
+            setms = setms,
             outcome = outcome,
             data = data,
             relation = relation,
             inf.test = inf.test,
             incl.cut = incl.cut,
-            add = add),
+            add = add,
+            categorical = categorical
+        ),
         dots)
     return(structure(result.list, class = "QCA_pof"))
 }

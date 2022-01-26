@@ -12,8 +12,8 @@ assign cases to the vector space corners (the truth table rows).
 
 \usage{
 truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut = 0,
-           exclude = NULL, complete = FALSE, use.letters = FALSE, show.cases = FALSE,
-           dcc = FALSE, sort.by = "", inf.test = "", ...)
+           exclude = NULL, complete = FALSE, use.letters = FALSE, categorical = FALSE,
+           show.cases = FALSE, dcc = FALSE, sort.by = "", inf.test = "", ...)
 }
 
 \arguments{
@@ -31,6 +31,7 @@ truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut
         negative output configurations.}
   \item{complete}{Logical, print complete truth table.}
   \item{use.letters}{Logical, use letters instead of causal conditions' names.}
+  \item{categorical}{Logical, use category labels if categorical causal conditions.}
   \item{show.cases}{Logical, print case names.}
   \item{dcc}{Logical, if \bold{\code{show.cases = TRUE}}, the cases being
         displayed are the deviant cases consistency in kind.}

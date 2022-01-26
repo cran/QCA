@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,19 @@ function(data, outcome = "", conditions = "") {
             "The outcome set is not specified."
         )
     }
-    if (!is.element(outcome, colnames(data))) {
+    testoutcome <- admisc::tryCatchWEM(
+        trout <- admisc::translate(outcome, colnames(data))
+    )
+    if (is.element("error", names(testoutcome))) {
         admisc::stopError(
-            "The name of the outcome is not correct."
+            "Incorrect outcome specification."
         )
+    }
+    testrout <- apply(trout, 2, function(x) {
+        all(x != "-1")
+    })
+    if (sum(testrout) == 1) {
+        outcome <- names(testrout)[testrout]
     }
     if (!identical(conditions, "")) {
         if (any(grepl(":", conditions))) {
@@ -105,10 +114,12 @@ function(data) {
             )
         }
         checkNumUncal <- lapply(data, function(x) {
+            is_a_factor <- is.factor(x)
+            is_a_declared <- inherits(x, "declared")
             x <- setdiff(x, c("-", "dc", "?"))
-            pn <- admisc::possibleNumeric(x)
+            is_possible_numeric <- admisc::possibleNumeric(x)
             uncal <- mvuncal <- FALSE
-            if (pn) {
+            if (is_possible_numeric & !is_a_declared) {
                 y <- na.omit(admisc::asNumeric(x))
                 if (any(y > 1) & any(abs(y - round(y)) >= .Machine$double.eps^0.5)) {
                     uncal <- TRUE
@@ -117,19 +128,21 @@ function(data) {
                     mvuncal <- TRUE
                 }
             }
-            return(c(pn, uncal, mvuncal))
+            return(c(is_possible_numeric, uncal, mvuncal, is_a_factor, is_a_declared))
         })
         checknumeric <- sapply(checkNumUncal, "[[", 1)
         checkuncal <- sapply(checkNumUncal, "[[", 2)
         checkmvuncal <- sapply(checkNumUncal, "[[", 3)
-        if (!all(checknumeric)) {
+        checkfactor <- sapply(checkNumUncal, "[[", 4)
+        checkdeclared <- sapply(checkNumUncal, "[[", 5)
+        if (!all(checknumeric | checkfactor | checkdeclared)) {
             notnumeric <- colnames(data)[!checknumeric]
             errmessage <- paste(
                 "The causal condition",
                 ifelse(length(notnumeric) == 1, " ", "s "),
                 paste(notnumeric, collapse=", "),
                 ifelse(length(notnumeric) == 1, " is ", " are "),
-                "not numeric.",
+                "not numeric or factor.",
                 sep = ""
             )
             admisc::stopError(errmessage)
@@ -194,14 +207,11 @@ function(data) {
         data <- data$initial.data
     }
     if (identical(outcome, "")) {
-        admisc::stopError(
-            "You haven't specified the outcome set."
-        )
+        admisc::stopError("Incorrect outcome specification.")
     }
-    if (!is.element(outcome, colnames(data))) {
-        admisc::stopError(
-            "The outcome's name is not correct."
-        )
+    testoutcome <- admisc::tryCatchWEM(admisc::translate(outcome, colnames(data)))
+    if (is.element("error", names(testoutcome))) {
+        admisc::stopError("The outcome is not correct.")
     }
     if (!identical(conditions, "")) {
         if (length(conditions) == 1 & is.character(conditions)) {
@@ -252,15 +262,29 @@ function(data) {
     }
     if (any(c(ic1, ic0) < 0) | any(c(ic1, ic0) > 1)) {
         admisc::stopError(
-            "The including cut-off(s) should be bound to the interval [0, 1]."
+            "The inclusion cut-off(s) should be bound to the interval [0, 1]."
         )
     }
-    data <- data[, c(conditions, outcome)]
-    data <- as.data.frame(lapply(data, function(x) {
-        x <- as.character(x)
-        x[x %in% c("-", "dc", "?")] <- -1
-        return(admisc::asNumeric(x))
-    }))
+    testoutcome <- admisc::tryCatchWEM(
+        trout <- admisc::translate(outcome, colnames(data))
+    )
+    if (is.element("error", names(testoutcome))) {
+        admisc::stopError("Incorrect outcome specification.")
+    }
+    testrout <- apply(trout, 2, function(x) {
+        all(x != "-1")
+    })
+    data <- data[, unique(c(conditions, names(testrout)[testrout]))]
+    data[] <- lapply(data, function(x) {
+        if (!is.factor(x) & !inherits(x, "declared")) {
+            x <- as.character(x)
+            x[x %in% c("-", "dc", "?")] <- -1
+            if (admisc::possibleNumeric(x)) {
+                x <- admisc::asNumeric(x)
+            }
+        }
+        return(x)
+    })
     verify.qca(data)
     verify.inf.test(inf.test, data)
 }
@@ -305,25 +329,6 @@ function(data, outcome = "", conditions = "", explain = "",
         admisc::stopError(
             "Contradictions are either explained or included, but not both."
         )
-    }
-    if (!identical(conditions, "")) {
-        if (length(conditions) == 1 & is.character(conditions)) {
-            conditions <- admisc::splitstr(conditions)
-        }
-        if (is.element(outcome, conditions)) {
-            admisc::stopError(
-                paste0(
-                    "\"",
-                    outcome,
-                    "\" cannot be both outcome _and_ condition."
-                )
-            )
-        }
-        if (!all(is.element(conditions, names(data)))) {
-            admisc::stopError(
-                "Conditions not found in the data."
-            )
-        }
     }
     if (use.letters & ncol(data) > 27) {
         admisc::stopError(

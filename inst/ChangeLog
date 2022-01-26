@@ -1,5 +1,15 @@
+Version 3.14
+    o New: argument "categorical" in functions truthTable(), superSubset(),
+      pof() and pofind(), introducing categorical causal conditions
+    o Improved: functions minimize() and findRows() to work with interactive
+      shiny applications (thanks to Ian Greener for the suggestion)
+    o Fixed: bug in modelFit() when the outcome is specified as negated
+      (thanks to Marco Meier for the report)
+    o Fixed: bug in truthTable() not properly dealing with complex
+      configurational outcomes
+      
 Version 3.13
-    o Fixed a bug in truthTable() excluding inconsistent configurations when
+    o Fixed: bug in truthTable() excluding inconsistent configurations when
       activating the "complete = TRUE" argument
       (thanks to Nicolai Schulz for the report)
       

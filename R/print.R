@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -274,6 +274,12 @@
                 unique.coverages <- formatC(x$individual[[i]]$incl.cov$covU[is.element(rownames(x$individual[[i]]$incl.cov), essential.PIs)], digits = 3, format = "f")
                 incl.cov.e <- cbind(incl.cov.e, S = unique.coverages, stringsAsFactors = FALSE)
                 x$individual[[i]]$incl.cov <- x$individual[[i]]$incl.cov[!is.element(rownames(x$individual[[i]]$incl.cov), essential.PIs), ]
+                if (x$options$categorical && length(x$categories) > 0) {
+                    rownames(x$individual[[i]]$incl.cov) <- replaceCategories(
+                        rownames(x$individual[[i]]$incl.cov),
+                        categories = x$categories
+                    )
+                }
             }
         }
         if (nrow(incl.cov) > 0) {
@@ -322,6 +328,12 @@
     }
     if (is.null(rownames(incl.cov))) {
         rownames(incl.cov) <- rep("  ", nrow(incl.cov))
+    }
+    if (x$options$categorical && length(x$categories) > 0) {
+        rownames(incl.cov) <- replaceCategories(
+            rownames(incl.cov),
+            categories = x$categories
+        )
     }
     nchar.rownames <- max(nchar(rownames(incl.cov)))
     if (nchar.rownames == 1) {
@@ -755,6 +767,7 @@
         as.list(x$call)$enter,
         TRUE
     )
+    replace <- x$tt$options$categorical && length(x$tt$categories) > 0
     line.length <- getOption("width")
     if (any(names(x) == "via.web")) {
         line.length <- 10000
@@ -860,6 +873,12 @@
                 )
                 if (length(x$i.sol[[i]]$essential) > 0) {
                     xsol <- xsol[!is.element(xsol, x$i.sol[[i]]$essential)]
+                    if (replace) {
+                        x$i.sol[[i]]$essential <- replaceCategories(
+                            x$i.sol[[i]]$essential,
+                            categories = x$tt$categories
+                        )
+                    }
                     xsol <- paste(
                         paste(
                             x$i.sol[[i]]$essential,
@@ -892,6 +911,12 @@
                     )
                 }
                 else {
+                    if (replace) {
+                        x$i.sol[[i]]$solution[[sol]] <- replaceCategories(
+                            x$i.sol[[i]]$solution[[sol]],
+                            categories = x$tt$categories
+                        )
+                    }
                     cat(
                         admisc::prettyString(
                             x$i.sol[[i]]$solution[[sol]],
@@ -914,6 +939,12 @@
         if (length(x$solution) == 1) {
             sufnec <- all(admisc::agteb(x$IC$sol.incl.cov[3], sol.cov))
             sufnec <- paste(ifelse(sufnec, "<", ""), "->", sep = "")
+            if (replace) {
+                x$solution[[1]] <- replaceCategories(
+                    x$solution[[1]],
+                    categories = x$tt$categories
+                )
+            }
             cat(
                 sprintf(
                     "M1: %s\n",
@@ -950,6 +981,12 @@
                 sufnec.char[i] <- paste0(ifelse(sufnec[i], "<", ""), "->")
                 if (length(x$essential) > 0) {
                     xsol <- xsol[!is.element(xsol, x$essential)]
+                    if (replace) {
+                        x$essential <- replaceCategories(
+                            x$essential,
+                            categories = x$tt$categories
+                        )
+                    }
                     xsol <- paste0(
                         paste(x$essential, collapse = "@"),
                         ifelse(
@@ -976,6 +1013,12 @@
                     )
                 }
                 else {
+                    if (replace) {
+                        x$solution[[i]] <- replaceCategories(
+                            x$solution[[i]],
+                            categories = x$tt$categories
+                        )
+                    }
                     cat(
                         admisc::prettyString(
                             x$solution[[i]],
@@ -1014,9 +1057,19 @@
 }
 `print.QCA_sS` <- function(x, ...) {
     dots <- list(...)
-    if (x$use.letters) {
-        conditions <- names(x$letters)
-        xletters <- as.vector(x$letters)
+    xletters <- NULL
+    if (x$options$use.letters) {
+        xletters <- x$letters
+    }
+    if (x$options$categorical && length(x$categories) > 0) {
+        rownames(x$incl.cov) <- replaceCategories(
+            rownames(x$incl.cov),
+            categories = x$categories
+        )
+    }
+    if (x$options$use.letters) {
+        conditions <- names(xletters)
+        xletters <- as.vector(xletters)
         if (!all(is.element(conditions, xletters))) {
             cat("\n")
             for (i in seq(length(xletters))) {
@@ -1196,6 +1249,11 @@
         alloutzero <- all(x$tt$OUT == 0)
         x$tt[, "OUT"] <- paste(" ", x$tt[, "OUT"], "")
         colnames(x$tt)[colnames(x$tt) == "OUT"] <- "  OUT "
+        if (x$options$categorical && length(x$categories) > 0) {
+            for (fcond in names(x$categories)) {
+                x$tt[, fcond] <- x$categories[[fcond]][x$tt[, fcond] + 1]
+            }
+        }
         print(admisc::prettyTable(x$tt))
         if (alloutzero) {
             if (enter) cat("\n")

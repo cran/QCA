@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@
         )
     }
     else {
+        ttinput <- methods::is(input, "QCA_tt")
         if (is.matrix(input)) {
             if (is.null(colnames(input))) {
                 admisc::stopError(
@@ -59,14 +60,13 @@
                 }
             }
         }
-        if(!(is.data.frame(input) | methods::is(input, "QCA_tt"))) {
+        if(!(is.data.frame(input) | ttinput)) {
             admisc::stopError(
                 "The input should be a truth table or a dataset.",
                 enter
             )
         }
     }
-    ttinput <- methods::is(input, "QCA_tt")
     print.truth.table <- details & !ttinput
     if (ttinput) {
         nms <- colnames(input$recoded.data)[seq(length(input$noflevels))]
@@ -103,12 +103,9 @@
     pi.depth    <- if (is.element("pi.depth",    names(dots))) dots$pi.depth     else 0
     sol.cov     <- if (is.element("sol.cov",     names(dots))) dots$sol.cov      else 1
     sol.depth   <- if (is.element("sol.depth",   names(dots))) dots$sol.depth    else 0
-    exclude     <- if (is.element("exclude",     names(dots))) dots$exclude      else NULL
     keep.trying <- if (is.element("keep.trying", names(dots))) dots$keep.trying  else FALSE
-    if (is.null(exclude)) {
-        if (is.element("omit", names(dots))) {
-            exclude <- dots$omit
-        }
+    if (is.element("omit", names(dots)) && !is.element("exclude", names(dots))) {
+        dots$exclude <- dots$omit
     }
     if (is.null(include)) {
         admisc::stopError(
@@ -156,22 +153,39 @@
     if (is.character(outcome) & !identical(outcome, "")) {
         outcome <- admisc::splitstr(outcome)
     }
+    curly <- grepl("\\{", outcome)
     if (ttinput) { 
         tt <- input
-        curly <- grepl("\\{", tt$options$outcome)
-        if (is.null(tt$options$exclude) & !is.null(exclude)) {
-            callist <- as.list(tt$call)
+        ttargs <- setdiff(names(formals(truthTable)), "show.cases")
+        if (any(is.element(ttargs, names(dots)))) {
+            callist <- as.list(tt$call)[-1]
+            if (!grepl("\\+|\\*", outcome)) {
+                if (admisc::tilde1st(callist$outcome)) {
+                    callist$outcome <- admisc::notilde(callist$outcome)
+                }
+                else {
+                    callist$outcome <- paste("~", callist$outcome, sep = "")    
+                }
+            }
+            common <- intersect(names(dots), ttargs)
+            if (length(common) > 0) {
+                for (i in seq(length(common))) {
+                    callist[[common[i]]] <- dots[[common[i]]]
+                }
+            }
+            for (i in seq(length(callist))) {
+                tc <- tryCatch(eval.parent(callist[[i]]), error = function(e) e)
+                if (is.list(tc) && identical(names(tc), c("message", "call"))) {
+                    tc <- as.character(callist[[i]])
+                }
+                callist[[i]] <- tc
+            }
             dataname <- callist$data
             callist$data <- tt$initial.data
-            callist$exclude <- exclude
-            tt <- do.call("truthTable", callist[-1])
+            tt <- do.call("truthTable", callist)
             callist$data <- dataname
             tt$call <- as.call(callist)
         }
-        recdata <- tt$recoded.data
-        conditions <- colnames(recdata)[seq(length(tt$noflevels))]
-        outcome <- colnames(recdata)[ncol(recdata)]
-        indata <- tt$initial.data[, match(colnames(recdata), colnames(tt$initial.data)), drop = FALSE]
     }
     else {
         if (identical(outcome, "")) {
@@ -186,19 +200,20 @@
         if (length(outcome) > 1) {
             return(do.call("minimizeLoop", as.list(metacall)[-1], envir = parent.frame()))
         }
-        outcome.copy <- outcome
+        outcome.copy <- outcome.name <- outcome
         indata <- input 
-        curly <- grepl("\\{", outcome)
-        testoutcome <- ifelse(curly,
-                            admisc::curlyBrackets(admisc::notilde(outcome), outside = TRUE),
-                            admisc::squareBrackets(admisc::notilde(outcome), outside = TRUE))
-        if (!is.element(testoutcome, colnames(input))) {
-            admisc::stopError(
-                "Outcome not found in the data.",
-                enter
-            )
+        testoutcome <- admisc::tryCatchWEM(
+            trout <- admisc::translate(outcome, data = input)
+        )
+        if (is.element("error", names(testoutcome))) {
+            admisc::stopError("Incorrect outcome specification.")
         }
-        outcome.name <- testoutcome
+        testrout <- apply(trout, 2, function(x) {
+            all(x != "-1")
+        })
+        if (sum(testrout) == 1) {
+            outcome.name <- names(testrout)[testrout]
+        }
         if (identical(conditions, "")) {
             conditions <- names(input)[-which(names(input) == outcome.name)]
         }
@@ -213,18 +228,17 @@
                 conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
             }
         }
-        input <- input[, c(conditions, outcome.name)]
+        input <- input[, unique(c(conditions, names(testrout)[testrout]))]
         verify.minimize(input, outcome.name, conditions, explain, include, use.letters)
         if (!is.element("incl.cut", names(dots))) {
             dots$incl.cut <- incl.cut
         }
         tt <- do.call("truthTable", c(list(data = input), dots))
-        tt$initial.data <- indata
-        indata <- input 
-        recdata <- tt$recoded.data
-        outcome <- outcome.name
-        names(indata) <- c(conditions, outcome)
     }
+    recdata <- tt$recoded.data
+    conditions <- colnames(recdata)[seq(length(tt$noflevels))]
+    outcome <- colnames(recdata)[ncol(recdata)]
+    indata <- tt$initial.data[, match(colnames(recdata), colnames(tt$initial.data)), drop = FALSE]
     use.letters <- tt$options$use.letters
     show.cases <- show.cases | tt$options$show.cases 
     neg.out <- tt$options$neg.out
@@ -308,13 +322,29 @@
     setColnames(pos.matrix, colnms)
     setColnames(neg.matrix, colnms)
     rownames(neg.matrix) <- (neg.matrix - 1) %*% mbase + 1
-    output$initials <- admisc::writePrimeimp(inputt, mv = mv, collapse = collapse)
+    output$initials <- admisc::writePrimeimp(
+        impmat = inputt,
+        mv = mv,
+        collapse = collapse,
+        curly = curly
+    )
     expressions <- .Call("C_QMC", expressions, noflevels, PACKAGE = "QCA")
     if (is.element("simplify", names(dots))) {
         expressions <- admisc::sortExpressions(expressions)
     }
-    callist <- list(expressions=expressions, mv=mv, collapse=collapse, inputt=inputt, row.dom=row.dom,
-                    initial=rownms, all.sol=all.sol, indata=indata, curly=curly, enter=enter)
+    callist <- list(
+        expressions = expressions,
+        mv = mv,
+        collapse = collapse,
+        inputt = inputt,
+        row.dom = row.dom,
+        initial = rownms,
+        all.sol = all.sol,
+        indata = indata,
+        curly = curly,
+        categorical = tt$options$categorical,
+        enter = enter
+    )
     callist <- c(callist, dots)
     if (!incl.rem || (!is.null(dir.exp) & !identical(include, ""))) {
         if (pi.cons > 0) {
@@ -383,21 +413,49 @@
     output$options$collapse    <- collapse
     output$options$curly       <- curly
     expr.cases <- rep(NA, nrow(p.sol$reduced$expressions))
-    tt.rows <- admisc::writePrimeimp(inputt, mv = mv, collapse = collapse)
+    tt.rows <- admisc::writePrimeimp(
+        impmat = inputt,
+        mv = mv,
+        collapse = collapse
+    )
     if (any(grepl("[*]", rownames(p.sol$reduced$expressions)))) {
         if (use.letters) {
-            mtrxlines <- makeChart(primes = rownames(p.sol$reduced$expressions), snames = LETTERS[seq(length(conditions))], configs = tt.rows, mv = mv, noflevels = noflevels)
+            mtrxlines <- makeChart(
+                primes = rownames(p.sol$reduced$expressions),
+                snames = LETTERS[seq(length(conditions))],
+                configs = tt.rows,
+                mv = mv,
+                noflevels = noflevels
+            )
         }
         else {
-            mtrxlines <- makeChart(primes = rownames(p.sol$reduced$expressions), snames = conditions, configs = tt.rows, mv = mv, noflevels = noflevels)
+            mtrxlines <- makeChart(
+                primes = rownames(p.sol$reduced$expressions),
+                snames = conditions,
+                configs = tt.rows,
+                mv = mv,
+                noflevels = noflevels
+            )
         }
     }
     else {
         if (use.letters) {
-            mtrxlines <- makeChart(primes = rownames(p.sol$reduced$expressions), configs = tt.rows, snames = LETTERS[seq(length(conditions))], mv = mv, noflevels = noflevels)
+            mtrxlines <- makeChart(
+                primes = rownames(p.sol$reduced$expressions), 
+                configs = tt.rows, 
+                snames = LETTERS[seq(length(conditions))], 
+                mv = mv, 
+                noflevels = noflevels
+            )
         }
         else {
-            mtrxlines <- makeChart(primes = rownames(p.sol$reduced$expressions), configs = tt.rows, snames = conditions, mv = mv, noflevels = noflevels)
+            mtrxlines <- makeChart(
+                primes = rownames(p.sol$reduced$expressions),
+                configs = tt.rows,
+                snames = conditions,
+                mv = mv,
+                noflevels = noflevels
+            )
         }
     }
     colnames(mtrxlines) <- colnames(p.sol$reduced$mtrx) <- rownms
@@ -414,15 +472,27 @@
             conds <- conditions[match(colnames(p.sol$reduced$expressions), LETTERS)]
         }
     }
-    poflist <- list(setms = paste(rownames(p.sol$reduced$expressions), collapse = "+"),
-                    outcome = tt$options$outcome, data = indata, neg.out = neg.out,
-                    use.letters = tt$options$use.letters, show.cases = TRUE, cases = expr.cases,
-                    conditions = conds, relation = "sufficiency", minimize = TRUE)
-    if (length(output$solution) > 1) {
-        poflist$solution.list <- output$solution
-        poflist$essential <- output$essential
-    }
     if (!is.element("simplify", names(dots))) {
+        poflist <- list(
+            setms = paste(
+                rownames(p.sol$reduced$expressions),
+                collapse = "+"
+            ),
+            outcome = tt$options$outcome,
+            data = indata,
+            relation = "sufficiency",
+            categorical = tt$options$categorical,
+            neg.out = neg.out,
+            minimize = TRUE,
+            use.letters = tt$options$use.letters,
+            show.cases = TRUE,
+            cases = expr.cases
+        )
+        if (length(output$solution) > 1) {
+            poflist$solution.list <- output$solution
+            poflist$essential <- output$essential
+        }
+        poflist$categories <- output$tt$categories
         listIC <- do.call("pof", poflist)
         if (sol.cons > 0 & identical(include, "")) {
             error <- FALSE
@@ -437,10 +507,12 @@
                 }
                 else if (sum(eligible) == 1) {
                     wel <- which(eligible)
-                    listIC <- list(incl.cov = listIC$individual[wel]$incl.cov,
-                                    pims = listIC$individual[wel]$pims,
-                                    sol.incl.cov = listIC$individual[wel]$sol.incl.cov,
-                                    options = listIC$options)
+                    listIC <- list(
+                        incl.cov = listIC$individual[wel]$incl.cov,
+                        pims = listIC$individual[wel]$pims,
+                        sol.incl.cov = listIC$individual[wel]$sol.incl.cov,
+                        options = listIC$options
+                    )
                 }
                 else {
                     listIC$individual <- listIC$individual[wel]
@@ -461,7 +533,12 @@
         attr(output$pims, "conditions") <- conditions
         output$IC <- listIC
     }
-    output$numbers <- c(OUT1 = nofcases1, OUT0 = nofcases0, OUTC = nofcasesC, Total = nofcases1 + nofcases0 + nofcasesC)
+    output$numbers <- c(
+        OUT1 = nofcases1,
+        OUT0 = nofcases0,
+        OUTC = nofcasesC,
+        Total = nofcases1 + nofcases0 + nofcasesC
+    )
     mtrx <- p.sol$mtrx[p.sol$all.PIs, , drop = FALSE]
     SA <- TRUE
     if (is.element("SA", names(dots))) {
@@ -507,7 +584,11 @@
             colnames(SAx) <- colnames(inputt)
             return(SAx)
         })
-        prettyNums <- formatC(seq(length(p.sol$solution.list[[1]])), digits = nchar(length(p.sol$solution.list[[1]])) - 1, flag = 0)
+        prettyNums <- formatC(
+            seq(length(p.sol$solution.list[[1]])),
+            digits = nchar(length(p.sol$solution.list[[1]])) - 1,
+            flag = 0
+        )
         if (!is.null(dir.exp) & !identical(include, "")) {
             if (!identical(c.sol$solution.list, NA)) {
             dir.exp <- verify.dir.exp(recdata, outcome, conditions, noflevels, dir.exp, enter)
@@ -517,16 +598,26 @@
                 colnames(ECmat) <- colnames(inputt)
             }
             else {
-                result <- .Call("C_getEC", dir.exp,
-                    c.sol$expressions, c.sol$sol.matrix,
-                    p.sol$expressions, p.sol$sol.matrix,
-                    output$SA, as.integer(noflevels),
-                    PACKAGE = "QCA")
+                result <- .Call(
+                    "C_getEC",
+                    dir.exp,
+                    c.sol$expressions,
+                    c.sol$sol.matrix,
+                    p.sol$expressions,
+                    p.sol$sol.matrix,
+                    output$SA,
+                    as.integer(noflevels),
+                    PACKAGE = "QCA"
+                )
                 EClist <- result[[1]]
                 isols <- result[[2]]
                 intsel <- result[[3]]
             }
-            tt.rows <- admisc::writePrimeimp(inputt, mv = mv, collapse = collapse)
+            tt.rows <- admisc::writePrimeimp(
+                impmat = inputt,
+                mv = mv,
+                collapse = collapse
+            )
             i.sol <- vector("list", ncol(c.sol$sol.matrix)*ncol(p.sol$sol.matrix))
             index <- 1
             for (c.s in seq(ncol(c.sol$sol.matrix))) {
@@ -542,7 +633,12 @@
                         i.sol[[index]]$EC <- EClist[[index]]
                         i.sol[[index]]$DC <- output$SA[[p.s]][setdiff(rownames(output$SA[[p.s]]), rownames(EClist[[index]])), , drop = FALSE]
                         pos.matrix.i.sol <- unique(as.matrix(rbind(pos.matrix, EClist[[index]] + 1L)))
-                        expressions <- .Call("C_QMC", pos.matrix.i.sol, noflevels, PACKAGE = "QCA")
+                        expressions <- .Call(
+                            "C_QMC",
+                            pos.matrix.i.sol,
+                            noflevels,
+                            PACKAGE = "QCA"
+                        )
                         callist$expressions <- expressions
                         i.sol.index <- do.call("getSolution", callist)
                         i.sol.index$expressions <- i.sol.index$expressions[rowSums(i.sol.index$mtrx) > 0, , drop = FALSE]
@@ -556,24 +652,48 @@
                     i.sol[[index]]$p.sol          <- p.sol$solution.list[[1]][[p.s]]
                     expr.cases <- rep(NA, nrow(i.sol.index$reduced$expressions))
                     if (use.letters) {
-                        mtrxlines <- makeChart(primes = rownames(i.sol.index$reduced$expressions), configs = tt.rows, snames = LETTERS[seq(length(conditions))], mv = mv, noflevels = noflevels)
+                        mtrxlines <- makeChart(
+                            primes = rownames(i.sol.index$reduced$expressions),
+                            configs = tt.rows,
+                            snames = LETTERS[seq(length(conditions))],
+                            mv = mv,
+                            noflevels = noflevels
+                        )
                     }
                     else {
-                        mtrxlines <- makeChart(primes = rownames(i.sol.index$reduced$expressions), configs = tt.rows, snames = conditions, mv = mv, noflevels = noflevels)
+                        mtrxlines <- makeChart(
+                            primes = rownames(i.sol.index$reduced$expressions),
+                            configs = tt.rows,
+                            snames = conditions,
+                            mv = mv,
+                            noflevels = noflevels
+                        )
                     }
                     for (l in seq(length(expr.cases))) {
                         expr.cases[l] <- paste(inputcases[which(mtrxlines[l, ])], collapse="; ")
                     }
-                    poflist <- list(setms = paste(rownames(i.sol.index$reduced$expressions), collapse = "+"),
-                                    outcome = tt$options$outcome, data = indata, neg.out = neg.out,
-                                    use.letters = tt$options$use.letters, show.cases = TRUE, cases = expr.cases,
-                                    conditions = conditions, relation = "sufficiency", minimize = TRUE)
+                    poflist <- list(
+                        setms = paste(
+                            rownames(i.sol.index$reduced$expressions),
+                            collapse = "+"
+                        ),
+                        outcome = tt$options$outcome,
+                        data = indata,
+                        relation = "sufficiency",
+                        categorical = tt$options$categorical,
+                        neg.out = neg.out,
+                        minimize = TRUE,
+                        use.letters = tt$options$use.letters,
+                        show.cases = TRUE,
+                        cases = expr.cases
+                    )
                     if (length(i.sol.index$solution.list[[1]]) > 1) {
                         poflist$solution.list <- i.sol.index$solution.list[[1]]
                         if (!identical(i.sol.index$solution.list[[1]], i.sol.index$solution.list[[2]])) {
                             poflist$essential <- i.sol.index$solution.list[[2]]
                         }
                     }
+                    poflist$categories <- output$tt$categories
                     i.sol[[index]]$IC <- do.call("pof", poflist)
                     i.sol[[index]]$IC$options$show.cases <- show.cases
                     i.sol[[index]]$pims <- i.sol[[index]]$IC$pims

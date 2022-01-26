@@ -82,40 +82,16 @@ described by Ragin (2003). They can be specified using SOP (sum of products)
 expressions, which opens up the possibility to experiment with conjunctural
 directional expectations. "Don't care" conditions are simply left unspecified.
 
+If at least one of the conditions included in the analysis is multi-value, the
+entire \bold{\code{dir.exp}} expression should be specified in multi-value
+notation using squared brackets. If a condition X is crisp or fuzzy, the
+multi-value notation X[0] is interpreted as its absence, as in the ~X notation.
+
 Activating the \bold{\code{details}} argument has the effect of printing parameters
 of fit for each prime implicant and each overall model, the essential prime
 implicants being listed in the top part of the table. It also prints the truth
 table, in case the argument \bold{\code{input}} has been provided as a data frame
 instead of a truth table object.
-
-By default, the package \pkg{QCA} employes a different search algorithm based on
-Consistency Cubes (Dusa, 2018), analysing all possible combinations of causal conditions
-and all possible combinations of their respective levels. The structure of the input
-dataset (number of causal conditions, number of levels, number of unique rows in the
-truth table) has a direct implication on the search time, as all of those characteristics
-become entry parameters when calculating all possible combinations.
-
-Consequently, two kinds of depth arguments are provided: 
-
-\tabular{rl}{
-\bold{\code{pi.depth}} \tab the maximum number of causal conditions needed to conjunctively\cr
- \tab construct a prime implicant; it is the complexity level where the search\cr
- \tab can be stopped, as long as the PI chart can be solved.\cr
-\bold{\code{sol.depth}} \tab the maximum number of prime implicants needed to disjunctively\cr
- \tab build a solution model that covers all initial positive output configurations.
-}
-
-These arguments introduce a possible new way of deriving prime implicants and solution models,
-that can lead to different results (i.e. even more parsimonious) compared to the classical
-Quine-McCluskey. When either of them is modified from the default value of 0, the minimization
-method is automatically set to \bold{\code{"CCubes"}} and the remainders are automatically
-included in the minimization.
-
-The higher these depths, the higher the search time. Connversely, the search time can be
-significantly shorter if these depths are smaller. Irrespective of how large 
-\bold{\code{pi.depth}} is, the algorithm will always stop at a maximum complexity level
-where no new, non-redundant prime implicants are found. The argument \bold{\code{sol.depth}}
-is relevant only when activating the argument \bold{\code{all.sol}} to solve the PI chart.
 
 The default method (when \bold{\code{all.sol = FALSE}}), is to find the minimal number
 (\bold{\code{k}}) of prime implicants needed to cover all initial positive output
@@ -230,7 +206,7 @@ Qualitative Comparative Analysis (QCA) and Related Techniques}, SAGE.
 \seealso{\code{\link{truthTable}}, \code{\link{factorize}}}
 
 \examples{
-      
+\dontrun{
 # -----
 # Lipset binary crisp data
 
@@ -293,9 +269,7 @@ minimize(ttLMn, include = "?", details = TRUE)
 # -----
 # Lipset fuzzy sets data (Ragin 2009, p.112)
 
-# truth table using a very low inclusion cutoff
-ttLF <- truthTable(LF, SURV, incl.cut = 0.8,
-        sort.by = "incl", show.cases = TRUE)
+ttLF <- truthTable(LF, SURV, incl.cut = 0.8, sort.by = "incl", show.cases = TRUE)
 
 # conservative solution
 minimize(ttLF, details = TRUE)
@@ -303,16 +277,16 @@ minimize(ttLF, details = TRUE)
 # parsimonious solution
 minimize(ttLF, include = "?", details = TRUE)
 
-# intermediate solution using directional expectations
+# intermediate solution
 minimize(ttLF, include = "?", details = TRUE,
          dir.exp = c(DEV, URB, LIT, IND, STB))
 
-# directional expectations can also be specified usin a sequence
+# directional expectations can also be specified using a sequence
 minimize(ttLF, include = "?", details = TRUE, dir.exp = DEV:STB)
 
 
 # URB as a don't care condition (left unspecified) and
-# experimentally, conjunctural directional expectations
+# conjunctural directional expectations
 minimize(ttLF, include = "?", details = TRUE,
          dir.exp = c(DEV, STB, ~LIT*IND))
 
@@ -349,7 +323,7 @@ for(i in 1:4) {
 # step before the minimization
 
 minimize(RS, outcome = REC, details = TRUE)
-
+}
 }
 
 \keyword{functions}

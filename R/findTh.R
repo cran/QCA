@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,8 +23,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`findTh` <-
-function(x, n = 1, hclustm = "complete", distm = "euclidean", ...) {
+`findTh` <- function(
+    x, n = 1, hclustm = "complete", distm = "euclidean", ...
+) {
     dots <- list(...)
     if (is.element("groups", names(dots))) {
         n <- dots$groups - 1

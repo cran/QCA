@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>pof. QCA 3.13</title>
+<title>pof. QCA 3.14</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.13</a>
+      <a class="brand" href="#">QCA 3.14</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -64,9 +64,10 @@ of the <b><code><a href=''>pof()</a></code></b> function, to calculate parameter
     </div>
     
     <h2>Usage</h2>
-<pre><div>pof(setms, outcome, data, relation = "necessity", inf.test = "",
-    incl.cut = c(0.75, 0.5), add, ...)</div>
-<div>pofind(data, outcome, conditions, relation = "necessity", ...)</div></pre>
+<pre><div>pof(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
+      categorical = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...)</div>
+<div>pofind(data = NULL, outcome = "", conditions = "", relation = "necessity",
+      categorical = FALSE, ...)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -77,15 +78,15 @@ of the <b><code><a href=''>pof()</a></code></b> function, to calculate parameter
         or a vector of row numbers from the implicant matrix, or a character expression</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>data</code></b></td>
-            <td></td><td></td><td></td>
-            <td>The calibrated data frame, in case the <b><code>outcome</code></b> is a name.</td>
-        </tr>
-        <tr>
             <td valign="top"><b><code>outcome</code></b></td>
             <td></td><td></td><td></td>
             <td>The name of the outcome column from a calibrated data frame, or
         the actual numerical column from the data frame, representing the outcome.</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>data</code></b></td>
+            <td></td><td></td><td></td>
+            <td>The calibrated data frame, in case the <b><code>outcome</code></b> is a name.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>conditions</code></b></td>
@@ -99,6 +100,11 @@ of the <b><code><a href=''>pof()</a></code></b> function, to calculate parameter
             <td>The set relation to <b><code>outcome</code></b>, either <b><code>"necessity"</code></b>
         or <b><code>"sufficiency"</code></b>, partial words like <b><code>"suf"</code></b>
         being accepted (see examples).</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>categorical</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, use category labels if categorical causal conditions.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>inf.test</code></b></td>

@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,7 +23,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`Xplot` <- function(x, jitter = FALSE, at = pretty(x), ...) {
+`Xplot` <- function(
+    x, jitter = FALSE, at = pretty(x), ...
+) {
     dots <- list(...)
     funargs <- unlist(lapply(match.call(), deparse)[-1])
     xname <- getName(funargs[1])

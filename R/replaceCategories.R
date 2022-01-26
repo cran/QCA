@@ -23,26 +23,22 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`findSubsets` <- function(
-    input, noflevels = NULL, stop = NULL, ...
-) {
-    dots <- list(...)
-        if (is.element("row.no", names(dots)) & missing(input)) {
-            input <- dots$row.no
+`replaceCategories` <- function(x, categories = NULL) {
+    mv <- any(grepl("\\[|\\{", x)) && all(grepl("\\]|\\}", x))
+    target <- replacement <- c()
+    nms <- names(categories)
+    for (i in seq(length(categories))) {
+        if (mv) {
+            values <- seq(length(categories[[i]])) - 1
+            target <- c(target, paste0(nms[i], "[", values, "]"))
         }
-        if (is.element("maximum", names(dots))) {
-            stop <- dots$maximum
+        else {
+            target <- c(target, paste0("~", nms[i]), nms[i])
         }
-    stop <- ifelse(missing(stop), prod(noflevels), stop)
-    result <- lapply(input, function(x) {
-        .Call(
-            "C_findSubsets",
-            x,
-            noflevels - 1,
-            rev(c(1, cumprod(rev(noflevels))))[-1],
-            stop,
-            PACKAGE = "QCA"
-        )
-    })
-    return(sort(unique(unlist(result))))
+        replacement <- c(replacement, categories[[i]])
+    }
+    for (i in seq(length(x))) {
+        x[i] <- replaceText(x[i], target, replacement)
+    }
+    return(x)
 }

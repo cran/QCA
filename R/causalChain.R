@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,9 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`causalChain` <-
-function(data, ordering = NULL, strict = FALSE, pi.cons = 0, pi.depth = 0,
-        sol.cons = 0, sol.cov = 1, sol.depth = 0, ...) {
+`causalChain` <- function(
+    data, ordering = NULL, strict = FALSE, pi.cons = 0, pi.depth = 0,
+    sol.cons = 0, sol.cov = 1, sol.depth = 0, ...
+) {
     metacall <- match.call(expand.dots = TRUE)
     allargs <- as.list(metacall)[-1]
     allargs <- allargs[

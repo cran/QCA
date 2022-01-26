@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021, Adrian Dusa
+# Copyright (c) 2016 - 2022, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,10 +23,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`truthTable` <-
-function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut = 0,
-        exclude = NULL, complete = FALSE, use.letters = FALSE, show.cases = FALSE,
-        dcc = FALSE, sort.by = "", inf.test = "", ...) {
+`truthTable` <- function(
+    data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut = 0,
+    exclude = NULL, complete = FALSE, use.letters = FALSE, categorical = FALSE,
+    show.cases = FALSE, dcc = FALSE, sort.by = "", inf.test = "", ...
+) {
     metacall <- match.call(expand.dots = TRUE)
     dots <- admisc::recreate(substitute(list(...)))
     back.args <- c("outcome", "conditions", "n.cut", "incl.cut", "complete", "show.cases",
@@ -46,11 +47,11 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         if (is.element("neg.out", names(dots))) {
             neg.out <- dots$neg.out
         }
-        if (is.element("incl.cut1", names(dots)) & identical(ic1, 1)) {
+        if (is.element("incl.cut1", names(dots)) && identical(ic1, 1)) {
             ic1 <- dots$incl.cut1
             incl.cut[1] <- ic1
         }
-        if (is.element("incl.cut0", names(dots)) & identical(ic0, 1)) {
+        if (is.element("incl.cut0", names(dots)) && identical(ic0, 1)) {
             ic0 <- dots$incl.cut0
             incl.cut[2] <- ic0
         }
@@ -65,9 +66,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     initial.data <- as.data.frame(data) 
     curly <- any(grepl("\\{", outcome)) 
     if (!identical(outcome, "")) {
-        testoutcome <- ifelse(curly,
-                            admisc::curlyBrackets(admisc::notilde(outcome), outside = TRUE),
-                            admisc::squareBrackets(admisc::notilde(outcome), outside = TRUE))
+        testoutcome <- admisc::tryCatchWEM(admisc::translate(outcome, data = data))
         if (grepl("\\+|\\*", outcome)) {
             initial.data[, outcome] <- data[, outcome] <- admisc::compute(outcome, data)
         }
@@ -80,17 +79,25 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
                 outcome.value <- admisc::squareBrackets(outcome)
                 outcome <- admisc::squareBrackets(outcome, outside = TRUE)
             }
-            data[, admisc::notilde(outcome)] <- is.element(data[, admisc::notilde(outcome)], admisc::splitstr(outcome.value)) * 1
+            data[, admisc::notilde(outcome)] <- is.element(
+                data[, admisc::notilde(outcome)],
+                admisc::splitstr(outcome.value)
+            ) * 1
         }
-        else if (!is.element(testoutcome, colnames(data))) {
-            admisc::stopError(
-                "Inexisting outcome name."
-            )
+        else if (is.element("error", names(testoutcome))) {
+            admisc::stopError("Incorrect outcome specification.")
         }
     }
     conditions <- admisc::recreate(substitute(conditions), colnames(data))
     if (identical(conditions, "")) {
-        conditions <- setdiff(colnames(data), admisc::notilde(outcome))
+        conditions <- setdiff(
+            colnames(data),
+            ifelse(
+                grepl("\\+|\\*", outcome),
+                outcome,
+                admisc::notilde(outcome)
+            )
+        )
     }
     else {
             conditions <- admisc::splitstr(conditions)
@@ -123,15 +130,17 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
             rownames(data) <- seq(nrow(data))
         }
         data <- as.data.frame(data)
-        for (i in seq(ncol(data))) {
-            if (admisc::possibleNumeric(data[, i])) {
-                data[, i] <- admisc::asNumeric(data[, i])
+        data[] <- lapply(data, function(x) {
+            if (admisc::possibleNumeric(x)) {
+                x <- admisc::asNumeric(x)
             }
-        }
+            return(x)
+        })
         initial.data <- data
     }
     verify.tt(
-        data, admisc::notilde(outcome),
+        data,
+        outcome,
         conditions,
         complete,
         show.cases,
@@ -146,13 +155,15 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
             conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
         }
     }
-    data <- data[, c(conditions, admisc::notilde(outcome))]
-    if (admisc::tilde1st(outcome)) {
-        data[, admisc::notilde(outcome)] <- 1 - data[, admisc::notilde(outcome)]
-    }
-    outcome <- admisc::notilde(outcome)
-    if (neg.out) {
-        data[, outcome] <- 1 - data[, outcome]
+    if (!grepl("\\+|\\*", outcome)) {
+        data <- data[, c(conditions, admisc::notilde(outcome))]
+        if (admisc::tilde1st(outcome)) {
+            data[, admisc::notilde(outcome)] <- 1 - data[, admisc::notilde(outcome)]
+        }
+        outcome <- admisc::notilde(outcome)
+        if (neg.out) {
+            data[, outcome] <- 1 - data[, outcome]
+        }
     }
     nofconditions <- length(conditions)
     infodata <- admisc::getInfo(data[, conditions, drop = FALSE])
@@ -162,6 +173,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     noflevels <- infodata$noflevels
     dc.code <- infodata$dc.code
     rownames(data) <- rownames(initial.data)
+    categories <- infodata$categories
     condata <- data[, conditions, drop = FALSE]
     if (any(fuzzy.cc)) {
         if (any(data[, conditions[fuzzy.cc]] == 0.5)) {
@@ -188,7 +200,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
     ipc <- .Call(
         "C_truthTable",
         as.matrix(data[, conditions]),
-        data[, outcome],
+        admisc::compute(outcome, data),
         as.matrix(tt),
         as.numeric(fuzzy.cc),
         PACKAGE = "QCA"
@@ -391,6 +403,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         cases = cases,
         DCC = DCC,
         minmat = minmat,
+        categories = categories,
         options = list(
             outcome = outcome.copy,
             conditions = conditions,
@@ -403,6 +416,7 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
             show.cases = show.cases,
             dcc = dcc,
             use.letters = use.letters,
+            categorical = categorical,
             inf.test = statistical.testing
         )
     )
@@ -412,11 +426,13 @@ function(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut =
         x$removed <- structure(
             list(
                 tt = removed,
+                categories = categories,
                 options = list(
                     complete = FALSE,
                     show.cases = show.cases,
                     dcc = dcc,
-                    removed = TRUE
+                    removed = TRUE,
+                    categorical = categorical
                 )
             ),
             class = "QCA_tt"
