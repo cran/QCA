@@ -1,3 +1,10 @@
+Version 3.15
+    o Improved: argument "exclude" now accept SOP expressions
+    o Improved: function truthTable() now accept formal arguments from function
+      findRows(), when excluding configurations
+    o Fixed: printing bug in causalChain() for individual components
+      (thanks to Omar Bautista González for the reports)
+      
 Version 3.14
     o New: argument "categorical" in functions truthTable(), superSubset(),
       pof() and pofind(), introducing categorical causal conditions

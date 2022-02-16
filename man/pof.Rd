@@ -156,7 +156,7 @@ PROTEST <- CVF$PROTEST
 pof(conds, PROTEST)
 
 # parameters of fit negating the conditions
-# pof(1 - conds, PROTEST)
+pof(1 - conds, PROTEST)
 
 # negating the outcome
 pof(conds, 1 - PROTEST)
@@ -185,7 +185,7 @@ pof(nCVF$coms, 1 - PROTEST)
 cCVF <- minimize(CVF, outcome = PROTEST, incl.cut = 0.8, details = TRUE)
 
 # verify if their negations are also sufficient for the outcome
-# pof(1 - cCVF$pims, PROTEST, relation = "sufficiency")
+pof(1 - cCVF$pims, PROTEST, relation = "sufficiency")
 
 
 # -----

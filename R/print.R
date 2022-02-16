@@ -765,8 +765,9 @@
     enter <- ifelse (
         is.element("enter", names(as.list(x$call))),
         as.list(x$call)$enter,
-        TRUE
+        "\n"
     )
+    enter <- identical(enter, "\n")
     replace <- x$tt$options$categorical && length(x$tt$categories) > 0
     line.length <- getOption("width")
     if (any(names(x) == "via.web")) {

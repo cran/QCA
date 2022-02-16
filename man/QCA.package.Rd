@@ -56,8 +56,8 @@ specify conjunctural directional expectations in the minimization function.
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 3.14\cr
-    Date:    \tab 2022-01-26\cr
+    Version: \tab 3.15\cr
+    Date:    \tab 2022-02-16\cr
     License: \tab GPL (>= 3)\cr
     }
 }

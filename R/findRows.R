@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `findRows` <- function(
-    expression = "", obj, observed = FALSE, type = 1, ...
+    expression = "", obj = NULL, observed = FALSE, type = 1, ...
 ) {
     expression <- admisc::recreate(substitute(expression))
     dots <- list(...)
@@ -41,7 +41,15 @@
             "The expression is missing, for type 0 or 1."
         )
     }
-    if (missing(obj)) {
+    noflevels <- NULL
+    if (is.element("noflevels", names(dots))) {
+        noflevels <- dots$noflevels
+    }
+    conditions <- NULL
+    if (is.element("conditions", names(dots))) {
+        conditions <- dots$conditions
+    }
+    if (missing(obj) && !is.null(noflevels)) {
         admisc::stopError(
             "The truth table object is missing."
         )
@@ -77,26 +85,42 @@
         }
     }
     else {
-        if (is.matrix(obj) && is.numeric(obj)) {
-            conditions <- colnames(obj)
-            if (is.null(conditions)) {
+        if (is.null(obj)) {
+            if (is.null(noflevels) | is.null(conditions)) {
                 admisc::stopError(
-                    "The input matrix does not have column names."
+                    "The truth table argument <obj> is missing."
                 )
             }
         }
         else {
-            admisc::stopError(
-                "Argument <obj> is not a truth table object or a numerical matrix."
-            )
+            if (is.matrix(obj) && is.numeric(obj)) {
+                conditions <- colnames(obj)
+                if (is.null(conditions)) {
+                    admisc::stopError(
+                        "The <obj> matrix does not have column names."
+                    )
+                }
+            }
+            else {
+                admisc::stopError(
+                    "Argument <obj> is not a truth table object or a numerical matrix."
+                )
+            }
         }
     }
     SBS <- NULL
     CSA <- NULL
     SSR <- NULL
     if (any(is.element(type, 0:1))) {
-        trexp <- attr(admisc::translate(paste(expression, collapse = "+"), snames = conditions, retlist = TRUE), "retlist")
-        result <- matrix(ncol = length(trexp[[1]]), nrow = 0)
+        trexp <- attr(
+            admisc::translate(
+                paste(expression, collapse = "+"),
+                snames = conditions,
+                retlist = TRUE
+            ),
+            "retlist"
+        )
+        result <- matrix(ncol = length(conditions), nrow = 0)
         if (is.matrix(obj)) {
             noflevels <- admisc::getInfo(obj)$noflevels
         }
@@ -152,10 +176,20 @@
                 SA2 <- rbind(SA2, pSAn[[i]])
             }
         }
-        CSA <- as.numeric(intersect(rownames(unique(SA1)), rownames(unique(SA2))))
+        CSA <- as.numeric(
+            intersect(
+                rownames(unique(SA1)),
+                rownames(unique(SA2))
+            )
+        )
     }
     if (any(is.element(type, c(0, 3)))) {
-        SSR <- as.numeric(intersect(rownames(obj$tt)[obj$tt$OUT == 1], rownames(nobj$tt)[nobj$tt$OUT == 1]))
+        SSR <- as.numeric(
+            intersect(
+                rownames(obj$tt)[obj$tt$OUT == 1],
+                rownames(nobj$tt)[nobj$tt$OUT == 1]
+            )
+        )
     }
     return(sort(unique(c(SBS, CSA, SSR))))
 }

@@ -247,12 +247,24 @@
         ipc[2, obremove] < ic1 &
         admisc::agteb(ipc[2, obremove], ic0)
     ] <- "C"
+    frcallist <- NULL
     if (!is.null(exclude)) {
         if (admisc::possibleNumeric(exclude)) {
             exclude <- admisc::asNumeric(exclude)
         }
         if (is.character(exclude)) {
-            exclude <- findRows(exclude, conditions, noflevels) 
+            frargs <- setdiff(names(formals(findRows)), "...")
+            callist <- as.list(metacall)
+            frcallist <- list(expression = exclude)
+            callist$exclude <- NULL
+            common <- intersect(names(dots), frargs)
+            if (length(common) > 0) {
+                for (i in seq(length(common))) {
+                    frcallist[[common[i]]] <- dots[[common[i]]]
+                    callist[[common[i]]] <- NULL
+                }
+            }
+            exclude <- NULL
         }
         if (length(exclude) > 0) {
             exclude <- exclude[exclude <= prod(noflevels)]
@@ -446,5 +458,22 @@
     }
     x$fs <- unname(fuzzy.cc)
     x$call <- metacall
-    return(structure(x, class = "QCA_tt"))
+    x <- structure(x, class = "QCA_tt")
+    if (!is.null(frcallist)) {
+        tempcall <- callist
+        for (i in seq(2, length(tempcall))) {
+            tc <- tryCatch(eval.parent(tempcall[[i]]), error = function(e) e)
+            if (is.list(tc) && identical(names(tc), c("message", "call"))) {
+                tc <- as.character(tempcall[[i]])
+            }
+            tempcall[[i]] <- tc
+        }
+        x$call <- as.call(tempcall)
+        frcallist$obj <- x
+        tempcall$exclude <- do.call("findRows", frcallist)
+        x <- do.call("truthTable", tempcall[-1])
+        callist$exclude <- tempcall$exclude
+        x$call <- as.call(callist)
+    }
+    return(x)
 }

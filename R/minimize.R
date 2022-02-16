@@ -150,30 +150,18 @@
     if (is.character(include) & !identical(include, "")) {
         include <- admisc::splitstr(include)
     }
-    if (is.character(outcome) & !identical(outcome, "")) {
-        outcome <- admisc::splitstr(outcome)
-    }
-    curly <- grepl("\\{", outcome)
     if (ttinput) { 
         tt <- input
         ttargs <- setdiff(names(formals(truthTable)), "show.cases")
         if (any(is.element(ttargs, names(dots)))) {
-            callist <- as.list(tt$call)[-1]
-            if (!grepl("\\+|\\*", outcome)) {
-                if (admisc::tilde1st(callist$outcome)) {
-                    callist$outcome <- admisc::notilde(callist$outcome)
-                }
-                else {
-                    callist$outcome <- paste("~", callist$outcome, sep = "")    
-                }
-            }
+            callist <- as.list(tt$call)
             common <- intersect(names(dots), ttargs)
             if (length(common) > 0) {
                 for (i in seq(length(common))) {
                     callist[[common[i]]] <- dots[[common[i]]]
                 }
             }
-            for (i in seq(length(callist))) {
+            for (i in seq(2, length(callist))) {
                 tc <- tryCatch(eval.parent(callist[[i]]), error = function(e) e)
                 if (is.list(tc) && identical(names(tc), c("message", "call"))) {
                     tc <- as.character(callist[[i]])
@@ -182,7 +170,7 @@
             }
             dataname <- callist$data
             callist$data <- tt$initial.data
-            tt <- do.call("truthTable", callist)
+            tt <- do.call("truthTable", callist[-1])
             callist$data <- dataname
             tt$call <- as.call(callist)
         }
@@ -196,6 +184,9 @@
         }
         if (any(c(pi.cons, sol.cons) > 0) & incl.cut[1] == 1) {
             incl.cut[1] <- min(c(pi.cons, sol.cons))
+        }
+        if (is.character(outcome) & !identical(outcome, "")) {
+            outcome <- admisc::splitstr(outcome)
         }
         if (length(outcome) > 1) {
             return(do.call("minimizeLoop", as.list(metacall)[-1], envir = parent.frame()))
@@ -235,6 +226,7 @@
         }
         tt <- do.call("truthTable", c(list(data = input), dots))
     }
+    curly <- grepl("\\{", tt$options$outcome)
     recdata <- tt$recoded.data
     conditions <- colnames(recdata)[seq(length(tt$noflevels))]
     outcome <- colnames(recdata)[ncol(recdata)]

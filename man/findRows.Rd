@@ -5,9 +5,8 @@
 \title{Find untenable configurations}
 
 \description{
-This function takes a truth table as the input, and finds various types of untenable
-assumptions that are usually used in function \bold{\code{\link{minimize}()}} when excluding
-certain remainders or some observed configurations from the minimization process.
+This function finds various types of untenable assumptions that are used when
+excluding certain configurations from the minimization process.
 }
 
 \usage{
@@ -18,51 +17,54 @@ findRows(expression = "", obj, observed = FALSE, type = 1, ...)
   \item{expression}{String: a QCA expression written in sum of products form.}
   \item{obj}{A truth table (an object of class \code{"QCA_tt"}) or an equivalent
         numerical matrix.}
-  \item{observed}{Logical: also return subset relations for observed configurations,
-        when \code{obj} is a truth table.}
+  \item{observed}{Logical: also return subset relations for observed
+        configurations, when \code{obj} is a truth table.}
   \item{type}{Numeric vector, specifying the type(s) of untenable configurations.}
-  \item{...}{Additional arguments to be passed to function \code{\link{truthTable}()},
-        for the negation of the outcome.}
+  \item{...}{Additional arguments to be passed to function
+        \code{\link{truthTable}()}, for the negation of the outcome.}
 }
 
 \details{
-The primary purpose is to find untenable assumptions to be excluded
-from the Boolean minimization process. For this reason, the input is most of the times
-a truth table, but for demonstration purposes it can also be a simple matrix having
-column names.
+The primary purpose is to find untenable assumptions to be excluded from the
+Boolean minimization process. For this reason, the input is most of the times a
+truth table, but for demonstration purposes it can also be a simple matrix
+having column names.
 
-It started as a function to find rows that are subsets of a given SOP expression, and
-it developed to cover even more untenable asumptions.
+It started as a function to find rows that are subsets of a given SOP expression,
+and it developed to cover even more untenable asumptions.
 
-Subset rows can be anything, from remainders to the observed configurations: positive
-output, negative output and contradictions). By default, the function returns only the
-subset configurations for the remaiders, but activating the argument \bold{\code{observed}}
-adds the corresponding observed configurations to the output.
+Subset rows can be anything, from remainders to the observed configurations:
+positive output, negative output and contradictions). By default, the function
+returns only the subset configurations for the remaiders, but activating the
+argument \bold{\code{observed}} adds the corresponding observed configurations
+to the output.
 
-It might ocasionally find negative output configurations or contradictions, but that
-doesn't have any side effect because they are going to be excluded from the minimization
-anyways, unless contradictions are included in the minimization. The only category that
-really matters if they are identified or not, are the positive output configurations.
+It might ocasionally find negative output configurations or contradictions, but
+that doesn't have any side effect because they are going to be excluded from the
+minimization anyways, unless contradictions are included in the minimization.
+The only category that really matters if they are identified or not, are the
+positive output configurations.
 
-The contradictory simplifying assumptions (CSAs) are those which are used for both the
-presence and the absence of the outcome, while simultaneous subset relations (SSRs)
-when observed configurations are sufficient for both the presence and the absence of
-the outcome. CSAs and SSRs are incoherent conterfactuals, part of a category called
-Untenable Assumptions.
+The contradictory simplifying assumptions (CSAs) are those which are used for
+both the presence and the absence of the outcome, while simultaneous subset
+relations (SSRs) when observed configurations are sufficient for both the
+presence and the absence of the outcome. CSAs and SSRs are incoherent
+conterfactuals, part of a category called Untenable Assumptions.
 
 This function takes does what is normally done with a series of commands, in a
 more integrated and systematic way.
 
-Providing a truth table is sufficient to perform all these tasks, because a truth
-table already contains all necessary information of how it was produced, most importantly
-the inclusion cut-off(s). By default, it uses the same options to produce a truth table for
-the negation of the outcome (if the input truth table was created for its presence, or the
-other way round), and minimizes both to inspect their simplifying assumptions to
-detect which are contradictory.
+Providing a truth table is sufficient to perform all these tasks, because a
+truth table already contains all necessary information of how it was produced,
+most importantly the inclusion cut-off(s). By default, it uses the same options
+to produce a truth table for the negation of the outcome (if the input truth
+table was created for its presence, or the other way round), and minimizes both
+to inspect their simplifying assumptions to detect which are contradictory.
 
-Identical simplifying assumptions that found in both parsimonious solutions are declared as
-contradictory. Observed configurations that are sufficient for both the presence and the absence
-of the outcome are incoherent because of the simultaneous subset relations problem.
+Identical simplifying assumptions that found in both parsimonious solutions are
+declared as contradictory. Observed configurations that are sufficient for both
+the presence and the absence of the outcome are incoherent because of the
+simultaneous subset relations problem.
 
 The following types of untenable assumptions can be searched for:
 
@@ -73,13 +75,14 @@ The following types of untenable assumptions can be searched for:
     \code{3} \tab simultaneous subset relations\cr
 }
 
-To find contradictory simplifying assumptions, a truth table for the negated outcome is
-constructed, using the \bold{\code{incl.cut}} argument from the \bold{\code{obj}}
-input object. If the inclusion cut-off has a single value, the same is used for the negated
-outcome, and if it has two values the second is used.
+To find contradictory simplifying assumptions, a truth table for the negated
+outcome is constructed, using the \bold{\code{incl.cut}} argument from the
+\bold{\code{obj}} input object. If the inclusion cut-off has a single value, the
+same is used for the negated outcome, and if it has two values the second is used.
 
-If very specific cutoff values are needed for the negation of the outcome, these can be provided
-via the \bold{\code{...}} argument, that will be passed to function \bold{\code{\link{truthTable}()}}.
+If very specific cutoff values are needed for the negation of the outcome, these
+can be provided via the \bold{\code{...}} argument, that will be passed to
+function \bold{\code{\link{truthTable}()}}.
 }
 
 
