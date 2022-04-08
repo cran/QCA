@@ -5,5 +5,5 @@ void sort_matrix(
     int *p_colindx,
     int *p_ck,
     int nconds,
-    int foundPI
+    unsigned int foundPI
 );

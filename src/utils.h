@@ -1,4 +1,4 @@
-#include <stdbool.h>
+#include <R_ext/Boolean.h>
 #include "row_dominance.h"
 #include "sort_cols.h"
 
@@ -8,12 +8,12 @@
 void resize(
     int **array,
     const int rows,
-    const int newcols,
-    const int oldcols
+    const unsigned int newcols,
+    const unsigned int oldcols
 );
 
-bool too_complex(
-    const int foundPI,
+Rboolean too_complex(
+    const unsigned int foundPI,
     const int solmin,
     const double maxcomb
 );
@@ -25,17 +25,17 @@ void over_transpose(
     const int type // 0 boolean, 1 int, 2 double
 );
 
-bool altb(
+Rboolean altb(
     double a,
     double b
 );
 
-bool agteb(
+Rboolean agteb(
     double a,
     double b
 );
 
-bool nonredundant(
+Rboolean nonredundant(
     const int p_implicants[],
     const int p_indx[],
     const int p_ck[],
@@ -43,7 +43,7 @@ bool nonredundant(
     const int tempc[],
     const int nconds,
     const int k,
-    const int prevfoundPI
+    const unsigned int prevfoundPI
 );
 
 void push_PI(
@@ -59,7 +59,7 @@ void push_PI(
     const int decpos[],
     const int frows[],
     const int posrows,
-    const int foundPI
+    const unsigned int foundPI
 );
 
 void increment(
@@ -112,7 +112,7 @@ void get_uniques(
     const int posrows,
     int *found,
     int decpos[],
-    bool possiblePI[],
+    Rboolean possiblePI[],
     int possiblePIrows[]
 );
 
@@ -120,7 +120,7 @@ void verify_possible_PI(
     const int compare,
     const int negrows,
     int *found,
-    bool possiblePI[],
+    Rboolean possiblePI[],
     const int possiblePIrows[],
     const int decpos[],
     const int decneg[]
@@ -128,7 +128,7 @@ void verify_possible_PI(
 
 void get_frows(
     int frows[],
-    const bool possiblePI[],
+    const Rboolean possiblePI[],
     const int possiblePIrows[],
     const int compare
 );
@@ -166,8 +166,8 @@ int GetNextComb(
     int indexLimit
 );
 
-bool all_covered(
+Rboolean all_covered(
     const int p_pichart[],
     const int pirows,
-    const int picols
+    const unsigned int picols
 );

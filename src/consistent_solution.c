@@ -25,20 +25,18 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <R_ext/RS.h>
+#include <R_ext/Boolean.h>
 #include <math.h>
-#include <string.h>
-#include <stdio.h>
 #include "utils.h"
 #include "consistent_solution.h"
-bool consistent_solution(
+Rboolean consistent_solution(
     const double p_data[],
     const int nconds,
     const int nrdata,
     const int k,
     const int tempk[],
-    const int foundPI,
+    const unsigned int foundPI,
     const int p_implicants[],
     const int ck[],
     const int indx[],
@@ -46,7 +44,7 @@ bool consistent_solution(
     const double solcons,
     const double solcov) {
     int cindx, val;
-    double *p_y = calloc(1, sizeof(double));
+    double *p_y = R_Calloc(1, double);
     double ymat[nrdata * k];
     double sumy = 0;
     for (int r = 0; r < nrdata; r++) {
@@ -54,13 +52,13 @@ bool consistent_solution(
     }
     for (int i = 0; i < k; i++) { 
         int k2 = ck[tempk[i]];
-        free(p_y);
-        p_y = calloc(nrdata * k2, sizeof(double));
+        R_Free(p_y);
+        p_y = R_Calloc(nrdata * k2, double);
         for (int c = 0; c < k2; c++) {
             cindx = indx[tempk[i] * nconds + c] - 1;
             val = p_implicants[tempk[i] * nconds + cindx] - 1;
             if (p_fsconds[cindx]) {
-                bool negation = val == 0;
+                Rboolean negation = val == 0;
                 for (int r = 0; r < nrdata; r++) {
                     p_y[c * nrdata + r] = negation ? (1 - p_data[cindx * nrdata + r]) : p_data[cindx * nrdata + r];
                 }
@@ -94,6 +92,6 @@ bool consistent_solution(
         sumx += pmaxx;
         sumxy += ((pmaxx < p_data[nconds * nrdata + r]) ? pmaxx: p_data[nconds * nrdata + r]);
     }
-    free(p_y);
+    R_Free(p_y);
     return(agteb(sumxy / sumx, solcons) && agteb(sumxy / sumy, solcov));
 }

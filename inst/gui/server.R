@@ -78,10 +78,10 @@ infobjs <- function(env, objs, scrollvh) {
             if (is.data.frame(x)) {
                 return(1)
             }
-            else if (is(x, "QCA_tt")) {
+            else if (methods::is(x, "QCA_tt")) {
                 return(2)
             }
-            else if (is(x, "QCA_min")) {
+            else if (methods::is(x, "QCA_min")) {
                 return(3)
             }
             else {

@@ -1,3 +1,6 @@
+Version 3.16
+    o Fine tuned C code to avoid compilation problems in GCC
+      
 Version 3.15
     o Improved: argument "exclude" now accept SOP expressions
     o Improved: function truthTable() now accept formal arguments from function

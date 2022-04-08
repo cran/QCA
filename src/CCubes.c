@@ -25,10 +25,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <R_ext/RS.h> 
+#include <R_ext/Boolean.h>
 #include <math.h>
-#include <string.h>
 #include "find_min.h"
 #include "consistency.h"
 #include "find_models.h"
@@ -42,9 +41,9 @@ void CCubes(const int p_tt[],
             const int nconds,       
             const double p_data[],  
             const int nrdata,       
-            const bool allsol,      
-            const bool rowdom,      
-            const bool minpin,      
+            const Rboolean allsol,      
+            const Rboolean rowdom,      
+            const Rboolean minpin,      
             const double picons,    
             const int pidepth,      
             const int p_fsconds[],  
@@ -52,16 +51,16 @@ void CCubes(const int p_tt[],
             const double solcons,
             const double solcov,
             const double maxcomb,
-            const bool keeptrying,  
+            const Rboolean keeptrying,  
             int **pichart,          
             int **implicants,       
             int **models,           
-            int *foundPI_,          
+            unsigned int *foundPI_, 
             int *solrows,           
             int *solcols,           
-            bool *complex,          
-            const bool firstmin)    
-{
+            Rboolean *complex,          
+            const Rboolean firstmin     
+) {
     int *p_pichart, *p_implicants, *p_indx, *p_ck;
     int posrows = 0;
     for (int r = 0; r < ttrows; r++) {
@@ -77,15 +76,14 @@ void CCubes(const int p_tt[],
         noflevels[i] = 2; 
     }
     get_noflevels(noflevels, p_tt, nconds, ttrows);
-    int estimPI = 10000;
-    p_pichart = malloc(posrows * estimPI * sizeof(int));
-    memset(p_pichart, false, posrows * estimPI * sizeof(int));
-    p_implicants = calloc(nconds * estimPI, sizeof(int));
-    p_indx = calloc(nconds * estimPI, sizeof(int));
-    p_ck = calloc(estimPI, sizeof(int));
-    bool stop_searching = false;
-    int prevfoundPI = 0;    
-    int foundPI = 0;
+    unsigned int estimPI = 10000;
+    p_pichart = R_Calloc(posrows * estimPI, int);
+    p_implicants = R_Calloc(nconds * estimPI, int);
+    p_indx = R_Calloc(nconds * estimPI, int);
+    p_ck = R_Calloc(estimPI, int);
+    Rboolean stop_searching = false;
+    unsigned int prevfoundPI = 0;    
+    unsigned int foundPI = 0;
     int prevsolmin = 0;     
     int solmin = 0;
     int previndices[posrows];
@@ -97,11 +95,11 @@ void CCubes(const int p_tt[],
     #ifdef SHOW_DEBUG_PROFILE 
         const double findingPIsStart_time = omp_get_wtime();
     #endif
-    bool solution_exists = false;
+    Rboolean solution_exists = false;
     int counter = 0; 
     int k;
     for (k = 1; k <= pidepth; k++) {
-        bool foundk = false;
+        Rboolean foundk = false;
         #ifdef SHOW_DEBUG_OUTPUT
         #endif 
         const int numMaxCombinations = (nconds*(nconds-1)*(nconds-2))/6 + (nconds*(nconds-1)/2) + nconds;
@@ -148,7 +146,7 @@ void CCubes(const int p_tt[],
                 get_decimals(posrows, negrows, k, decpos, decneg, posmat, negmat, tempk, mbase);
                 int possiblePIrows[posrows];
                 possiblePIrows[0] = 0; 
-                bool possiblePI[posrows];
+                Rboolean possiblePI[posrows];
                 possiblePI[0] = true; 
                 int found = 1;
                 get_uniques(posrows, &found, decpos, possiblePI, possiblePIrows);
@@ -183,7 +181,21 @@ void CCubes(const int p_tt[],
                                 #pragma omp critical
                             #endif 
                             {
-                                push_PI(p_implicants, p_indx, p_ck, p_pichart, tempk, tempc, nconds, k, f, decpos, frows, posrows, foundPI);
+                                push_PI(
+                                    p_implicants,
+                                    p_indx,
+                                    p_ck,
+                                    p_pichart,
+                                    tempk,
+                                    tempc,
+                                    nconds,
+                                    k,
+                                    f,
+                                    decpos,
+                                    frows,
+                                    posrows,
+                                    foundPI
+                                );
                                 ++foundPI;
                                 foundk = true;
                                 if (foundPI / estimPI > 0.9) {
@@ -238,18 +250,18 @@ void CCubes(const int p_tt[],
     #ifdef SHOW_DEBUG_PROFILE
         const double findingPIsEnd_time = omp_get_wtime();
     #endif
-    int *copy_implicants = calloc(1, sizeof(int));
-    int *p_solutions = calloc(1, sizeof(int));
+    int *copy_implicants = R_Calloc(1, int);
+    int *p_solutions = R_Calloc(1, int);
     int nr = 0, nc = 0; 
-    int *p_tempic = calloc(1, sizeof(int));
+    int *p_tempic = R_Calloc(1, int);
     if ((firstmin || *complex) && solcons == 0) {
         if (solmin > 0) {
-            free(copy_implicants);
-            copy_implicants = malloc(nconds * solmin * sizeof(int));
-            free(p_solutions);
-            p_solutions = malloc(solmin * sizeof(int));
-            free(p_tempic);
-            p_tempic = malloc(posrows * solmin * sizeof(int));
+            R_Free(copy_implicants);
+            copy_implicants = R_Calloc(nconds * solmin, int);
+            R_Free(p_solutions);
+            p_solutions = R_Calloc(solmin, int);
+            R_Free(p_tempic);
+            p_tempic = R_Calloc(posrows * solmin, int);
             for (int c = 0; c < solmin; c++) {
                 p_solutions[c] = indices[c];
                 for (int r = 0; r < nconds; r++) {
@@ -264,16 +276,16 @@ void CCubes(const int p_tt[],
             foundPI = solmin;
         }
         else if (foundPI > 0) { 
-            int *p_sorted = malloc(foundPI * sizeof(int));
-            for (int i = 0; i < foundPI; i++) {
+            int *p_sorted = R_Calloc(foundPI, int);
+            for (unsigned int i = 0; i < foundPI; i++) {
                 p_sorted[i] = i;
             }
             sort_cols(p_implicants, p_sorted, p_ck, nconds, foundPI);
-            free(copy_implicants);
-            copy_implicants = malloc(nconds * foundPI * sizeof(int));
-            free(p_tempic);
-            p_tempic = malloc(posrows * foundPI * sizeof(int));
-            for (int c = 0; c < foundPI; c++) {
+            R_Free(copy_implicants);
+            copy_implicants = R_Calloc(nconds * foundPI, int);
+            R_Free(p_tempic);
+            p_tempic = R_Calloc(posrows * foundPI, int);
+            for (unsigned int c = 0; c < foundPI; c++) {
                 for (int r = 0; r < nconds; r++) {
                     copy_implicants[c * nconds + r] = p_implicants[p_sorted[c] * nconds + r];
                 }
@@ -281,7 +293,7 @@ void CCubes(const int p_tt[],
                     p_tempic[c * posrows + r] = p_pichart[p_sorted[c] * posrows + r];
                 }
             }
-            free(p_sorted);
+            R_Free(p_sorted);
             if (keeptrying) {
                 find_models(p_tempic, posrows, foundPI, false, k + 1, maxcomb, true, &p_solutions, &nr, &nc);
             }
@@ -291,16 +303,16 @@ void CCubes(const int p_tt[],
         if (rowdom) {
             row_dominance(p_pichart, p_implicants, p_ck, posrows, &foundPI, nconds);
         }
-        int *p_sorted = malloc(foundPI * sizeof(int));
-        for (int i = 0; i < foundPI; i++) {
+        int *p_sorted = R_Calloc(foundPI, int);
+        for (unsigned int i = 0; i < foundPI; i++) {
             p_sorted[i] = i;
         }
         sort_cols(p_implicants, p_sorted, p_ck, nconds, foundPI);
-        free(copy_implicants);
-        copy_implicants = calloc(nconds * foundPI, sizeof(int));
-        free(p_tempic);
-        p_tempic = calloc(posrows * foundPI, sizeof(int));
-        for (int c = 0; c < foundPI; c++) {
+        R_Free(copy_implicants);
+        copy_implicants = R_Calloc(nconds * foundPI, int);
+        R_Free(p_tempic);
+        p_tempic = R_Calloc(posrows * foundPI, int);
+        for (unsigned int c = 0; c < foundPI; c++) {
             for (int r = 0; r < nconds; r++) {
                 copy_implicants[c * nconds + r] = p_implicants[p_sorted[c] * nconds + r];
             }
@@ -309,31 +321,49 @@ void CCubes(const int p_tt[],
             }
         }
         if (solcons > 0) {
-            int *p_tempindx = calloc(posrows * foundPI, sizeof(int));
-            int *p_tempck = calloc(foundPI, sizeof(int));
-            for (int c = 0; c < foundPI; c++) {
+            int *p_tempindx = R_Calloc(posrows * foundPI, int);
+            int *p_tempck = R_Calloc(foundPI, int);
+            for (unsigned int c = 0; c < foundPI; c++) {
                 for (int r = 0; r < nconds; r++) {
                     p_tempindx[c * nconds + r] = p_indx[p_sorted[c] * nconds + r];
                 }
                 p_tempck[c] = p_ck[p_sorted[c]];
             }
-            find_consistent_models(copy_implicants, p_tempindx, p_tempck, p_data, p_fsconds, nconds, nrdata, posrows, solcons, solcov, allsol, soldepth, foundPI, maxcomb, &p_solutions, &nr, &nc);
-            free(p_tempindx);
-            free(p_tempck);
+            find_consistent_models(
+                copy_implicants,
+                p_tempindx,
+                p_tempck,
+                p_data,
+                p_fsconds,
+                nconds,
+                nrdata,
+                posrows,
+                solcons,
+                solcov,
+                allsol,
+                soldepth,
+                foundPI,
+                maxcomb,
+                &p_solutions,
+                &nr,
+                &nc
+            );
+            R_Free(p_tempindx);
+            R_Free(p_tempck);
         }
         else if (solmin > 0) {
             nr = solmin;
             find_models(p_tempic, posrows, foundPI, allsol, solmin, maxcomb, false, &p_solutions, &nr, &nc);
         }
-        free(p_sorted);
+        R_Free(p_sorted);
     }
-    free(p_pichart);
-    free(p_implicants);
-    free(p_indx);
-    free(p_ck);
-    free(*models);
-    free(*implicants);
-    free(*pichart);
+    R_Free(p_pichart);
+    R_Free(p_implicants);
+    R_Free(p_indx);
+    R_Free(p_ck);
+    R_Free(*models);
+    R_Free(*implicants);
+    R_Free(*pichart);
     *solrows = nr;
     *solcols = nc;
     *foundPI_ = foundPI;

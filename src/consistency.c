@@ -25,16 +25,22 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdbool.h>
-#include <stdlib.h> 
-#include <stdio.h>  
-#include <string.h> 
+#include <R_ext/RS.h> 
+#include <R_ext/Boolean.h>
 #include "utils.h"
-double consistency(const double p_x[], const int nrowsx, const int nconds, int k, int tempk[], int val[], int fuzzy[]) {
-    double *p_y = (double *) calloc (nrowsx * k, sizeof(double));
+double consistency(
+    const double p_x[],
+    const int nrowsx,
+    const int nconds,
+    int k,
+    int tempk[],
+    int val[],
+    int fuzzy[]
+) {
+    double *p_y = (double *) R_Calloc(nrowsx * k, double);
     for (int c = 0; c < k; c++) {
         if (fuzzy[c]) {
-            bool negation = val[c] == 0;
+            Rboolean negation = val[c] == 0;
             for (int r = 0; r < nrowsx; r++) {
                 p_y[c * nrowsx + r] = negation ? (1 - p_x[tempk[c] * nrowsx + r]) : p_x[tempk[c] * nrowsx + r];
             }
@@ -57,6 +63,6 @@ double consistency(const double p_x[], const int nrowsx, const int nconds, int k
         sumx += pminx;
         sumxy += ((pminx < p_x[nconds * nrowsx + r]) ? pminx : p_x[nconds * nrowsx + r]);
     }
-    free(p_y);
+    R_Free(p_y);
     return(sumxy / sumx);
 }

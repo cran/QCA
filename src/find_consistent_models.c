@@ -25,11 +25,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <R_ext/RS.h>
+#include <R_ext/Boolean.h>
 #include <math.h>
-#include <string.h>
-#include <stdio.h>
 #include "find_consistent_models.h"
 #include "utils.h"
 void find_consistent_models(
@@ -43,14 +41,15 @@ void find_consistent_models(
     const int posrows,
     const double solcons,
     const double solcov,
-    const bool allsol,
+    const Rboolean allsol,
     const int soldepth,
-    const int foundPI,
+    const unsigned int foundPI,
     const double maxcomb,
     int **solutions,
     int *nr,
-    int *nc) {
-    int estimsol = 1000;
+    int *nc
+) {
+    unsigned int estimsol = 1000;
     int maxk = posrows;
     if (foundPI < maxk) {
         maxk = foundPI;
@@ -58,11 +57,11 @@ void find_consistent_models(
     if (soldepth < maxk && soldepth > 0) {
         maxk = soldepth;
     }
-    int *p_sol = calloc(maxk * estimsol, sizeof(int));
-    int *cksol = calloc(estimsol, sizeof(int));
-    int solfound = 0;
-    int prevfound = 0;
-    bool keep_searching = true;
+    int *p_sol = R_Calloc(maxk * estimsol, int);
+    int *cksol = R_Calloc(estimsol, int);
+    unsigned int solfound = 0;
+    unsigned int prevfound = 0;
+    Rboolean keep_searching = true;
     int k = 1;
     double counter = 1;
     while (keep_searching && k <= maxk) {
@@ -73,11 +72,11 @@ void find_consistent_models(
             tempk[k - 1] -= 1; 
             int e = 0;
             int h = k;
-            bool last = (foundPI == k);
+            Rboolean last = (foundPI == k);
             while (keep_searching && ((tempk[0] != foundPI - k) || last)) {
                 increment(k, &e, &h, foundPI + last, tempk, 0);
                 last = false;
-                bool nonred = true;
+                Rboolean nonred = true;
                 int i = 0;
                 while (i < prevfound && nonred) {
                 int sumeq = 0;
@@ -119,11 +118,11 @@ void find_consistent_models(
         prevfound = solfound;
         k += 1;
     }
-    int *p_tempmat = calloc(1, sizeof(int));
+    int *p_tempmat = R_Calloc(1, int);
     if (solfound > 0) {
         int finalrows = cksol[solfound - 1];
-        free(p_tempmat);
-        p_tempmat = calloc(finalrows * solfound, sizeof(int));
+        R_Free(p_tempmat);
+        p_tempmat = R_Calloc(finalrows * solfound, int);
         for (int c = 0; c < solfound; c++) {
             for (int r = 0; r < cksol[c]; r++) {
                 p_tempmat[c * finalrows + r] = p_sol[c * maxk + r] + 1; 
@@ -132,8 +131,8 @@ void find_consistent_models(
         *nr = finalrows;
         *nc = solfound;
     }
-    free(p_sol);
-    free(cksol);
-    free(*solutions);
+    R_Free(p_sol);
+    R_Free(cksol);
+    R_Free(*solutions);
     *solutions = p_tempmat;
 }

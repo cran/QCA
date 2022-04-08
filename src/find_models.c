@@ -25,83 +25,81 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
+#include <R_ext/RS.h> 
+#include <R_ext/Boolean.h>
 #include "find_models.h"
 void find_models(
     const int p_pichart[],
     const int pirows,
-    const int picols,
-    const bool allsol,
+    const unsigned int picols,
+    const Rboolean allsol,
     const int k,
     const double maxcomb,
-    const bool firstmin,
+    const Rboolean firstmin,
     int **solutions,
     int *nr,
     int *nc) {
     if (k == picols) {
-        int* p_temp = malloc(k * sizeof(int));
+        int* p_temp = R_Calloc(k, int);
         for (int i = 0; i < k; i++) {
             p_temp[i] = i + 1;
         }
-        free(*solutions);
+        R_Free(*solutions);
         *solutions = p_temp;
         *nr = k;
         *nc = 1;
         return;
     }
-    int *p_temp1 = calloc(1, sizeof(int));
-    int *p_temp2 = calloc(1, sizeof(int));
+    int *p_temp1 = R_Calloc(1, int);
+    int *p_temp2 = R_Calloc(1, int);
     if (allsol) {
         int indmat[picols * pirows];
         int mintpis[pirows];
         for (int r = 0; r < pirows; r++) {
             mintpis[r] = 0;
-            for (int c = 0; c < picols; c++) {
+            for (unsigned int c = 0; c < picols; c++) {
                 if (p_pichart[c * pirows + r]) {
                     indmat[r * picols + mintpis[r]] = c;
                     mintpis[r]++;
                 }
             }
         }
-        free(p_temp2);
-        p_temp2 = calloc(picols * mintpis[0], sizeof(int));
-        int *p_cols = calloc(1, sizeof(int)); 
+        R_Free(p_temp2);
+        p_temp2 = R_Calloc(picols * mintpis[0], int);
+        int *p_cols = R_Calloc(1, int); 
         for (int i = 0; i < mintpis[0]; i++) {
             p_temp2[i * picols + indmat[i]] = 1;
         }
-        int tempcols = mintpis[0];
+        unsigned int tempcols = mintpis[0];
         for (int i = 1; i < pirows; i++) {
-            free(p_temp1);
-            p_temp1 = malloc(picols * tempcols * mintpis[i] * sizeof(int));
+            R_Free(p_temp1);
+            p_temp1 = R_Calloc(picols * tempcols * mintpis[i], int);
             for (int j = 0; j < mintpis[i]; j++) {
-                memcpy(&p_temp1[j * tempcols * picols], p_temp2, tempcols * picols * sizeof(int));
-                for (int tc = 0; tc < tempcols; tc++) {
+                Memcpy(&p_temp1[j * tempcols * picols], p_temp2, tempcols * picols);
+                for (unsigned int tc = 0; tc < tempcols; tc++) {
                     p_temp1[(j * tempcols + tc) * picols + indmat[i * picols + j]] = 1;
                 }
             }
-            int temp2cols = tempcols * mintpis[i];
-            free(p_cols);
-            p_cols = malloc(temp2cols * sizeof(int));
-            for (int i = 0; i < temp2cols; i++) {
+            unsigned int temp2cols = tempcols * mintpis[i];
+            R_Free(p_cols);
+            p_cols = R_Calloc(temp2cols, int);
+            for (unsigned int i = 0; i < temp2cols; i++) {
                 p_cols[i] = true;
             }
-            int survcols = temp2cols;
+            unsigned int survcols = temp2cols;
             super_rows(p_temp1, picols, &survcols, p_cols);
-            free(p_temp2);
-            p_temp2 = malloc(picols * survcols * sizeof(int));
-            memcpy(p_temp2, p_temp1, picols * survcols * sizeof(int));
+            R_Free(p_temp2);
+            p_temp2 = R_Calloc(picols * survcols, int);
+            Memcpy(p_temp2, p_temp1, picols * survcols);
             tempcols = survcols;
         }
-        free(p_temp1);
-        p_temp1 = calloc(picols * tempcols, sizeof(int));
-        free(p_cols);
-        p_cols = calloc(tempcols, sizeof(int));
+        R_Free(p_temp1);
+        p_temp1 = R_Calloc(picols * tempcols, int);
+        R_Free(p_cols);
+        p_cols = R_Calloc(tempcols, int);
         int maxr = 0;
         for (int c = 0; c < tempcols; c++) {
-            for (int r = 0; r < picols; r++) {
+            for (unsigned int r = 0; r < picols; r++) {
                 if (p_temp2[c * picols + r]) {
                     p_temp1[c * picols + p_cols[c]] = r + 1;
                     p_cols[c]++;
@@ -111,21 +109,21 @@ void find_models(
                 }
             }
         }
-        free(p_temp2);
-        p_temp2 = malloc(maxr * tempcols * sizeof(int));
-        for (int c = 0; c < tempcols; c++) {
+        R_Free(p_temp2);
+        p_temp2 = R_Calloc(maxr * tempcols, int);
+        for (unsigned int c = 0; c < tempcols; c++) {
             for (int r = 0; r < maxr; r++) {
                 p_temp2[c * maxr + r] = p_temp1[c * picols + r];
             }
         }
         int temp;
         int order[tempcols];
-        for (int c = 0; c < tempcols; c++) {
+        for (unsigned int c = 0; c < tempcols; c++) {
             order[c] = c;
         }
         for (int r = maxr - 1; r >= 0; r--) {
-            for (int c1 = 0; c1 < tempcols; c1++) {
-                for (int c2 = c1 + 1; c2 < tempcols; c2++) {
+            for (unsigned int c1 = 0; c1 < tempcols; c1++) {
+                for (unsigned int c2 = c1 + 1; c2 < tempcols; c2++) {
                     if (p_temp2[order[c1] * maxr + r] > p_temp2[order[c2] * maxr + r]) {
                         temp = order[c2];
                         for (int i = c2; i > c1; i--) {
@@ -136,8 +134,8 @@ void find_models(
                 }
             }
         }
-        for (int c1 = 0; c1 < tempcols; c1++) {
-            for (int c2 = c1 + 1; c2 < tempcols; c2++) {
+        for (unsigned int c1 = 0; c1 < tempcols; c1++) {
+            for (unsigned int c2 = c1 + 1; c2 < tempcols; c2++) {
                 if (p_cols[order[c1]] > p_cols[order[c2]]) {
                     temp = order[c2];
                     for (int i = c2; i > c1; i--) {
@@ -147,10 +145,10 @@ void find_models(
                 }
             }
         }
-        free(p_cols);
-        free(p_temp1);
-        p_temp1 = malloc(maxr * tempcols * sizeof(int));
-        for (int c = 0; c < tempcols; c++) {
+        R_Free(p_cols);
+        R_Free(p_temp1);
+        p_temp1 = R_Calloc(maxr * tempcols, int);
+        for (unsigned int c = 0; c < tempcols; c++) {
             for (int r = 0; r < maxr; r++) {
                 p_temp1[c * maxr + r] = p_temp2[order[c] * maxr + r];
             }
@@ -159,10 +157,10 @@ void find_models(
         *nc = tempcols;
     }
     else {
-        int solfound = 0;
-        int estimsol = 100;
-        free(p_temp1);
-        p_temp1 = calloc(k * estimsol, sizeof(int));
+        unsigned int solfound = 0;
+        unsigned int estimsol = 100;
+        R_Free(p_temp1);
+        p_temp1 = R_Calloc(k * estimsol, int);
         int tempk[k];
         for (int i = 0; i < k; i++) {
             tempk[i] = i; 
@@ -170,16 +168,16 @@ void find_models(
         tempk[k - 1] -= 1; 
         int e = 0;
         int h = k;
-        bool keep_searching = true;
-        bool last = (picols == k);
+        Rboolean keep_searching = true;
+        Rboolean last = (picols == k);
         double counter = 1;
         while (keep_searching && ((tempk[0] != picols - k) || last)) {
             increment(k, &e, &h, picols + last, tempk, 0);
             last = false;
-            bool allrows = true;
+            Rboolean allrows = true;
             int r = 0;
             while (r < pirows && allrows) {
-                bool covered = false;
+                Rboolean covered = false;
                 int c = 0;
                 while (c < k && !covered) {
                     covered = p_pichart[tempk[c] * pirows + r];
@@ -209,16 +207,16 @@ void find_models(
             }
         }
         if (solfound > 0) {
-            p_temp1 = realloc(p_temp1, k * solfound * sizeof(int)); 
+            p_temp1 = R_Realloc(p_temp1, k * solfound, int);
         }
         else {
-            free(p_temp1);
-            p_temp1 = calloc(1, sizeof(int));
+            R_Free(p_temp1);
+            p_temp1 = R_Calloc(1, int);
         }
         *nr = k;
         *nc = solfound;
     }
-    free(p_temp2);
-    free(*solutions);
+    R_Free(p_temp2);
+    R_Free(*solutions);
     *solutions = p_temp1;
 }

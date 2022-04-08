@@ -25,15 +25,22 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <R_ext/Boolean.h>
 #include "sort_matrix.h"
-void sort_matrix(int *p_matrix, int *p_colindx, int *p_ck, int nconds, int foundPI) {
-    for (int i = 0; i < foundPI; i++) {
+void sort_matrix(
+    int *p_matrix,
+    int *p_colindx,
+    int *p_ck,
+    int nconds,
+    unsigned int foundPI
+) {
+    for (unsigned int i = 0; i < foundPI; i++) {
         p_colindx[i] = i;
     }
     int temp;
     for (int i = nconds - 1; i >= 0; i--) {
-        for (int c1 = 0; c1 < foundPI; c1++) {
-            for (int c2 = c1 + 1; c2 < foundPI; c2++) {
+        for (unsigned int c1 = 0; c1 < foundPI; c1++) {
+            for (unsigned int c2 = c1 + 1; c2 < foundPI; c2++) {
                 if (p_matrix[p_colindx[c1] * nconds + i] < p_matrix[p_colindx[c2] * nconds + i]) {
                     temp = p_colindx[c2];
                     for (int c3 = c2; c3 > c1; c3--) {
@@ -43,18 +50,18 @@ void sort_matrix(int *p_matrix, int *p_colindx, int *p_ck, int nconds, int found
                 }
             }
         }
-        bool nonzero = true;
-        int zeroidx = 0;
+        Rboolean nonzero = true;
+        unsigned int zeroidx = 0;
         while(zeroidx < foundPI && nonzero) {
             nonzero = p_matrix[p_colindx[zeroidx] * nconds + i];
             zeroidx++;
         }
         zeroidx--;
-        for (int c1 = 0; c1 < zeroidx; c1++) {
-            for (int c2 = c1 + 1; c2 < zeroidx; c2++) {
+        for (unsigned int c1 = 0; c1 < zeroidx; c1++) {
+            for (unsigned int c2 = c1 + 1; c2 < zeroidx; c2++) {
                 if (p_matrix[p_colindx[c1] * nconds + i] > p_matrix[p_colindx[c2] * nconds + i]) {
                     temp = p_colindx[c2];
-                    for (int c3 = c2; c3 > c1; c3--) {
+                    for (unsigned int c3 = c2; c3 > c1; c3--) {
                         p_colindx[c3] = p_colindx[c3 - 1];
                     }
                     p_colindx[c1] = temp;
@@ -62,11 +69,11 @@ void sort_matrix(int *p_matrix, int *p_colindx, int *p_ck, int nconds, int found
             }
         }
     }
-    for (int c1 = 0; c1 < foundPI; c1++) {
-        for (int c2 = c1 + 1; c2 < foundPI; c2++) {
+    for (unsigned int c1 = 0; c1 < foundPI; c1++) {
+        for (unsigned int c2 = c1 + 1; c2 < foundPI; c2++) {
             if (p_ck[p_colindx[c1]] > p_ck[p_colindx[c2]]) {
                 temp = p_colindx[c2];
-                for (int c3 = c2; c3 > c1; c3--) {
+                for (unsigned int c3 = c2; c3 > c1; c3--) {
                     p_colindx[c3] = p_colindx[c3 - 1];
                 }
                 p_colindx[c1] = temp;

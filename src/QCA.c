@@ -25,19 +25,20 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-# include <float.h>
-# include <stdlib.h>
-# include <stdbool.h>
-# include <R.h>
-# include <Rinternals.h>
-# include <Rmath.h>
-# include <R_ext/Rdynload.h>
-# include "utils.h"
-# include "find_min.h"
-# include "find_models.h"
-# include "generate_matrix.h"
-# include "sort_matrix.h"
-# include "CCubes.h"
+#include <R_ext/RS.h>
+#include <R_ext/Boolean.h>
+#include <float.h>
+#include <stdlib.h>
+#include <R.h>
+#include <Rinternals.h>
+#include <Rmath.h>
+#include <R_ext/Rdynload.h>
+#include "utils.h"
+#include "find_min.h"
+#include "find_models.h"
+#include "generate_matrix.h"
+#include "sort_matrix.h"
+#include "CCubes.h"
 #ifdef _OPENMP
   #include <omp.h>
 #endif
@@ -167,7 +168,7 @@ static R_INLINE SEXP Rresize(SEXP obj, int len) {
     if (len > oldlen) {
         memset(p_obj, objlogical ? FALSE : 0, len * sizeof(int));
     }
-    memcpy(p_obj, p_copy, copylen * sizeof(int));
+    Memcpy(p_obj, p_copy, copylen);
     UNPROTECT(1);
     return(obj);
 }
@@ -223,18 +224,18 @@ SEXP C_solveChart(SEXP pichart, SEXP allsol, SEXP vdepth, SEXP k, SEXP maxcomb, 
     int *p_pichart = LOGICAL(pichart);
     int posrows = nrows(pichart);
     int foundPI = ncols(pichart);
-    int *p_solutions = calloc(1, sizeof(int));
+    int *p_solutions = R_Calloc(1, int);
     int nr = 0;
     int nc = 0;
     find_models(p_pichart, posrows, foundPI, LOGICAL(allsol)[0], INTEGER(k)[0], REAL(maxcomb)[0], LOGICAL(firstmin)[0], &p_solutions, &nr, &nc);
     if (nr > 0 && nc > 0) {
         SET_VECTOR_ELT(out, 0, models = allocMatrix(INTSXP, nr, nc));
-        memcpy(INTEGER(models), p_solutions, nr * nc * sizeof(int));
+        Memcpy(INTEGER(models), p_solutions, nr * nc);
         SEXP toocomplex;
         SET_VECTOR_ELT(out, 1, toocomplex = allocVector(LGLSXP, 1));
         LOGICAL(toocomplex)[0] = too_complex(foundPI, INTEGER(k)[0], REAL(maxcomb)[0]);
     }
-    free(p_solutions);
+    R_Free(p_solutions);
     UNPROTECT(2);
     return(out);
 }
@@ -1208,11 +1209,6 @@ SEXP C_omplexity(SEXP list) {
     for (int ck = 0; ck < lk; ck++) {
         resum = 0;
         int k = p_k[ck];
-        int nck = 1;
-        for (int i = 1; i <= k; i++) {
-            nck *= nconds - (k - i);
-            nck /=  i;
-        }
         int tempk[k];
         for (int i = 0; i < k; i++) {
             tempk[i] = i;
@@ -1260,7 +1256,7 @@ SEXP C_expand(SEXP mat, SEXP noflevels, SEXP partial) {
     int estnrows = 1000; 
     SET_VECTOR_ELT(usage, 0, result = allocMatrix(INTSXP, nconds, estnrows));
     int *p_result = INTEGER(result);
-    memset(p_result, 0, nconds * estnrows * sizeof(int));
+    Memzero(p_result, nconds * estnrows);
     SET_VECTOR_ELT(usage, 1, x = allocMatrix(INTSXP, nimp, ncolsx));
     int *p_x = INTEGER(x);
     int pos = 0;
@@ -1365,7 +1361,7 @@ SEXP C_expand(SEXP mat, SEXP noflevels, SEXP partial) {
     }
     SET_VECTOR_ELT(usage, 4, temp = allocMatrix(INTSXP, nconds, rfilled));
     int *p_temp = INTEGER(temp);
-    memcpy(p_temp, p_result, nconds * rfilled * sizeof(int));
+    Memcpy(p_temp, p_result, nconds * rfilled);
     SEXP unq, trsp;
     SET_VECTOR_ELT(usage, 5, unq = Runique(temp));
     SET_VECTOR_ELT(usage, 6, trsp = Rtranspose(unq));
@@ -1400,7 +1396,7 @@ SEXP C_Cubes(SEXP list) {
     }
     else {
         SET_VECTOR_ELT(usage, 1, data = allocMatrix(REALSXP, 2, 2)); 
-        memset(REAL(data), 0, 4 * sizeof(double));
+        Memzero(REAL(data), 4);
     }
     double *p_data = REAL(data);
     int nrdata = nrows(data);
@@ -1430,16 +1426,16 @@ SEXP C_Cubes(SEXP list) {
     else {
         SET_VECTOR_ELT(usage, 2, fsconds = allocVector(INTSXP, nconds)); 
         p_fsconds = INTEGER(fsconds);
-        memset(p_fsconds, 0, nconds * sizeof(int));
+        Memzero(p_fsconds, nconds);
     }
-    int *p_pichart = calloc(1, sizeof(int)); 
-    int *p_impmat = calloc(1, sizeof(int)); 
-    int *p_models = calloc(1, sizeof(int)); 
-    int foundPI = 0;
+    int *p_pichart = R_Calloc(1, int); 
+    int *p_impmat = R_Calloc(1, int);  
+    int *p_models = R_Calloc(1, int);  
+    unsigned int foundPI = 0;
     int solrows = 0;
     int solcols = 0;
-    bool complexpic = false;
-    bool firstmin = false; 
+    Rboolean complexpic = false;
+    Rboolean firstmin = false; 
     if (pos1stmin >= 0) {
         firstmin = LOGICAL(VECTOR_ELT(list, pos1stmin))[0];
     }
@@ -1462,7 +1458,7 @@ SEXP C_Cubes(SEXP list) {
     if (foundPI > 0) {
         SET_VECTOR_ELT(out, 0, implicants = allocMatrix(INTSXP, foundPI, nconds));
         int *p_implicants = INTEGER(implicants);
-        memset(p_implicants, 0, foundPI * nconds * sizeof(int));
+        Memzero(p_implicants, foundPI * nconds); 
         len = foundPI * nconds;
         l_1 = len - 1;
         for (i = 0, j = 0; i < len; i++, j += nconds) {
@@ -1498,14 +1494,14 @@ SEXP C_Cubes(SEXP list) {
             }
         }
         else {
-            memcpy(p_solmat, p_models, solrows * solcols * sizeof(int));
+            Memcpy(p_solmat, p_models, solrows * solcols);
         }
     }
     SET_VECTOR_ELT(out, 3, complex = allocVector(LGLSXP, 1));
     LOGICAL(complex)[0] = complexpic;
-    free(p_pichart);
-    free(p_impmat);
-    free(p_models);
+    R_Free(p_pichart);
+    R_Free(p_impmat);
+    R_Free(p_models);
     UNPROTECT(2);
     return(out);
 }
@@ -1695,7 +1691,7 @@ SEXP C_getEC(SEXP dem, SEXP cexpr, SEXP csolm, SEXP pexpr, SEXP psolm, SEXP SA, 
             int totalrows = tempcount + countnot;
             SET_VECTOR_ELT(usage, 7, intseltemp = allocMatrix(INTSXP, totalrows, ncols_dem));
             p_intseltemp = INTEGER(intseltemp);
-            memset(p_intseltemp, 0, totalrows * ncols_dem * sizeof(int));
+            Memzero(p_intseltemp, totalrows * ncols_dem);
             for (int c = 0; c < tempcount; c++) {
                 for (int r = 0; r < ncols_dem; r++) {
                     p_intseltemp[r * totalrows + c] = p_tempmat[c * ncols_dem + r];

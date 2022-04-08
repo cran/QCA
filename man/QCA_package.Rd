@@ -1,6 +1,4 @@
-\name{QCA-package}
-
-\alias{QCA-package}
+\name{About the QCA package}
 
 \alias{QCA}
 
@@ -11,53 +9,59 @@ QCA: A Package for Qualitative Comparative Analysis
 }
 
 \description{
-The package \pkg{QCA} contains functions to perform Qualitative Comparative Analysis,
-complemented with a graphical user interface. It implements the comparative method as
-first described by Ragin (1987), and extended by Cronqvist and Berg-Schlosser (2009)
-and Ragin (2000, 2008). QCA is a bridge between the qualitative and quantitative
-research methodologies, making use of the qualitative procedures in a systematic,
-algorithmic way (therefore increasing the \dQuote{confidence} in the results, as
-understood by quantitative researchers).
+The package \pkg{QCA} contains functions to perform Qualitative Comparative
+Analysis, complemented with a graphical user interface. It implements the
+comparative method as first described by Ragin (1987), and extended by Cronqvist
+and Berg-Schlosser (2009) and Ragin (2000, 2008). QCA is a bridge between the
+qualitative and quantitative research methodologies, making use of the qualitative
+procedures in a systematic, algorithmic way (therefore increasing the
+\dQuote{confidence} in the results, as understood by quantitative researchers).
 
 The Quine-McCluskey minimization algorithms implemented in this package are
-mathematically exact, as described by Dusa (2007b), Dusa (2010), Dusa and Thiem (2015)
-and Dusa (2018). They all return the same, relevant set of prime implicants for \dfn{csQCA}
-(binary crisp sets QCA), \dfn{mvQCA} (multi-value QCA) and \dfn{fsQCA} (fuzzy-sets QCA).
+mathematically exact, as described by Dusa (2007b), Dusa (2010), Dusa and Thiem
+(2015) and Dusa (2018). They all return the same, relevant set of prime implicants
+for \dfn{csQCA} (binary crisp sets QCA), \dfn{mvQCA} (multi-value QCA) and
+\dfn{fsQCA} (fuzzy-sets QCA).
 
-Between versions 1.0-0 and up to version 1.1-3, the package welcomed a second co-author
-Alrik Thiem, responsible with the manual testing and documentation of functions,
-while the main author Adrian Dusa developed this software.
+Between versions 1.0-0 and up to version 1.1-3, the package welcomed a second
+co-author Alrik Thiem, responsible with the manual testing and documentation of
+functions, while the main author Adrian Dusa developed this software.
+
 The package gained new functionality and also other types of QCA like \dfn{tsQCA}
-(temporal QCA), see Caren and Panofsky (2005), Ragin and Strand (2008) and more recently
-also causal chains similar to those from the package \bold{\pkg{cna}} (see Ambuehl et al 2015).
+(temporal QCA), see Caren and Panofsky (2005), Ragin and Strand (2008) and more
+recently also causal chains similar to those from the package \bold{\pkg{cna}}
+(see Ambuehl et al 2015).
 
 The results of the \bold{\pkg{QCA}} package are consistent with (and sometimes
 better than) the results of the other software packages for QCA, most notably
-\bold{\pkg{fs/QCA}} by Ragin and Davey (2014) and \bold{\pkg{Tosmana}} by Cronqvist and
-Berg-Schlosser (2009). A comparison of several such software is provided by Thiem and
-Dusa (2013).
+\bold{\pkg{fs/QCA}} by Ragin and Davey (2014) and \bold{\pkg{Tosmana}} by
+Cronqvist and Berg-Schlosser (2009). A comparison of several such software is
+provided by Thiem and Dusa (2013).
 
-From version 2.0, this package uses a new graphical user interface based on the package
-\bold{\pkg{shiny}}. In order to avoid developing different interfaces for different operating
-systems, the current GUI was designed to work into a webpage. It uses a combination of HTML,
-CSS, jQuery for the user interface, a custom development framework using vector graphics
-based on the Raphael library, and extensive Javascript code to bind these altogether. A
-first version of this user interface was presented by Dusa (2007a), but users should be aware
-the current version is much more advanced. Starting with version 2.5, the user interface
-gained a web-based command console to offer a complete experience of available functionality.
+From version 2.0, this package uses a new graphical user interface based on the
+package \bold{\pkg{shiny}}. To avoid developing different interfaces for
+different operating systems, the current GUI was designed to work in a webpage.
+It uses a combination of HTML, CSS, jQuery for the user interface, a custom
+development framework using vector graphics based on the Raphael library, and
+extensive Javascript code to bind these altogether. A first version of this user
+interface was presented by Dusa (2007a), but users should be aware the current
+version is much more advanced. Starting with version 2.5, the user interface
+gained a web-based command console to offer a complete experience of available
+functionality.
 
 Version 3.0 brings major improvements and additions, most notably the
-implementation of a new minimization algorithm called CCubes (Consistency Cubes), that is
-hundreds of times faster than the previous eQMC. Starting with version 3.5, it is possible to
-specify conjunctural directional expectations in the minimization function.
+implementation of a new minimization algorithm called CCubes (Consistency Cubes),
+that is hundreds of times faster than the previous eQMC. Starting with version
+3.5, it is possible to specify conjunctural directional expectations in the
+minimization function, and from version 3.14 categorical data is also recognized.
 }
 
 \details{
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 3.15\cr
-    Date:    \tab 2022-02-16\cr
+    Version: \tab 3.16\cr
+    Date:    \tab 2022-04-08\cr
     License: \tab GPL (>= 3)\cr
     }
 }
@@ -124,10 +128,8 @@ Irvine: Department of Sociology, University of California.
 
 Thiem, A.; Dusa, A. (2013) \dQuote{Boolean Minimization in Social 
 Science Research: A Review of Current Software for Qualitative Comparative 
-Analysis (QCA).} \emph{Social Science Computer Review} vol.31, no.4, pp.505-521,
-\doi{10.1177/0894439313478999}
+Analysis (QCA).} \emph{Social Science Computer Review} vol.31, no.4, pp.505-521.
 }
 
 
 \keyword{package}
-

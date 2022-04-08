@@ -1,4 +1,4 @@
-\name{QCA-internal}
+\name{QCA internal functions}
 
 \alias{.onAttach}
 

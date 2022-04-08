@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # include <R_ext/Rdynload.h>
 SEXP C_truthTable(SEXP x, SEXP vo, SEXP tt, SEXP fuz) {
     int i, j, k, index;
-    double *p_x, *p_inclpri, *p_vo, min, so, sumx, sumpmin, prisum, temp1, temp2;
+    double *p_x, *p_inclpri, *p_vo, min, sumx, sumpmin, prisum, temp1, temp2; 
     int xrows, xcols, ttrows, ncut, *p_tt, *p_fuz;
     SEXP usage = PROTECT(allocVector(VECSXP, 4));
     SET_VECTOR_ELT(usage, 0, x = coerceVector(x, REALSXP));
@@ -47,10 +47,6 @@ SEXP C_truthTable(SEXP x, SEXP vo, SEXP tt, SEXP fuz) {
     p_fuz = INTEGER(fuz);
     SEXP inclpri = PROTECT(allocMatrix(REALSXP, 3 + xrows, ttrows));
     p_inclpri = REAL(inclpri);
-    so = 0;
-    for (i = 0; i < length(vo); i++) {
-        so += p_vo[i];
-    }
     for (k = 0; k < ttrows; k++) { 
         sumx = 0;
         sumpmin = 0;

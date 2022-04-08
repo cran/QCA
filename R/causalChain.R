@@ -56,7 +56,7 @@
     noflevels  <- admisc::getInfo(data)$noflevels
     mv <- noflevels > 2
     names(noflevels) <- names(mv) <- colnames(data)
-    if (class(ordering) == "character") {
+    if (methods::is(ordering, "character")) {
         ordering <- gsub("[[:space:]]", "", ordering)
         if (length(ordering) == 1) {
             ordering <- unlist(strsplit(ordering, split = "<"))

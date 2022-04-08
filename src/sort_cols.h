@@ -5,5 +5,5 @@ void sort_cols(
     int *p_sortcol,
     int *p_ck,
     int nconds,
-    int foundPI
+    unsigned int foundPI
 );

@@ -3,6 +3,6 @@
 void super_rows(
     int *p_matrix,
     int rows,
-    int *survcols,
+    unsigned int *survcols,
     int *p_cols
 );
