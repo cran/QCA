@@ -37,8 +37,9 @@
         }
         replacement <- c(replacement, categories[[i]])
     }
+    names(replacement) <- target
     for (i in seq(length(x))) {
-        x[i] <- replaceText(x[i], target, replacement)
+        x[i] <- replaceText(x[i], replacement = replacement, target = target)
     }
     return(x)
 }

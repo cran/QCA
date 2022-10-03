@@ -1398,7 +1398,7 @@ register char *lp_yy_bp;
 #ifdef __cplusplus
 static int lp_yyinput()
 #else
-static int input()
+static inline int input()
 #endif
 	{
 	int c;
@@ -1902,4 +1902,3 @@ int main()
 	return 0;
 	}
 #endif
-

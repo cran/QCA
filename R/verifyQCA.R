@@ -359,7 +359,7 @@ function(data, outcome = "", conditions = "", explain = "",
     else {
         multivalue <- any(grepl(mvregexp, dir.exp))
         if (is.character(dir.exp)) {
-            dir.exp <- gsub(admisc::dashes(), "-", dir.exp)
+            dir.exp <- gsub(paste(admisc::dashes(), collapse = "|"), "-", dir.exp)
         }
         if (identical(dir.exp, "")) {
             dir.exp <- paste(rep("-", length(conditions)), collapse = ",")

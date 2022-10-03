@@ -182,7 +182,7 @@ pof(nCVF$coms, 1 - PROTEST)
 # using the "pims" component from minimize()
 
 # conservative solution
-cCVF <- minimize(CVF, outcome = PROTEST, incl.cut = 0.8, details = TRUE)
+cCVF <- minimize(truthTable(CVF, outcome = PROTEST, incl.cut = 0.8))
 
 # verify if their negations are also sufficient for the outcome
 pof(1 - cCVF$pims, PROTEST, relation = "sufficiency")

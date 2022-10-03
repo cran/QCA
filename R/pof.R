@@ -28,7 +28,7 @@
     categorical = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...
 ) {
     setms <- admisc::recreate(substitute(setms))
-    outcome <- admisc::recreate(outcome)
+    outcome <- admisc::recreate(substitute(outcome), snames = names(data))
     funargs <- lapply(
         lapply(match.call(), deparse)[-1],
         function(x) gsub("\"|[[:space:]]", "", x)

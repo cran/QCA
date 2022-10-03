@@ -1,3 +1,10 @@
+Version 3.17
+    o Improved: import options in the GUI, allowing to check for BOM on Windows
+    o Removed: formal argument "min.pin" (but still backwards compatible) from
+      function minimize()
+    o Fixed: bug in modelFit() dealing with multi-value theory expressions
+      (thanks to Mashal Shabbir for the report)
+      
 Version 3.16
     o Fine tuned C code to avoid compilation problems in GCC
       

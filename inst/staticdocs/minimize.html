@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>minimize. QCA 2.5</title>version 3.16</title>
+<title>minimize. QCA 2.5</title>version 3.17</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.16</a>
+      <a class="brand" href="#">QCA 3.17</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -70,9 +70,9 @@ algorithm that is built for performance.</p>
     </div>
     
     <h2>Usage</h2>
-<pre><div>minimize(input, include = &quot;&quot;, , dir.exp = NULL, details = FALSE, pi.cons = 0,
-        sol.cons = 0, all.sol = FALSE, row.dom = FALSE, min.pin = FALSE,
-        max.comb = 0, first.min = FALSE, method = "CCubes", ...)</div></pre>
+<pre><div>minimize(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
+    sol.cons = 0, all.sol = FALSE, row.dom = FALSE, first.min = FALSE,
+    max.comb = 0, method = "CCubes", ...
     
     <h2>Arguments</h2>
     <table>
@@ -110,7 +110,7 @@ algorithm that is built for performance.</p>
             <td></td><td></td><td></td>
             <td>Numerical fuzzy value between 0 and 1, minimal consistency 
         threshold for a model to be declared as sufficient.</td>
-        </tr> 
+        </tr>
         <tr>
             <td valign="top"><b><code>all.sol</code></b></td>
             <td></td><td></td><td></td>
@@ -123,21 +123,15 @@ algorithm that is built for performance.</p>
         eliminate redundant prime implicants.</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>min.pin</code></b></td>
+            <td valign="top"><b><code>first.min</code></b></td>
             <td></td><td></td><td></td>
-            <td>Logical, terminate the search at the depth where newly found
-        prime implicants do not contribute to minimally solving the PI chart.</td>
+            <td>Logical, to return only the very first minimal solution (see
+                Details).</td>
         </tr>
         <tr>
             <td valign="top"><b><code>max.comb</code></b></td>
             <td></td><td></td><td></td>
             <td>Numeric real, to limit the size of the PI chart (see Details).</td>
-        </tr>
-        <tr>
-            <td valign="top"><b><code>first.min</code></b></td>
-            <td></td><td></td><td></td>
-            <td>Logical, to return only the very first minimal solution (see
-                Details).</td>
         </tr>
         <tr>
             <td valign="top"><b><code>method</code></b></td>
@@ -200,15 +194,6 @@ instead of a truth table object.</p>
 (<b><code>k</code></b>) of prime implicants needed to cover all initial positive output
 configurations (minterms), then exhaustively search through all possible disjunctions of
 <b><code>k</code></b> prime implicants which do cover those configurations.</p>
-
-    <p>The argument <b><code>min.pin</code></b> introduces an additional parameter to 
-control when to stop the search for prime implicants.  It is especially useful for very
-large truth tables and uses an observation by
-<a href = "https://doi.org/10.13140/RG.2.2.36359.19361/4">Dusa (2017)</a> that out of the
-entire set of non redundant prime implicants, only a subset actually contribute to
-solving the PI chart. The search depth can be shortened when the PIs found at the
-next complexity level do not decrease the minimum <b><code>k</code></b>, thus producing absolute
-minimal models in both number of disjunctive prime implicants, and their depth level.</p>
 
     <p>Once the PI chart is constructed using the prime implicants found in the previous
 stages, the argument <b><code>row.dom</code></b> can be used to further eliminate

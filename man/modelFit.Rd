@@ -12,12 +12,13 @@ expresison) and the solutions found by function \bold{\code{\link[QCA]{minimize}
 }
 
 \usage{
-modelFit(model, theory = "")
+modelFit(model, theory = "", ...)
 }
 
 \arguments{
   \item{model}{A minimization object of class \code{"QCA_min"}.}
   \item{theory}{Character, a SOP expression.}
+  \item{...}{Other arguments, mainly for internal use.}
 }
 
 \details{

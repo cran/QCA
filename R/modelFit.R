@@ -24,24 +24,27 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `modelFit` <- function(
-    model, theory = ""
+    model, theory = "", ...
 ) {
     if (!(methods::is(model, "QCA_min") | methods::is(model, "admisc_deMorgan"))) {
         admisc::stopError(
-            "The model should be a minimization object or its negation."
+            "The model should be a minimization object or its negation.",
+             ... = ...
         )
     }
     theory <- admisc::recreate(substitute(theory))
     if (is.character(theory)) {
         if (length(theory) != 1) {
             admisc::stopError(
-                "Theory should be a single character expression."
+                "Theory should be a single character expression.",
+                ... = ...
             )
         }
     }
     else {
         admisc::stopError(
-            "Theory should be a character expression or its negation."
+            "Theory should be a character expression or its negation.",
+            ... = ...
         )
     }
     noflevels <- model$tt$noflevels
@@ -58,6 +61,11 @@
     }
     else {
         solutions <- list(model$solution)
+        if (identical(model$options$include, "")) {
+            if (length(solutions[[1]][[1]]) > 2) {
+                message("Warning: the negation of the conservative solution is potentially computer intensive.")
+            }
+        }
     }
     models <- unlist(lapply(solutions, function(x) unlist(lapply(x, paste, collapse = " + "))))
     slengths <- unlist(lapply(solutions, length))
@@ -83,7 +91,21 @@
         expression <- models[i]
         cpims <- pims[, unlist(strsplit(expression, split = " \\+ ")), drop = FALSE]
         cpims$model <- admisc::compute(expression, data = model$tt$initial.data)
-        cpims$theory <- admisc::compute(theory, data = model$tt$initial.data)
+        testheory <- admisc::tryCatchWEM(
+            cpims$theory <- admisc::compute(
+                theory,
+                data = model$tt$initial.data,
+                enter = ""
+            )
+        )
+        if (!is.null(testheory$error)) {
+            if (grepl("multi-value", testheory$error)) {
+                admisc::stopError(
+                    "Theory expression should be specified in multi-value notation.",
+                    ... = ...
+                )
+            }
+        }
         intersections <- rep("", 4)
         intersections[1] <- do.call(
             admisc::intersection,
@@ -96,7 +118,7 @@
             admisc::intersection,
             c(
                 list(
-                    negate(theory, snames = snames)[[1]][1],
+                    negate(theory, snames = snames, noflevels = noflevels)[[1]][1],
                     expression
                 ),
                 arglist
@@ -107,7 +129,7 @@
             c(
                 list(
                     theory,
-                    negate(expression, snames = snames)[[1]][1]
+                    negate(expression, snames = snames, noflevels = noflevels)[[1]][1]
                 ),
                 arglist
             )
@@ -116,8 +138,8 @@
             admisc::intersection,
             c(
                 list(
-                    negate(theory, snames = snames)[[1]][1],
-                    negate(expression, snames = snames)[[1]][1]
+                    negate(theory, snames = snames, noflevels = noflevels)[[1]][1],
+                    negate(expression, snames = snames, noflevels = noflevels)[[1]][1]
                 ),
                 arglist
             )

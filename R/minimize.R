@@ -25,8 +25,8 @@
 
 `minimize` <- function(
     input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
-    sol.cons = 0, all.sol = FALSE, row.dom = FALSE, min.pin = FALSE,
-    max.comb = 0, first.min = FALSE, method = "CCubes", ...
+    sol.cons = 0, all.sol = FALSE, row.dom = FALSE, first.min = FALSE,
+    max.comb = 0, method = "CCubes", ...
 ) {
     metacall <- match.call()
     dots <- substitute(list(...))
@@ -34,11 +34,12 @@
         input <- eval.parent(dots$data)
         dots$data <- NULL
     }
+    min.pin <- isTRUE(dots$min.pin)
     enter <- if (is.element("enter", names(dots))) dots$enter else "\n" 
     if (missing(input)) {
         admisc::stopError(
             "The input (a truth table or a dataset) is missing.",
-            enter
+            ... = ...
         )
     }
     else {
@@ -47,7 +48,7 @@
             if (is.null(colnames(input))) {
                 admisc::stopError(
                     "The data should have column names.",
-                    enter
+                    ... = ...
                 )
             }
             if (any(duplicated(rownames(input)))) {
@@ -63,7 +64,7 @@
         if(!(is.data.frame(input) | ttinput)) {
             admisc::stopError(
                 "The input should be a truth table or a dataset.",
-                enter
+                ... = ...
             )
         }
     }
@@ -110,7 +111,7 @@
     if (is.null(include)) {
         admisc::stopError(
             "The <include> argument cannot be NULL.",
-            enter
+            ... = ...
         )
     }
     dir.exp <- admisc::recreate(substitute(dir.exp))
@@ -126,7 +127,7 @@
                 if (!all(is.element(des, nms))) {
                     admisc::stopError(
                         "Inexisting condition(s) in the sequence of directional expectations.",
-                        enter
+                        ... = ...
                     )
                 }
                 dir.exp <- nms[seq(which(nms == des[1]), which(nms == des[2]))]
@@ -140,7 +141,7 @@
         if (!is.null(dir.exp)) {
             admisc::stopError(
                 "Directional expectations cannot be specified without including the remainders.",
-                enter
+                ... = ...
             )
         }
     }
@@ -179,7 +180,7 @@
         if (identical(outcome, "")) {
             admisc::stopError(
                 "Consider creating a truth table first, or formally specify the argument <outcome>.",
-                enter
+                ... = ...
             )
         }
         if (any(c(pi.cons, sol.cons) > 0) & incl.cut[1] == 1) {
@@ -263,7 +264,7 @@
     if (sum(subset.pos) == 0) {
         admisc::stopError(
             "None of the values in OUT is explained. Please check the truth table.",
-            enter
+            ... = ...
         )
     }
     inputt <- as.matrix(tt$tt[is.element(ttrownms, subset.tt), seq(length(noflevels)), drop = FALSE])
@@ -279,7 +280,7 @@
     if (nrow(pos.matrix) == 0) {
         admisc::stopError(
             "Nothing to explain. Please check the truth table.",
-            enter
+            ... = ...
         )
     }
     include <- admisc::trimstr(include)
@@ -289,9 +290,9 @@
             paste(
                 "All truth table configurations are used, all conditions are minimized.",
                 "       Please check the truth table.",
-                sep = enter
+                sep = "\n"
             ),
-            enter
+            ... = ...
         )
     }
     expressions <- pos.matrix
@@ -395,6 +396,7 @@
     output$solution  <- p.sol$solution.list[[1]]
     output$essential <- p.sol$solution.list[[2]]
     output$options$explain     <- explain
+    output$options$include     <- include
     output$options$neg.out     <- neg.out
     output$options$details     <- details
     output$options$sol.cons    <- sol.cons
@@ -480,6 +482,9 @@
             show.cases = TRUE,
             cases = expr.cases
         )
+        if (poflist$use.letters) {
+            names(poflist$data)[seq(length(conditions))] <- LETTERS[seq(length(conditions))]
+        }
         if (length(output$solution) > 1) {
             poflist$solution.list <- output$solution
             poflist$essential <- output$essential
@@ -516,7 +521,7 @@
             if (error) {
                 admisc::stopError(
                     "There are no solutions, given these constraints.",
-                    enter
+                    ... = ...
                 )
             }
         }

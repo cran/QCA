@@ -225,7 +225,7 @@ var settings = {
         width:     645,
         height:    433,
         inside:    {
-            cols: {border: true, left:  14, top: 260, width: 225, height: 120},
+            cols: {border: true, left:  14, top: 260, width: 225, height: 90},
             path: {border: true, left: 254, top:  62, width: 375, height:  40},
             dirs: {border: true, left: 254, top:  80, width: 375, height: 300}
         },
@@ -243,7 +243,8 @@ var settings = {
                 "header": true,
                 "row_names": "",
                 "nameit": true,
-                "customname": false
+                "customname": false,
+                "fileEncoding": "UTF-8-BOM"
             }
         }
     },
@@ -470,7 +471,7 @@ var settings = {
                 "details": false,
                 "row_dom": false,
                 "all_sol": false,
-                "min_pin": false,
+                "first_min": false,
                 "dir_exp": "",
                 "inf_test": "",
                 "pi_cons": "0",
@@ -1113,14 +1114,13 @@ function console_command(type) {
                 (commobj.read_table.header?", header = TRUE":"") + 
                 ((commobj.read_table.dec == ",")?", dec = \",\"":"");
             }
-            string_command = string_command +
-            (
-                (commobj.read_table.row_names.length == 0)?")":(
-                    ", row.names = " + (
-                        (commobj.read_table.row_names % 2 >= 0)?(commobj.read_table.row_names + ")"):("\"" + commobj.read_table.row_names + "\")")
-                    )
+            if (commobj.read_table.row_names.length) {
+                string_command = string_command +
+                ", row.names = " + (
+                    (commobj.read_table.row_names % 2 >= 0)?(commobj.read_table.row_names):("\"" + commobj.read_table.row_names + "\"")
                 )
-            );
+            }
+            string_command = string_command + ", fileEncoding = \"" + commobj.read_table.fileEncoding + "\")"
         }
     }
     else if (type == "load") {
@@ -1440,8 +1440,8 @@ function console_command(type) {
                 if (commobj.minimize.all_sol) {
                     string_command += ", all.sol = TRUE";
                 }
-                if (commobj.minimize.min_pin) {
-                    string_command += ", min.pin = TRUE";
+                if (commobj.minimize.first_min) {
+                    string_command += ", first.min = TRUE";
                 }
                 if (commobj.minimize.row_dom) {
                     string_command += ", row.dom = TRUE";
@@ -2364,9 +2364,32 @@ function draw_import(paper) {
         }, true);
     });
     sat(paper.text(stx + 5, sty + 218, "Preview column names:"));
+    sat(paper.text(stx + 5, sty + 342, "Encoding:"));
+    var fileEncoding = sat(
+        paper.text(stx + 85, sty + 342, commobj["read_table"].fileEncoding),
+        {"clip": (stx + 80) + ", " + (sty + 332) + ", 110, 20"}
+    );
+    paper.inlineTextEditing(fileEncoding);
+    var enc_rect = paper.rect(stx + 80, sty + 332, 116, 20)
+        .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
+        .click(function(e) {
+            e.stopPropagation();
+            var me = this;
+            var ovBox = this.getBBox();
+            input = fileEncoding.inlineTextEditing.startEditing(ovBox.x + 1, ovBox.y + 21 - 1*(navigator.browserType == "Firefox"), ovBox.width - 2, ovBox.height - 2);
+            input.addEventListener("blur", function(e) {
+                fileEncoding.inlineTextEditing.stopEditing(tasta);
+                commobj["read_table"].fileEncoding = fileEncoding.attr("text");
+                console_command("import");
+                me.toFront();
+                tasta = "enter";
+            }, true);
+        });
     sat(paper.text(stx + 241, sty + 15, "Directory:"));
-    paper.stdir_text = sat(paper.text(stx + 309, sty + 15, ""),
-                        {"clip": (stx + 306) + ", " + (sty + 5) + ", 308, 20"});
+    paper.stdir_text = sat(
+        paper.text(stx + 309, sty + 15, ""),
+        {"clip": (stx + 306) + ", " + (sty + 5) + ", 308, 20"}
+    );
     paper.inlineTextEditing(paper.stdir_text);
     var stdir_rect = paper.rect(stx + 304, sty + 5, 314, 20)
         .attr({fill: "#ffffff", stroke: "#a0a0a0", "fill-opacity": "0"})
@@ -5269,14 +5292,14 @@ function draw_minimize(paper) {
             commobj.minimize.all_sol = all_sol.isChecked;
             console_command("minimize");
         });
-        var min_pin = paper.checkBox({
+        var first_min = paper.checkBox({
             x: stx + 130,
             y: sty + 25,
-            isChecked: commobj.minimize.min_pin,
+            isChecked: commobj.minimize.first_min,
             label: "minimal PI no.",
         });
-        min_pin.cover.click(function() {
-            commobj.minimize.min_pin = min_pin.isChecked;
+        first_min.cover.click(function() {
+            commobj.minimize.first_min = first_min.isChecked;
             console_command("minimize");
         });
         if (!commobj.minimize.details && commobj.minimize.source == "data") {
@@ -7063,7 +7086,7 @@ $("#menu_about").click(function() {
     else {
         createDialog(settings["about"]);
         var messages = [
-            "R package: QCA, version 3.16",
+            "R package: QCA, version 3.17",
             "",
             "Author: Adrian Dușa (dusa.adrian@unibuc.ro)",
             "Former coauthors:",

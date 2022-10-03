@@ -752,9 +752,7 @@ SEXP C_QMC(SEXP tt, SEXP noflevels) {
     int temp[nconds];
     int combs[2];
     int e, h;
-    int iteration = 0;
     while (found > 0 && nimplicants > 1) {
-        iteration++;
         found = 0;
         SET_VECTOR_ELT(usage, 3, minimized = allocVector(LGLSXP, nimplicants));
         p_minimized = LOGICAL(minimized);
@@ -1490,7 +1488,7 @@ SEXP C_Cubes(SEXP list) {
         int *p_solmat = INTEGER(solmat);
         if (firstmin) {
             for (int i = 0; i < solrows; i++) {
-                p_solmat[i] = i + 1;
+                p_solmat[i] = p_models[i] + 1;
             }
         }
         else {

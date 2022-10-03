@@ -767,6 +767,7 @@ shinyServer(function(input, output, session) {
             colsep <- read_table$sep 
             row_names <- read_table$row_names
             decimal <- read_table$dec
+            fileEncoding <- read_table$fileEncoding
             filename <- unlist(strsplit(basename(filepath), split="\\."))
             filename <- filename[-length(filename)]
             if (length(filename) > 1) {
@@ -776,12 +777,35 @@ shinyServer(function(input, output, session) {
                 if (possibleNumeric(row_names)) {
                     row_names <- as.numeric(row_names)
                 }
-                tc <- capture.output(tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
-                          row.names = row_names, as.is = TRUE, dec = decimal, nrows = 2), error = function(e) e, warning = function(w) w))
+                tc <- capture.output(
+                    tryCatch(
+                        read.table(
+                            filepath,
+                            header = header,
+                            ifelse(colsep == "tab", "\t", colsep),
+                            row.names = row_names,
+                            as.is = TRUE,
+                            dec = decimal,
+                            nrows = 2,
+                            fileEncoding = fileEncoding
+                        ),
+                    error = function(e) e, warning = function(w) w)
+                )
             }
             else {
-                tc <- capture.output(tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
-                          as.is = TRUE, dec = decimal, nrows = 2), error = function(e) e, warning = function(w) w))
+                tc <- capture.output(
+                    tryCatch(
+                        read.table(
+                            filepath,
+                            header = header,
+                            ifelse(colsep == "tab", "\t", colsep),
+                            as.is = TRUE,
+                            dec = decimal,
+                            nrows = 2,
+                            fileEncoding = fileEncoding
+                        ),
+                        error = function(e) e, warning = function(w) w)
+                    )
             }
             if (any(grepl("subscript out of bounds", tc))) {
                 mesaj <- paste("The data doesn't have ", row_names, " columns.", sep = "")
@@ -795,8 +819,18 @@ shinyServer(function(input, output, session) {
             }
             else if (any(grepl("data frame with 0 columns", tc))) {
                 mesaj <- paste("The data has only 1 column.", sep = "")
-                tc <- tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
-                           as.is = TRUE, dec = decimal, nrows = 2), error = function(e) e)
+                tc <- tryCatch(
+                    read.table(
+                        filepath,
+                        header = header,
+                        ifelse(colsep == "tab", "\t", colsep),
+                        as.is = TRUE,
+                        dec = decimal,
+                        nrows = 2,
+                        fileEncoding = fileEncoding
+                    ),
+                    error = function(e) e
+                )
                 session$sendCustomMessage(type = "tempdatainfo", list(ncols = 2, nrows = 2, colnames=c(colnames(tc), mesaj), rownames=""))
                 return(invisible())
             }
@@ -805,8 +839,18 @@ shinyServer(function(input, output, session) {
                 session$sendCustomMessage(type = "tempdatainfo", list(ncols = 1, nrows = 1, colnames = mesaj, rownames = "error!"))
                 return(invisible())
             }
-            tc <- tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
-                           as.is = TRUE, dec = decimal, nrows = 2), error = function(e) e, warning = function(w) w)
+            tc <- tryCatch(
+                read.table(
+                    filepath,
+                    header = header,
+                    ifelse(colsep == "tab", "\t", colsep),
+                    as.is = TRUE,
+                    dec = decimal,
+                    nrows = 2,
+                    fileEncoding = fileEncoding
+                ),
+                error = function(e) e, warning = function(w) w
+            )
             tcisdata <<- TRUE
             if (is.null(dim(tc))) {
                 if (is.list(tc)) {
@@ -824,12 +868,32 @@ shinyServer(function(input, output, session) {
             }
             if (tcisdata) {
                 if (row_names != "") {
-                    tc <- tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
-                              row.names = row_names, as.is = TRUE, dec = decimal), error = function(e) e, warning = function(w) w)
+                    tc <- tryCatch(
+                        read.table(
+                            filepath,
+                            header = header,
+                            ifelse(colsep == "tab", "\t", colsep),
+                            row.names = row_names,
+                            as.is = TRUE,
+                            dec = decimal,
+                            fileEncoding = fileEncoding
+                        ),
+                        error = function(e) e, warning = function(w) w
+                    )
                 }
                 else {
-                    tc <- tryCatch(read.table(filepath, header = header, ifelse(colsep == "tab", "\t", colsep),
-                              as.is = TRUE, dec = decimal), error = function(e) e, warning = function(w) w)
+                    tc <- tryCatch(
+                        read.table(
+                            filepath,
+                            header = header,
+                            ifelse(colsep == "tab", "\t", colsep),
+                            as.is = TRUE,
+                            dec = decimal,
+                            fileEncoding = fileEncoding
+                        ),
+                        error = function(e) e,
+                        warning = function(w) w
+                    )
                 }
                 if (identical(names(tc), c("message", "call"))) {
                     session$sendCustomMessage(type = "tempdatainfo", list(ncols = 1, nrows = 1, colnames = tc$message, rownames = "error!"))

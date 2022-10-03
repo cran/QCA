@@ -19,10 +19,10 @@ and \href{https://www.tandfonline.com/doi/full/10.1080/0022250X.2014.897949}{Dus
 
 \usage{
 minimize(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
-        sol.cons = 0, all.sol = FALSE, row.dom = FALSE, min.pin = FALSE,
-        max.comb = 0, first.min = FALSE, method = "CCubes", ...)
+         sol.cons = 0, all.sol = FALSE, row.dom = FALSE, first.min = FALSE,
+         max.comb = 0, method = "CCubes", ...)
 }
-      
+
 \arguments{
   \item{input}{A truth table object (preferred) or a data frame containing 
         calibrated causal conditions and an outcome.}
@@ -38,14 +38,12 @@ minimize(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
   \item{all.sol}{Logical, search for all possible models, including the non-minimal.}
   \item{row.dom}{Logical, perform row dominance in the prime implicants' chart to
         eliminate redundant prime implicants.}
-  \item{min.pin}{Logical, terminate the search at the depth where newly found
-        prime implicants do not contribute to minimally solving the PI chart.}
-  \item{max.comb}{Numeric real, to limit the size of the PI chart (see Details).}
   \item{first.min}{Logical, to return only the very first minimal solution (see
         Details).}
+  \item{max.comb}{Numeric real, to limit the size of the PI chart (see Details).}
   \item{method}{Minimization method, one of "CCubes" (default), or "QMC" the
         classical Quine-McCluskey, or "eQMC" the enhanced Quine-McCluskey.}
-  \item{...}{Other arguments to be passed to function \bold{\code{\link[QCA]{truthTable}()}}.}
+  \item{...}{Other arguments, passed to other functions.}
 }
 
 \details{
@@ -97,15 +95,6 @@ The default method (when \bold{\code{all.sol = FALSE}}), is to find the minimal 
 (\bold{\code{k}}) of prime implicants needed to cover all initial positive output
 configurations (minterms), then exhaustively search through all possible disjunctions of
 \bold{\code{k}} prime implicants which do cover those configurations.
-
-The argument \bold{\code{min.pin}} introduces an additional parameter to control when to
-stop the search for prime implicants. It is especially useful for very large truth tables
-and uses an observation by
-\href{https://journal.r-project.org/archive/2018/RJ-2018-080/}{Dusa (2018)} that
-out of the entire set of non redundant prime implicants, only a subset actually contribute
-to minimally solving the PI chart. The search depth is shortened when the PIs found at the
-next complexity level do not decrease the minimum \bold{\code{k}}, thus producing absolute
-minimal models in both number of disjunctive prime implicants, and their depth level.
 
 Once the PI chart is constructed using the prime implicants found in the previous
 stages, the argument \bold{\code{row.dom}} can be used to further eliminate

@@ -25,6 +25,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <R.h>
 #include <R_ext/RS.h> 
 #include <R_ext/Boolean.h>
 #include <math.h>
@@ -82,7 +83,7 @@ void CCubes(const int p_tt[],
     p_indx = R_Calloc(nconds * estimPI, int);
     p_ck = R_Calloc(estimPI, int);
     Rboolean stop_searching = false;
-    unsigned int prevfoundPI = 0;    
+    unsigned int prevfoundPI = 0;  
     unsigned int foundPI = 0;
     int prevsolmin = 0;     
     int solmin = 0;
@@ -221,11 +222,9 @@ void CCubes(const int p_tt[],
                 find_min(p_pichart, posrows, foundPI, &solmin, indices); 
                 if (solmin == prevsolmin) {
                     if (firstmin || minpin) {
-                        foundPI = prevfoundPI;
                         for (int i = 0; i < solmin; i++) {
                             indices[i] = previndices[i];
                         }
-                        stop_searching = true; 
                     }
                 }
                 else {
@@ -256,26 +255,15 @@ void CCubes(const int p_tt[],
     int *p_tempic = R_Calloc(1, int);
     if ((firstmin || *complex) && solcons == 0) {
         if (solmin > 0) {
-            R_Free(copy_implicants);
-            copy_implicants = R_Calloc(nconds * solmin, int);
             R_Free(p_solutions);
             p_solutions = R_Calloc(solmin, int);
-            R_Free(p_tempic);
-            p_tempic = R_Calloc(posrows * solmin, int);
             for (int c = 0; c < solmin; c++) {
                 p_solutions[c] = indices[c];
-                for (int r = 0; r < nconds; r++) {
-                    copy_implicants[c * nconds + r] = p_implicants[indices[c] * nconds + r];
-                }
-                for (int r = 0; r < posrows; r++) {
-                    p_tempic[c * posrows + r] = p_pichart[indices[c] * posrows + r];
-                }
             }
             nr = solmin;
             nc = 1;
-            foundPI = solmin;
         }
-        else if (foundPI > 0) { 
+        if (foundPI > 0) { 
             int *p_sorted = R_Calloc(foundPI, int);
             for (unsigned int i = 0; i < foundPI; i++) {
                 p_sorted[i] = i;
@@ -285,6 +273,16 @@ void CCubes(const int p_tt[],
             copy_implicants = R_Calloc(nconds * foundPI, int);
             R_Free(p_tempic);
             p_tempic = R_Calloc(posrows * foundPI, int);
+            for (int r = 0; r < solmin; r++) {
+                for (int c = 0; c < foundPI; c++) {
+                    if (p_sorted[c] == p_solutions[r]) {
+                        indices[r] = c;
+                    }
+                }
+            }
+            for (int r = 0; r < solmin; r++) {
+                p_solutions[r] = indices[r];
+            }
             for (unsigned int c = 0; c < foundPI; c++) {
                 for (int r = 0; r < nconds; r++) {
                     copy_implicants[c * nconds + r] = p_implicants[p_sorted[c] * nconds + r];

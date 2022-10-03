@@ -64,14 +64,13 @@
     }
     outcome.copy <- outcome
     initial.data <- as.data.frame(data) 
-    curly <- any(grepl("\\{", outcome)) 
     if (!identical(outcome, "")) {
         testoutcome <- admisc::tryCatchWEM(admisc::translate(outcome, data = data))
         if (grepl("\\+|\\*", outcome)) {
             initial.data[, outcome] <- data[, outcome] <- admisc::compute(outcome, data)
         }
         else if (grepl(mvregexp, outcome)) {
-            if (curly) {
+            if (any(grepl("\\{", outcome))) {
                 outcome.value <- admisc::curlyBrackets(outcome)
                 outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
             }
