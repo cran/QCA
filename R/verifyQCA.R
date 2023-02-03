@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2022, Adrian Dusa
+# Copyright (c) 2016 - 2023, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -106,7 +106,9 @@ function(data, outcome = "", conditions = "") {
     }
 }
 `verify.qca` <-
-function(data) {
+function(data, ...) {
+    dots <- list(...)
+    simplify <- isTRUE(dots$simplify)
     if (is.data.frame(data)) {
         if (is.null(colnames(data))) {
             admisc::stopError(
@@ -121,11 +123,19 @@ function(data) {
             uncal <- mvuncal <- FALSE
             if (is_possible_numeric & !is_a_declared) {
                 y <- na.omit(admisc::asNumeric(x))
-                if (any(y > 1) & any(abs(y - round(y)) >= .Machine$double.eps^0.5)) {
-                    uncal <- TRUE
+                if (admisc::wholeNumeric(y)) {
+                    mvuncal <- length(seq(0, max(y))) > 20 ||
+                    (
+                        !simplify && 
+                        any(y > 1) && 
+                        !setequal(
+                            sort(unique(y)),
+                            seq(0, max(y))
+                        )
+                    )
                 }
-                if (length(seq(0, max(y))) > 20) {
-                    mvuncal <- TRUE
+                else {
+                    uncal <- any(y > 1)
                 }
             }
             return(c(is_possible_numeric, uncal, mvuncal, is_a_factor, is_a_declared))
@@ -161,17 +171,10 @@ function(data) {
             admisc::stopError(errmessage)
         }
         if (any(checkmvuncal)) {
-            uncalibrated <- colnames(data)[checkmvuncal]
-            errmessage <- paste(
-                "Possibly uncalibrated data.\n",
-                "Multivalue conditions with more than 20 levels ",
-                "are unlikely to be (properly) calibrated.\n",
-                "Please check the following condition",
-                ifelse(length(uncalibrated) == 1, "", "s"),
-                ":\n",
-                paste(uncalibrated, collapse = ", ")
-            )
-            admisc::stopError(errmessage)
+            admisc::stopError(paste(
+                "Possibly uncalibrated multivalue conditions. Please check:\n",
+                paste(colnames(data)[checkmvuncal], collapse = ", ")
+            ))
         }
     }
     else if (is.vector(data)) {
@@ -184,7 +187,7 @@ function(data) {
 }
 `verify.tt` <- function(
     data, outcome = "", conditions = "", complete = FALSE,
-    show.cases = FALSE, ic1 = 1, ic0 = 1, inf.test
+    show.cases = FALSE, ic1 = 1, ic0 = 1, inf.test, ...
 ) {
     if (!inherits(data, "data.frame")) {
         cls <- ifelse(methods::is(data, "QCA_sS"), "QCA_sS",
@@ -285,7 +288,7 @@ function(data) {
         }
         return(x)
     })
-    verify.qca(data)
+    verify.qca(data, ... = ...)
     verify.inf.test(inf.test, data)
 }
 `verify.minimize` <-

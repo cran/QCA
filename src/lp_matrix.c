@@ -2910,7 +2910,7 @@ STATIC MYBOOL get_colIndexA(lprec *lp, int varset, int *colindex, MYBOOL append)
 #endif
     }
 
-    /* Find if the variable is in the scope - default is {} */
+    /* Find if the variable is in the scope - default is {?} */
     i = lp->is_basic[varnr];
     if((varset & USE_BASICVARS) > 0 && (i))
       ;
@@ -3433,3 +3433,4 @@ STATIC void bsolve_xA2(lprec *lp, int* coltarget,
                             ofscalar, roundmode);
   }
 }
+

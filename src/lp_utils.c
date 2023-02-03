@@ -949,6 +949,7 @@ STATIC int compareLink(LLrec *linkmap1, LLrec *linkmap2)
     test = memcmp(&linkmap1->count, &linkmap2->count, sizeof(int));
     if(test == 0)
       test = memcmp(linkmap1->map, linkmap2->map, sizeof(int)*(2*linkmap1->size+1));
+
   return( test );
 }
 

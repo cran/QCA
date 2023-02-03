@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2022, Adrian Dusa
+# Copyright (c) 2016 - 2023, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -110,7 +110,10 @@ infobjs <- function(env, objs, scrollvh) {
                     colnames = as.list(colnames(x)),
                     numerics = as.list(as.vector(unlist(lapply(x, admisc::possibleNumeric)))),
                     calibrated = as.list(as.vector(unlist(lapply(x, function(x) {
-                        all(na.omit(x) >= 0 & na.omit(x) <= 1)
+                        if (is.numeric(x)) {
+                            return(all(na.omit(x) >= 0 & na.omit(x) <= 1))
+                        }
+                        return(FALSE)
                     })))),
                     binary = as.list(as.vector(unlist(lapply(x, function(x) all(is.element(x, 0:1)))))),
                     scrollvh = c(srow, scol) - 1, 

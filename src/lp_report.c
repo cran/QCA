@@ -791,4 +791,3 @@ void REPORT_modelinfo(lprec *lp, MYBOOL doName, char *datainfo)
 
 //   return(ok);
 // }
-

@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2022, Adrian Dusa
+# Copyright (c) 2016 - 2023, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,11 @@
     }
     names(replacement) <- target
     for (i in seq(length(x))) {
-        x[i] <- replaceText(x[i], replacement = replacement, target = target)
+        x[i] <- admisc::replaceText(
+            x[i],
+            replacement = replacement,
+            target = target
+        )
     }
     return(x)
 }

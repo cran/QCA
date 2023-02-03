@@ -1,3 +1,9 @@
+Version 3.18
+    o An error is issued if multivalue conditions do not strictly follow the
+      sequence 0, 1, 2, ...
+    o C level fine tuning to silence CRAN warnings about lpSolve
+      (many thanks to Gábor Csárdi)
+      
 Version 3.17
     o Improved: import options in the GUI, allowing to check for BOM on Windows
     o Removed: formal argument "min.pin" (but still backwards compatible) from

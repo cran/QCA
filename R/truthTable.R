@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2022, Adrian Dusa
+# Copyright (c) 2016 - 2023, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,8 @@
 ) {
     metacall <- match.call(expand.dots = TRUE)
     dots <- admisc::recreate(substitute(list(...)))
-    back.args <- c("outcome", "conditions", "n.cut", "incl.cut", "complete", "show.cases",
-                    "sort.by", "use.letters", "inf.test")
+    back.args <- c("outcome", "conditions", "n.cut", "incl.cut", "complete",
+                    "show.cases", "sort.by", "use.letters", "inf.test")
     check.args <- pmatch(names(dots), back.args)
     names(dots)[!is.na(check.args)] <- back.args[check.args[!is.na(check.args)]]
     enter <- ifelse (is.element("enter", names(dots)), dots$enter, TRUE)
@@ -145,7 +145,8 @@
         show.cases,
         ic1,
         ic0,
-        inf.test
+        inf.test,
+        ... = ...
     )
     if (length(conditions) == 1) {
         if (grepl(":", conditions)) {

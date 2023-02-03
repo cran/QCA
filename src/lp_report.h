@@ -39,4 +39,3 @@ MYBOOL REPORT_debugdump(lprec *lp, char *filename, MYBOOL livedata);
 #endif
 
 #endif /* HEADER_lp_report */
-
