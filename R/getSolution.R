@@ -142,7 +142,7 @@
     notempty <- apply(mtrx, 1, any)
         expressions <- expressions[notempty, , drop = FALSE]
         mtrx <- mtrx[notempty, , drop = FALSE]
-    setColnames(mtrx, initial)
+    admisc::setColnames(mtrx, initial)
     reduced <- list(expressions = expressions, mtrx = mtrx)
     if (nrow(mtrx) > 0) {
         if (row.dom & is.null(sol.matrix)) {
@@ -153,7 +153,7 @@
             }
         }
         mtrx <- reduced$mtrx
-        setColnames(mtrx, initial)
+        admisc::setColnames(mtrx, initial)
         if (is.null(sol.matrix)) {
             sol.matrix <- solveChart(mtrx, all.sol = all.sol, ... = ...)
         }

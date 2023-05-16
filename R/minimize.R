@@ -310,10 +310,10 @@
     else {
         colnms <- colnames(recdata[, seq(ncol(inputt)), drop = FALSE])
     }
-    setColnames(expressions, colnms)
-    setColnames(inputt, colnms)
-    setColnames(pos.matrix, colnms)
-    setColnames(neg.matrix, colnms)
+    admisc::setColnames(expressions, colnms)
+    admisc::setColnames(inputt, colnms)
+    admisc::setColnames(pos.matrix, colnms)
+    admisc::setColnames(neg.matrix, colnms)
     rownames(neg.matrix) <- (neg.matrix - 1) %*% mbase + 1
     output$initials <- admisc::writePrimeimp(
         impmat = inputt,
@@ -349,7 +349,7 @@
         pos.matrix <- inputt
         if (method == "QMC") {
             expressions <- .Call("C_QMC", createMatrix(noflevels)[-output$negatives, , drop = FALSE] + 1, noflevels, PACKAGE = "QCA")
-            setColnames(expressions, colnames(inputt))
+            admisc::setColnames(expressions, colnames(inputt))
         }
         else if (method == "eQMC") {
             if (nrow(neg.matrix) > 0) {
@@ -360,7 +360,7 @@
             }
             expressions <- .Call("C_removeRedundants", expressions, noflevels, mbaseplus, PACKAGE = "QCA")
             expressions <- admisc::sortExpressions(getRow(expressions, noflevels + 1))
-            setColnames(expressions, colnames(inputt))
+            admisc::setColnames(expressions, colnames(inputt))
         }
         else { 
             extended.data <- as.matrix(tt$recoded.data)

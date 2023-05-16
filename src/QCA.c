@@ -102,38 +102,11 @@ SEXP C_findmin(SEXP pichart) {
     UNPROTECT(1);
     return(result);
 }
-static R_INLINE Rboolean hasDimnames(SEXP matrix) {
-    return !Rf_isNull(getAttrib(matrix, R_DimNamesSymbol));
-}
 static R_INLINE Rboolean hasColnames(SEXP matrix) {
-    return hasDimnames(matrix) ? !Rf_isNull(VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 1)) : FALSE;
-}
-static R_INLINE Rboolean hasRownames(SEXP matrix) {
-    return hasDimnames(matrix) ? !Rf_isNull(VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 0)) : FALSE;
-}
-SEXP C_setDimnames(SEXP tt, SEXP dimnames) {
-    setAttrib(tt, R_DimNamesSymbol, dimnames);
-    return(R_NilValue);
-}
-SEXP C_setColnames(SEXP matrix, SEXP colnames) {
-    SEXP dimnames = PROTECT(allocVector(VECSXP, 2));
-    SET_VECTOR_ELT(dimnames, 1, colnames);
-    if (hasRownames(matrix)) {
-        SET_VECTOR_ELT(dimnames, 0, VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 0));
+    if (Rf_isNull(getAttrib(matrix, R_DimNamesSymbol))) {
+        return(FALSE);
     }
-    setAttrib(matrix, R_DimNamesSymbol, dimnames);
-    UNPROTECT(1);
-    return(R_NilValue);
-}
-SEXP C_setRownames(SEXP matrix, SEXP rownames) {
-    SEXP dimnames = PROTECT(allocVector(VECSXP, 2));
-    SET_VECTOR_ELT(dimnames, 0, rownames);
-    if (hasColnames(matrix)) {
-        SET_VECTOR_ELT(dimnames, 1, VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 1));
-    }
-    setAttrib(matrix, R_DimNamesSymbol, dimnames);
-    UNPROTECT(1);
-    return(R_NilValue);
+    return !Rf_isNull(VECTOR_ELT(getAttrib(matrix, R_DimNamesSymbol), 1));
 }
 static R_INLINE Rboolean getpos(SEXP list, const char *str) {
     SEXP names = getAttrib(list, R_NamesSymbol);

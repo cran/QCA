@@ -106,7 +106,7 @@
     clevels <- lapply(x, levels)
     cordered <- lapply(x, is.ordered)
     x <- as.matrix(x)
-    setRownames(x, value)
+    admisc::setRownames(x, value)
     x <- rebuild(
         as.data.frame(x, stringsAsFactors = FALSE),
         classes,

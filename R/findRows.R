@@ -64,7 +64,7 @@
                 call$outcome <- admisc::notilde(call$outcome)
             }
             else {
-                call$outcome <- paste("~", call$outcome, sep = "")    
+                call$outcome <- paste("~", call$outcome, sep = "")
             }
             call$incl.cut <- rev(obj$options$incl.cut)
             if (length(dots) > 0) {

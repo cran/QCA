@@ -19,9 +19,6 @@
 \alias{rebuild}
 \alias{removeRedundants}
 \alias{replaceCategories}
-\alias{setRownames}
-\alias{setColnames}
-\alias{setDimnames}
 \alias{verify.data}
 \alias{verify.dir.exp}
 \alias{verify.minimize}

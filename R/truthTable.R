@@ -235,17 +235,13 @@
         paste(rownames(data)[x > 0.5 & data[, outcome] < 0.5], collapse = ",")
     })
     casesexcl <- cases[obremove]
-    rownstt <- rownstt[!obremove]
-    cases <- cases[!obremove]
-    DCC <- DCC[!obremove]
     removed <- tt[obremove, , drop = FALSE]
     removed$OUT <- 1 * (
         admisc::agteb(ipc[2, obremove], ic1) &
         admisc::agteb(ipc[3, obremove], pri.cut)
     )
     removed$OUT[
-        ipc[2, obremove] < ic1 &
-        admisc::agteb(ipc[2, obremove], ic0)
+        ipc[2, obremove] < ic1 & admisc::agteb(ipc[2, obremove], ic0)
     ] <- "C"
     frcallist <- NULL
     if (!is.null(exclude)) {
@@ -281,7 +277,7 @@
         ttc$n     <-  0
         ttc$incl  <- "-"
         whichpri <- which(colnames(ttc) == "PRI")
-        ttc[, whichpri[length(whichpri)]] <- "-"  
+        ttc[, whichpri[length(whichpri)]] <- "-"
         ttc[rownames(tt), ] <- tt
         if (!is.null(exclude)) {
             ttc$OUT[exclude] <- "0"
@@ -408,12 +404,12 @@
     colnames(initial.data)[!numerics] <- initialcols[!numerics]
     x <- list(
         tt = tt,
-        indexes = rownstt,
+        indexes = rownstt[!obremove],
         noflevels = as.vector(noflevels),
         initial.data = initial.data,
         recoded.data = data,
-        cases = cases,
-        DCC = DCC,
+        cases = cases[!obremove],
+        DCC = DCC[!obremove],
         minmat = minmat,
         categories = categories,
         options = list(

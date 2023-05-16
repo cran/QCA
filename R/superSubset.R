@@ -166,19 +166,19 @@
                      cov.cut,
                      depth, PACKAGE = "QCA")
     if (nec(relation)) {
-        setColnames(CMatrix[[1]], c("inclN", "RoN", "covN"))
-        setColnames(CMatrix[[2]], c("inclN", "RoN", "covN"))
+        admisc::setColnames(CMatrix[[1]], c("inclN", "RoN", "covN"))
+        admisc::setColnames(CMatrix[[2]], c("inclN", "RoN", "covN"))
     }
     else {
-        setColnames(CMatrix[[1]], c("inclS", "PRI", "covS"))
-        setColnames(CMatrix[[2]], c("inclS", "PRI", "covS"))
+        admisc::setColnames(CMatrix[[1]], c("inclS", "PRI", "covS"))
+        admisc::setColnames(CMatrix[[2]], c("inclS", "PRI", "covS"))
     }
     prev.result <- FALSE
     lexpressions <- nrow(CMatrix[[1]])
     if (lexpressions > 0) {
         result.matrix <- CMatrix[[3]]
         rownames(result.matrix) <- expressions <- seq(lexpressions)
-        setColnames(result.matrix, conditions)
+        admisc::setColnames(result.matrix, conditions)
         prev.result <- TRUE
         row_names <- admisc::writePrimeimp(
             impmat = result.matrix,
@@ -200,7 +200,7 @@
         if (lexprnec > 0) {
             result.matrix2 <- CMatrix[[4]]
             rownames(result.matrix2) <- seq(lexprnec) + lexpressions
-            setColnames(result.matrix2, conditions)
+            admisc::setColnames(result.matrix2, conditions)
             row_names2 <- admisc::writePrimeimp(
                 impmat = result.matrix2,
                 mv = mv,
