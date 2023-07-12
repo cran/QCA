@@ -29,10 +29,8 @@
 ) {
     dots <- list(...)
     funargs <- lapply(
-        lapply(
-            match.call(), deparse
-        )[-1],
-        function(x) gsub("\"|[[:space:]]", "", x)
+        lapply(match.call(), deparse)[-1],
+        function(x) gsub("'|\"|[[:space:]]", "", x)
     )
     if (is.element("q", names(dots))) {
         above <- dots$q

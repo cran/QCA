@@ -26,25 +26,27 @@
 `superSubset` <- function(
     data, outcome = "", conditions = "", relation = "necessity", incl.cut = 1,
     cov.cut = 0, ron.cut = 0, pri.cut = 0, depth = NULL, use.letters = FALSE,
-    categorical = FALSE, add = NULL, ...
+    use.labels = FALSE, add = NULL, ...
 ) {
     funargs <- lapply(
         lapply(match.call(), deparse)[-1],
         function(x) {
-            gsub("\"|[[:space:]]", "", x)
+            gsub("'|\"|[[:space:]]", "", x)
         }
     )
     dots <- list(...)
+    if (isTRUE(dots$categorical)) { 
+        use.labels <- TRUE
+        dots$categorical <- NULL
+    }
     if (missing(data)) {
         admisc::stopError("Data is missing.")
     }
-    funargs <- lapply(match.call(), deparse)
+    msg <- !isFALSE(dots$msg)
+    mv <- isTRUE(dots$mv)
     outcome <- admisc::recreate(substitute(outcome), colnames(data))
     conditions <- admisc::recreate(substitute(conditions), colnames(data))
-        neg.out <- FALSE
-        if (is.element("neg.out", names(dots))) {
-            neg.out <- dots$neg.out
-        }
+        neg.out <- isTRUE(dots$neg.out)
     incl.cut <- incl.cut - .Machine$double.eps ^ 0.5
     if (cov.cut > 0) {
         cov.cut <- cov.cut - .Machine$double.eps ^ 0.5
@@ -86,16 +88,13 @@
             )
         }
         if (mvoutcome) {
-            outcome <- as.numeric(
+            data[, funargs$outcome] <- as.numeric(
                 is.element(
                     data[, funargs$outcome],
                     admisc::splitstr(outcome.value)
                 )
             )
         }
-    }
-    else {
-        data[, funargs$outcome] <- outcome
     }
     if (identical(conditions, "")) {
         conditions <- names(data)[-which(names(data) == funargs$outcome)]
@@ -149,7 +148,9 @@
     }
     infodata <- admisc::getInfo(data)
     noflevels <- infodata$noflevels
-    mv <- any(noflevels > 2)
+    if (!mv) {
+        mv <- any(noflevels > 2) | mvoutcome
+    }
     fc <- infodata$fuzzy.cc
     mbase <- c(rev(cumprod(rev(noflevels + 1L))), 1)[-1]
     noflevels[noflevels == 1] <- 2 
@@ -193,9 +194,12 @@
     if (nec(relation)) {
         lexprnec <- nrow(CMatrix[[2]])
         if (lexprnec + lexpressions == 0) {
-            admisc::stopError(
-                "There are no configurations, using these cutoff values."
-            )
+            if (msg) {
+                message(
+                    "\nThere are no configurations, using these cutoff values.\n"
+                )
+            }
+            return(invisible(NULL))
         }
         if (lexprnec > 0) {
             result.matrix2 <- CMatrix[[4]]
@@ -294,7 +298,7 @@
         incl.cut = incl.cut,
         cov.cut = cov.cut,
         use.letters = use.letters,
-        categorical = categorical
+        use.labels = use.labels
     )
     return(structure(toreturn, class = "QCA_sS"))
 }

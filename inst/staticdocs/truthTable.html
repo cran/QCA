@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>truthTable. QCA 2.5</title>version 3.19</title>
+<title>truthTable. QCA 2.5</title>version 3.20</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.19</a>
+      <a class="brand" href="#">QCA 3.20</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -66,7 +66,7 @@ combinations of causal conditions).</p>
     
     <h2>Usage</h2>
 <pre><div>truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut = 0,
-           exclude = NULL, complete = FALSE, use.letters = FALSE, categorical = FALSE,
+           exclude = NULL, complete = FALSE, use.letters = FALSE, use.labels = FALSE,
            show.cases = FALSE, dcc = FALSE, sort.by = "", inf.test = "", ...)</div></pre>
     
     <h2>Arguments</h2>
@@ -121,9 +121,9 @@ combinations of causal conditions).</p>
             <td>Logical, use letters instead of causal conditions' names.</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>categorical</code></b></td>
+            <td valign="top"><b><code>use.labels</code></b></td>
             <td></td><td></td><td></td>
-            <td>Logical, use category labels if categorical causal conditions.</td>
+            <td>Logical, use category labels if present.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>show.cases</code></b></td>

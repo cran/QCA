@@ -25,17 +25,22 @@
 
 `pofind` <- function(
     data = NULL, outcome = "", conditions = "", relation = "necessity",
-    categorical = FALSE, ...
+    use.labels = FALSE, ...
 ) {
     if (missing(data)) {
         admisc::stopError(
             "Data is missing."
         )
     }
+    dots <- list(...)
+    if (isTRUE(dots$categorical)) { 
+        use.labels <- TRUE
+        dots$categorical <- NULL
+    }
     funargs <- lapply(match.call(), deparse)
     outcome <- admisc::recreate(substitute(outcome), colnames(data))
     conditions <- admisc::recreate(substitute(conditions), colnames(data))
-    enter <- if (is.element("enter", names(list(...)))) "" else "\n" 
+    enter <- if (is.element("enter", names(dots))) "" else "\n" 
     if (identical(conditions, "")) {
         conditions <- setdiff(colnames(data), admisc::notilde(outcome))
     }
@@ -124,7 +129,7 @@
         outcome = origoutcome,
         data = data,
         relation = relation,
-        categorical = categorical,
+        use.labels = use.labels,
         ... = ...
     )
     result <- do.call(pof, pofargs)

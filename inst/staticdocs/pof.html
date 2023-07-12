@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>pof. QCA 2.5</title>version 3.19</title>
+<title>pof. QCA 2.5</title>version 3.20</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.19</a>
+      <a class="brand" href="#">QCA 3.20</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -65,9 +65,9 @@ of the <b><code><a href=''>pof()</a></code></b> function, to calculate parameter
     
     <h2>Usage</h2>
 <pre><div>pof(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
-      categorical = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...)</div>
+      use.labels = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...)</div>
 <div>pofind(data = NULL, outcome = "", conditions = "", relation = "necessity",
-      categorical = FALSE, ...)</div></pre>
+      use.labels = FALSE, ...)</div></pre>
     
     <h2>Arguments</h2>
     <table>
@@ -102,9 +102,9 @@ of the <b><code><a href=''>pof()</a></code></b> function, to calculate parameter
         being accepted (see examples).</td>
         </tr>
         <tr>
-            <td valign="top"><b><code>categorical</code></b></td>
+            <td valign="top"><b><code>use.labels</code></b></td>
             <td></td><td></td><td></td>
-            <td>Logical, use category labels if categorical causal conditions.</td>
+            <td>Logical, use category labels if present.</td>
         </tr>
         <tr>
             <td valign="top"><b><code>inf.test</code></b></td>

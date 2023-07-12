@@ -12,7 +12,7 @@ assign cases to the vector space corners (the truth table rows).
 
 \usage{
 truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut = 0,
-           exclude = NULL, complete = FALSE, use.letters = FALSE, categorical = FALSE,
+           exclude = NULL, complete = FALSE, use.letters = FALSE, use.labels = FALSE,
            show.cases = FALSE, dcc = FALSE, sort.by = "", inf.test = "", ...)
 }
 
@@ -31,7 +31,7 @@ truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut
         negative output configurations.}
   \item{complete}{Logical, print complete truth table.}
   \item{use.letters}{Logical, use letters instead of causal conditions' names.}
-  \item{categorical}{Logical, use category labels if categorical causal conditions.}
+  \item{use.labels}{Logical, use category labels if present.}
   \item{show.cases}{Logical, print case names.}
   \item{dcc}{Logical, if \bold{\code{show.cases = TRUE}}, the cases being
         displayed are the deviant cases consistency in kind.}
@@ -182,9 +182,11 @@ An object of class \code{"tt"}, a list containing the following components:
 \bold{initial.data} \tab The initial data.\cr
 \bold{recoded.data} \tab The crisp version of the \bold{\code{initial.data}}, if fuzzy.\cr
 \bold{cases} \tab The cases for each observed causal configuration.\cr
+\bold{DCC} \tab Deviant cases for consistency.\cr
+\bold{minmat} \tab The membership scores matrix of cases in the observed truth table combinations.\cr
+\bold{categories} \tab Category labels, if present in the data.\cr
+\bold{multivalue} \tab Logical flag, if either conditions or the outcome are multivalue.\cr
 \bold{options} \tab The command options used.\cr
-\bold{rowsorder} \tab The order of the rows after sorting, if using \bold{\code{sort.by}}.\cr
-\bold{minmat} \tab The membership scores matrix of cases in the observed truth table combinations.
 }
 
 }

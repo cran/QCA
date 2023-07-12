@@ -20,7 +20,7 @@ and \href{https://www.tandfonline.com/doi/full/10.1080/0022250X.2014.897949}{Dus
 \usage{
 minimize(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
          sol.cons = 0, all.sol = FALSE, row.dom = FALSE, first.min = FALSE,
-         max.comb = 0, method = "CCubes", ...)
+         max.comb = 0, use.labels = FALSE, method = "CCubes", ...)
 }
 
 \arguments{
@@ -41,6 +41,7 @@ minimize(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
   \item{first.min}{Logical, to return only the very first minimal solution (see
         Details).}
   \item{max.comb}{Numeric real, to limit the size of the PI chart (see Details).}
+  \item{use.labels}{Logical, use category labels if present (see Examples).}
   \item{method}{Minimization method, one of "CCubes" (default), or "QMC" the
         classical Quine-McCluskey, or "eQMC" the enhanced Quine-McCluskey.}
   \item{...}{Other arguments, passed to other functions.}
@@ -273,7 +274,6 @@ minimize(ttLF, include = "?", details = TRUE,
 # directional expectations can also be specified using a sequence
 minimize(ttLF, include = "?", details = TRUE, dir.exp = DEV:STB)
 
-
 # URB as a don't care condition (left unspecified) and
 # conjunctural directional expectations
 minimize(ttLF, include = "?", details = TRUE,
@@ -305,13 +305,30 @@ for(i in 1:4) {
 }
 
 
-
 # -----
 # temporal QCA (Ragin & Strand 2008) serving the input as a dataset,
 # which will automatically be passed to truthTable() as an intermediary
 # step before the minimization
 
 minimize(RS, outcome = REC, details = TRUE)
+
+
+# -----
+# employ category labels
+
+ttLF <- truthTable(LF, SURV, incl.cut = 0.8, sort.by = "incl", show.cases = TRUE)
+
+minimize(ttLF, include = "?", use.labels = TRUE)
+
+# or
+
+ttLF <- truthTable(
+    LF, SURV, incl.cut = 0.8, sort.by = "incl", show.cases = TRUE,
+    use.labels = TRUE
+)
+
+minimize(ttLF, include = "?")
+
 }
 }
 

@@ -25,7 +25,7 @@
 
 `truthTable` <- function(
     data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut = 0,
-    exclude = NULL, complete = FALSE, use.letters = FALSE, categorical = FALSE,
+    exclude = NULL, complete = FALSE, use.letters = FALSE, use.labels = FALSE,
     show.cases = FALSE, dcc = FALSE, sort.by = "", inf.test = "", ...
 ) {
     metacall <- match.call(expand.dots = TRUE)
@@ -43,10 +43,7 @@
     if (length(incl.cut) > 1) {
         ic0 <- incl.cut[2]
     }
-        neg.out <- FALSE
-        if (is.element("neg.out", names(dots))) {
-            neg.out <- dots$neg.out
-        }
+        neg.out <- isTRUE(dots$neg.out)
         if (is.element("incl.cut1", names(dots)) && identical(ic1, 1)) {
             ic1 <- dots$incl.cut1
             incl.cut[1] <- ic1
@@ -54,6 +51,10 @@
         if (is.element("incl.cut0", names(dots)) && identical(ic0, 1)) {
             ic0 <- dots$incl.cut0
             incl.cut[2] <- ic0
+        }
+        if (isTRUE(dots$categorical)) { 
+            use.labels <- TRUE
+            dots$categorical <- NULL
         }
     initialcols <- colnames(data)
     outcome <- admisc::recreate(substitute(outcome), colnames(data))
@@ -64,12 +65,17 @@
     }
     outcome.copy <- outcome
     initial.data <- as.data.frame(data) 
+    declared <- FALSE 
+    multivalue <- grepl(mvregexp, outcome)
     if (!identical(outcome, "")) {
-        testoutcome <- admisc::tryCatchWEM(admisc::translate(outcome, data = data))
+        outcometest <- admisc::tryCatchWEM(admisc::translate(outcome, data = data))
+        if (is.element("error", names(outcometest))) {
+            admisc::stopError("Incorrect outcome specification.")
+        }
         if (grepl("\\+|\\*", outcome)) {
             initial.data[, outcome] <- data[, outcome] <- admisc::compute(outcome, data)
         }
-        else if (grepl(mvregexp, outcome)) {
+        else if (multivalue) {
             if (any(grepl("\\{", outcome))) {
                 outcome.value <- admisc::curlyBrackets(outcome)
                 outcome <- admisc::curlyBrackets(outcome, outside = TRUE)
@@ -78,13 +84,22 @@
                 outcome.value <- admisc::squareBrackets(outcome)
                 outcome <- admisc::squareBrackets(outcome, outside = TRUE)
             }
+            outcometest <- data[, admisc::notilde(outcome)]
+            declared <- inherits(outcometest, "declared")
+            if (declared) {
+                outcomelabels <- attr(outcometest, "labels", exact = TRUE)
+            }
             data[, admisc::notilde(outcome)] <- is.element(
                 data[, admisc::notilde(outcome)],
                 admisc::splitstr(outcome.value)
             ) * 1
         }
-        else if (is.element("error", names(testoutcome))) {
-            admisc::stopError("Incorrect outcome specification.")
+        else {
+            outcometest <- data[, admisc::notilde(outcome)]
+            declared <- inherits(outcometest, "declared")
+            if (declared) {
+                outcomelabels <- attr(outcometest, "labels", exact = TRUE)
+            }
         }
     }
     conditions <- admisc::recreate(substitute(conditions), colnames(data))
@@ -174,6 +189,9 @@
     dc.code <- infodata$dc.code
     rownames(data) <- rownames(initial.data)
     categories <- infodata$categories
+    if (declared & !is.null(categories)) {
+        categories[[outcome]] <- names(outcomelabels)
+    }
     condata <- data[, conditions, drop = FALSE]
     if (any(fuzzy.cc)) {
         if (any(data[, conditions[fuzzy.cc]] == 0.5)) {
@@ -285,6 +303,9 @@
         tt <- ttc
     }
     else {
+        rownstt <- rownstt[!obremove]
+        cases <- cases[!obremove]
+        DCC <- DCC[!obremove]
         tt <- tt[!obremove, , drop = FALSE]
         if (!is.null(exclude)) {
             excl.matrix <- as.data.frame(getRow(exclude, noflevels))
@@ -402,6 +423,7 @@
         }
     numerics <- unlist(lapply(initial.data, admisc::possibleNumeric))
     colnames(initial.data)[!numerics] <- initialcols[!numerics]
+    multivalue <- multivalue | any(noflevels > 2)
     x <- list(
         tt = tt,
         indexes = rownstt[!obremove],
@@ -412,6 +434,7 @@
         DCC = DCC[!obremove],
         minmat = minmat,
         categories = categories,
+        multivalue = multivalue,
         options = list(
             outcome = outcome.copy,
             conditions = conditions,
@@ -424,7 +447,7 @@
             show.cases = show.cases,
             dcc = dcc,
             use.letters = use.letters,
-            categorical = categorical,
+            use.labels = use.labels,
             inf.test = statistical.testing
         )
     )
@@ -435,12 +458,13 @@
             list(
                 tt = removed,
                 categories = categories,
+                multivalue = multivalue,
                 options = list(
                     complete = FALSE,
                     show.cases = show.cases,
                     dcc = dcc,
                     removed = TRUE,
-                    categorical = categorical
+                    use.labels = use.labels
                 )
             ),
             class = "QCA_tt"

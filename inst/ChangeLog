@@ -1,12 +1,21 @@
+Version 3.20
+    o Changed: argument "categorical" renamed to "use.labels", globally
+    o New: function minimize() gains its own formal argument "use.labels"
+    o Improved: detection of multi-value notation
+    o Fixed: bug in superSubset() for multi-value outcomes
+    o Fixed: side-effect bug affecting truth tables with more than 7
+      conditions, when n.cut > 1 (thanks to Pedro Carmona for the report)
+
 Version 3.19
-    o Internal functions setColnames() and setRownames() moved to package admisc
-    o Fixed bug affecting the printing of row names in function truthTable(),
+    o Changed: internal functions setColnames() and setRownames() moved to
+      package admisc
+    o Fixed: bug affecting the printing of row names in function truthTable(),
       when n.cut is greater than 1 (thanks to Carsten Schneider for reporting)
 
 Version 3.18
-    o An error is issued if multivalue conditions do not strictly follow the
-      sequence 0, 1, 2, ...
-    o C level fine tuning to silence CRAN warnings about lpSolve
+    o Improved: an error is issued if multivalue conditions do not strictly 
+      follow the sequence 0, 1, 2, ...
+    o Improved: C level fine tuning to silence CRAN warnings about lpSolve
       (many thanks to Gábor Csárdi)
 
 Version 3.17

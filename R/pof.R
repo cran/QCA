@@ -25,15 +25,19 @@
 
 `pof` <- function(
     setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
-    categorical = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...
+    use.labels = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...
 ) {
     setms <- admisc::recreate(substitute(setms))
     outcome <- admisc::recreate(substitute(outcome), snames = names(data))
     funargs <- lapply(
         lapply(match.call(), deparse)[-1],
-        function(x) gsub("\"|[[:space:]]", "", x)
+        function(x) gsub("'|\"|[[:space:]]", "", x)
     )
     dots <- list(...)
+    if (isTRUE(dots$categorical)) { 
+        use.labels <- TRUE
+        dots$categorical <- NULL
+    }
     funargs$outcome <- paste(funargs$outcome, collapse = "")
     if (is.null(setms)) {
         admisc::stopError(
@@ -54,10 +58,7 @@
     if (length(incl.cut) > 1) {
         ic0 <- incl.cut[2]
     }
-        neg.out <- FALSE
-        if (is.element("neg.out", names(dots))) {
-            neg.out <- dots$neg.out
-        }
+        neg.out <- isTRUE(dots$neg.out)
         if (is.element("incl.cut1", names(dots)) & identical(ic1, 0.75)) {
             ic1 <- dots$incl.cut1
         }
@@ -497,7 +498,7 @@
                     inf.test = inf.test,
                     incl.cut = incl.cut,
                     add = add,
-                    categorical = categorical
+                    use.labels = use.labels
                 ),
                 dots)
             ), class = "QCA_pof"))
@@ -559,7 +560,7 @@
             inf.test = inf.test,
             incl.cut = incl.cut,
             add = add,
-            categorical = categorical
+            use.labels = use.labels
         ),
         dots)
     return(structure(result.list, class = "QCA_pof"))

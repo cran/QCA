@@ -796,4 +796,3 @@ void LUSOL_matfree(LUSOLmat **mat)
   LUSOL_FREE((*mat)->indx);
   LUSOL_FREE(*mat);
 }
-

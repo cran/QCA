@@ -26,10 +26,14 @@
 `minimize` <- function(
     input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
     sol.cons = 0, all.sol = FALSE, row.dom = FALSE, first.min = FALSE,
-    max.comb = 0, method = "CCubes", ...
+    max.comb = 0, use.labels = FALSE, method = "CCubes", ...
 ) {
     metacall <- match.call()
     dots <- substitute(list(...))
+    if (isTRUE(dots$categorical)) { 
+        use.labels <- TRUE
+        dots$categorical <- NULL
+    }
     if (is.element("data", names(dots))) {
         input <- eval.parent(dots$data)
         dots$data <- NULL
@@ -153,7 +157,7 @@
     }
     if (ttinput) { 
         tt <- input
-        ttargs <- setdiff(names(formals(truthTable)), "show.cases")
+        ttargs <- setdiff(names(formals(truthTable)), c("show.cases", "use.labels"))
         if (any(is.element(ttargs, names(dots)))) {
             callist <- as.list(tt$call)
             common <- intersect(names(dots), ttargs)
@@ -174,6 +178,12 @@
             tt <- do.call("truthTable", callist[-1])
             callist$data <- dataname
             tt$call <- as.call(callist)
+        }
+        if (isTRUE(use.labels)) {
+            tt$options$use.labels <- TRUE
+        }
+        else if (isTRUE(tt$options$use.labels)) {
+            use.labels <- TRUE
         }
     }
     else {
@@ -300,7 +310,7 @@
         x[is.element(x, c("-", "?", "dc"))] <- -1
         return(as.numeric(x))
     }))
-    mv <- any(recdata[, seq(ncol(recdata) - 1)] > 1)
+    mv <- any(recdata[, seq(ncol(recdata) - 1)] > 1) | tt$multivalue
     collapse <- "*"
     changed <- FALSE
     if (use.letters & !alreadyletters) {
@@ -335,7 +345,7 @@
         all.sol = all.sol,
         indata = indata,
         curly = curly,
-        categorical = tt$options$categorical,
+        use.labels = tt$options$use.labels,
         enter = enter
     )
     callist <- c(callist, dots)
@@ -406,6 +416,7 @@
     output$options$use.letters <- use.letters
     output$options$collapse    <- collapse
     output$options$curly       <- curly
+    output$options$use.labels  <- use.labels
     expr.cases <- rep(NA, nrow(p.sol$reduced$expressions))
     tt.rows <- admisc::writePrimeimp(
         impmat = inputt,
@@ -475,7 +486,7 @@
             outcome = tt$options$outcome,
             data = indata,
             relation = "sufficiency",
-            categorical = tt$options$categorical,
+            use.labels = use.labels,
             neg.out = neg.out,
             minimize = TRUE,
             use.letters = tt$options$use.letters,
@@ -489,7 +500,7 @@
             poflist$solution.list <- output$solution
             poflist$essential <- output$essential
         }
-        poflist$categories <- output$tt$categories
+        poflist$use.labels <- output$tt$use.labels
         listIC <- do.call("pof", poflist)
         if (sol.cons > 0 & identical(include, "")) {
             error <- FALSE
@@ -677,7 +688,7 @@
                         outcome = tt$options$outcome,
                         data = indata,
                         relation = "sufficiency",
-                        categorical = tt$options$categorical,
+                        use.labels = use.labels,
                         neg.out = neg.out,
                         minimize = TRUE,
                         use.letters = tt$options$use.letters,
@@ -690,7 +701,7 @@
                             poflist$essential <- i.sol.index$solution.list[[2]]
                         }
                     }
-                    poflist$categories <- output$tt$categories
+                    poflist$use.labels <- output$tt$use.labels
                     i.sol[[index]]$IC <- do.call("pof", poflist)
                     i.sol[[index]]$IC$options$show.cases <- show.cases
                     i.sol[[index]]$pims <- i.sol[[index]]$IC$pims

@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `getSolution` <- function(
-    expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, curly, categorical, ...
+    expressions, mv, collapse, inputt, row.dom, initial, all.sol, indata, curly, use.labels, ...
 ) {
     mtrx <- NULL
     sol.matrix <- NULL
@@ -105,7 +105,7 @@
             outcome = indata[, dots$outcome],
             data = indata,
             relation = "sufficiency",
-            categorical = categorical
+            use.labels = use.labels
         )
         inclS <- pofPI$incl.cov[seq(length(PI)), 1]
         filterPI <- admisc::agteb(inclS, pi.cons)

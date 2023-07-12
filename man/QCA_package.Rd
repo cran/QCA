@@ -60,8 +60,8 @@ minimization function, and from version 3.14 categorical data is also recognized
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 3.19\cr
-    Date:    \tab 2023-05-16\cr
+    Version: \tab 3.20\cr
+    Date:    \tab 2023-07-11\cr
     License: \tab GPL (>= 3)\cr
     }
 }

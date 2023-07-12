@@ -26,12 +26,17 @@
 `fuzzyand` <- function(
     ..., na.rm = FALSE
 ) {
-    funargs <- unlist(lapply(lapply(match.call(), deparse)[-1], function(x) gsub("\"|[[:space:]]", "", x)))
+    funargs <- unlist(
+        lapply(
+            lapply(match.call(), deparse)[-1],
+            function(x) gsub("'|\"|[[:space:]]", "", x)
+        )
+    )
     if (!is.na(rem <- match("na.rm", names(funargs)))) {
         funargs <- funargs[-rem]
     }
     dots <- vector(mode = "list", length = length(funargs))
-    funargs <- gsub(rawToChar(as.raw(c(226, 128, 147))), "-", funargs)
+    funargs <- gsub(paste(admisc::dashes(), collapse = "|"), "-", funargs)
     negated <- grepl("1-", funargs)
     funargs <- gsub("1-", "", funargs)
     tildenegated <- badnames <- cols <- logical(length(funargs))

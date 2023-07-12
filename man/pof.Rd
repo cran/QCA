@@ -13,10 +13,10 @@ of the \bold{\code{pof()}} function, to calculate parameters of fit for single c
 
 \usage{
 pof(setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
-    categorical = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...)
+    use.labels = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...)
     
 pofind(data = NULL, outcome = "", conditions = "", relation = "necessity",
-    categorical = FALSE, ...)
+    use.labels = FALSE, ...)
 }
 
 \arguments{
@@ -30,7 +30,7 @@ pofind(data = NULL, outcome = "", conditions = "", relation = "necessity",
   \item{relation}{The set relation to \bold{\code{outcome}}, either \bold{\code{"necessity"}}
         or \bold{\code{"sufficiency"}}, partial words like \bold{\code{"suf"}} being
         accepted (see examples).}
-  \item{categorical}{Logical, use category labels if categorical causal conditions.}
+  \item{use.labels}{Logical, use category labels if present.}
   \item{inf.test}{Specifies the statistical inference test to be performed (currently 
        only \bold{\code{"binom"}}) and the critical significance level. It can be either
        a vector of length 2, or a single string containing both, separated by a comma.}

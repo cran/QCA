@@ -274,7 +274,7 @@
                 unique.coverages <- formatC(x$individual[[i]]$incl.cov$covU[is.element(rownames(x$individual[[i]]$incl.cov), essential.PIs)], digits = 3, format = "f")
                 incl.cov.e <- cbind(incl.cov.e, S = unique.coverages, stringsAsFactors = FALSE)
                 x$individual[[i]]$incl.cov <- x$individual[[i]]$incl.cov[!is.element(rownames(x$individual[[i]]$incl.cov), essential.PIs), ]
-                if (x$options$categorical && length(x$categories) > 0) {
+                if (x$options$use.labels && length(x$categories) > 0) {
                     rownames(x$individual[[i]]$incl.cov) <- replaceCategories(
                         rownames(x$individual[[i]]$incl.cov),
                         categories = x$categories
@@ -329,7 +329,7 @@
     if (is.null(rownames(incl.cov))) {
         rownames(incl.cov) <- rep("  ", nrow(incl.cov))
     }
-    if (x$options$categorical && length(x$categories) > 0) {
+    if (x$options$use.labels && length(x$categories) > 0) {
         rownames(incl.cov) <- replaceCategories(
             rownames(incl.cov),
             categories = x$categories
@@ -768,7 +768,7 @@
         "\n"
     )
     enter <- identical(enter, "\n")
-    replace <- x$tt$options$categorical && length(x$tt$categories) > 0
+    replace <- x$tt$options$use.labels && length(x$tt$categories) > 0
     line.length <- getOption("width")
     if (any(names(x) == "via.web")) {
         line.length <- 10000
@@ -804,6 +804,12 @@
                 outcome <- paste("~", outcome, sep = "")
             }
         }
+    }
+    if (replace) {
+        outcome <- replaceCategories(
+            outcome,
+            categories = x$tt$categories
+        )
     }
     if (is.element("show.cases", names(dots))) {
         if (is.logical(dots$show.cases)) {
@@ -1062,7 +1068,7 @@
     if (x$options$use.letters) {
         xletters <- x$letters
     }
-    if (x$options$categorical && length(x$categories) > 0) {
+    if (x$options$use.labels && length(x$categories) > 0) {
         rownames(x$incl.cov) <- replaceCategories(
             rownames(x$incl.cov),
             categories = x$categories
@@ -1248,13 +1254,21 @@
             cat("\n")
         }
         alloutzero <- all(x$tt$OUT == 0)
-        x$tt[, "OUT"] <- paste(" ", x$tt[, "OUT"], "")
-        colnames(x$tt)[colnames(x$tt) == "OUT"] <- "  OUT "
-        if (x$options$categorical && length(x$categories) > 0) {
-            for (fcond in names(x$categories)) {
+        wOUT <- which(colnames(x$tt) == "OUT")
+        if (x$options$use.labels && length(x$categories) > 0) {
+            outcome <- x$options$outcome
+            for (fcond in setdiff(names(x$categories), outcome)) {
                 x$tt[, fcond] <- x$categories[[fcond]][x$tt[, fcond] + 1]
             }
+            if (is.element(outcome, names(x$categories))) {
+                obs <- x$tt[, wOUT] != "?"
+                x$tt[, wOUT][obs] <- x$categories[[outcome]][
+                    as.numeric(x$tt[, wOUT][obs]) + 1
+                ]
+            }
         }
+        x$tt[, wOUT] <- paste(" ", x$tt[, wOUT], "")
+        colnames(x$tt)[wOUT] <- "  OUT "
         print(admisc::prettyTable(x$tt))
         if (alloutzero) {
             if (enter) cat("\n")

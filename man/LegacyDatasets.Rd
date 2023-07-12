@@ -2,6 +2,8 @@
 
 \docType{data}
 
+\alias{_Legacy datasets}
+
 \title{Legacy datasets}
 
 \description{

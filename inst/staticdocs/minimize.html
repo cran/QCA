@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>minimize. QCA 2.5</title>version 3.19</title>
+<title>minimize. QCA 2.5</title>version 3.20</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Adrian Dusa
@@ -34,7 +34,7 @@ Adrian Dusa
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">QCA 3.19</a>
+      <a class="brand" href="#">QCA 3.20</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -72,7 +72,7 @@ algorithm that is built for performance.</p>
     <h2>Usage</h2>
 <pre><div>minimize(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
     sol.cons = 0, all.sol = FALSE, row.dom = FALSE, first.min = FALSE,
-    max.comb = 0, method = "CCubes", ...
+    max.comb = 0, use.labels = FALSE, method = "CCubes", ...
     
     <h2>Arguments</h2>
     <table>
@@ -132,6 +132,11 @@ algorithm that is built for performance.</p>
             <td valign="top"><b><code>max.comb</code></b></td>
             <td></td><td></td><td></td>
             <td>Numeric real, to limit the size of the PI chart (see Details).</td>
+        </tr>
+        <tr>
+            <td valign="top"><b><code>use.labels</code></b></td>
+            <td></td><td></td><td></td>
+            <td>Logical, use category labels if present (See Examples).</td>
         </tr>
         <tr>
             <td valign="top"><b><code>method</code></b></td>
@@ -829,6 +834,36 @@ M1: P*E*S + P*E*A*EBA + E*A*~EBA*S &lt;=&gt; REC
 3  E*A*~EBA*S  1.000  1.000  0.286  0.143 
 ----------------------------------------- 
    M1          1.000  1.000  1.000 
+
+</div>
+<div class='input'>
+  
+# -----
+# employ category labels
+
+ttLF <- truthTable(LF, SURV, incl.cut = 0.8, sort.by = &quot;incl&quot;, show.cases = TRUE)
+
+minimize(ttLF, include = &quot;?&quot;, use.labels = TRUE)
+</div>
+<div class='output'>
+
+M1: Developed*Not industrialised + High urbanisation*Stability -> Survival
+
+</div>
+<div class='input'>
+  
+# or
+
+ttLF <- truthTable(
+    LF, SURV, incl.cut = 0.8, sort.by = &quot;incl&quot;, show.cases = TRUE,
+    use.labels = TRUE
+)
+
+minimize(ttLF, include = &quot;?&quot;)
+</div>
+<div class='output'>
+
+M1: Developed*Not industrialised + High urbanisation*Stability -> Survival
 
 </div>
 <div class='input'></div></pre>
