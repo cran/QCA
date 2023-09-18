@@ -1,3 +1,9 @@
+Version 3.21
+    o Fixed: printing bug when employing labels
+    o Fixed: error related to single condition data, in function pof()
+    o Reverted to depending on package lpSolve, due to too many CRAN warnings
+      for the C level code
+
 Version 3.20
     o Changed: argument "categorical" renamed to "use.labels", globally
     o New: function minimize() gains its own formal argument "use.labels"
@@ -16,7 +22,7 @@ Version 3.18
     o Improved: an error is issued if multivalue conditions do not strictly 
       follow the sequence 0, 1, 2, ...
     o Improved: C level fine tuning to silence CRAN warnings about lpSolve
-      (many thanks to Gábor Csárdi)
+      (thanks to Gábor Csárdi)
 
 Version 3.17
     o Improved: import options in the GUI, allowing to check for BOM on Windows

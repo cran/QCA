@@ -35,7 +35,8 @@
                 "There cannot be more than ",
                 max.combs,
                 " rows."
-            )
+            ),
+            ... = ...
         )
     }
     if (!zerobased) {row.no <- row.no - 1}

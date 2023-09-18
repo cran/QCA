@@ -64,7 +64,8 @@
         else {
             if (any(grepl("<", ordering))) {
                 admisc::stopError(
-                    "Causal ordering character \"<\" requires a single string."
+                    "Causal ordering character \"<\" requires a single string.",
+                    ... = ...
                 )
             }
         }
@@ -73,7 +74,8 @@
     if (length(allout <- unlist(ordering)) > 0) {
         if (length(setdiff(allout, colnames(data))) > 0) {
             admisc::stopError(
-                "Some elements in the argument <ordering> not found in the data."
+                "Some elements in the argument <ordering> not found in the data.",
+                ... = ...
             )
         }
     }
@@ -108,7 +110,8 @@
     if (length(ordering) > 0) {
         if (any(table(unlist(ordering)) > 1)) {
             admisc::stopError(
-                "Same condition(s) in multiple ordering levels."
+                "Same condition(s) in multiple ordering levels.",
+                ... = ...
             )
         }
         allcols <- colnames(data)

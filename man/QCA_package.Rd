@@ -1,6 +1,6 @@
 \name{About the QCA package}
 
-\alias{QCA}
+\alias{QCA-package}
 
 \docType{package}
 
@@ -60,8 +60,8 @@ minimization function, and from version 3.14 categorical data is also recognized
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 3.20\cr
-    Date:    \tab 2023-07-11\cr
+    Version: \tab 3.21\cr
+    Date:    \tab 2023-09-17\cr
     License: \tab GPL (>= 3)\cr
     }
 }

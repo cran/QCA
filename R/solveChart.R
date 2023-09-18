@@ -29,7 +29,7 @@
 ) {
     if (!is.logical(chart) && length(setdiff(chart, 0:1)) > 0) {
         admisc::stopError(
-            "Use a logical, T/F matrix. See makeChart()'s output."
+            "Use a logical, T/F matrix. See makeChart()'s output.", ... = ...
         )
     }
     dots <- list(...)
@@ -49,7 +49,7 @@
     foundm <- findmin(chart, ... = ...) 
     if (foundm == 0) {
         admisc::stopError(
-            "The PI chart cannot be solved."
+            "The PI chart cannot be solved.", ... = ...
         )
     }
     if (is.null(depth)) depth <- 0L

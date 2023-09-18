@@ -40,7 +40,7 @@
         dots$categorical <- NULL
     }
     if (missing(data)) {
-        admisc::stopError("Data is missing.")
+        admisc::stopError("Data is missing.", ... = ...)
     }
     msg <- !isFALSE(dots$msg)
     mv <- isTRUE(dots$mv)
@@ -53,7 +53,7 @@
     }
     if (identical(outcome, "")) {
         admisc::stopError(
-            "The outcome was not specified."
+            "The outcome was not specified.", ... = ...
         )
     }
     if (is.character(outcome)) {
@@ -84,7 +84,7 @@
     if (is.character(outcome)) {
         if (!is.element(notilde(funargs$outcome), colnames(data))) {
             admisc::stopError(
-                "The outcome name does not exist in the data."
+                "The outcome name does not exist in the data.", ... = ...
             )
         }
         if (mvoutcome) {
@@ -121,7 +121,8 @@
         )
     ) {
         admisc::stopError(
-            "The relationship should be \"necessity\", \"sufficiency\", \"sufnec\" or \"necsuf\"."
+            "The relationship should be \"necessity\", \"sufficiency\", \"sufnec\" or \"necsuf\".",
+            ... = ...
         )
     }
     relationcopy <- relation
@@ -234,7 +235,8 @@
                 round(incl.cut, 3),
                 " and cov.cut = ",
                 round(cov.cut, 3)
-            )
+            ),
+            ... = ...
         )
     }
     colnames(mins) <- gsub("[[:space:]]", "", rownames(result))
@@ -258,13 +260,14 @@
     if (nrow(result) == 0) {
         admisc::stopError(
             paste0(
-                "There are no combinations with",
+                "There are no combinations with ",
                 ifelse(
                     nec(relation),
                     paste("ron.cut =", round(ron.cut, 3)),
                     paste("pri.cut =", round(pri.cut, 3))
                 )
-            )
+            ),
+            ... = ...
         )
     }
     if (!is.null(add)) {

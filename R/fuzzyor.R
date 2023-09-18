@@ -64,15 +64,12 @@
         )
         if (is.function(tc) | inherits(tc, "error")) {
             admisc::stopError(sprintf(
-                "Object '%s' not found.", funargs[i])
+                "Object '%s' not found.", funargs[i]), ... = ...
             )
         }
         else {
-            dots[[i]] <- eval.parent(parse(text = funargs[i]), n = 1)
+            dots[[i]] <- drop(eval.parent(parse(text = funargs[i]), n = 1))
         }
-    }
-    if (is.element("name", names(attributes(dots[[1]])))) {
-        dots[[1]] <- as.vector(dots[[1]])
     }
     if (is.vector(dots[[1]])) {
         if (
@@ -86,7 +83,7 @@
             )
         ) {
             admisc::stopError(
-                "Input vectors should be numeric or logical."
+                "Input vectors should be numeric or logical.", ... = ...
             )
         }
         dots <- as.data.frame(dots)
@@ -115,7 +112,7 @@
             )
         ) {
             admisc::stopError(
-                "Input should be numeric or logical."
+                "Input should be numeric or logical.", ... = ...
             )
         }
     }
@@ -135,13 +132,14 @@
             )
         ) {
             admisc::stopError(
-                "Some columns are not numeric or logical."
+                "Some columns are not numeric or logical.", ... = ...
             )
         }
     }
     else {
         admisc::stopError(
-            "The input should be vectors, or a matrix or a dataframe."
+            "The input should be vectors, or a matrix or a dataframe.",
+            ... = ...
         )
     }
     for (i in seq(length(cols))) {

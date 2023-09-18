@@ -28,15 +28,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <R.h>
 #include <R_ext/RS.h> 
 #include <R_ext/Boolean.h>
+#include <Rinternals.h>
 #include <math.h>
-#include "find_min.h"
 #include "consistency.h"
 #include "find_models.h"
 #include "find_consistent_models.h"
 #include "CCubes.h"
-#ifdef _OPENMP
-  #include <omp.h>
-#endif
 void CCubes(const int p_tt[],       
             const int ttrows,       
             const int nconds,       
@@ -108,9 +105,6 @@ void CCubes(const int p_tt[],
         int numPrefixCombinations = 0;
 	    
         const int INDEX_LIMIT = fillCombinationTasks(nconds, k, combinationsSetFixedPrefix, numMaxCombinations, &numPrefixCombinations);
-        #ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic)
-        #endif
         for (int taskIter = 0; taskIter < numPrefixCombinations; taskIter++) {
             int tempk[k];
             for (int i = 0; i < INDEX_LIMIT; i++) {
@@ -178,9 +172,6 @@ void CCubes(const int p_tt[],
                             tempc[c] = posmat[tempk[c] * posrows + frows[f]] + 1;
                         }
                         if (nonredundant(p_implicants, p_indx, p_ck, tempk, tempc, nconds, k, prevfoundPI)) {
-                            #ifdef _OPENMP    
-                                #pragma omp critical
-                            #endif 
                             {
                                 push_PI(
                                     p_implicants,
@@ -219,7 +210,18 @@ void CCubes(const int p_tt[],
                 stop_searching = *complex;
             }
             if (!stop_searching && solution_exists) { 
-                find_min(p_pichart, posrows, foundPI, &solmin, indices); 
+                SEXP pic = PROTECT(allocMatrix(INTSXP, posrows, foundPI));
+                for (unsigned int i = 0; i < posrows * foundPI; i++) {
+                    INTEGER(pic)[i] = p_pichart[i];
+                }
+                SEXP cpi = PROTECT(allocVector(INTSXP, 1));
+                INTEGER(cpi)[0] = 0;
+                setAttrib(pic, install("C_PI"), cpi);
+                Rf_eval(lang2(Rf_install("library"), mkString("QCA")), R_GlobalEnv);
+                SEXP pkg_env = R_FindNamespace(mkString("QCA"));
+                SEXP findmin_function = findVarInFrame(pkg_env, Rf_install("findmin"));
+                solmin = INTEGER(R_tryEval(lang2(findmin_function, pic), pkg_env, NULL))[0];
+                UNPROTECT(2);
                 if (solmin == prevsolmin) {
                     if (firstmin || minpin) {
                         for (int i = 0; i < solmin; i++) {

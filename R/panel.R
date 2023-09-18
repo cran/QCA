@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `as.panel` <- function(
-    x, row.names
+    x, row.names, ...
 ) {
     if (!missing(row.names)) {
         if (is.character(row.names)) {
@@ -41,7 +41,7 @@
         }
         else {
             admisc::stopError(
-                "invalid 'row.names' specification."
+                "invalid 'row.names' specification.", ... = ...
             )
         }
         if (is.object(row.names) || !(is.integer(row.names))) {
@@ -49,7 +49,7 @@
         }
         if (anyNA(row.names)) {
             admisc::stopError(
-                "missing values in 'row.names' are not allowed."
+                "missing values in 'row.names' are not allowed.", ... = ...
             )
         }
         attr(x, "row.names") <- row.names

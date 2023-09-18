@@ -36,12 +36,12 @@
     if (prmat & comat) {
         if (!(is.numeric(primes) & is.numeric(configs))) {
             admisc::stopError(
-                "Matrices have to be numeric."
+                "Matrices have to be numeric.", ... = ...
             )
         }
         if (any(primes < 0) | any(configs < 0)) {
             admisc::stopError(
-                "Matrix values have to be non-negative."
+                "Matrix values have to be non-negative.", ... = ...
             )
         }
         if (
@@ -56,7 +56,7 @@
             )
         ) {
             admisc::stopError(
-                "Matrices have to be specified at implicants level."
+                "Matrices have to be specified at implicants level.", ... = ...
             )
         }
         if (nrow(primes == 1) & sum(primes) == 0) {
@@ -151,7 +151,7 @@
     }
     else {
         admisc::stopError(
-            "Both arguments have to be matrices."
+            "Both arguments have to be matrices.", ... = ...
         )
     }
 }

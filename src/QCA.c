@@ -34,14 +34,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Rmath.h>
 #include <R_ext/Rdynload.h>
 #include "utils.h"
-#include "find_min.h"
 #include "find_models.h"
 #include "generate_matrix.h"
 #include "sort_matrix.h"
 #include "CCubes.h"
-#ifdef _OPENMP
-  #include <omp.h>
-#endif
 static R_INLINE SEXP Rtranspose(SEXP matrix) {
     SEXPTYPE type = TYPEOF(matrix);
     int nr = nrows(matrix);
@@ -74,33 +70,6 @@ static R_INLINE SEXP Rtranspose(SEXP matrix) {
     }
     UNPROTECT(3);
     return(out);
-}
-SEXP C_findmin(SEXP pichart) {
-    SEXP usage = PROTECT(allocVector(VECSXP, 4));
-    int nr = nrows(pichart);
-    int nc = ncols(pichart);
-    int solmin = 0;
-    SEXP trpic; 
-    SET_VECTOR_ELT(usage, 0, trpic = Rtranspose(pichart)); 
-    int *p_trpic = LOGICAL(trpic);
-    SEXP tempindex;
-    SET_VECTOR_ELT(usage, 1, tempindex = allocVector(INTSXP, nr));
-    int *p_tempindex = INTEGER(tempindex);
-    find_min(p_trpic, nc, nr, &solmin, p_tempindex);
-    SEXP result;
-    SET_VECTOR_ELT(usage, 2, result = allocVector(INTSXP, 1));
-    INTEGER(result)[0] = solmin;
-    if (solmin > 0) {
-        SEXP indexes;
-        SET_VECTOR_ELT(usage, 3, indexes = allocVector(INTSXP, solmin));
-        int *p_indexes = INTEGER(indexes);
-        for (int i = 0; i < solmin; i++) {
-            p_indexes[i] = p_tempindex[i];
-        }
-        setAttrib(result, install("solution"), indexes);
-    }
-    UNPROTECT(1);
-    return(result);
 }
 static R_INLINE Rboolean hasColnames(SEXP matrix) {
     if (Rf_isNull(getAttrib(matrix, R_DimNamesSymbol))) {
@@ -200,7 +169,18 @@ SEXP C_solveChart(SEXP pichart, SEXP allsol, SEXP vdepth, SEXP k, SEXP maxcomb, 
     int *p_solutions = R_Calloc(1, int);
     int nr = 0;
     int nc = 0;
-    find_models(p_pichart, posrows, foundPI, LOGICAL(allsol)[0], INTEGER(k)[0], REAL(maxcomb)[0], LOGICAL(firstmin)[0], &p_solutions, &nr, &nc);
+    find_models(
+        p_pichart,
+        posrows,
+        foundPI,
+        LOGICAL(allsol)[0],
+        INTEGER(k)[0],
+        REAL(maxcomb)[0],
+        LOGICAL(firstmin)[0],
+        &p_solutions,
+        &nr,
+        &nc
+    );
     if (nr > 0 && nc > 0) {
         SET_VECTOR_ELT(out, 0, models = allocMatrix(INTSXP, nr, nc));
         Memcpy(INTEGER(models), p_solutions, nr * nc);

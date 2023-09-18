@@ -38,7 +38,7 @@
     }
     if (any(is.element(type, 0:1)) & identical(expression, "")) {
         admisc::stopError(
-            "The expression is missing, for type 0 or 1."
+            "The expression is missing, for type 0 or 1.", ... = ...
         )
     }
     noflevels <- NULL
@@ -51,7 +51,7 @@
     }
     if (missing(obj) && !is.null(noflevels)) {
         admisc::stopError(
-            "The truth table object is missing."
+            "The truth table object is missing.", ... = ...
         )
     }
     if (methods::is(obj, "QCA_tt")) {
@@ -70,7 +70,8 @@
             if (length(dots) > 0) {
                 if (length(setdiff(names(dots), c("incl.cut", "n.cut", "pri.cut"))) > 0) {
                     admisc::stopError(
-                        "Only cutoff arguments can be specified for the negation of the outcome."
+                        "Only cutoff arguments can be specified for the negation of the outcome.",
+                        ... = ...
                     )
                 }
                 nms <- names(dots)
@@ -88,7 +89,7 @@
         if (is.null(obj)) {
             if (is.null(noflevels) | is.null(conditions)) {
                 admisc::stopError(
-                    "The truth table argument <obj> is missing."
+                    "The truth table argument <obj> is missing.", ... = ...
                 )
             }
         }
@@ -97,13 +98,14 @@
                 conditions <- colnames(obj)
                 if (is.null(conditions)) {
                     admisc::stopError(
-                        "The <obj> matrix does not have column names."
+                        "The <obj> matrix does not have column names.", ... = ...
                     )
                 }
             }
             else {
                 admisc::stopError(
-                    "Argument <obj> is not a truth table object or a numerical matrix."
+                    "Argument <obj> is not a truth table object or a numerical matrix.",
+                    ... = ...
                 )
             }
         }

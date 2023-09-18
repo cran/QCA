@@ -31,9 +31,10 @@
             input <- dots$input.combs
         }
     if (!is.matrix(input)) {
-        if (!is.vector(input)) {
+        if (!is.vector(drop(input))) {
             admisc::stopError(
-                "input must be either an solution-space matrix or a vector of row numbers."
+                "input must be either an solution-space matrix or a vector of row numbers.",
+                ... = ...
             )
         }
         else {
@@ -43,7 +44,8 @@
                         "Some line numbers do not belong in the solution-space for",
                         length(noflevels),
                         "causal conditions."
-                    )
+                    ),
+                    ... = ...
                 )
             }
             input <- getRow(input, noflevels)

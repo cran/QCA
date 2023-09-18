@@ -10,7 +10,7 @@ This function calculates the number of all possible combinations of conditions
 }
 
 \usage{
-complexity(n, layers, noflevels)
+complexity(n, layers, noflevels, ...)
 }
 
 \arguments{
@@ -18,6 +18,7 @@ complexity(n, layers, noflevels)
     \item{layers}{Numeric vector, the complexity layer(s) with values from 1 to n.}
     \item{noflevels}{Numeric vector containing the number of levels for each
             of the n conditions.}
+    \item{...}{Other arguments, mainly for internal use.}
 }
 
 \details{

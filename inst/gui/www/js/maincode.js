@@ -7086,7 +7086,7 @@ $("#menu_about").click(function() {
     else {
         createDialog(settings["about"]);
         var messages = [
-            "R package: QCA, version 3.20",
+            "R package: QCA, version 3.21",
             "",
             "Author: Adrian Dușa (dusa.adrian@unibuc.ro)",
             "Former coauthors:",

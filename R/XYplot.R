@@ -31,7 +31,7 @@
     funargs <- unlist(lapply(match.call(), deparse)[-1])
     if (missing(x)) {
         admisc::stopError(
-            "Argument x is mandatory."
+            "Argument x is mandatory.", ... = ...
         )
     }
     x <- admisc::recreate(substitute(x))
@@ -46,7 +46,7 @@
     negated <- logical(2)
     xname <- yname <- ""
     minus <- rawToChar(as.raw(c(226, 128, 147)))
-    if (is.vector(x) & is.character(x) & any(grepl("\\$solution", funargs["x"]))) {
+    if (is.vector(drop(x)) & is.character(x) & any(grepl("\\$solution", funargs["x"]))) {
         x <- list(x)
     }
     if (is.list(x)) {
@@ -89,12 +89,12 @@
             }
             if (missing(y)) {
                 admisc::stopError(
-                    "The outcome's name is missing."
+                    "The outcome's name is missing.", ... = ...
                 )
             }
             else if (!is.character(y)) {
                 admisc::stopError(
-                    "Unknown <x> and/or <y> arguments."
+                    "Unknown <x> and/or <y> arguments.", ... = ...
                 )
             }
         }
@@ -109,7 +109,7 @@
         }
         if (missing(data)) {
             admisc::stopError(
-                "Data is missing."
+                "Data is missing.", ... = ...
             )
         }
         else {
@@ -131,7 +131,8 @@
                         collapse = "\" and \""
                     ),
                     "\"."
-                )
+                ),
+                ... = ...
             )
         }
         x <- admisc::compute(x, data = data)
@@ -142,7 +143,7 @@
         verify.qca(as.data.frame(x))
         if (ncol(x) < 2) {
             admisc::stopError(
-                "At least two columns are needed."
+                "At least two columns are needed.", ... = ...
             )
         }
         xname <- colnames(x)[1]
@@ -157,7 +158,8 @@
                     (grepl("1-", funargs[1]) & !oneminus)
                    )) {
                 admisc::stopError(
-                    paste0("Incorrect expression in \"", funargs[1], "\".")
+                    paste0("Incorrect expression in \"", funargs[1], "\"."),
+                    ... = ...
                 )
             }
             negated[1] <- oneminus | admisc::tilde1st(funargs[1])
@@ -179,7 +181,8 @@
                     (grepl("1-", funargs[2]) & !oneminus)
                    )) {
                 admisc::stopError(
-                    paste0("Incorrect expression in \"", funargs[2], "\".")
+                    paste0("Incorrect expression in \"", funargs[2], "\"."),
+                    ... = ...
                 )
             }
             negated[2] <- oneminus | admisc::tilde1st(funargs[2])
@@ -198,7 +201,7 @@
         if (length(y) == 1 & is.character(y)) {
             if (missing(data)) {
                 admisc::stopError(
-                    "Data is missing."
+                    "Data is missing.", ... = ...
                 )
             }
             else {
@@ -209,7 +212,8 @@
             negated[2] <- identical(unname(substring(y, 1, 2)), "1-")
             if (grepl("1-", y) & !negated[2]) {
                 admisc::stopError(
-                    paste0("Incorrect expression in \"", y, "\".")
+                    paste0("Incorrect expression in \"", y, "\"."),
+                    ... = ...
                 )
             }
             y <- admisc::compute(y, data = data)
@@ -218,12 +222,13 @@
     }
     else {
         admisc::stopError(
-            "Either a dataframe with two columns or two vectors are needed."
+            "Either a dataframe with two columns or two vectors are needed.",
+            ... = ...
         )
     }
     if (any(x > 1) | any(y > 1)) {
         admisc::stopError(
-            "Values should be bound between 0 and 1."
+            "Values should be bound between 0 and 1.", ... = ...
         )
     }
     xcopy <- x
@@ -260,7 +265,8 @@
                             "length of \"x\"",
                             "number of rows in the data"
                         )
-                    )
+                    ),
+                    ... = ...
                 )
             }
         }
@@ -281,7 +287,8 @@
                             "length of \"x\"",
                             "number of rows in the data"
                         )
-                    )
+                    ),
+                    ... = ...
                 )
             }
         }
@@ -303,7 +310,8 @@
                             "length of \"x\"",
                             "number of rows in the data"
                         )
-                    )
+                    ),
+                    ... = ...
                 )
             }
         }
@@ -341,7 +349,8 @@
                 }
                 else {
                     admisc::stopError(
-                        "Values in the argument <clabels> outside the data rows."
+                        "Values in the argument <clabels> outside the data rows.",
+                        ... = ...
                     )
                 }
             }
@@ -356,7 +365,8 @@
                         "length of <x>",
                         "number of rows in the data"
                     )
-                )
+                ),
+                ... = ...
             )
         }
         if (is.logical(clabels)) {

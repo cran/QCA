@@ -12,7 +12,7 @@ binary values 0 or 1.
 
 \usage{
 retention(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
-         type = "corruption", dependent = TRUE, p.pert = 0.5, n.pert = 1)
+         type = "corruption", dependent = TRUE, p.pert = 0.5, n.pert = 1, ...)
 }
 
 \arguments{
@@ -31,6 +31,7 @@ retention(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
         IPA - Independent Perturbations Assumption.}
   \item{p.pert}{Probability of perturbation under independent (IPA) assumption.}
   \item{n.pert}{Number of perturbations under dependent (DPA) assumption.}
+  \item{...}{Other arguments, mainly for internal use.}
 }
 
 \details{

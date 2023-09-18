@@ -25,7 +25,7 @@
 
 `retention` <- function(
     data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1,
-    type = "corruption", dependent = TRUE, p.pert = 0.5, n.pert = 1
+    type = "corruption", dependent = TRUE, p.pert = 0.5, n.pert = 1, ...
 ) {
     outcome <- admisc::recreate(substitute(outcome))
     conditions <- admisc::recreate(substitute(conditions))
@@ -39,7 +39,7 @@
         )
     ) {
         admisc::stopError(
-            "Only binary data allowed."
+            "Only binary data allowed.", ... = ...
         )
     }
     nms <- colnames(data)
@@ -52,20 +52,20 @@
             cs <- unlist(strsplit(conditions, split = ":"))
             if (!all(is.element(conditions, nms))) {
                 admisc::stopError(
-                    "Conditions from sequence not found in the data."
+                    "Conditions from sequence not found in the data.", ... = ...
                 )
             }
             conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
         }
         if (!all(is.element(conditions, nms))) {
             admisc::stopError(
-                "Conditions not found in the data."
+                "Conditions not found in the data.", ... = ...
             )
         }
     }
     if (!is.element(outcome, nms)) {
         admisc::stopError(
-            "Outcome not found in the data."
+            "Outcome not found in the data.", ... = ...
         )
     }
     data <- data[, c(conditions, outcome)]

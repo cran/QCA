@@ -49,20 +49,21 @@
                     "There is no column \"%s\" in the dataframe %s.",
                     x[2],
                     x[1]
-                )
+                ),
+                ... = ...
             )
         }
-        admisc::stopError("The input is not numeric.")
+        admisc::stopError("The input is not numeric.", ... = ...)
     }
     if (!is.element(type, c("crisp", "fuzzy"))) {
-        admisc::stopError("Incorrect calibration type.")
+        admisc::stopError("Incorrect calibration type.", ... = ...)
     }
     if (!is.element(method, c("direct", "indirect", "TFR"))) {
-        admisc::stopError("Incorrect calibration method.")
+        admisc::stopError("Incorrect calibration method.", ... = ...)
     }
     if (method != "TFR") {
         if(all(is.na(thresholds))) {
-            admisc::stopError("Threshold value(s) not specified.")
+            admisc::stopError("Threshold value(s) not specified.", ... = ...)
         }
         if (is.character(thresholds) & length(thresholds) == 1) {
             thresholds <- admisc::splitstr(thresholds)
@@ -76,18 +77,18 @@
             names(thresholds) <- nmsths
         }
         else {
-            admisc::stopError("Thresholds must be numeric.")
+            admisc::stopError("Thresholds must be numeric.", ... = ...)
         }
     }
     if (type == "crisp") {
         if (any(thresholds < min(x) | thresholds > max(x))) {
             admisc::stopError(
-                "Threshold value(s) outside the range of x."
+                "Threshold value(s) outside the range of x.", ... = ...
             )
         }
         if (!is.null(names(thresholds))) {
             admisc::stopError(
-                "Named thresholds require fuzzy type calibration."
+                "Named thresholds require fuzzy type calibration.", ... = ...
             )
         }
         thresholds <- sort(thresholds)
@@ -104,12 +105,14 @@
         if (method == "direct") {
             if (lth != 3 & lth != 6) {
                 admisc::stopError(
-                    "For fuzzy direct calibration, there should be either 3 or 6 thresholds."
+                    "For fuzzy direct calibration, there should be either 3 or 6 thresholds.",
+                    ... = ...
                 )
             }
             if (idm <= 0.5 | idm >= 1) {
                 admisc::stopError(
-                    "The inclusion degree of membership has to be bigger than 0.5 and less than 1."
+                    "The inclusion degree of membership has to be bigger than 0.5 and less than 1.",
+                    ... = ...
                 )
             }
             if (lth == 3) {
@@ -135,7 +138,11 @@
                 }
                 else {
                     if (any(table(c(thEX, thCR, thIN)) > 1)) {
-                        cat("\n")
+                        enter <- "\n"
+                        if (is.element("enter", names(dots))) {
+                            enter <- ifelse(isFALSE(dots$enter), "", dots$enter)
+                        }
+                        cat(enter)
                         warning(
                             simpleWarning("Some thresholds equal, that should not be equal.\n\n"),
                             .call = FALSE
@@ -143,7 +150,8 @@
                     }
                     if (above <= 0 | below <= 0) {
                         admisc::stopError(
-                            "Arguments <above> and <below> should be positive."
+                            "Arguments <above> and <below> should be positive.",
+                            ... = ...
                         )
                     }
                     increasing <- TRUE
@@ -225,12 +233,14 @@
                 thEX2 <- thresholds[6]
                 if (thCR1 < min(thEX1, thIN1) | thCR1 > max(thEX1, thIN1)) {
                     admisc::stopError(
-                        "First crossover threshold not between first exclusion and inclusion thresholds."
+                        "First crossover threshold not between first exclusion and inclusion thresholds.",
+                        ... = ...
                     )
                 }
                 if (thCR2 < min(thEX2, thIN2) | thCR2 > max(thEX2, thIN2)) {
                     admisc::stopError(
-                        "Second crossover threshold not between second exclusion and inclusion thresholds."
+                        "Second crossover threshold not between second exclusion and inclusion thresholds.",
+                        ... = ...
                     )
                 }
                 somequal <- FALSE
@@ -267,12 +277,14 @@
                 }
                 if (somequal) {
                     admisc::stopError(
-                        "Some thresholds equal, that should not be equal."
+                        "Some thresholds equal, that should not be equal.",
+                        ... = ...
                     )
                 }
                 if (above <= 0 | below <= 0) {
                     admisc::stopError(
-                        "Arguments <above> and <below> should be positive."
+                        "Arguments <above> and <below> should be positive.",
+                        ... = ...
                     )
                 }
                 fs <- rep(NA, length(x))

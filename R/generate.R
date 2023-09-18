@@ -24,14 +24,15 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `generate` <- function(
-    expression = "", snames = "", noflevels = NULL
+    expression = "", snames = "", noflevels = NULL, ...
 ) {
     expression <- admisc::recreate(substitute(expression))
     snames <- admisc::recreate(substitute(snames))
     suf <- grepl("=>|->", expression)
     if (grepl("<=|<-", expression) & !suf) {
         admisc::stopError(
-            "Invalid expression, relation should (also) indicate sufficiency."
+            "Invalid expression, relation should (also) indicate sufficiency.",
+            ... = ...
         )
     }
     if (!is.null(noflevels)) {

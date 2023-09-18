@@ -52,17 +52,17 @@
     }
     if (any(abs(noflevels) %% 1 > .Machine$double.eps ^ 0.5)) {
         admisc::stopError(
-            "The number of levels must be integers."
+            "The number of levels must be integers.", ... = ...
         )
     }
     if (!is.logical(arrange)) {
         admisc::stopError(
-            "The argument <arrange> should be logical."
+            "The argument <arrange> should be logical.", ... = ...
         )
     }
     if (abs(depth) %% 1 > .Machine$double.eps ^ 0.5) {
         admisc::stopError(
-            "The argument depth has to be an integer number."
+            "The argument depth has to be an integer number.", ... = ...
         )
     }
     if ((mem <- prod(noflevels) * length(levels) * 8 / 1024^3) > RAM) {
@@ -71,7 +71,8 @@
                 "Too much memory needed (",
                 round(mem, 1),
                 " Gb) to create the matrix."
-            )
+            ),
+            ... = ...
         )
     }
     noflevels <- as.integer(abs(noflevels))
@@ -109,7 +110,7 @@
         })
     }
     if (is.vector(retmat)) {
-        retmat <- matrix(retmat, nrow=1)
+        retmat <- matrix(retmat, nrow = 1)
     }
     return(retmat)
 }

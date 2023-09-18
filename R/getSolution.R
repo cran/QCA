@@ -29,7 +29,6 @@
     mtrx <- NULL
     sol.matrix <- NULL
     dots <- list(...)
-    enter <- ifelse (is.element("enter", names(dots)), dots$enter, "\n")
     pi.cons <- if (is.element("pi.cons", names(dots))) dots$pi.cons else 0
     outcome <- if (is.element("outcome", names(dots))) dots$outcome else ""
     complex <- FALSE
@@ -42,7 +41,7 @@
         if (is.null(sol.matrix)) {
             admisc::stopError(
                 "There are no solutions, given these constraints.",
-                enter
+                ... = ...
             )
         }
         expressions <- expressions[[1]]
@@ -67,7 +66,7 @@
                 "       Please check the truth table.",
                 sep = "\n"
             ),
-            enter
+            ... = ...
         )
     }
     if (FALSE) {
@@ -122,7 +121,7 @@
         if (any(colSums(mtrx) == 0)) {
             admisc::stopError(
                 "There are no solutions, given these constraints.",
-                enter
+                ... = ...
             )
         }
     }

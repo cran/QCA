@@ -34,7 +34,6 @@
                     "show.cases", "sort.by", "use.letters", "inf.test")
     check.args <- pmatch(names(dots), back.args)
     names(dots)[!is.na(check.args)] <- back.args[check.args[!is.na(check.args)]]
-    enter <- ifelse (is.element("enter", names(dots)), dots$enter, TRUE)
     ic0 <- 1
     if (is.character(incl.cut) & length(incl.cut) == 1) {
         incl.cut <- admisc::splitstr(incl.cut)
@@ -60,7 +59,8 @@
     outcome <- admisc::recreate(substitute(outcome), colnames(data))
     if (length(admisc::splitstr(outcome)) > 1) {
         admisc::stopError(
-            "Only one outcome is allowed."
+            "Only one outcome is allowed.",
+            ... = ...
         )
     }
     outcome.copy <- outcome
@@ -70,7 +70,20 @@
     if (!identical(outcome, "")) {
         outcometest <- admisc::tryCatchWEM(admisc::translate(outcome, data = data))
         if (is.element("error", names(outcometest))) {
-            admisc::stopError("Incorrect outcome specification.")
+            if (
+                grepl("does not match the set names", outcometest$error)
+            ) {
+                admisc::stopError(
+                    "Incorrect outcome specification.",
+                    ... = ...
+                )
+            }
+            else {
+                admisc::stopError(
+                    gsub("\\n", "", outcometest$error),
+                    ... = ...
+                )
+            }
         }
         if (grepl("\\+|\\*", outcome)) {
             initial.data[, outcome] <- data[, outcome] <- admisc::compute(outcome, data)
@@ -118,7 +131,8 @@
     }
     if (length(conditions) > 30) {
         admisc::stopError(
-            "Impossible to run a QCA analysis with so many conditions."
+            "Impossible to run a QCA analysis with so many conditions.",
+            ... = ...
         )
     }
     if (is.character(sort.by) & length(sort.by) == 1 & !identical(sort.by, "")) {
@@ -137,7 +151,8 @@
     if (is.matrix(data)) {
         if (is.null(colnames(data))) {
             admisc::stopError(
-                "The data should have column names."
+                "The data should have column names.",
+                ... = ...
             )
         }
         if (any(duplicated(rownames(data)))) {
@@ -231,7 +246,8 @@
     obremove <- ipc[1, ] < n.cut 
     if (sum(!obremove) == 0) {
         admisc::stopError(
-            "There are no configurations, using these cutoff values."
+            "There are no configurations, using these cutoff values.",
+            ... = ...
         )
     }
     tt$OUT <- "?"

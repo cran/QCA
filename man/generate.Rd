@@ -8,13 +8,14 @@ This function acts as a DGS - Data Generating Structure for a certain SOP expres
 }
 
 \usage{
-generate(expression = "", snames = "", noflevels)
+generate(expression = "", snames = "", noflevels, ...)
 }
 
 \arguments{
   \item{expression}{String: a SOP - sum of products expression.}
   \item{snames}{A string containing the sets' names, separated by commas.}
   \item{noflevels}{Numerical vector containing the number of levels for each set.}
+  \item{...}{Other arguments, mainly for internal use.}
 }
 
 \details{

@@ -27,8 +27,8 @@
     setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
     use.labels = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...
 ) {
-    setms <- admisc::recreate(substitute(setms))
-    outcome <- admisc::recreate(substitute(outcome), snames = names(data))
+    setms <- drop(admisc::recreate(substitute(setms)))
+    outcome <- drop(admisc::recreate(substitute(outcome), snames = names(data)))
     funargs <- lapply(
         lapply(match.call(), deparse)[-1],
         function(x) gsub("'|\"|[[:space:]]", "", x)
@@ -41,12 +41,13 @@
     funargs$outcome <- paste(funargs$outcome, collapse = "")
     if (is.null(setms)) {
         admisc::stopError(
-            "The argument <setms> is missing."
+            "The argument <setms> is missing.", ... = ...
         )
     }
     if (!(nec(relation) | suf(relation))) {
         admisc::stopError(
-            "The relation should be either \"necessity\" or \"sufficiency\"."
+            "The relation should be either \"necessity\" or \"sufficiency\".",
+            ... = ...
         )
     }
     ic1 <- 0.75
@@ -98,7 +99,8 @@
     `extract` <- function(x, snames = "", data = NULL) {
         if (grepl("<=>|<->", x)) {
             admisc::stopError(
-                "Incorrect expression: relation can be either necessity or sufficiency."
+                "Incorrect expression: relation can be either necessity or sufficiency.",
+                ... = ...
             )
         }
         multivalue <- grepl("\\{|\\}|\\[|\\]", x)
@@ -139,7 +141,7 @@
                 rownames(outmtrx) <- xcopy[2]
             }
             if (!is.null(data)) {
-                data <- data[, -which(is.element(colnames(data), colnames(outmtrx)))]
+                data <- data[, -which(is.element(colnames(data), colnames(outmtrx))), drop = FALSE]
             }
         }
         condmtrx <- validateNames(x[1], snames = snames, data = data)
@@ -162,12 +164,12 @@
     if (is.element("character", class(setms))) {
         if (missing(data)) {
             admisc::stopError(
-                "The data argument is missing, with no default."
+                "The data argument is missing, with no default.", ... = ...
             )
         }
         if (length(setms) > 1) {
             admisc::stopError(
-                "Only one expression allowed."
+                "Only one expression allowed.", ... = ...
             )
         }
         toverify <- extract(setms, data = odata)
@@ -178,7 +180,7 @@
         if (is.na(toverify$outmtrx)) {
             if (missing(outcome)) {
                 admisc::stopError(
-                    "Expression without outcome."
+                    "Expression without outcome.", ... = ...
                 )
             }
             temp <- subset(
@@ -235,8 +237,8 @@
             )
             checkoutcome <- FALSE
         }
-        if (is.vector(setms)) {
-            setms <- data.frame(setms)
+        if (is.vector(drop(setms))) {
+            setms <- data.frame(drop(setms))
             colnames(setms) <- toverify$oexpr
         }
         rownames(setms) <- rownames(data)
@@ -252,7 +254,7 @@
     if (checkoutcome) {
         if (missing(outcome)) {
             admisc::stopError(
-                "Outcome is missing, with no default."
+                "Outcome is missing, with no default.", ... = ...
             )
         }
         if (is.element("character", class(outcome))) {
@@ -278,12 +280,12 @@
             }
             if (is.null(data)) {
                 admisc::stopError(
-                    "The data argument is missing, with no default."
+                    "The data argument is missing, with no default.", ... = ...
                 )
             }
             if (!is.element(outcomename, colnames(data))) {
                 admisc::stopError(
-                    "Outcome not found in the data."
+                    "Outcome not found in the data.", ... = ...
                 )
             }
             verify.qca(
@@ -307,7 +309,7 @@
             }
         }
     }
-    if (is.vector(outcome)) {
+    if (is.vector(drop(outcome))) {
         if (!is.numeric(outcome) & admisc::possibleNumeric(outcome)) {
             outcome <- admisc::asNumeric(outcome)
         }
@@ -319,14 +321,15 @@
                 "The outcome should be either a column name in a dataset",
                 "       or a vector of set membership values.",
                 sep = "\n"
-            )
+            ),
+            ... = ...
         )
     }
     if (identical(substr(funargs$setms, 1, 2), "1-")) {
         condnegated <- !condnegated
     }
-    if (is.vector(setms)) {
-        setms <- data.frame(setms)
+    if (is.vector(drop(setms))) {
+        setms <- data.frame(drop(setms))
         conditions <- admisc::notilde(gsub("1-", "", funargs$setms))
         if (grepl("[$]", conditions)) {
             conditions <- tail(unlist(strsplit(conditions, split = "[$]")), 1)
@@ -374,12 +377,13 @@
     }
     else {
         admisc::stopError(
-            "The argument <setms> is not standard."
+            "The argument <setms> is not standard.", ... = ...
         )
     }
     if (any(na.omit(cbind(setms, outcome) > 1))) {
         admisc::stopError(
-            "Set membership scores should be numbers between 0 and 1."
+            "Set membership scores should be numbers between 0 and 1.",
+            ... = ...
         )
     }
     notmiss <- apply(cbind(setms, outcome), 1, function(x) !any(is.na(x)))
@@ -507,13 +511,15 @@
     if (!is.null(add)) {
         if (!(is.list(add) | is.function(add))) {
             admisc::stopError(
-                "The argument <add> should be a function or a list of functions."
+                "The argument <add> should be a function or a list of functions.",
+                ... = ...
             )
         }
         if (is.list(add)) {
             if (!all(unlist(lapply(add, is.function)))) {
                 admisc::stopError(
-                    "Components from the list argument <add> should be functions."
+                    "Components from the list argument <add> should be functions.",
+                    ... = ...
                 )
             }
             toadd <- matrix(nrow = nrow(incl.cov), ncol = length(add))

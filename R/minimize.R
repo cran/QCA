@@ -166,14 +166,10 @@
                     callist[[common[i]]] <- dots[[common[i]]]
                 }
             }
-            for (i in seq(2, length(callist))) {
-                tc <- tryCatch(eval.parent(callist[[i]]), error = function(e) e)
-                if (is.list(tc) && identical(names(tc), c("message", "call"))) {
-                    tc <- as.character(callist[[i]])
-                }
-                callist[[i]] <- tc
-            }
             dataname <- callist$data
+            for (i in seq(2, length(callist))) {
+                callist[[i]] <- admisc::recreate(callist[[i]])
+            }
             callist$data <- tt$initial.data
             tt <- do.call("truthTable", callist[-1])
             callist$data <- dataname
@@ -208,7 +204,10 @@
             trout <- admisc::translate(outcome, data = input)
         )
         if (is.element("error", names(testoutcome))) {
-            admisc::stopError("Incorrect outcome specification.")
+            admisc::stopError(
+                "Incorrect outcome specification.",
+                ... = ...
+            )
         }
         testrout <- apply(trout, 2, function(x) {
             all(x != "-1")

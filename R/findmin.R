@@ -23,23 +23,33 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-`findmin` <- function(
-    chart, ...
-) {
+`findmin` <- function(chart, ...) {
     dots <- list(...)
     if (!methods::is(chart, "QCA_pic")) {
         if (!is.matrix(chart) | (!is.logical(chart) & length(setdiff(chart, 0:1)) > 0)) {
             admisc::stopError(
-                "Use a logical, TRUE/FALSE matrix. See makeChart()'s output."
+                "Use a logical, TRUE/FALSE matrix. See makeChart()'s output.",
+                ... = ...
             )
         }
     }
+    if (is.null(attr(chart, "C_PI"))) {
+        chart <- t(chart)
+    }
     if (all(colSums(chart) > 0)) {
-        result <- .Call("C_findmin", matrix(as.logical(chart), nrow = nrow(chart)), PACKAGE = "QCA")
+        solution <- lpSolve::lp(
+            "min",
+            rep(1, ncol(chart)),
+            chart,
+            ">=",
+            1,
+            int.vec = seq(nrow(chart))
+        )$solution
+        result <- as.integer(sum(solution))
     }
     else {
-        result <- 0
+        result <- 0L
     }
-    class(result) <- c("numeric", "QCA_findmin")
+    class(result) <- c("integer", "QCA_findmin")
     return(result)
 }

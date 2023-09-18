@@ -116,12 +116,12 @@ function(data, ...) {
             )
         }
         checkNumUncal <- lapply(data, function(x) {
-            is_a_factor <- is.factor(x)
-            is_a_declared <- inherits(x, "declared")
+            is_x_factor <- is.factor(x)
+            is_x_declared <- inherits(x, "declared")
             x <- setdiff(x, c("-", "dc", "?"))
             is_possible_numeric <- admisc::possibleNumeric(x)
             uncal <- mvuncal <- FALSE
-            if (is_possible_numeric & !is_a_declared) {
+            if (is_possible_numeric) {
                 y <- na.omit(admisc::asNumeric(x))
                 if (admisc::wholeNumeric(y)) {
                     mvuncal <- length(seq(0, max(y))) > 20 ||
@@ -138,7 +138,7 @@ function(data, ...) {
                     uncal <- any(y > 1)
                 }
             }
-            return(c(is_possible_numeric, uncal, mvuncal, is_a_factor, is_a_declared))
+            return(c(is_possible_numeric, uncal, mvuncal, is_x_factor, is_x_declared))
         })
         checknumeric <- sapply(checkNumUncal, "[[", 1)
         checkuncal <- sapply(checkNumUncal, "[[", 2)
@@ -177,7 +177,7 @@ function(data, ...) {
             ))
         }
     }
-    else if (is.vector(data)) {
+    else if (is.vector(drop(data))) {
         if (!admisc::possibleNumeric(data)) {
             admisc::stopError(
                 "Non numeric input."

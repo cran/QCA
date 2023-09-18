@@ -767,13 +767,20 @@
         as.list(x$call)$enter,
         "\n"
     )
+    dots <- list(...)
     enter <- identical(enter, "\n")
-    replace <- x$tt$options$use.labels && length(x$tt$categories) > 0
+    essential_replaced <- FALSE
+    replace <-  length(x$tt$categories) > 0 &&
+                (
+                    isTRUE(dots$use.labels) ||
+                    (
+                        !isFALSE(dots$use.labels) && x$tt$options$use.labels
+                    )
+                )
     line.length <- getOption("width")
     if (any(names(x) == "via.web")) {
         line.length <- 10000
     }
-    dots <- list(...)
     details <- x$options$details
     mqca <- FALSE
     if (is.element("mqca", names(dots))) {
@@ -989,8 +996,15 @@
                 if (length(x$essential) > 0) {
                     xsol <- xsol[!is.element(xsol, x$essential)]
                     if (replace) {
-                        x$essential <- replaceCategories(
-                            x$essential,
+                        if (!essential_replaced) {
+                            x$essential <- replaceCategories(
+                                x$essential,
+                                categories = x$tt$categories
+                            )
+                            essential_replaced <- TRUE
+                        }
+                        xsol <- replaceCategories(
+                            xsol,
                             categories = x$tt$categories
                         )
                     }

@@ -29,7 +29,7 @@
 ) {
     if (missing(data)) {
         admisc::stopError(
-            "Data is missing."
+            "Data is missing.", ... = ...
         )
     }
     dots <- list(...)
@@ -53,7 +53,7 @@
                     cs <- unlist(strsplit(conditions, split = ":"))
                     if (!all(is.element(cs, nms))) {
                         admisc::stopError(
-                            "Inexisting condition(s) in the sequence."
+                            "Inexisting condition(s) in the sequence.", ... = ...
                         )
                     }
                     conditions <- nms[seq(which(nms == cs[1]), which(nms == cs[2]))]
@@ -63,7 +63,7 @@
     }
     if (identical(outcome, "")) {
         admisc::stopError(
-            "The outcome is missing."
+            "The outcome is missing.", ... = ...
         )
     }
     if (is.matrix(data)) {
@@ -87,7 +87,7 @@
     outcome <- admisc::notilde(outcome)
     if (!is.element(outcome, colnames(data))) {
         admisc::stopError(
-            "Outcome not found in the data."
+            "Outcome not found in the data.", ... = ...
         )
     }
     if (identical(conditions, "")) {
