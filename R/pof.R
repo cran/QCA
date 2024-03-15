@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2023, Adrian Dusa
+# Copyright (c) 2016 - 2024, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -9,13 +9,14 @@
 #     * Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
-#     * The names of its contributors may NOT be used to endorse or promote products
-#       derived from this software without specific prior written permission.
+#     * The names of its contributors may NOT be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
 # 
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
 # DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -27,11 +28,14 @@
     setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
     use.labels = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...
 ) {
-    setms <- drop(admisc::recreate(substitute(setms)))
-    outcome <- drop(admisc::recreate(substitute(outcome), snames = names(data)))
+    setms <- admisc::recreate(substitute(setms), snames = names(data))
+    outcome <- admisc::recreate(substitute(outcome), snames = names(data))
+    if (inherits(outcome, "declared")) {
+        attributes(outcome) <- NULL
+    }
     funargs <- lapply(
         lapply(match.call(), deparse)[-1],
-        function(x) gsub("'|\"|[[:space:]]", "", x)
+        function(x) gsub(paste0("'|\"|[[:space:]|", "\u00a0", "]"), "", x)
     )
     dots <- list(...)
     if (isTRUE(dots$categorical)) { 
@@ -237,8 +241,8 @@
             )
             checkoutcome <- FALSE
         }
-        if (is.vector(drop(setms))) {
-            setms <- data.frame(drop(setms))
+        if (is.vector(setms)) {
+            setms <- data.frame(setms)
             colnames(setms) <- toverify$oexpr
         }
         rownames(setms) <- rownames(data)
@@ -309,7 +313,7 @@
             }
         }
     }
-    if (is.vector(drop(outcome))) {
+    if (is.vector(outcome)) {
         if (!is.numeric(outcome) & admisc::possibleNumeric(outcome)) {
             outcome <- admisc::asNumeric(outcome)
         }
@@ -328,8 +332,8 @@
     if (identical(substr(funargs$setms, 1, 2), "1-")) {
         condnegated <- !condnegated
     }
-    if (is.vector(drop(setms))) {
-        setms <- data.frame(drop(setms))
+    if (is.vector(setms)) {
+        setms <- data.frame(setms)
         conditions <- admisc::notilde(gsub("1-", "", funargs$setms))
         if (grepl("[$]", conditions)) {
             conditions <- tail(unlist(strsplit(conditions, split = "[$]")), 1)
@@ -355,16 +359,22 @@
             if (any(grepl("\\$coms|\\$pims", funargs$setms))) {
                 toverify <- unlist(strsplit(admisc::notilde(gsub("1-", "", funargs$setms)), split = "\\$"))[1]
                 if (grepl("pims", funargs$setms)) { 
-                    tt <- eval.parent(parse(text = sprintf("%s$tt", toverify)), n = 1)
+                    tt <- eval.parent(
+                        parse(text = sprintf("%s$tt", toverify)),
+                        n = 1
+                    )
                     if (tt$options$use.letters) {
-                        conditions <- LETTERS[seq(length(conditions))]    
+                        conditions <- LETTERS[seq(length(conditions))]
                     }
                     else {
                         conditions <- tt$options$conditions
                     }
                 }
                 else {
-                    conditions <- eval.parent(parse(text = sprintf("%s$options$conditions", toverify)), n = 1)
+                    conditions <- eval.parent(
+                        parse(text = sprintf("%s$options$conditions", toverify)),
+                        n = 1
+                    )
                 }
             }
             if (identical(conditions, "")) {

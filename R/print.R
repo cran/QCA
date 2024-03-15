@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2023, Adrian Dusa
+# Copyright (c) 2016 - 2024, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -9,13 +9,14 @@
 #     * Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
-#     * The names of its contributors may NOT be used to endorse or promote products
-#       derived from this software without specific prior written permission.
+#     * The names of its contributors may NOT be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
 # 
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
 # DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -160,8 +161,8 @@
     }
     n <- length(row.names(x))
     if (length(x) == 0L) {
-        cat(sprintf(ngettext(n, "cluster data frame with 0 columns and %d row", 
-            "cluster data frame with 0 columns and %d rows"), n), "\n", 
+        cat(sprintf(ngettext(n, "cluster data frame with 0 columns and %d row",
+            "cluster data frame with 0 columns and %d rows"), n), "\n",
             sep = "")
     }
     else if (n == 0L) {
@@ -549,7 +550,7 @@
                         cat(
                             paste(
                                 paste(
-                                    rep(" ", nchar.nrow), 
+                                    rep(" ", nchar.nrow),
                                     collapse = ""
                                 ),
                                 paste(
@@ -1287,7 +1288,7 @@
         if (alloutzero) {
             if (enter) cat("\n")
             cat(paste("It seems that all output values have been coded to zero.",
-                      "Suggestion: lower the inclusion score for the presence of the outcome,", 
+                      "Suggestion: lower the inclusion score for the presence of the outcome,",
                       sprintf("the relevant argument is \"incl.cut\" which now has a value of %s.\n", x$options$incl.cut[1]), sep = "\n"))
         }
         if (enter) cat("\n")

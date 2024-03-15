@@ -23,7 +23,7 @@ truthTable(data, outcome = "", conditions = "", incl.cut = 1, n.cut = 1, pri.cut
         separated by commas, or a character vector of conditions' names.}
   \item{incl.cut}{The inclusion cut-off(s): either a single value for the presence of the
         output, or a vector of length 2, the second for the absence of the output.}
-  \item{n.cut}{The minimum number of cases under which a truth table row is 
+  \item{n.cut}{The minimum number of cases under which a truth table row is
         declared as a remainder.}
   \item{pri.cut}{The minimal score for the \bold{\code{PRI}} - proportional reduction in
         inconsistency, under which a truth table row is declared as negative.}
@@ -161,6 +161,11 @@ on the inclusion cutoff value(s), it will be harder to code a value of \bold{\co
 in the output, and also harder to obtain contradictions if the true inclusion is not
 signficantly higher than \bold{\code{ic0}}.
 
+The argument \bold{\code{exclude}} is used to exclude truth table rows from the
+minimization process, from the positive configurations and/or from the remainders. This
+is achieved by coding those configurations with a value of 0 in the OUTput column (thus
+treating them as if they were observed as negative output configurations).
+
 The argument \bold{\code{complete}} controls how to print the table on the screen, either
 complete (when set to \bold{\code{TRUE}}), or just the observed combinations (default).
 For up to 7 causal conditions, the resulting object will always contain the complete
@@ -200,24 +205,24 @@ Cronqvist, L.; Berg-Schlosser, D. (2009) \dQuote{Multi-Value QCA (mvQCA)}, in
 Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods. Qualitative
 Comparative Analysis (QCA) and Related Techniques}, SAGE.
 
-Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}. 
+Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}.
 Springer International Publishing, \doi{10.1007/978-3-319-75668-4}.
 
 Lipset, S.M. (1959) \dQuote{Some Social Requisites of Democracy: Economic Development
 and Political Legitimacy}, \emph{American Political Science Review} vol.53, pp.69-105.
 
-Ragin, C.C. (1987) \emph{The Comparative Method: Moving beyond Qualitative and 
+Ragin, C.C. (1987) \emph{The Comparative Method: Moving beyond Qualitative and
 Quantitative Strategies}. Berkeley: University of California Press.
 
-Ragin, C.C. (2008) \emph{Redesigning Social Inquiry: Fuzzy Sets and Beyond}. 
+Ragin, C.C. (2008) \emph{Redesigning Social Inquiry: Fuzzy Sets and Beyond}.
 Chicago: University of Chicago Press.
 
-Ragin, C.C.; Strand, S.I. (2008) \dQuote{Using Qualitative Comparative 
-Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).} 
+Ragin, C.C.; Strand, S.I. (2008) \dQuote{Using Qualitative Comparative
+Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).}
 \emph{Sociological Methods & Research} vol.36, no.4, pp.431-441.
 
-Schneider, C.Q.; Wagemann, C. (2012) \emph{Set-Theoretic Methods 
-for the Social Sciences: A Guide to Qualitative Comparative Analysis (QCA)}. 
+Schneider, C.Q.; Wagemann, C. (2012) \emph{Set-Theoretic Methods
+for the Social Sciences: A Guide to Qualitative Comparative Analysis (QCA)}.
 Cambridge: Cambridge University Press.
 }
 
@@ -244,7 +249,7 @@ truthTable(LC, "SURV", complete = TRUE)
 truthTable(LC, "SURV", complete = TRUE, sort.by = "incl, n")
 
 # sort the truth table decreasing for inclusion, and increasing for n
-# note that "-" is redundant, sorting is decreasing by default 
+# note that "-" is redundant, sorting is decreasing by default
 truthTable(LC, "SURV", complete = TRUE, sort.by = "incl-, n+")
 
 

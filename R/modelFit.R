@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2023, Adrian Dusa
+# Copyright (c) 2016 - 2024, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -9,13 +9,14 @@
 #     * Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
-#     * The names of its contributors may NOT be used to endorse or promote products
-#       derived from this software without specific prior written permission.
+#     * The names of its contributors may NOT be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
 # 
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
 # DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -24,26 +25,26 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `modelFit` <- function(
-    model, theory = "", ...
+    model, theory = "", select = NULL, ...
 ) {
     if (!(methods::is(model, "QCA_min") | methods::is(model, "admisc_deMorgan"))) {
         admisc::stopError(
             "The model should be a minimization object or its negation.",
-             ... = ...
+            ... = ...
         )
     }
     theory <- admisc::recreate(substitute(theory))
     if (is.character(theory)) {
         if (length(theory) != 1) {
             admisc::stopError(
-                "Theory should be a single character expression.",
+                "Theory should be a single SOP expression.",
                 ... = ...
             )
         }
     }
     else {
         admisc::stopError(
-            "Theory should be a character expression or its negation.",
+            "Theory should be a SOP expression.",
             ... = ...
         )
     }
@@ -66,6 +67,33 @@
                 message("Warning: the negation of the conservative solution is potentially computer intensive.")
             }
         }
+    }
+    if (!is.null(select)) {
+        if (!is.atomic(select) || !(is.numeric(select) | is.character(select))) {
+            admisc::stopError(
+                "Argument 'select' should be a numerical or character vector.",
+                ... = ...
+            )
+        }
+        if (is.character(select)) {
+            if (!all(is.element(select, names(solutions)))) {
+                admisc::stopError(
+                    "Component specified with 'select' not found.",
+                    ... = ...
+                )
+            }
+        } else if (is.numeric(select)) {
+            if (any(select > length(solutions))) {
+                admisc::stopError(
+                    "Numbers in 'select' greater than number of existing solutions.",
+                    ... = ...
+                )
+            }
+        }
+        solutions <- solutions[select]
+    }
+    if (max(unlist(lapply(solutions, function(x) sapply(x, length)))) > 4) {
+        message("Warning: the negation of the such model(s) is potentially computer intensive.")
     }
     models <- unlist(lapply(solutions, function(x) unlist(lapply(x, paste, collapse = " + "))))
     slengths <- unlist(lapply(solutions, length))
@@ -107,6 +135,8 @@
             }
         }
         intersections <- rep("", 4)
+        negtheory <- negate(theory, snames = snames, noflevels = noflevels)[[1]][1]
+        negexp <- negate(expression, snames = snames, noflevels = noflevels)[[1]][1]
         intersections[1] <- do.call(
             admisc::intersection,
             c(
@@ -118,7 +148,7 @@
             admisc::intersection,
             c(
                 list(
-                    negate(theory, snames = snames, noflevels = noflevels)[[1]][1],
+                    negtheory,
                     expression
                 ),
                 arglist
@@ -129,7 +159,7 @@
             c(
                 list(
                     theory,
-                    negate(expression, snames = snames, noflevels = noflevels)[[1]][1]
+                    negexp
                 ),
                 arglist
             )
@@ -138,8 +168,8 @@
             admisc::intersection,
             c(
                 list(
-                    negate(theory, snames = snames, noflevels = noflevels)[[1]][1],
-                    negate(expression, snames = snames, noflevels = noflevels)[[1]][1]
+                    negtheory,
+                    negexp
                 ),
                 arglist
             )
@@ -159,7 +189,7 @@
         neg.out <- admisc::hastilde(model$tt$options$outcome)
         pofobj <- pof(
             cpims,
-            model$tt$initial.data[, admisc::notilde(model$tt$options$outcome)],
+            as.numeric(model$tt$initial.data[, admisc::notilde(model$tt$options$outcome)]),
             relation = "sufficiency",
             neg.out = neg.out
         )

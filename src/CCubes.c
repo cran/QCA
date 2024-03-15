@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016 - 2023, Adrian Dusa
+Copyright (c) 2016 - 2024, Adrian Dusa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -10,13 +10,14 @@ following conditions are met:
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * The names of its contributors may NOT be used to endorse or promote products
-      derived from this software without specific prior written permission.
+    * The names of its contributors may NOT be used to endorse or promote
+      products derived from this software without specific prior written
+      permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
 DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -219,8 +220,8 @@ void CCubes(const int p_tt[],
                 setAttrib(pic, install("C_PI"), cpi);
                 Rf_eval(lang2(Rf_install("library"), mkString("QCA")), R_GlobalEnv);
                 SEXP pkg_env = R_FindNamespace(mkString("QCA"));
-                SEXP findmin_function = findVarInFrame(pkg_env, Rf_install("findmin"));
-                solmin = INTEGER(R_tryEval(lang2(findmin_function, pic), pkg_env, NULL))[0];
+                SEXP findmin = findVarInFrame(pkg_env, Rf_install("findmin"));
+                solmin = INTEGER(R_tryEval(lang2(findmin, pic), pkg_env, NULL))[0];
                 UNPROTECT(2);
                 if (solmin == prevsolmin) {
                     if (firstmin || minpin) {

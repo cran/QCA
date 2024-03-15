@@ -4,7 +4,7 @@
 \title{Theory evaluation}
 
 \description{
-Function to enable theory evaluation, as introduced by Ragin (1987, p.118) 
+Function to enable theory evaluation, as introduced by Ragin (1987, p.118)
 and extended Schneider & Wageman (2012, p.295), by producing parameters of fit
 for all possible intersections between a given theoretical statement (a SOP
 expresison) and the solutions found by function \bold{\code{\link[QCA]{minimize}()}}.
@@ -12,12 +12,13 @@ expresison) and the solutions found by function \bold{\code{\link[QCA]{minimize}
 }
 
 \usage{
-modelFit(model, theory = "", ...)
+modelFit(model, theory = "", select = NULL, ...)
 }
 
 \arguments{
   \item{model}{A minimization object of class \code{"QCA_min"}.}
   \item{theory}{Character, a SOP expression.}
+  \item{select}{Character or numerical vector to select one or more models.}
   \item{...}{Other arguments, mainly for internal use.}
 }
 
@@ -32,6 +33,12 @@ meant a negation of an expression using the function \bold{\code{\link[admisc]{n
 When multiple models exist, all of them are automatically detected, negated and
 intersection with the theory. Intersections and parameters of fit are going to
 be produced using a single theoretical expression.
+
+In case of high model diversity, it is sometimes useful to select only a subset
+to fit against theory. In such situations, the argument \code{select} can be
+provided with either the name(s) of the model (for instance "C1P5" for intermediate
+solutions) or simply the number of the model(s) of interest (for conservative
+and parsimonious solutions).
 }
 
 \value{
@@ -47,11 +54,11 @@ Adrian Dusa
 
 \references{
 
-Ragin, C.C. (1987) \emph{The Comparative Method: Moving beyond Qualitative and 
+Ragin, C.C. (1987) \emph{The Comparative Method: Moving beyond Qualitative and
 Quantitative Strategies}. Berkeley: University of California Press.
 
-Schneider, C.Q.; Wagemann, C. (2012) \emph{Set-Theoretic Methods 
-for the Social Sciences: A Guide to Qualitative Comparative Analysis (QCA)}. 
+Schneider, C.Q.; Wagemann, C. (2012) \emph{Set-Theoretic Methods
+for the Social Sciences: A Guide to Qualitative Comparative Analysis (QCA)}.
 Cambridge: Cambridge University Press.
 }
 

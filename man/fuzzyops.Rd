@@ -35,26 +35,29 @@ Adrian Dusa
 # Cebotari & Vink (2013, 2015)
 
 # DEMOC*GEOCON*NATPRIDE
-with(CVF, fuzzyand(DEMOC, GEOCON, NATPRIDE))
+using(CVF, fuzzyand(DEMOC, GEOCON, NATPRIDE))
 
 # same thing with
 fuzzyand(CVF[, c(1,3,5)])
 
 # DEMOC*~GEOCON*NATPRIDE
-fa <- with(CVF, fuzzyand(DEMOC, 1 - GEOCON, NATPRIDE))
+fa <- using(
+    CVF,
+    fuzzyand(DEMOC, 1 - GEOCON, NATPRIDE)
+)
 fa
 
 attr(fa, "name")
 
 
 # ETHFRACT + POLDIS
-with(CVF, fuzzyor(ETHFRACT, POLDIS))
+using(CVF, fuzzyor(ETHFRACT, POLDIS))
 
 # same thing with
 fuzzyor(CVF[, c(2,4)])
 
 # ETHFRACT + ~POLDIS
-fo <- with(CVF, fuzzyor(ETHFRACT, 1 - POLDIS))
+fo <- using(CVF, fuzzyor(ETHFRACT, 1 - POLDIS))
 fo
 
 attr(fo, "name")

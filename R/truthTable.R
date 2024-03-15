@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2023, Adrian Dusa
+# Copyright (c) 2016 - 2024, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -9,13 +9,14 @@
 #     * Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
-#     * The names of its contributors may NOT be used to endorse or promote products
-#       derived from this software without specific prior written permission.
+#     * The names of its contributors may NOT be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
 # 
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
 # DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -63,8 +64,9 @@
             ... = ...
         )
     }
+    data <- as.data.frame(data)
     outcome.copy <- outcome
-    initial.data <- as.data.frame(data) 
+    initial.data <- data
     declared <- FALSE 
     multivalue <- grepl(mvregexp, outcome)
     if (!identical(outcome, "")) {
@@ -219,7 +221,7 @@
             )
         }
         condata[, fuzzy.cc] <- lapply(
-            condata[, fuzzy.cc, drop = FALSE], 
+            condata[, fuzzy.cc, drop = FALSE],
             function(x) as.numeric(x > 0.5)
         )
     }
@@ -252,7 +254,7 @@
     }
     tt$OUT <- "?"
     tt$OUT[!obremove] <- 1 * (
-        admisc::agteb(ipc[2, !obremove], ic1) & 
+        admisc::agteb(ipc[2, !obremove], ic1) &
         admisc::agteb(ipc[3, !obremove], pri.cut)
     )
     tt$OUT[ipc[2, !obremove] < ic1 & admisc::agteb(ipc[2, !obremove], ic0)] <- "C"
@@ -303,22 +305,7 @@
     if (length(exclude) == 0) {
         exclude <- NULL
     }
-    if (length(conditions) < 8) {
-        ttc <- as.data.frame(matrix(nrow = prod(noflevels), ncol = ncol(tt)))
-        colnames(ttc) <- colnames(tt)
-        ttc[, seq(length(conditions))] <- createMatrix(noflevels)
-        ttc$OUT   <- "?"
-        ttc$n     <-  0
-        ttc$incl  <- "-"
-        whichpri <- which(colnames(ttc) == "PRI")
-        ttc[, whichpri[length(whichpri)]] <- "-"
-        ttc[rownames(tt), ] <- tt
-        if (!is.null(exclude)) {
-            ttc$OUT[exclude] <- "0"
-        }
-        tt <- ttc
-    }
-    else {
+    if (length(conditions) > 7) {
         rownstt <- rownstt[!obremove]
         cases <- cases[!obremove]
         DCC <- DCC[!obremove]
@@ -333,6 +320,21 @@
             excl.matrix$PRI <- "-"
             tt <- rbind(tt, excl.matrix)
         }
+    }
+    else {
+        ttc <- as.data.frame(matrix(nrow = prod(noflevels), ncol = ncol(tt)))
+        colnames(ttc) <- colnames(tt)
+        ttc[, seq(length(conditions))] <- createMatrix(noflevels)
+        ttc$OUT   <- "?"
+        ttc$n     <-  0
+        ttc$incl  <- "-"
+        whichpri <- which(colnames(ttc) == "PRI")
+        ttc[, whichpri[length(whichpri)]] <- "-"
+        ttc[rownames(tt), ] <- tt
+        if (!is.null(exclude)) {
+            ttc$OUT[exclude] <- "0"
+        }
+        tt <- ttc
     }
     if (!identical(sort.by, "")) {
         if (is.logical(sort.by)) { 
@@ -378,6 +380,9 @@
         sortvector <- rep(1, nrow(tt))
         sortvector[tt[rowsorder, "OUT"] == "?"] <- 2
         rowsorder <- rowsorder[order(sortvector)]
+    }
+    if (any(hastime) && length(dc.code) > 1) {
+        admisc::stopError("Multiple \"don't care\" codes found.")
     }
     for (i in seq(length(conditions))) {
         if (hastime[i]) {
@@ -442,12 +447,12 @@
     multivalue <- multivalue | any(noflevels > 2)
     x <- list(
         tt = tt,
-        indexes = rownstt[!obremove],
+        indexes = rownstt,
         noflevels = as.vector(noflevels),
         initial.data = initial.data,
         recoded.data = data,
-        cases = cases[!obremove],
-        DCC = DCC[!obremove],
+        cases = cases,
+        DCC = DCC,
         minmat = minmat,
         categories = categories,
         multivalue = multivalue,
@@ -486,7 +491,7 @@
             class = "QCA_tt"
         )
     }
-    if (use.letters & any(nchar(conditions) > 1)) { 
+    if (use.letters & any(nchar(conditions) > 1)) {
         colnames(x$tt)[seq(nofconditions)] <- LETTERS[seq(nofconditions)]
     }
     if (!identical(sort.by, "")) {

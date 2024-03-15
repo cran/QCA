@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2023, Adrian Dusa
+# Copyright (c) 2016 - 2024, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -9,13 +9,14 @@
 #     * Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
-#     * The names of its contributors may NOT be used to endorse or promote products
-#       derived from this software without specific prior written permission.
+#     * The names of its contributors may NOT be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
 # 
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
 # DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -30,7 +31,7 @@
     dots <- list(...)
     funargs <- lapply(
         lapply(match.call(), deparse)[-1],
-        function(x) gsub("'|\"|[[:space:]]", "", x)
+        function(x) gsub(paste0("'|\"|[[:space:]|", "\u00a0", "]"), "", x)
     )
     if (is.element("q", names(dots))) {
         above <- dots$q
@@ -157,13 +158,13 @@
                     increasing <- TRUE
                     if (thIN < thCR & thCR < thEX) {
                         increasing <- FALSE
-                    }      
+                    }
                     if (ecdf) {
                         ecdfx <- x[-which(x < min(thresholds))]
                         ecdfx <- ecdfx[-which(ecdfx > max(thresholds))]
                         Fn <- ecdf(ecdfx)
                     }
-                    fs <- rep(NA, length(x))    
+                    fs <- rep(NA, length(x))
                     for (i in seq(length(x))) {
                         if (increasing) {
                             if (x[i] < thEX | check.equal(x[i], thEX)) {
@@ -254,7 +255,7 @@
                     thCR1 == thCR2
                 ) {
                     somequal <- TRUE
-                }  
+                }
                 increasing <- TRUE
                 if (
                     thIN1 < thCR1 &

@@ -10,13 +10,13 @@ excluding certain configurations from the minimization process.
 }
 
 \usage{
-findRows(expression = "", obj, observed = FALSE, type = 1, ...)
+findRows(obj = NULL, expression = "", observed = FALSE, type = 1, ...)
 }
 
 \arguments{
-  \item{expression}{String: a QCA expression written in sum of products form.}
   \item{obj}{A truth table (an object of class \code{"QCA_tt"}) or an equivalent
         numerical matrix.}
+  \item{expression}{String: a QCA expression written in sum of products form.}
   \item{observed}{Logical: also return subset relations for observed
         configurations, when \code{obj} is a truth table.}
   \item{type}{Numeric vector, specifying the type(s) of untenable configurations.}
@@ -100,10 +100,10 @@ Adrian Dusa
 # Lipset's binary crisp version
 ttLC <- truthTable(LC, "SURV", show.cases = TRUE)
 
-findRows("DEV*~IND*STB", ttLC)
+findRows(obj = ttLC, "DEV*~IND*STB")
 
 ## all subset rows from the truth table, also for observed configurations
-findRows("DEV*~IND*STB", ttLC, observed = TRUE)
+findRows(obj = ttLC, "DEV*~IND*STB", observed = TRUE)
 
 
 # Lipset's fuzzy version

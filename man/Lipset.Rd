@@ -21,7 +21,7 @@ data(LM)
 data(LF)
 }
 
-\format{                  
+\format{
 A data frame containing 18 rows and the following 6 columns:
 
 \tabular{rl}{
@@ -37,20 +37,20 @@ A data frame containing 18 rows and the following 6 columns:
 \bold{\code{LIT}}
     \tab Level of literacy: percent of the literate population, calibrated in the crisp versions \cr
     \tab to 0 if below 75\% and 1 if above. \cr
-    
+
 \bold{\code{IND}}
     \tab Level of industrialization: percent of the industrial labor force, calibrated in the \cr
     \tab crisp versions to 0 if below 30\% and 1 if above. \cr
-    
+
 \bold{\code{STB}}
     \tab Government stability: a \dQuote{political-institutional} condition added to the previous \cr
     \tab four \dQuote{socioeconomic} ones. The raw data has the number of cabinets which governed \cr
     \tab in the period under study, calibrated in the crisp versions to 0 if 10 or above and to 1 \cr
     \tab if below 10. \cr
-    
+
 \bold{\code{SURV}}
     \tab Outcome: survival of democracy during the inter-war period: calibrated to 0 if negative, \cr
-    \tab and 1 if positive raw data.\cr      
+    \tab and 1 if positive raw data.\cr
 }
 }
 
@@ -59,9 +59,9 @@ There are four different versions of the Lipset data:
 
 \tabular{rl}{
 \bold{\code{LR}}  \tab contains the raw data \cr
-\bold{\code{LC}}  \tab is the same data calibrated to binary crisp sets \cr 
-\bold{\code{LM}}  \tab is calibrated to multi-value sets \cr 
-\bold{\code{LF}}  \tab is calibrated to fuzzy-sets \cr       
+\bold{\code{LC}}  \tab is the same data calibrated to binary crisp sets \cr
+\bold{\code{LM}}  \tab is calibrated to multi-value sets \cr
+\bold{\code{LF}}  \tab is calibrated to fuzzy-sets \cr
 }
 
 }

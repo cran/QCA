@@ -23,11 +23,7 @@ mathematically exact, as described by Dusa (2007b), Dusa (2010), Dusa and Thiem
 for \dfn{csQCA} (binary crisp sets QCA), \dfn{mvQCA} (multi-value QCA) and
 \dfn{fsQCA} (fuzzy-sets QCA).
 
-Between versions 1.0-0 and up to version 1.1-3, the package welcomed a second
-co-author Alrik Thiem, responsible with the manual testing and documentation of
-functions, while the main author Adrian Dusa developed this software.
-
-The package gained new functionality and also other types of QCA like \dfn{tsQCA}
+The package also showcases functionality for other types of QCA like \dfn{tsQCA}
 (temporal QCA), see Caren and Panofsky (2005), Ragin and Strand (2008) and more
 recently also causal chains similar to those from the package \bold{\pkg{cna}}
 (see Ambuehl et al 2015).
@@ -38,44 +34,27 @@ better than) the results of the other software packages for QCA, most notably
 Cronqvist and Berg-Schlosser (2009). A comparison of several such software is
 provided by Thiem and Dusa (2013).
 
-From version 2.0, this package uses a new graphical user interface based on the
-package \bold{\pkg{shiny}}. To avoid developing different interfaces for
-different operating systems, the current GUI was designed to work in a webpage.
-It uses a combination of HTML, CSS, jQuery for the user interface, a custom
-development framework using vector graphics based on the Raphael library, and
-extensive Javascript code to bind these altogether. A first version of this user
-interface was presented by Dusa (2007a), but users should be aware the current
-version is much more advanced. Starting with version 2.5, the user interface
-gained a web-based command console to offer a complete experience of available
-functionality.
-
-Version 3.0 brings major improvements and additions, most notably the
-implementation of a new minimization algorithm called CCubes (Consistency Cubes),
-that is hundreds of times faster than the previous eQMC. Starting with version
-3.5, it is possible to specify conjunctural directional expectations in the
-minimization function, and from version 3.14 categorical data is also recognized.
+More recent versions bring major improvements and additions, most notably: - a new
+minimization algorithm called CCubes (Consistency Cubes), that is hundreds of times
+faster than the previous eQMC; - conjunctural directional expectations; - extension
+to categorical data.
 }
 
 \details{
     \tabular{ll}{
     Package: \tab QCA\cr
     Type:    \tab Package\cr
-    Version: \tab 3.21\cr
-    Date:    \tab 2023-09-17\cr
+    Version: \tab 3.22\cr
+    Date:    \tab 2024-03-15\cr
     License: \tab GPL (>= 3)\cr
     }
 }
 
 \author{
-
-\bold{Authors}:\cr
 Adrian Dusa\cr
 Department of Sociology\cr
 University of Bucharest\cr
 \email{dusa.adrian@unibuc.ro}
-
-\bold{Maintainer}:\cr
-Adrian Dusa
 }
 
 \references{
@@ -83,11 +62,11 @@ Ambuehl, M. et al (2015) \emph{A Package for Coincidence Analysis (CNA),
 R Package Version 2.0 [Computer Program]},
 \href{https://cran.r-project.org/package=cna/}{CRAN}.
 
-Caren, N.; Panofsky, A. (2005) \dQuote{TQCA: A Technique for Adding 
-Temporality to Qualitative Comparative Analysis.} 
+Caren, N.; Panofsky, A. (2005) \dQuote{TQCA: A Technique for Adding
+Temporality to Qualitative Comparative Analysis.}
 \emph{Sociological Methods & Research} vol.34, no.2, pp.147-172.
 
-Cronqvist, L. (2016) \emph{Tosmana: Tool for Small-N Analysis, Version 1.522 
+Cronqvist, L. (2016) \emph{Tosmana: Tool for Small-N Analysis, Version 1.522
 [Computer Program]}. Trier: University of Trier. url: \url{https://www.tosmana.net/}
 
 Dusa, A. (2007a) \dQuote{User manual for the QCA(GUI) package in R}.
@@ -97,7 +76,7 @@ Dusa, A. (2007a) \dQuote{User manual for the QCA(GUI) package in R}.
 Dusa, A. (2007b) \emph{Enhancing Quine-McCluskey}.
 WP 2007-49, \href{https://compasss.org/working-papers-series/}{COMPASSS Working Papers series}.
 
-Dusa, A. (2010) \dQuote{A Mathematical Approach to the Boolean Minimization 
+Dusa, A. (2010) \dQuote{A Mathematical Approach to the Boolean Minimization
 Problem.} \emph{Quality & Quantity} vol.44, no.1, pp.99-113,
 \doi{10.1007/s11135-008-9183-x}
 
@@ -109,25 +88,25 @@ vol.39, no.2, pp.92-108,\cr
 Dusa, A. (2018) \dQuote{Consistency Cubes: A Fast, Efficient Method for Boolean
 Minimization}, R Journal, \doi{10.32614/RJ-2018-080}
 
-Ragin, C.C. (1987) \emph{The Comparative Method: Moving beyond Qualitative and 
+Ragin, C.C. (1987) \emph{The Comparative Method: Moving beyond Qualitative and
 Quantitative Strategies}. Berkeley: University of California Press.
 
-Ragin, C.C. (2000) \emph{Fuzzy-Set Social Science}. Chicago: University of 
+Ragin, C.C. (2000) \emph{Fuzzy-Set Social Science}. Chicago: University of
 Chicago Press.
 
-Ragin, C.C. (2008) \emph{Redesigning Social Inquiry: Fuzzy Sets and Beyond}. 
+Ragin, C.C. (2008) \emph{Redesigning Social Inquiry: Fuzzy Sets and Beyond}.
 Chicago: University of Chicago Press.
 
 Ragin, C.C.; Strand, S.I. (2008) \dQuote{Using Qualitative Comparative
 Analysis to Study Causal Order: Comment on Caren and Panofsky (2005)}.
 \emph{Sociological Methods & Research} vol.36, no.4, pp.431-441.
 
-Ragin, C.C.; Davey, S. (2014) \emph{fs/QCA: Fuzzy-Set/Qualitative 
-Comparative Analysis, Version 2.5 [Computer Program]}. 
+Ragin, C.C.; Davey, S. (2014) \emph{fs/QCA: Fuzzy-Set/Qualitative
+Comparative Analysis, Version 2.5 [Computer Program]}.
 Irvine: Department of Sociology, University of California.
 
-Thiem, A.; Dusa, A. (2013) \dQuote{Boolean Minimization in Social 
-Science Research: A Review of Current Software for Qualitative Comparative 
+Thiem, A.; Dusa, A. (2013) \dQuote{Boolean Minimization in Social
+Science Research: A Review of Current Software for Qualitative Comparative
 Analysis (QCA).} \emph{Social Science Computer Review} vol.31, no.4, pp.505-521.
 }
 

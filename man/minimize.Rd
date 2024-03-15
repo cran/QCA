@@ -24,7 +24,7 @@ minimize(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
 }
 
 \arguments{
-  \item{input}{A truth table object (preferred) or a data frame containing 
+  \item{input}{A truth table object (preferred) or a data frame containing
         calibrated causal conditions and an outcome.}
   \item{include}{A vector of other output values to include in the minimization
         process.}
@@ -33,7 +33,7 @@ minimize(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
   \item{details}{Logical, print more details about the solution.}
   \item{pi.cons}{Numerical fuzzy value between 0 and 1, minimal consistency
         threshold for a prime implicant to be declared as sufficient.}
-  \item{sol.cons}{Numerical fuzzy value between 0 and 1, minimal consistency 
+  \item{sol.cons}{Numerical fuzzy value between 0 and 1, minimal consistency
         threshold for a model to be declared as sufficient.}
   \item{all.sol}{Logical, search for all possible models, including the non-minimal.}
   \item{row.dom}{Logical, perform row dominance in the prime implicants' chart to
@@ -48,7 +48,7 @@ minimize(input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
 }
 
 \details{
-Most of the times, this function takes a truth table object as the \bold{\code{input}} 
+Most of the times, this function takes a truth table object as the \bold{\code{input}}
 for the minimization procedure, but the same argument can refer to a data frame
 containing calibrated columns.
 
@@ -63,18 +63,13 @@ since they are sent to the \bold{\code{\link[QCA]{truthTable}()}} function anywa
 unnecessary to duplicate their explanation here. The only situation which does need
 an additional description relates to the argument \bold{\code{outcome}}, where
 unlike \bold{\code{\link[QCA]{truthTable}()}} which accepts a single one, the function
-\bold{\code{minimize()}} accepts multiple outcomes and performs a minimization for 
+\bold{\code{minimize()}} accepts multiple outcomes and performs a minimization for
 each of them (a situation when all columns are considered causal conditions).
 
 The argument \bold{\code{include}} specifies which other truth table rows are
 included in the minimization process. Most often, the remainders are included but
 any value accepted in the argument \bold{\code{explain}} is also accepted in the
 argument \bold{\code{include}}.
-
-The argument \bold{\code{exclude}} is used to exclude truth table rows from the
-minimization process, from the positive configurations and/or from the remainders.
-It can be specified as a vector of truth table line numbers, or as a matrix of
-causal combinations.
 
 The argument \bold{\code{dir.exp}} is used to specify directional expectations, as
 described by Ragin (2003). They can be specified using SOP (sum of products)
@@ -119,7 +114,7 @@ rational number counted in (fractions of) billions, defaulted at zero to signal 
 to the maximum possible extent. If the total number of combinations exceeds a positive
 value of \bold{\code{max.comb}}, the PI chart is determined as too complex, the search is
 stopped and CCubes attempts to return all possible models using the PIs from the previous
-levels of complexity, when the PI chart was still not too complex. 
+levels of complexity, when the PI chart was still not too complex.
 
 In the extreme situation even this is not feasible, the argument \bold{\code{first.min}}
 controls returning only one (the very first found) minimal model, if at all possible.
@@ -171,7 +166,7 @@ vol.39, no.2, pp.92-108,\cr
 Dusa, A. (2018) \dQuote{Consistency Cubes: A Fast, Efficient Method for Boolean
 Minimization}, R Journal vol.10, issue 2, pp. 357-370, \doi{10.32614/RJ-2018-080}
 
-Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}. 
+Dusa, A. (2019) \emph{QCA with R. A Comprehensive Resource}.
 Springer International Publishing, \doi{10.1007/978-3-319-75668-4}.
 
 Ragin, C. (2003) \emph{Recent Advances in Fuzzy-Set Methods and Their Application to
@@ -182,8 +177,8 @@ Ragin, C. (2009) \dQuote{Qualitative Comparative Analysis Using Fuzzy-Sets (fsQC
 in Rihoux, B.; Ragin, C. (eds.) \emph{Configurational Comparative Methods.
 Qualitative Comparative Analysis (QCA) and Related Techniques}, SAGE.
 
-Ragin, C.C.; Strand, S.I. (2008) \dQuote{Using Qualitative Comparative 
-Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).} 
+Ragin, C.C.; Strand, S.I. (2008) \dQuote{Using Qualitative Comparative
+Analysis to Study Causal Order: Comment on Caren and Panofsky (2005).}
 \emph{Sociological Methods & Research} vol.36, no.4, pp.431-441,
 \doi{10.1177/0049124107313903}.
 
