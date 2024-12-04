@@ -28,8 +28,17 @@
     setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
     use.labels = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...
 ) {
-    setms <- admisc::recreate(substitute(setms), snames = names(data))
     outcome <- admisc::recreate(substitute(outcome), snames = names(data))
+    if (is.null(setms) & !is.null(data)) {
+        return(pofind(
+            data = data,
+            outcome = outcome,
+            relation = relation,
+            use.labels = use.labels,
+            ... = ...
+        ))
+    }
+    setms <- admisc::recreate(substitute(setms), snames = names(data))
     if (inherits(outcome, "declared")) {
         attributes(outcome) <- NULL
     }
@@ -108,7 +117,19 @@
             )
         }
         multivalue <- grepl("\\{|\\}|\\[|\\]", x)
-        relation <- ifelse(grepl("=|-", x), ifelse(grepl("=>|->", x), "suf", "nec"), NA)
+        relation <- ifelse(
+            grepl("=|-", x),
+            ifelse(
+                grepl("=>|->", x),
+                "suf",
+                ifelse(
+                    grepl("<=|<-", x),
+                    "nec",
+                    NA
+                )
+            ),
+            NA
+        )
         x <- gsub("<=|=>|<-|->", "@", gsub("[[:space:]]", "", x))
         x <- unlist(strsplit(x, split = "@"))
         xcopy <- x
@@ -403,7 +424,13 @@
         outcome <- admisc::getLevels(outcome) - outcome - 1
     }
     result.list <- list()
-    incl.cov <- .Call("C_pof", as.matrix(cbind(setms, fuzzyor(setms))), outcome, nec(relation), PACKAGE = "QCA")
+    incl.cov <- .Call(
+        "C_pof",
+        as.matrix(cbind(setms, fuzzyor(setms))),
+        outcome,
+        nec(relation),
+        PACKAGE = "QCA"
+    )
     incl.cov[incl.cov < 0.00001] <- 0 
     incl.cov <- as.data.frame(incl.cov)
     if (nec(relation)) {

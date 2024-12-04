@@ -174,7 +174,9 @@
             }
             dataname <- callist$data
             for (i in seq(2, length(callist))) {
-                callist[[i]] <- admisc::recreate(callist[[i]])
+                if (length(callist[[i]]) == 1) {
+                    callist[[i]] <- admisc::recreate(callist[[i]])
+                }
             }
             callist$data <- tt$initial.data
             tt <- do.call("truthTable", callist[-1])
@@ -300,7 +302,11 @@
     }
     include <- admisc::trimstr(include)
     incl.rem <- is.element("?", include)
-    if (nrow(neg.matrix) == 0 & incl.rem & !is.element("causalChain", names(dots))) { 
+    if (
+        nrow(neg.matrix) == 0 &
+        incl.rem &
+        !is.element("causalChain", names(dots))
+    ) {
         admisc::stopError(
             paste(
                 "All truth table configurations are used, all conditions are minimized.",
@@ -398,7 +404,9 @@
                             fs = tt$fs,
                             max.comb = max.comb,
                             first.min = first.min,
-                            keep.trying = keep.trying),
+                            keep.trying = keep.trying,
+                            gurobi = !isFALSE(dots$gurobi) && eval(parse(text = "requireNamespace('gurobi', quietly = TRUE)")),
+                            solind = !isFALSE(dots$solind)),
                             PACKAGE = "QCA")
         }
         callist$expressions <- expressions
@@ -515,11 +523,11 @@
                 for (i in seq(lind)) {
                     eligible[i] <- listIC$individual[[i]]$sol.incl.cov[1, 1] >= sol.cons
                 }
-                if (sum(eligible) == 0) {
+                wel <- which(eligible)
+                if (length(wel) == 0) {
                     error <- TRUE
                 }
-                else if (sum(eligible) == 1) {
-                    wel <- which(eligible)
+                else if (length(wel) == 1) {
                     listIC <- list(
                         incl.cov = listIC$individual[wel]$incl.cov,
                         pims = listIC$individual[wel]$pims,

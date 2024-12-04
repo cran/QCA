@@ -70,13 +70,23 @@
     declared <- FALSE 
     multivalue <- grepl(mvregexp, outcome)
     if (!identical(outcome, "")) {
-        outcometest <- admisc::tryCatchWEM(admisc::translate(outcome, data = data))
-        if (is.element("error", names(outcometest))) {
+        outcometest <- admisc::tryCatchWEM(
+            admisc::translate(admisc::notilde(outcome), data = data)
+        )
+        if (!is.null(outcometest$error)) {
             if (
                 grepl("does not match the set names", outcometest$error)
             ) {
                 admisc::stopError(
                     "Incorrect outcome specification.",
+                    ... = ...
+                )
+            }
+            else if (
+                grepl("multi-value data", outcometest$error)
+            ) {
+                admisc::stopError(
+                    "Minimization should be Boolean but the outcome is multi-value.",
                     ... = ...
                 )
             }
@@ -131,7 +141,7 @@
     else {
             conditions <- admisc::splitstr(conditions)
     }
-    if (length(conditions) > 30) {
+    if (length(conditions) > 25) {
         admisc::stopError(
             "Impossible to run a QCA analysis with so many conditions.",
             ... = ...
@@ -189,13 +199,10 @@
     }
     if (!grepl("\\+|\\*", outcome)) {
         data <- data[, c(conditions, admisc::notilde(outcome))]
-        if (admisc::tilde1st(outcome)) {
+        if (neg.out | admisc::tilde1st(outcome)) {
             data[, admisc::notilde(outcome)] <- 1 - data[, admisc::notilde(outcome)]
         }
         outcome <- admisc::notilde(outcome)
-        if (neg.out) {
-            data[, outcome] <- 1 - data[, outcome]
-        }
     }
     nofconditions <- length(conditions)
     infodata <- admisc::getInfo(data[, conditions, drop = FALSE])

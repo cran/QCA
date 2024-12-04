@@ -11,7 +11,6 @@ void CCubes(
     const int nrdata,       // number of rows in the raw data
     const Rboolean allsol,      // all solution
     const Rboolean rowdom,      // row dominance
-    const Rboolean minpin,      // minimal number of PIs
     const double picons,    // PI consistency
     const int pidepth,      // depth in number of conditions for each PI
     const int p_fsconds[],  // are conditions fuzzy?
@@ -22,14 +21,16 @@ void CCubes(
     const Rboolean keeptrying,
 
     // pointers to save the results
-    int **pichart,          // final PI chart
-    int **implicants,       // final implicants in matrix form
-    int **models,           // final solution models
-    unsigned int *foundPI_, // final number of PIs found
-    int *solrows,           // number of rows for the solution matrix
-    int *solcols,           // number of columns for the solution matrix
-    Rboolean *complex,          // signal if the returned solution is incomplete due to a too complex PI chart
-    // int *solmin_,        // solution minima
+    int **pichart,           // final PI chart
+    int **implicants,        // final implicants in matrix form
+    int **models,            // final solution models
+    unsigned int *foundPI_,  // final number of PIs found
+    int *solrows,            // number of rows for the solution matrix
+    int *solcols,            // number of columns for the solution matrix
+    Rboolean *complex,       // signal if the returned solution is incomplete due to a too complex PI chart
+    // int *solmin_,         // solution minima
 
-    const Rboolean firstmin
+    const Rboolean firstmin, // IEEE switch
+    const Rboolean gurobi,   // whether to use Gurobi (if installed), default is TRUE
+    const Rboolean solind    // IF using Gurobi, findmin() returns the indexes of the solutions
 );
