@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2024, Adrian Dusa
+# Copyright (c) 2016 - 2026, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -89,7 +89,7 @@
             }
         }
     }
-    PI <- admisc::writePrimeimp(
+    PI <- admisc::writePIs(
         impmat = expressions,
         mv = mv,
         collapse = collapse,

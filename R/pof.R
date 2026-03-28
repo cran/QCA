@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2024, Adrian Dusa
+# Copyright (c) 2016 - 2026, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,16 @@
     setms = NULL, outcome = NULL, data = NULL, relation = "necessity",
     use.labels = FALSE, inf.test = "", incl.cut = c(0.75, 0.5), add = NULL, ...
 ) {
+    if (is.null(data)) {
+        syscalls <- as.character(sys.calls())
+        usingwith <- "admisc::using\\(|using\\(|with\\("
+        if (any(usingdata <- grepl(usingwith, syscalls))) {
+            dataname <- unlist(strsplit(gsub(usingwith, "", syscalls), split = ","))[1]
+            data <- eval.parent(parse(text = dataname, n = 1))
+        }
+    }
     outcome <- admisc::recreate(substitute(outcome), snames = names(data))
+    setms <- admisc::recreate(substitute(setms), snames = names(data))
     if (is.null(setms) & !is.null(data)) {
         return(pofind(
             data = data,
@@ -38,7 +47,6 @@
             ... = ...
         ))
     }
-    setms <- admisc::recreate(substitute(setms), snames = names(data))
     if (inherits(outcome, "declared")) {
         attributes(outcome) <- NULL
     }
@@ -152,16 +160,16 @@
             snames <- colnames(data)
         }
         if (identical(substring(x[1], 1, 2), "1-")) {
-            x[1] <- negate(gsub("1-", "", x[1]), snames = snames)
+            x[1] <- invert(gsub("1-", "", x[1]), snames = snames)
         }
         if (identical(substring(x[2], 1, 2), "1-")) {
-            x[2] <- negate(gsub("1-", "", x[2]), snames = snames)
+            x[2] <- invert(gsub("1-", "", x[2]), snames = snames)
         }
         outmtrx <- NA
         if (length(x) > 1) {
             outmtrx <- validateNames(x[2], snames = snames, data = data)
         }
-        if (!is.na(outmtrx)) {
+        if (!identical(outmtrx, NA)) {
             if (!multivalue) {
                 rownames(outmtrx) <- xcopy[2]
             }
@@ -187,7 +195,7 @@
     checkoutcome <- TRUE
     addexpression <- FALSE
     if (is.element("character", class(setms))) {
-        if (missing(data)) {
+        if (is.null(data)) {
             admisc::stopError(
                 "The data argument is missing, with no default.", ... = ...
             )
@@ -202,7 +210,7 @@
             relation <- toverify$relation
         }
         conditions <- colnames(toverify$condmtrx)
-        if (is.na(toverify$outmtrx)) {
+        if (identical(toverify$outmtrx, NA)) {
             if (missing(outcome)) {
                 admisc::stopError(
                     "Expression without outcome.", ... = ...
@@ -224,7 +232,9 @@
                 separate = TRUE
             )
             if (!toverify$multivalue & is.data.frame(setms)) {
-                colnames(setms) <- admisc::trimstr(unlist(strsplit(toverify$oexpr, split = "\\+")))
+                colnames(setms) <- admisc::trimstr(
+                    unlist(strsplit(toverify$oexpr, split = "\\+"))
+                )
             }
             funargs$setms <- toverify$expression
         }
@@ -240,9 +250,12 @@
                 )
             )
             verify.qca(temp)
-            setms <- admisc::compute(toverify$expression, data = temp, separate = TRUE)
+            expression <- toverify$expression
+            setms <- admisc::compute(expression, data = temp, separate = TRUE)
             if (!toverify$multivalue & is.data.frame(setms)) {
-                colnames(setms) <- admisc::trimstr(unlist(strsplit(toverify$oexpr, split = "\\+")))
+                colnames(setms) <- admisc::trimstr(
+                    unlist(strsplit(toverify$oexpr, split = "\\+"))
+                )
             }
             funargs$setms <- paste(
                 paste(
@@ -256,10 +269,8 @@
                 ),
                 rownames(toverify$outmtrx)
             )
-            outcome <- admisc::compute(
-                rownames(toverify$outmtrx)[1], 
-                data = temp
-            )
+            expression <- rownames(toverify$outmtrx)[1]  
+            outcome <- admisc::compute(expression, data = temp)
             checkoutcome <- FALSE
         }
         if (is.vector(setms)) {
@@ -353,6 +364,9 @@
     if (identical(substr(funargs$setms, 1, 2), "1-")) {
         condnegated <- !condnegated
     }
+    if (inherits(setms, "declared")) {
+        attributes(setms) <- NULL
+    }
     if (is.vector(setms)) {
         setms <- data.frame(setms)
         conditions <- admisc::notilde(gsub("1-", "", funargs$setms))
@@ -402,7 +416,7 @@
                 colnames(setms) <- paste("~", colnames(setms), sep = "")
             }
             else {
-                colnames(setms) <- gsub("[[:space:]]", "", admisc::negate(colnames(setms), snames = conditions))
+                colnames(setms) <- gsub("[[:space:]]", "", admisc::invert(colnames(setms), snames = conditions))
             }
         }
     }
@@ -546,51 +560,44 @@
     }
     result.list$categories <- categories
     if (!is.null(add)) {
-        if (!(is.list(add) | is.function(add))) {
-            admisc::stopError(
-                "The argument <add> should be a function or a list of functions.",
-                ... = ...
-            )
-        }
-        if (is.list(add)) {
-            if (!all(unlist(lapply(add, is.function)))) {
+        if (!is.list(add)) {
+            if (!is.function(add)) {
                 admisc::stopError(
-                    "Components from the list argument <add> should be functions.",
+                    "The argument <add> should be a function or a list of functions.",
                     ... = ...
                 )
             }
-            toadd <- matrix(nrow = nrow(incl.cov), ncol = length(add))
-            if (is.null(names(add))) {
-                names(add) <- paste0("X", seq(length(add)))
-            }
-            if (any(duplicated(substr(names(add), 1, 5)))) {
-                names(add) <- paste0("X", seq(length(add)))
-            }
-            colnames(toadd) <- substr(names(add), 1, 5)
-            for (i in seq(length(add))) {
-                coltoadd <- apply(
-                    cbind(setms, fuzzyor(setms)),
-                    2,
-                    add[[i]],
-                    outcome
-                )
-                if (ncol(setms) == 1) {
-                    coltoadd <- coltoadd[1]
-                }
-                toadd[, i] <- coltoadd
-            }
-        }
-        else {
-            toadd <- matrix(nrow = nrow(incl.cov), ncol = 1)
-            coltoadd <- apply(cbind(setms, fuzzyor(setms)), 2, add, outcome)
-            if (ncol(setms) == 1) {
-                coltoadd <- coltoadd[1]
-            }
-            toadd[, 1] <- coltoadd
             if (any(grepl("function", funargs$add))) {
                 funargs$add <- "X"
             }
-            colnames(toadd) <- substr(funargs$add, 1, 5)
+            add <- list(add)
+            names(add) <- substr(funargs$add, 1, 5)
+        }
+        if (!all(unlist(lapply(add, is.function)))) {
+            admisc::stopError(
+                "Components from the list argument <add> should be functions.",
+                ... = ...
+            )
+        }
+        toadd <- matrix(nrow = nrow(result.list$incl.cov), ncol = length(add))
+        if (is.null(names(add))) {
+            names(add) <- paste0("X", seq(length(add)))
+        }
+        if (any(duplicated(substr(names(add), 1, 5)))) {
+            names(add) <- paste0("X", seq(length(add)))
+        }
+        colnames(toadd) <- substr(names(add), 1, 5)
+        for (i in seq(length(add))) {
+            coltoadd <- apply(
+                cbind(setms, fuzzyor(setms)),
+                2,
+                add[[i]],
+                outcome
+            )
+            if (ncol(setms) == 1) {
+                coltoadd <- coltoadd[1]
+            }
+            toadd[, i] <- coltoadd
         }
         result.list$incl.cov <- cbind(result.list$incl.cov, toadd)
     }

@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2024, Adrian Dusa
+# Copyright (c) 2016 - 2026, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -287,7 +287,7 @@
     inputt <- as.matrix(tt$tt[is.element(ttrownms, subset.tt), seq(length(noflevels)), drop = FALSE])
     rownames(inputt) <- drop(inputt %*% mbase) + 1
     inputt <- inputt + 1
-    inputcases <- tt$cases[is.element(tt$indexes, subset.tt)]
+    inputcases <- tt$cases[seq(length(tt$indexes))][is.element(tt$indexes, subset.tt)]
     nofcases1 <- sum(tt$tt$n[tt$tt$OUT == 1])
     nofcases0 <- sum(tt$tt$n[tt$tt$OUT == 0])
     nofcasesC <- sum(tt$tt$n[tt$tt$OUT == "C"])
@@ -336,7 +336,7 @@
     admisc::setColnames(pos.matrix, colnms)
     admisc::setColnames(neg.matrix, colnms)
     rownames(neg.matrix) <- (neg.matrix - 1) %*% mbase + 1
-    output$initials <- admisc::writePrimeimp(
+    output$initials <- admisc::writePIs(
         impmat = inputt,
         mv = mv,
         collapse = collapse,
@@ -369,7 +369,12 @@
     if (incl.rem) {
         pos.matrix <- inputt
         if (method == "QMC") {
-            expressions <- .Call("C_QMC", createMatrix(noflevels)[-output$negatives, , drop = FALSE] + 1, noflevels, PACKAGE = "QCA")
+            expressions <- .Call(
+                "C_QMC",
+                createMatrix(noflevels)[-output$negatives, , drop = FALSE] + 1,
+                noflevels,
+                PACKAGE = "QCA"
+            )
             admisc::setColnames(expressions, colnames(inputt))
         }
         else if (method == "eQMC") {
@@ -391,6 +396,16 @@
             if (sol.cons > 0 & all.sol & sol.depth == 0) {
                 sol.depth <- 7
             }
+            use_native_gurobi <- FALSE
+            lagrangian <- isTRUE(dots$lagrangian)
+            if (!isFALSE(dots$gurobi) && !lagrangian) {
+                native_gurobi_available <- getOption("native.gurobi.available", NULL)
+                if (is.null(native_gurobi_available) || !is.logical(native_gurobi_available)) {
+                    native_gurobi_available <- isTRUE(.Call("C_gurobiRuntimeAvailable", PACKAGE = "QCA"))
+                    options(native.gurobi.available = native_gurobi_available)
+                }
+                use_native_gurobi <- isTRUE(native_gurobi_available)
+            }
             expressions <- .Call("C_Cubes", list(
                             tt = cbind(rbind(pos.matrix, neg.matrix) - 1, rep(c(1, 0), c(nrow(pos.matrix), nrow(neg.matrix)))),
                             data = extended.data,
@@ -405,7 +420,8 @@
                             max.comb = max.comb,
                             first.min = first.min,
                             keep.trying = keep.trying,
-                            gurobi = !isFALSE(dots$gurobi) && eval(parse(text = "requireNamespace('gurobi', quietly = TRUE)")),
+                            lagrangian = lagrangian,
+                            gurobi = use_native_gurobi,
                             solind = !isFALSE(dots$solind)),
                             PACKAGE = "QCA")
         }
@@ -431,7 +447,7 @@
     output$options$curly       <- curly
     output$options$use.labels  <- use.labels
     expr.cases <- rep(NA, nrow(p.sol$reduced$expressions))
-    tt.rows <- admisc::writePrimeimp(
+    tt.rows <- admisc::writePIs(
         impmat = inputt,
         mv = mv,
         collapse = collapse
@@ -634,7 +650,7 @@
                 isols <- result[[2]]
                 intsel <- result[[3]]
             }
-            tt.rows <- admisc::writePrimeimp(
+            tt.rows <- admisc::writePIs(
                 impmat = inputt,
                 mv = mv,
                 collapse = collapse

@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2024, Adrian Dusa
+# Copyright (c) 2016 - 2026, Adrian Dusa
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -77,14 +77,14 @@
             else {
                 mtrx <- t(mtrx)
             }
-            rownames(mtrx) <- admisc::writePrimeimp(
+            rownames(mtrx) <- admisc::writePIs(
                 primes,
                 mv = mv,
                 collapse = collapse,
                 curly = curly
             )
         }
-        colnames(mtrx) <- admisc::writePrimeimp(
+        colnames(mtrx) <- admisc::writePIs(
             configs,
             mv = mv,
             collapse = collapse,

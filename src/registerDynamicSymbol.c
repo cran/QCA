@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016 - 2024, Adrian Dusa
+Copyright (c) 2016 - 2026, Adrian Dusa
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
+#include "solvePIchart_gurobi.h"
 void R_init_QCA(DllInfo* info) {
   R_registerRoutines(info, NULL, NULL, NULL, NULL);
   R_useDynamicSymbols(info, TRUE);
+}
+void R_unload_QCA(DllInfo* info) {
+  (void) info;
+  gurobi_release_env();
 }

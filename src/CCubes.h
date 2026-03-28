@@ -1,6 +1,8 @@
-
 #include <R_ext/Boolean.h>
 #include <math.h>
+#include "consistency.h"
+#include "find_models.h"
+#include "find_consistent_models.h"
 #include "utils.h"
 
 void CCubes(
@@ -30,7 +32,8 @@ void CCubes(
     Rboolean *complex,       // signal if the returned solution is incomplete due to a too complex PI chart
     // int *solmin_,         // solution minima
 
-    const Rboolean firstmin, // IEEE switch
-    const Rboolean gurobi,   // whether to use Gurobi (if installed), default is TRUE
-    const Rboolean solind    // IF using Gurobi, findmin() returns the indexes of the solutions
+    const Rboolean firstmin,   // IEEE switch
+    const Rboolean lagrangian, // whether using the lagrangian backend via findmin()
+    const Rboolean gurobi,     // whether to use Gurobi (if installed), default is TRUE
+    const Rboolean solind      // IF using Gurobi, findmin() returns the indexes of the solutions
 );
