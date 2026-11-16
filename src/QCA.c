@@ -1,11 +1,37 @@
+/*
+Copyright (c) 2016 - 2026, Adrian Dusa
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, in whole or in part, are permitted provided that the
+following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * The names of its contributors may NOT be used to endorse or promote
+      products derived from this software without specific prior written
+      permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #include <R_ext/RS.h>
 #include "qca_rinternals.h"
 #include <float.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "qca_rinternals.h"
-#include "qca_rinternals.h"
 #include <Rmath.h>
 #include <R_ext/Rdynload.h>
 #include "utils.h"
@@ -14,6 +40,8 @@
 #include "qca_threads.h"
 #include "sort_matrix.h"
 #include "CCubes.h"
+#include "qca_consistency_verify.h"
+#include "native_sat/native_sat_support.h"
 
 // IMPORTANT!
 // memset() works <ONLY> with FALSE logical vectors...!!
@@ -2354,7 +2382,7 @@ SEXP C_Cubes(SEXP list) {
     int poskeeptry =   getpos(list, "keep.trying");// 11
     int posgurobi =    getpos(list, "gurobi");     // 12
     int posolind =     getpos(list, "solind");     // 13
-    int poslagrangian = getpos(list, "lagrangian");// 14
+    int poshybrid =    getpos(list, "hybrid");     // 14
 
 
     SEXP usage = PROTECT(allocVector(VECSXP, 7));
@@ -2396,7 +2424,7 @@ SEXP C_Cubes(SEXP list) {
     Rboolean firstmin = (pos1stmin >= 0) ? (LOGICAL(VECTOR_ELT(list, pos1stmin))[0]) : FALSE;
     Rboolean gurobi = (posgurobi >= 0) ? (LOGICAL(VECTOR_ELT(list, posgurobi))[0]) : TRUE;
     Rboolean solind = (posolind >= 0) ? (LOGICAL(VECTOR_ELT(list, posolind))[0]) : TRUE;
-    Rboolean lagrangian = (poslagrangian >= 0) ? (LOGICAL(VECTOR_ELT(list, poslagrangian))[0]) : FALSE;
+    Rboolean hybrid = (poshybrid >= 0) ? (LOGICAL(VECTOR_ELT(list, poshybrid))[0]) : TRUE;
     double picons = (pospicons >= 0) ? (REAL(VECTOR_ELT(list, pospicons))[0]) : 0;
 
     int pidepth = 0;
@@ -2448,7 +2476,7 @@ SEXP C_Cubes(SEXP list) {
         &p_pichart, &p_impmat, &p_models, &foundPI, &solrows, &solcols, &complexpic,
 
         firstmin,
-        lagrangian,
+        hybrid,
         gurobi,
         solind
     );
@@ -2520,7 +2548,7 @@ SEXP C_Cubes(SEXP list) {
         SET_VECTOR_ELT(out, 2, solmat = allocMatrix(INTSXP, solrows, solcols));
 
         int *p_solmat = INTEGER(solmat);
-        if (firstmin) {
+        if (firstmin && solcons == 0) {
             for (int i = 0; i < solrows; i++) {
                 // p_solmat[i] = i + 1;
                 // Rprintf("%d ", p_models[i]);
@@ -2536,7 +2564,63 @@ SEXP C_Cubes(SEXP list) {
     SET_VECTOR_ELT(out, 3, complex = allocVector(LGLSXP, 1));
     LOGICAL(complex)[0] = complexpic;
 
-    // Rprintf("over\n");
+    if ((picons > 0 || solcons > 0) && solrows > 0 && solcols > 0) {
+        /* Verify a smallest returned witness against the original input,
+         * never against fit scores or pruning decisions supplied by search. */
+        NsatResources resources = {.work_limit = 16000000,
+            .memory_limit = 32u * 1024u * 1024u};
+        NsatBudget preparation = {.limits = {.shared = &resources}};
+        int best = 0, terms = 0;
+        const int *returned = INTEGER(VECTOR_ELT(out, 2));
+        for (int model = 0; model < solcols; ++model) {
+            if (!nsat_work(&preparation, (uint64_t)solrows)) break;
+            int size = 0;
+            for (int r = 0; r < solrows; ++r)
+                if (returned[(size_t)model * solrows + r] > 0) ++size;
+            if (size > 0 && (terms == 0 || size < terms)) { terms = size; best = model; }
+        }
+        NsatStatus status = NSAT_UNKNOWN;
+        if (terms > 0 && preparation.status == NSAT_OK) {
+            int *selected = nsat_alloc(&preparation, (size_t)terms, sizeof(int));
+            if (selected && nsat_work(&preparation, (uint64_t)solrows)) {
+                int index = 0;
+                for (int r = 0; r < solrows; ++r) {
+                    int value = returned[(size_t)best * solrows + r];
+                    if (value > 0) selected[index++] = value - 1;
+                }
+                QcaConsistencyQuery query = {
+                    .tt = p_tt, .data = p_data, .fuzzy = p_fsconds,
+                    .conditions = nconds, .rows = ttrows, .cases = nrdata, .depth = pidepth,
+                    .pi_cons = picons, .sol_cons = solcons, .sol_cov = solcov
+                };
+                status = qca_verify_consistency_minimum(&query, p_impmat, foundPI,
+                    selected, terms, (NsatLimits){.shared = &resources});
+            }
+            nsat_free(&preparation, selected, (size_t)terms * sizeof(int));
+            if (preparation.status != NSAT_OK) status = preparation.status;
+        }
+        SEXP proof = PROTECT(allocVector(VECSXP, 6));
+        SEXP names = PROTECT(allocVector(STRSXP, 6));
+        const char *labels[] = {"status", "minimum", "scope", "domain", "work", "stop"};
+        for (int i = 0; i < 6; ++i) SET_STRING_ELT(names, i, mkChar(labels[i]));
+        setAttrib(proof, R_NamesSymbol, names);
+        const char *state = status == NSAT_UNSAT ? "certified" :
+            status == NSAT_SAT ? "smaller-model-exists" :
+            status == NSAT_ERROR && resources.stop != NSAT_STOP_ALLOCATION
+                ? "verification-failed" : "inconclusive";
+        SET_VECTOR_ELT(proof, 0, mkString(state));
+        SET_VECTOR_ELT(proof, 1, ScalarInteger(status == NSAT_UNSAT ? terms : NA_INTEGER));
+        SET_VECTOR_ELT(proof, 2, mkString(pidepth < nconds ? "pi.depth" : "global"));
+        SET_VECTOR_ELT(proof, 3, mkString("prime-implicant models"));
+        SET_VECTOR_ELT(proof, 4, ScalarReal((double)resources.work));
+        const char *reason = resources.stop == NSAT_STOP_WORK ? "work" :
+            resources.stop == NSAT_STOP_MEMORY ? "memory" :
+            resources.stop == NSAT_STOP_ALLOCATION ? "allocation" :
+            resources.stop == NSAT_STOP_CANCELLED ? "cancelled" : "none";
+        SET_VECTOR_ELT(proof, 5, mkString(reason));
+        setAttrib(out, install("certification"), proof);
+        UNPROTECT(2);
+    }
 
     R_Free(p_pichart);
     R_Free(p_impmat);

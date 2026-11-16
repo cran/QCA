@@ -1,3 +1,31 @@
+/*
+Copyright (c) 2016 - 2026, Adrian Dusa
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, in whole or in part, are permitted provided that the
+following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * The names of its contributors may NOT be used to endorse or promote
+      products derived from this software without specific prior written
+      permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #ifndef QCA_SCP_SOLVER_H
 #define QCA_SCP_SOLVER_H
 
@@ -11,6 +39,13 @@ typedef struct {
     int *row_cols;
     unsigned long long *col_masks;
     const double *branch_priority;
+    /* Optional native-completion features; zero preserves the baseline. */
+    int target_propagation;
+    const double *initial_row_dual;
+    int lagrangian_iterations;
+    int selective_bounds; /* cheap propagation, Lagrangian, then dominance */
+    int improve_incumbent; /* bounded cover search before the exact tree */
+    int warm_pricing; /* bounded fixed-chart completion after the first nodes */
 } qca_scp_problem;
 
 typedef struct {
@@ -31,21 +66,75 @@ typedef struct {
     unsigned long long reduction_calls;
     unsigned long long lower_bound_calls;
     unsigned long long greedy_calls;
+    unsigned long long root_branches_total;
+    unsigned long long root_branches_completed;
+    unsigned long long adaptive_extensions;
+    unsigned long long lagrangian_calls;
+    unsigned long long lagrangian_prunes;
+    unsigned long long lagrangian_fixed_columns;
+    double lagrangian_seconds;
+    unsigned long long dual_reduction_calls;
+    unsigned long long dual_reduction_fixed;
+    double dual_reduction_seconds; /* included in reductions_seconds */
+    unsigned long long incumbent_improvements;
+    unsigned long long last_improvement_node;
+    double last_improvement_seconds; /* since search started, not root prep */
+    int initial_size;
+    unsigned long long lagrangian_iterations;
+    double incumbent_search_seconds;
+    unsigned long long incumbent_search_steps;
+    unsigned long long incumbent_search_work;
+    unsigned long long incumbent_search_improvements;
+    double warm_seconds;
+    unsigned long long warm_attempted, warm_proved, warm_nodes, warm_repriced, warm_work;
+    unsigned long long warm_extensions, warm_tasks;
+    unsigned warm_threads;
 } qca_scp_profile;
 
-int qca_scp_solve_exact(
+typedef enum {
+    QCA_SCP_ERROR = -1,
+    QCA_SCP_NO_SOLUTION = 0,
+    QCA_SCP_SOLUTION = 1,
+    QCA_SCP_LIMIT = 2
+} qca_scp_result;
+
+qca_scp_result qca_scp_solve_exact(
     const qca_scp_problem *problem,
     int *solution,
     int *solution_size
 );
 
-int qca_scp_solve_exact_with_incumbent(
+qca_scp_result qca_scp_solve_exact_with_incumbent(
     const qca_scp_problem *problem,
     int *solution,
     int *solution_size,
     const int *initial_solution,
     int initial_size,
     int proof_target_size
+);
+
+qca_scp_result qca_scp_solve_exact_with_incumbent_bounded(
+    const qca_scp_problem *problem,
+    int *solution,
+    int *solution_size,
+    const int *initial_solution,
+    int initial_size,
+    int proof_target_size,
+    unsigned long long node_limit,
+    double time_limit_seconds
+);
+
+qca_scp_result qca_scp_solve_exact_with_incumbent_adaptive(
+    const qca_scp_problem *problem,
+    int *solution,
+    int *solution_size,
+    const int *initial_solution,
+    int initial_size,
+    int proof_target_size,
+    unsigned long long probe_node_limit,
+    double probe_time_limit_seconds,
+    unsigned long long hard_node_limit,
+    double hard_time_limit_seconds
 );
 
 void qca_scp_profile_reset(void);

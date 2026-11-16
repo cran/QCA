@@ -1,3 +1,20 @@
+Version 3.26
+    o Faster minimization and prime implicant chart solving. QCA can now
+      verify the smallest solution size earlier in more analyses, including
+      multi-value QCA, using a novel certification system
+    o A positive pi.depth limits the number of conditions in each prime
+      implicant, even when a PI consistency threshold (pi.cons) is set.
+    o findmin() now defaults to type = "hybrid". Use type = "ilp" to send
+      the chart directly to an integer linear programming solver (Gurobi
+      if available, or the embedded lp_solve), while "exact" is deprecated
+    o Fixed: bug excluding existing positive observed configurations
+      (thanks to Philipp Sekol for the report)
+    o Fixed missing prime implicants in some analyses with many conditions
+      and a crash in findmin() on Windows (thanks to Yuki Toyoda for the
+      Windows report)
+    o Fixed: identical models in the intermediate solution are collapsed to
+      only one model (thanks to Ingo Rohlfing for the report)
+
 Version 3.25
     o Now using a trimmed down version of lp_solve for exact covers
     o Improved: heuristic Lagrangian relaxation solver

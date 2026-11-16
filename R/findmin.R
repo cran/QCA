@@ -1,4 +1,30 @@
-`findmin` <- function(chart, type = c("exact", "lagrangian"), ...) {
+# Copyright (c) 2016 - 2026, Adrian Dusa
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, in whole or in part, are permitted provided that the
+# following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * The names of its contributors may NOT be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+`findmin` <- function(chart, type = c("hybrid", "ilp"), ...) {
 
     dots <- list(...)
     verbose <- isTRUE(dots$verbose)
@@ -8,10 +34,18 @@
     }
 
     if (is.null(type)) {
-        type <- "exact"
+        type <- "hybrid"
     }
 
-    type <- match.arg(type, c("exact", "lagrangian"))
+    type <- match.arg(type, c("hybrid", "ilp", "conservative", "native"))
+
+    if (identical(type, "native")) {
+        .Deprecated(
+            old = 'findmin(type = "native")',
+            new = 'findmin(type = "hybrid")',
+            msg = 'The "native" type in findmin() is deprecated. Use type = "hybrid" instead.'
+        )
+    }
 
     if (!methods::is(chart, "QCA_pic")) {
 
@@ -35,9 +69,23 @@
         gurobi <- !isFALSE(attr(chart, "gurobi")) && !isFALSE(dots$gurobi)
         solution <- NULL
 
-        if (identical(type, "lagrangian")) {
+        if (identical(type, "native")) {
+            # Complete the proof internally, without an external solver fallback.
             solution <- .Call(
-                "C_findminLagrangian",
+                "C_findminNativeInternal",
+                matrix(as.logical(chart), nrow = nrow(chart)),
+                5L,
+                PACKAGE = "QCA"
+            )
+        } else if (identical(type, "hybrid")) {
+            # Low-row coverage-mask dominance first removes solver-equivalent
+            # or dominated columns. Level-2 Lagrangian preparation then builds
+            # an incumbent, a bound and a reduced core. A bounded internal
+            # search gets a short probe and progressively more work while it
+            # makes proof progress; lp_solve completes the reduced core when
+            # needed.
+            solution <- .Call(
+                "C_findminHybridInternal",
                 matrix(as.logical(chart), nrow = nrow(chart)),
                 PACKAGE = "QCA"
             )

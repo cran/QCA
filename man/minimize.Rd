@@ -92,6 +92,19 @@ The default method (when \bold{\code{all.sol = FALSE}}), is to find the minimal 
 configurations (minterms), then exhaustively search through all possible disjunctions of
 \bold{\code{k}} prime implicants which do cover those configurations.
 
+The minimal number \bold{\code{k}} is determined by solving the set covering problem on
+the PI chart. During prime implicant generation, duplicate and dominated coverage
+columns are marked and omitted from the chart passed to every solver backend; the
+complete PI chart remains available for output and solution enumeration. Every
+available backend returns a proven minimum. By default, the internal hybrid solver combines
+a level-2 Lagrangian relaxation bound with
+reduced-cost fixing and a progress-adaptive branch-and-bound search. When that search is
+inconclusive, the reduced core is completed by the internal lp_solve backend (see
+\bold{\code{\link[QCA]{findmin}()}} for details). Setting \code{hybrid = FALSE} instead uses
+an integer programming formulation, solved with the Gurobi library when available or with
+the internal lp_solve library otherwise. The choice of backend can therefore
+only affect the solving time, never the solutions.
+
 Once the PI chart is constructed using the prime implicants found in the previous
 stages, the argument \bold{\code{row.dom}} can be used to further eliminate
 irrelevant prime implicants when solving the PI chart, applying the principle of row
@@ -119,6 +132,60 @@ levels of complexity, when the PI chart was still not too complex.
 In the extreme situation even this is not feasible, the argument \bold{\code{first.min}}
 controls returning only one (the very first found) minimal model, if at all possible.
 
+For ordinary truth-table minimization, CCubes uses one stalled complexity level
+as a trigger for exact checks. With \bold{\code{first.min = TRUE}}, a bounded
+weighted integer search and a native SAT solver check whether a smaller binary
+cover can exist. A one-term cover is already minimal for a nonempty outcome.
+When the check finds a smaller cover is possible, generation continues so that the
+systematic chart contains the terms needed for a minimum model.
+
+With the default \bold{\code{first.min = FALSE}}, the check instead asks whether
+a legal term exists that contains none of the chart's prime implicants as a
+subterm. CCubes uses the complete chart to enumerate models. The native checks
+are bounded and apply to ordinary point tables with up to 15 conditions.
+Inconclusive checks continue through the applicable systematic depth.
+For searches using \bold{\code{pi.cons}} or \bold{\code{sol.cons}}, an
+independent finite-domain verifier reconstructs eligible prime implicants from
+the truth table and calibrated cases. A complete-family proof may end PI
+generation at a stalled level. After model search, the verifier checks a
+smallest returned model and exhaustively excludes all smaller PI models.
+It uses the same ordered double sums, membership operations and threshold
+tolerances as QCA, with no rounded integer weights or floating-point pruning
+bounds. With \bold{\code{sol.cons > 0}}, feasibility uses the case-wise union's
+consistency and \bold{\code{sol.cov}}; otherwise it requires covering the positive
+truth-table rows. The domain consists of eligible prime implicants, not arbitrary
+narrower conjunctions that might have better fit.
+
+The returned \bold{\code{certification}} component reports whether minimum size
+was independently certified. Its scope is global when PI depth is unrestricted,
+or relative to \bold{\code{pi.depth}} otherwise. A minimum-size certificate does
+not assert that all returned irredundant models have that size, or that all
+minimum models have been enumerated under other search limits. Verification
+uses bounded work and memory: exhaustion leaves the existing search and
+PI-chart fallbacks, including lp_solve, available and reports an inconclusive
+certificate. It never changes an inconclusive check into a minimum claim.
+
+Consistency-based PI generation also respects that depth. In the CCubes search with remainders,
+a positive \bold{\code{pi.depth}} imposes a hard limit on the number of conditions
+in each prime implicant, regardless of \bold{\code{pi.cons}} or
+\bold{\code{all.sol}}. The default \bold{\code{pi.depth = 0}} leaves conjunction
+depth unrestricted by the user and retains automatic stopping. A positive limit
+can exclude deeper terms and increase the minimum number of terms in a model;
+any minimum is then relative to the permitted terms. The limit is respected even
+if no cover exists within it. A positive \bold{\code{max.comb}} can also limit
+the search.
+
+With \bold{\code{sol.cons > 0}}, model sizes are searched in increasing order,
+so the first successful size establishes the minimum for the generated prime
+implicants. The default \bold{\code{sol.depth = 0}} no longer imposes a seven-term
+cap. With \bold{\code{max.comb = 0}}, consistency-based enumeration stops once
+all branches are redundant with accepted models or provably unable to meet the
+fit thresholds at any larger size. A size with no new models is not sufficient
+to stop. Larger irredundant models remain available with \bold{\code{all.sol = TRUE}}.
+A positive \bold{\code{sol.depth}} is an explicit model-size limit. See
+\code{\link{causalChain}} for the data-derived upper bound and resource behavior.
+This stopping rule concerns consistency-based enumeration, not Petrick's method.
+
 The arguments \bold{\code{pi.cons}} and \bold{\code{sol.cons}} are not specific to the
 traditional QCA minimization, that uses crisp (truth table) values of 0s and 1s. They
 mimic a CNA-style search with granular consistency levels for both prime implicants
@@ -136,6 +203,12 @@ when using multiple outcomes. These objects are lists having the following compo
 \item{PIchart}{A list containing the PI chart(s).}
 \item{primes}{The prime implicant(s).}
 \item{solution}{A list of solution model(s).}
+\item{certification}{For consistency-based CCubes searches with returned models,
+a list with \code{status} (\code{certified}, \code{inconclusive},
+\code{smaller-model-exists}, or \code{verification-failed}), \code{minimum}
+(the independently proved size, otherwise \code{NA}), \code{scope}
+(\code{global} or \code{pi.depth}), \code{domain}, verification \code{work},
+and resource \code{stop} reason.}
 \item{essential}{A list of essential PI(s).}
 \item{pims}{A list of PI membership scores.}
 \item{IC}{The matrix containing the inclusion and coverage scores for the model(s).}

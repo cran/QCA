@@ -1,0 +1,85 @@
+/*
+Copyright (c) 2016 - 2026, Adrian Dusa
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, in whole or in part, are permitted provided that the
+following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * The names of its contributors may NOT be used to endorse or promote
+      products derived from this software without specific prior written
+      permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+#ifndef CCUBES_NATIVE_SAT_H
+#define CCUBES_NATIVE_SAT_H
+
+#include "native_sat_verify.h"
+
+typedef struct NsatSolver NsatSolver;
+
+typedef struct {
+    uint64_t restart_base; /* Zero selects the default Luby scale. */
+    bool disable_minimisation; /* For differential tests and comparisons. */
+    uint64_t reduction_interval; /* Zero selects the default interval. */
+    bool disable_reduction;
+    /* Optional consecutive variable IDs to branch on before other IDs.
+     * They start with a positive decision phase. */
+    int priority_first, priority_count;
+    /* Keep priority decision phases positive after negative propagation.
+     * Other variables retain ordinary phase saving. */
+    bool sticky_priority;
+    /* Optional equal-width positive row groups within the priority range.
+     * Prefer the shortest currently unsatisfied row and decide positively.
+     * Zero retains ordinary variable ordering; this is a branching hint only. */
+    int row_width;
+    bool cache_root_units; /* Retain checked root units between proof checks. */
+} NsatSearchOptions;
+
+typedef struct {
+    uint64_t decisions, conflicts, binary_propagations, learned;
+    uint64_t minimised_literals, restarts, nonchronological_backjumps;
+    uint64_t reductions, deleted, compactions, words_reclaimed, moved;
+    uint64_t row_decisions, row_literal_checks;
+} NsatSearchStats;
+
+/* Initial clause loading and root propagation. A root fixed point carries
+ * no SAT conclusion. The solver borrows a sealed checker for propagation.
+ * Budget the solver and checker separately at this stage. */
+NsatStatus nsat_init(NsatSolver **out, int variables, NsatLimits limits);
+NsatStatus nsat_add_original(NsatSolver *s, const int *lits, size_t count);
+/* Submit a checked root-level strengthening before propagation or search. */
+NsatStatus nsat_add_root_rup(NsatSolver *s, NsatVerifier *v,
+                             const int *lits, size_t count,
+                             const NsatClauseId *hints, size_t hint_count,
+                             NsatClauseId *id);
+NsatStatus nsat_propagate_root(NsatSolver *s, NsatVerifier *v);
+/* Start from loaded originals. Both terminal results are checked against
+ * the verifier's own formula. Model values are available after SAT. */
+NsatStatus nsat_solve(NsatSolver *s, NsatVerifier *v, NsatSearchOptions options);
+/* Reopen a checked SAT cover query at a strictly smaller positive target.
+ * The previous model expires. This is the only supported resumption. */
+NsatStatus nsat_solve_tighter_cover(NsatSolver *s, NsatVerifier *v, size_t target);
+int nsat_model_value(const NsatSolver *s, int variable);
+NsatSearchStats nsat_search_stats(const NsatSolver *s);
+int nsat_root_value(const NsatSolver *s, int variable);
+NsatClauseId nsat_root_unit_id(const NsatSolver *s, int variable);
+NsatStats nsat_stats(const NsatSolver *s);
+void nsat_destroy(NsatSolver *s);
+
+#endif

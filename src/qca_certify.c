@@ -1,0 +1,427 @@
+/*
+Copyright (c) 2016 - 2026, Adrian Dusa
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, in whole or in part, are permitted provided that the
+following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * The names of its contributors may NOT be used to endorse or promote
+      products derived from this software without specific prior written
+      permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+#include "qca_certify.h"
+#include "native_sat/cover_encoding.h"
+#include "native_sat/ipc_weighted_cover.h"
+#include "native_sat/native_sat_support.h"
+
+static bool available(const QcaCertification *table)
+{
+    return table->conditions > 0 && table->positives > 0 && table->negatives > 0 &&
+        (size_t)table->conditions <= SIZE_MAX / sizeof(int) / (size_t)table->positives &&
+        (size_t)table->conditions <= SIZE_MAX / sizeof(int) / (size_t)table->negatives &&
+        table->resources.work < table->resources.work_limit;
+}
+
+/* Fix every condition on which the positive rows agree. If this term
+ * contains a negative row, every one-term cover contains it as well. */
+static NsatStatus one_term(const QcaCertification *table, NsatBudget *budget)
+{
+    const size_t width = (size_t)table->conditions;
+    int *fixed = nsat_alloc(budget, width, sizeof(*fixed));
+    if (!fixed) return budget->status;
+    int count = 0;
+    NsatStatus status = NSAT_UNKNOWN;
+    if (!nsat_work(budget, width)) goto done;
+    for (int c = 0; c < table->conditions; ++c) {
+        const int *column = table->on + (size_t)c * table->positives;
+        int r = 1;
+        for (; r < table->positives; ++r) {
+            if (!nsat_work(budget, 1)) goto done;
+            if (column[r] != column[0]) break;
+        }
+        if (r == table->positives) fixed[count++] = c;
+    }
+    for (int r = 0; r < table->negatives; ++r) {
+        int i = 0;
+        for (; i < count; ++i) {
+            if (!nsat_work(budget, 1)) goto done;
+            int c = fixed[i];
+            if (table->off[(size_t)c * table->negatives + r] !=
+                table->on[(size_t)c * table->positives]) break;
+        }
+        if (i == count) {
+            status = NSAT_UNSAT;
+            goto done;
+        }
+    }
+    status = NSAT_SAT;
+done:
+    nsat_free(budget, fixed, width * sizeof(*fixed));
+    return status;
+}
+
+NsatStatus qca_check_smaller_model(QcaCertification *table, int incumbent)
+{
+    if (incumbent >= 2 && table->verified_minimum == incumbent) return NSAT_UNSAT;
+    if (!available(table) || incumbent < 2) return NSAT_UNKNOWN;
+    NsatLimits limits = {.shared = &table->resources};
+    NsatBudget budget = {.limits = limits};
+    NsatStatus single = one_term(table, &budget);
+    if (incumbent == 2 || single != NSAT_UNSAT) return single;
+
+    size_t width = (size_t)table->conditions, on_cells = (size_t)table->positives * width;
+    size_t cells;
+    if (!nsat_mul(width, (size_t)table->positives + (size_t)table->negatives + 1, &cells))
+        return NSAT_UNKNOWN;
+    int *points = nsat_alloc(&budget, cells, sizeof(*points));
+    if (!points) return budget.status;
+    NsatStatus status = NSAT_UNKNOWN;
+    int *levels = points + cells - width;
+    bool multivalue = false;
+    if (!nsat_work(&budget, width)) goto done;
+    for (size_t c = 0; c < width; ++c) levels[c] = 1;
+    for (int side = 0; side < 2; ++side) {
+        const int *source = side ? table->off : table->on;
+        int rows = side ? table->negatives : table->positives;
+        int *destination = points + (side ? on_cells : 0);
+        for (int r = 0; r < rows; ++r) {
+            for (size_t c = 0; c < width; ++c) {
+                if (!nsat_work(&budget, 1)) goto done;
+                int value = source[c * rows + r];
+                if (value < 0 || value == INT_MAX) goto done;
+                if (value > 1) multivalue = true;
+                if (levels[c] < value + 1) levels[c] = value + 1;
+                destination[(size_t)r * width + c] = value + 1;
+            }
+        }
+    }
+    if (multivalue) {
+        /* Categories absent from the care rows need not be represented:
+         * fixing such a value cannot cover an ON row. Values are equality
+         * literals, never unions of categories within a condition. */
+        NsatMultivalueInput query = {.on = points, .off = points + on_cells,
+            .levels = levels, .inputs = width, .positives = (size_t)table->positives,
+            .negatives = (size_t)table->negatives, .target = (size_t)(incumbent - 1)};
+        NsatSolver *solver = NULL;
+        NsatVerifier *checker = NULL;
+        NsatStopReason stop;
+        status = nsat_multivalue_solve(&query, limits, &solver, &checker, &stop);
+        nsat_destroy(solver);
+        nsat_verify_destroy(checker);
+        goto done;
+    }
+    NsatCoverInput query = {.on = points, .off = points + on_cells,
+        .inputs = width, .positives = (size_t)table->positives,
+        .negatives = (size_t)table->negatives, .target = (size_t)incumbent};
+    const uint64_t left = table->resources.work_limit - table->resources.work;
+    if (left >= 2) {
+        /* Let weighted verification use up to half the remaining work.
+         * Reserve the rest for SAT and chart checks in this minimization. */
+        const uint64_t weighted_cap = UINT64_C(8000000);
+        NsatLimits pricing = limits;
+        pricing.work = left / 2 < weighted_cap ? left / 2 : weighted_cap;
+        IpcWeightedCoverResult weighted = ipc_weighted_cover_seed_then_reprice(
+            &query, 1, pricing, 4, 256);
+        if (weighted.status != NSAT_ERROR) {
+            const bool checked = weighted.check_status == NSAT_UNSAT;
+            if (checked && weighted.lower == incumbent) {
+                status = NSAT_UNSAT;
+            } else if (weighted.cover && weighted.terms < incumbent) {
+                /* The chart still has to find its own model. Reuse this proof
+                 * if a later plateau reaches the independently checked bound. */
+                if (checked && weighted.terms == weighted.lower)
+                    table->verified_minimum = weighted.lower;
+                status = NSAT_SAT;
+            }
+        }
+        free(weighted.cover);
+        if (status != NSAT_UNKNOWN) goto done;
+    }
+    query.target = (size_t)(incumbent - 1);
+    NsatSolver *solver = NULL;
+    NsatVerifier *checker = NULL;
+    NsatStopReason stop;
+    NsatCoverDomainStats stats;
+    status = nsat_cover_solve_default(&query, limits, &solver, &checker, &stop, &stats);
+    nsat_destroy(solver);
+    nsat_verify_destroy(checker);
+done:
+    nsat_free(&budget, points, cells * sizeof(*points));
+    return status;
+}
+
+static bool add_clause(NsatVerifier *checker, NsatSolver *solver, const int *lits, size_t count)
+{
+    return nsat_verify_add_original(checker, lits, count) == NSAT_OK &&
+        nsat_add_original(solver, lits, count) == NSAT_OK;
+}
+
+/*
+ * One variable per condition records whether the new term fixes that
+ * condition to the anchor row's value. Each OFF row supplies a clause
+ * requiring a differing fixed condition. A known PI supplies a clause
+ * requiring at least one of its fixed conditions to be left free.
+ */
+static bool anchor_complete(const QcaCertification *table, int row, const int *chart,
+                            const int *implicants, int columns, int *anchor, int *lits,
+                            NsatLimits limits)
+{
+    NsatVerifier *checker = NULL;
+    NsatSolver *solver = NULL;
+    bool complete = false;
+    int width = table->conditions;
+    NsatBudget budget = {.limits = limits};
+    if (nsat_verify_init_cnf(&checker, width, limits) != NSAT_OK ||
+        nsat_init(&solver, width, limits) != NSAT_OK ||
+        !nsat_work(&budget, (uint64_t)width)) goto done;
+    for (int c = 0; c < width; ++c)
+        anchor[c] = table->on[(size_t)c * table->positives + row];
+    for (int r = 0; r < table->negatives; ++r) {
+        if (!nsat_work(&budget, (uint64_t)width)) goto done;
+        size_t count = 0;
+        for (int c = 0; c < width; ++c)
+            if (table->off[(size_t)c * table->negatives + r] != anchor[c]) lits[count++] = c + 1;
+        if (!add_clause(checker, solver, lits, count)) goto done;
+    }
+    for (int pi = 0; pi < columns; ++pi) {
+        if (!nsat_work(&budget, 1)) goto done;
+        if (!chart[(size_t)pi * table->positives + row]) continue;
+        size_t count = 0;
+        int c = 0;
+        for (; c < width; ++c) {
+            int literal = implicants[(size_t)pi * width + c];
+            if (!nsat_work(&budget, 1)) goto done;
+            if (!literal) continue;
+            if (literal - 1 != anchor[c]) break;
+            lits[count++] = -(c + 1);
+        }
+        if (c == width && !add_clause(checker, solver, lits, count)) goto done;
+    }
+    complete = nsat_verify_seal_originals(checker) == NSAT_OK &&
+        nsat_solve(solver, checker, (NsatSearchOptions){0}) == NSAT_UNSAT;
+done:
+    nsat_destroy(solver);
+    nsat_verify_destroy(checker);
+    return complete;
+}
+
+bool qca_check_complete_chart(QcaCertification *table, const int *chart,
+                              const int *implicants, int columns)
+{
+    if (!available(table) || columns <= 0) return false;
+    const size_t width = (size_t)table->conditions;
+    if ((size_t)columns > SIZE_MAX / sizeof(int) / width ||
+        (size_t)columns > SIZE_MAX / sizeof(int) / (size_t)table->positives)
+        return false;
+    NsatLimits limits = {.shared = &table->resources};
+    NsatBudget budget = {.limits = limits};
+    int *scratch = nsat_alloc(&budget, width, 2 * sizeof(*scratch));
+    if (!scratch) return false;
+    int r = 0;
+    for (; r < table->positives; ++r)
+        if (!anchor_complete(table, r, chart, implicants, columns, scratch,
+                             scratch + width, limits)) break;
+    nsat_free(&budget, scratch, 2 * width * sizeof(*scratch));
+    return r == table->positives;
+}
+
+/* Slot zero is distinguished. The assignment variables ensure each ON row
+ * is covered and slot zero covers an ON row. The remaining slots are free
+ * to use any legal terms, including terms already present in the chart. */
+static bool add_minimum_cover(const QcaCertification *table, int minimum, int literal_vars,
+                              NsatVerifier *checker, NsatSolver *solver, int *lits,
+                              NsatBudget *budget)
+{
+    int width = table->conditions, positives = table->positives;
+    for (int t = 0; t < minimum; ++t) {
+        for (int c = 0; c < width; ++c) {
+            int zero = nsat_cover_selector(width, t, c, 1);
+            if (!add_clause(checker, solver, (int[]){-zero, -(zero + 1)}, 2))
+                return false;
+        }
+        for (int r = 0; r < table->negatives; ++r) {
+            if (!nsat_work(budget, (uint64_t)width)) return false;
+            for (int c = 0; c < width; ++c) {
+                int value = table->off[(size_t)c * table->negatives + r];
+                if (value != 0 && value != 1) return false;
+                lits[c] = nsat_cover_selector(width, t, c, 2 - value);
+            }
+            if (!add_clause(checker, solver, lits, width)) return false;
+        }
+    }
+    for (int r = 0; r < positives; ++r) {
+        int first = literal_vars + r * minimum + 1;
+        for (int t = 0; t < minimum; ++t) {
+            for (int c = 0; c < width; ++c) {
+                int value = table->on[(size_t)c * positives + r];
+                if (value != 0 && value != 1) return false;
+                int opposite = nsat_cover_selector(width, t, c, 2 - value);
+                if (!add_clause(checker, solver, (int[]){-(first + t), -opposite}, 2))
+                    return false;
+            }
+            lits[t] = first + t;
+        }
+        if (!add_clause(checker, solver, lits, minimum)) return false;
+    }
+    if (!nsat_work(budget, (uint64_t)positives)) return false;
+    for (int r = 0; r < positives; ++r) lits[r] = literal_vars + r * minimum + 1;
+    return add_clause(checker, solver, lits, positives);
+}
+
+/* Order first assigned ON rows among slots 1..minimum-1. Slot zero keeps
+ * its separate missing-PI role and need not precede any other slot.
+ * A cover can assign each row to one covering term, retain an assignment
+ * to slot zero, and permute the remaining used slots by their first row.
+ * Unused slots follow them. Thus these original encoding constraints
+ * preserve satisfiability; they are not RUP consequences of the old CNF. */
+static bool order_minimum_slots(const QcaCertification *table, int minimum,
+                                int literal_vars, NsatVerifier *checker,
+                                NsatSolver *solver)
+{
+    if (minimum < 3) return true;
+    const int prefixes = minimum - 2;
+    const int first_prefix = literal_vars + table->positives * minimum + 1;
+    for (int r = 0; r < table->positives; ++r) {
+        for (int t = 1; t < minimum; ++t) {
+            int assigned = literal_vars + r * minimum + t + 1;
+            if (t < minimum - 1) {
+                int used = first_prefix + r * prefixes + t - 1;
+                if (!add_clause(checker, solver, (int[]){-assigned, used}, 2))
+                    return false;
+                if (!r) {
+                    if (!add_clause(checker, solver, (int[]){-used, assigned}, 2))
+                        return false;
+                } else {
+                    int previous = used - prefixes;
+                    if (!add_clause(checker, solver, (int[]){-previous, used}, 2) ||
+                        !add_clause(checker, solver, (int[]){-used, previous, assigned}, 3))
+                        return false;
+                }
+            }
+            if (t > 1) {
+                if (!r) {
+                    if (!add_clause(checker, solver, (int[]){-assigned}, 1)) return false;
+                } else {
+                    int earlier = first_prefix + (r - 1) * prefixes + t - 2;
+                    if (!add_clause(checker, solver, (int[]){-assigned, earlier}, 2))
+                        return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+static NsatStatus minimum_distance_one(const QcaCertification *table, int minimum,
+                                       NsatSolver *solver, NsatVerifier *checker,
+                                       NsatLimits limits)
+{
+    size_t cells, width = (size_t)table->conditions;
+    if (!nsat_mul(width, (size_t)table->positives + (size_t)table->negatives, &cells))
+        return NSAT_ERROR;
+    NsatBudget budget = {.limits = limits};
+    int *points = nsat_alloc(&budget, cells, sizeof(*points));
+    if (!points) return budget.status;
+    size_t on_cells = width * (size_t)table->positives;
+    NsatStatus status = NSAT_OK;
+    for (int side = 0; side < 2; ++side) {
+        const int *source = side ? table->off : table->on;
+        int rows = side ? table->negatives : table->positives;
+        int *destination = points + (side ? on_cells : 0);
+        for (int r = 0; r < rows; ++r) {
+            for (size_t c = 0; c < width; ++c) {
+                if (!nsat_work(&budget, 1)) {
+                    status = budget.status;
+                    goto done;
+                }
+                destination[(size_t)r * width + c] = source[c * rows + r] + 1;
+            }
+        }
+    }
+    NsatCoverInput query = {.on = points, .off = points + on_cells, .inputs = width,
+        .positives = (size_t)table->positives, .negatives = (size_t)table->negatives,
+        .target = (size_t)minimum};
+    NsatCoverDistanceStats stats;
+    status = nsat_cover_distance_one(&query, solver, checker, limits, &stats);
+done:
+    nsat_free(&budget, points, cells * sizeof(*points));
+    return status;
+}
+
+static bool check_minimum_models(QcaCertification *table, const int *implicants,
+                                 int columns, int minimum, bool ordering, bool distance)
+{
+    if (!available(table) || columns <= 0 || minimum < 1 || minimum > table->positives)
+        return false;
+    const int width = table->conditions, positives = table->positives;
+    if ((size_t)columns > SIZE_MAX / sizeof(int) / (size_t)width ||
+        width > (INT_MAX - positives) / 2 ||
+        minimum > INT_MAX / (2 * width + positives))
+        return false;
+    const int literal_vars = 2 * width * minimum;
+    int variables = literal_vars + positives * minimum;
+    if (ordering && minimum > 2) {
+        size_t extra = (size_t)positives * (size_t)(minimum - 2);
+        if (extra > (size_t)(INT_MAX - variables)) return false;
+        variables += (int)extra;
+    }
+    const size_t capacity = width > positives ? (size_t)width : (size_t)positives;
+    NsatLimits limits = {.shared = &table->resources};
+    NsatBudget budget = {.limits = limits};
+    int *lits = nsat_alloc(&budget, capacity, sizeof(*lits));
+    NsatVerifier *checker = NULL;
+    NsatSolver *solver = NULL;
+    bool complete = false;
+    if (!lits || nsat_verify_init_cnf(&checker, variables, limits) != NSAT_OK ||
+        nsat_init(&solver, variables, limits) != NSAT_OK ||
+        !add_minimum_cover(table, minimum, literal_vars, checker, solver, lits, &budget))
+        goto done;
+
+    /* A missing PI contains no known PI as a subterm. Conversely, a legal
+     * slot-zero term satisfying these clauses can be expanded to a missing
+     * PI by deleting literals. This preserves the cover at the same size. */
+    for (int pi = 0; pi < columns; ++pi) {
+        if (!nsat_work(&budget, (uint64_t)width)) goto done;
+        size_t count = 0;
+        for (int c = 0; c < width; ++c) {
+            int value = implicants[(size_t)pi * width + c];
+            if (!value) continue;
+            if (value != 1 && value != 2) goto done;
+            lits[count++] = -nsat_cover_selector(width, 0, c, value);
+        }
+        if (!add_clause(checker, solver, lits, count)) goto done;
+    }
+    if (ordering && !order_minimum_slots(table, minimum, literal_vars, checker, solver))
+        goto done;
+    complete = nsat_verify_seal_originals(checker) == NSAT_OK &&
+        (!distance || minimum_distance_one(table, minimum, solver, checker, limits) == NSAT_OK) &&
+        nsat_solve(solver, checker, (NsatSearchOptions){.cache_root_units = true}) == NSAT_UNSAT;
+done:
+    nsat_destroy(solver);
+    nsat_verify_destroy(checker);
+    nsat_free(&budget, lits, capacity * sizeof(*lits));
+    return complete;
+}
+
+bool qca_check_minimum_models(QcaCertification *table, const int *implicants,
+                              int columns, int minimum)
+{
+    return check_minimum_models(table, implicants, columns, minimum, true, true);
+}

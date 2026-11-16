@@ -1,0 +1,134 @@
+/*
+Copyright (c) 2016 - 2026, Adrian Dusa
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, in whole or in part, are permitted provided that the
+following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * The names of its contributors may NOT be used to endorse or promote
+      products derived from this software without specific prior written
+      permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+#ifndef CCUBES_NATIVE_SAT_VERIFY_H
+#define CCUBES_NATIVE_SAT_VERIFY_H
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+/* Literals are signed, one-based variable indices. Zero is never a literal. */
+typedef uint64_t NsatClauseId;
+typedef enum {
+    NSAT_OK, NSAT_UNKNOWN, NSAT_ERROR, NSAT_UNSAT, NSAT_ROOT_FIXED_POINT,
+    NSAT_SAT
+} NsatStatus;
+typedef enum {
+    NSAT_STOP_NONE, NSAT_STOP_WORK, NSAT_STOP_MEMORY, NSAT_STOP_CANCELLED,
+    NSAT_STOP_INPUT, NSAT_STOP_STATE, NSAT_STOP_PROOF, NSAT_STOP_ALLOCATION,
+    NSAT_STOP_CONFLICTS
+} NsatStopReason;
+
+/* Optional accounting shared by the encoder, solver and checker of one
+ * serial query or series of queries. Initialize the counters to zero. */
+typedef struct {
+    uint64_t work_limit, work;
+    size_t memory_limit, memory, peak_memory;
+    NsatStopReason stop;
+} NsatResources;
+
+typedef struct {
+    /* Zero disables a limit. poll may check the caller's monotonic deadline. */
+    uint64_t work;
+    size_t memory_bytes;
+    bool (*poll)(void *context);
+    void *context;
+    uint64_t conflicts; /* Solver only. Zero is unlimited. */
+    NsatResources *shared;
+} NsatLimits;
+
+typedef struct {
+    uint64_t work;
+    size_t memory_bytes;
+    size_t peak_memory_bytes;
+    NsatStopReason stop;
+    uint64_t lemmas_checked, clauses_deleted, index_rebuilds;
+} NsatStats;
+
+typedef struct NsatVerifier NsatVerifier;
+
+/* Flat point tables contain 1/2 for Boolean 0/1. A NULL permutation with
+ * length zero means file order. Dimensions and point buffers are borrowed
+ * during initialization. The cover constructor returns a sealed verifier.
+ * In v1 it requires n, on_count, off_count and target all positive.
+ *
+ * The standalone CNF constructor is for trusted harnesses. Supply normalized
+ * originals (no duplicate or complementary literals), then seal. Each
+ * original receives the next ID starting at 1. After either constructor's
+ * failure, or any UNKNOWN or ERROR, destroy the instance. */
+NsatStatus nsat_verify_init_cnf(NsatVerifier **out, int variables, NsatLimits limits);
+NsatStatus nsat_verify_init_cover(NsatVerifier **out, const int *on, const int *off,
+                                  size_t n, size_t on_count, size_t off_count,
+                                  size_t target, const size_t *row_order,
+                                  size_t order_count, NsatLimits limits);
+NsatStatus nsat_verify_add_original(NsatVerifier *v, const int *lits, size_t count);
+/* Independent categorical reconstruction; owns copies of the care table
+ * and domains for an additional geometric check of a returned SAT model.
+ * Row-major values are 1..levels[c]. Tightening is not supported here. */
+NsatStatus nsat_verify_init_multivalue(NsatVerifier **out, const int *on, const int *off,
+                                      const int *levels, size_t n, size_t positives,
+                                      size_t negatives, size_t target, NsatLimits limits);
+NsatStatus nsat_verify_seal_originals(NsatVerifier *v);
+/* Bind a freshly sealed checker at the start of a solve session. */
+NsatStatus nsat_verify_begin(NsatVerifier *v);
+
+/* Sealed checker events. All buffers are borrowed for this call only.
+ * Original IDs cannot be deleted. Conclusion requires a live empty clause. */
+NsatStatus nsat_verify_derive(NsatVerifier *v, NsatClauseId id,
+                              const int *lits, size_t count,
+                              const NsatClauseId *hints, size_t hint_count);
+/* Optional search context. Only checked live units can be pinned, and their
+ * clauses cannot be deleted. Cached proofs omit pinned hints and must not
+ * assume any pinned variable. Ordinary proofs and model checks are separate. */
+NsatStatus nsat_verify_enable_root_units(NsatVerifier *v);
+NsatStatus nsat_verify_pin_root_unit(NsatVerifier *v, NsatClauseId id, int literal);
+NsatStatus nsat_verify_derive_with_roots(NsatVerifier *v, NsatClauseId id,
+                                        const int *lits, size_t count,
+                                        const NsatClauseId *hints, size_t hint_count);
+NsatStatus nsat_verify_delete(NsatVerifier *v, NsatClauseId id);
+NsatStatus nsat_verify_conclude_unsat(NsatVerifier *v, NsatClauseId id);
+/* One signed literal per variable, in arbitrary order. Check the original
+ * CNF and all registered target units. */
+NsatStatus nsat_verify_conclude_sat(NsatVerifier *v, const int *model, size_t count);
+/* After a checked cover model, permanently lower its active target. The
+ * checker computes the single new premise from its own cover metadata. */
+NsatStatus nsat_verify_tighten_cover(NsatVerifier *v, size_t target,
+                                      NsatClauseId *id, int *literal);
+size_t nsat_verify_cover_target(const NsatVerifier *v);
+size_t nsat_verify_cover_slots(const NsatVerifier *v);
+
+/* Read-only diagnostics. Clause views last until the next modifying call. */
+NsatStats nsat_verify_stats(const NsatVerifier *v);
+int nsat_verify_variables(const NsatVerifier *v);
+NsatClauseId nsat_verify_original_count(const NsatVerifier *v);
+bool nsat_verify_clause(const NsatVerifier *v, NsatClauseId id,
+                        const int **lits, size_t *count);
+void nsat_verify_destroy(NsatVerifier *v);
+
+#endif

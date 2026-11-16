@@ -1,3 +1,29 @@
+# Copyright (c) 2016 - 2026, Adrian Dusa
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, in whole or in part, are permitted provided that the
+# following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * The names of its contributors may NOT be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ADRIAN DUSA BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 `minimize` <- function(
     input, include = "", dir.exp = NULL, details = FALSE, pi.cons = 0,
     sol.cons = 0, all.sol = FALSE, row.dom = FALSE, first.min = FALSE,
@@ -542,10 +568,6 @@
                 extended.data <- rbind(extended.data, cbind(excl.matrix, 0))
             }
 
-            if (sol.cons > 0 & all.sol & sol.depth == 0) {
-                sol.depth <- 7
-            }
-
             # DEBUG:
             # save into an object called "aa"
             # return(list(
@@ -567,9 +589,9 @@
             # .Call("C_Cubes", aa)
 
             use_native_gurobi <- FALSE
-            lagrangian <- isTRUE(dots$lagrangian)
-            
-            if (!isFALSE(dots$gurobi) && !lagrangian) {
+            hybrid <- !isFALSE(dots$hybrid)
+
+            if (!isFALSE(dots$gurobi) && !hybrid) {
                 native_gurobi_available <- getOption("native.gurobi.available", NULL)
                 if (is.null(native_gurobi_available) || !is.logical(native_gurobi_available)) {
                     native_gurobi_available <- isTRUE(.Call("C_gurobiRuntimeAvailable", PACKAGE = "QCA"))
@@ -592,10 +614,11 @@
                             max.comb = max.comb,
                             first.min = first.min,
                             keep.trying = keep.trying,
-                            lagrangian = lagrangian,
+                            hybrid = hybrid,
                             gurobi = use_native_gurobi,
                             solind = !isFALSE(dots$solind)),
                             PACKAGE = "QCA")
+            output$certification <- attr(expressions, "certification", exact = TRUE)
             # dyn.unload("~/Lucru/_R/QCA/src/QCA.so")
             # return(expressions)
         }
@@ -885,7 +908,7 @@
                         i.sol[[index]]$EC <- ECmat
                         i.sol[[index]]$DC <- ECmat
                         i.sol.index <- c.sol
-                        i.sol.index$solution.list[[1]] <- c.sol$solution.list[[1]][[c.s]]
+                        i.sol.index$solution.list[[1]] <- c.sol$solution.list[[1]][c.s]
                     }
                     else {
                         i.sol[[index]]$EC <- EClist[[index]]
